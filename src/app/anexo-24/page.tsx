@@ -21,6 +21,7 @@ import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { getAnexoSnapshot, type AnexoSnapshot } from '@/lib/anexo24/snapshot'
 import { getAnexoByFraccion, type ByFraccionSnapshot } from '@/lib/anexo24/by-fraccion'
+import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { PageShell, GlassCard, KPITile, CockpitSkeleton, CockpitErrorCard } from '@/components/aguila'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { Anexo24SkuTable } from './Anexo24SkuTable'
@@ -61,7 +62,10 @@ async function Anexo24Content({ session, q, view }: { session: SessionLike; q: s
   try {
     const supabase = createServerClient()
     const cookieStore = await cookies()
-    const clientName = decodeURIComponent(cookieStore.get('company_name')?.value ?? 'Cliente')
+    // Use the canonical helper so legal suffixes (S.DE R.L. DE C.V., etc.)
+    // don't leak into the Anexo 24 subheader. Same chemistry as /inicio.
+    const rawClientName = decodeURIComponent(cookieStore.get('company_name')?.value ?? '')
+    const clientName = cleanCompanyDisplayName(rawClientName) || 'Cliente'
 
     const isInternal = session.role === 'broker' || session.role === 'admin'
 

@@ -3,68 +3,87 @@
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
 
-interface GenerateResult {
-  pdf_url: string
-  xlsx_url: string
-  row_count: number
-  generado_en: string
-}
-
 interface Props {
   companyId: string
   isInternal: boolean
 }
 
 /**
- * Primary CTA — "Descargar Formato 53". Single tap generates both PDF
- * and XLSX against the full year-to-date window, opens the PDF in a
- * new tab, and records the generation in the Anexo 24 docs hub.
+ * Primary CTA — "Descargar Formato 53". One tap streams the PDF from
+ * /api/reports/anexo-24/generate directly to the browser; a follow-up
+ * fetch pulls the XLSX as a blob download. No storage round-trip, no
+ * waiting for upload, no secondary click.
  *
- * Internal users can override the period via ?from=YYYY-MM-DD&to=
- * later; Phase 1 keeps the interaction minimal — one button, one tap,
- * something downloads.
+ * On error the endpoint now returns a real diagnostic message (row
+ * count, SQL error, bucket name) — the UI surfaces it verbatim so
+ * Ursula can forward a screenshot and the support team can act.
  */
 export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
   const [generating, setGenerating] = useState(false)
-  const [result, setResult] = useState<GenerateResult | null>(null)
+  const [result, setResult] = useState<{ row_count: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const buildUrl = (format: 'pdf' | 'xlsx') => {
+    const now = new Date()
+    const yearStart = `${now.getUTCFullYear()}-01-01`
+    const today = now.toISOString().slice(0, 10)
+    const params = new URLSearchParams({ format, date_from: yearStart, date_to: today })
+    if (isInternal && companyId) params.set('company_id', companyId)
+    return `/api/reports/anexo-24/generate?${params.toString()}`
+  }
+
+  /** Fetch a streaming URL as a Blob, then trigger a same-page download
+   *  via a temporary anchor. Works on iOS Safari (no popup blocker) and
+   *  matches the save-to-Files UX Ursula expects from an audit doc. */
+  const downloadBlob = async (url: string, filename: string): Promise<Response> => {
+    const res = await fetch(url, { credentials: 'include' })
+    if (!res.ok) return res
+    const blob = await res.blob()
+    const href = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = href
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    // Release the object URL on the next tick so the download can finish
+    setTimeout(() => URL.revokeObjectURL(href), 1000)
+    return res
+  }
 
   const handleGenerate = async () => {
     setGenerating(true)
     setError(null)
     setResult(null)
     try {
-      // Default window: current calendar year → today. Matches SAT
-      // audit cadence (annual reviews) so Ursula can defend any
-      // period the inspector asks for.
       const now = new Date()
       const yearStart = `${now.getUTCFullYear()}-01-01`
       const today = now.toISOString().slice(0, 10)
 
-      const res = await fetch('/api/reports/anexo-24/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date_from: yearStart,
-          date_to: today,
-          company_id: isInternal ? companyId : null,
-        }),
-      })
-      const body = (await res.json()) as {
-        data: GenerateResult | null
-        error: { code: string; message: string } | null
-      }
-      if (!res.ok || body.error) {
-        setError(body.error?.message ?? 'No pudimos generar el Formato 53. Intenta de nuevo en unos minutos.')
+      // PDF first — user sees the doc appear immediately. XLSX follows
+      // so accounting gets the machine-readable copy.
+      const pdfRes = await downloadBlob(
+        buildUrl('pdf'),
+        `anexo24_${companyId || 'evco'}_${yearStart}_${today}.pdf`,
+      )
+      if (!pdfRes.ok) {
+        const diag = await pdfRes.json().catch(() => null) as { error?: { message?: string } } | null
+        setError(diag?.error?.message ?? `Error al generar PDF (HTTP ${pdfRes.status})`)
         return
       }
-      if (body.data) {
-        setResult(body.data)
-        // Auto-open the PDF so Ursula doesn't have to hunt for the link.
-        if (typeof window !== 'undefined' && body.data.pdf_url) {
-          window.open(body.data.pdf_url, '_blank', 'noopener,noreferrer')
-        }
+      const rowCount = Number.parseInt(pdfRes.headers.get('X-Anexo24-Rows') ?? '0', 10) || 0
+
+      const xlsxRes = await downloadBlob(
+        buildUrl('xlsx'),
+        `anexo24_${companyId || 'evco'}_${yearStart}_${today}.xlsx`,
+      )
+      if (!xlsxRes.ok) {
+        const diag = await xlsxRes.json().catch(() => null) as { error?: { message?: string } } | null
+        // Not fatal — PDF already downloaded. Surface a soft warning.
+        setError(diag?.error?.message ?? `Excel no disponible (HTTP ${xlsxRes.status}). PDF se descargó correctamente.`)
       }
+
+      setResult({ row_count: rowCount })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error de conexión')
     } finally {
@@ -158,28 +177,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
             color: 'rgba(230,237,243,0.88)',
           }}
         >
-          Formato 53 generado con {result.row_count.toLocaleString('es-MX')} partidas ·{' '}
-          <a
-            href={result.xlsx_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#C9A74A', textDecoration: 'underline', textUnderlineOffset: 3 }}
-          >
-            descargar Excel
-          </a>
-          {result.pdf_url && (
-            <>
-              {' · '}
-              <a
-                href={result.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: '#C9A74A', textDecoration: 'underline', textUnderlineOffset: 3 }}
-              >
-                abrir PDF
-              </a>
-            </>
-          )}
+          Formato 53 descargado · {result.row_count.toLocaleString('es-MX')} partidas · PDF + Excel
         </div>
       )}
 

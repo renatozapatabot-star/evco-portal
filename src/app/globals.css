@@ -1,7 +1,13 @@
-/* ADUANA Design System — globals.css
-   Fonts: Inter + JetBrains Mono loaded via next/font in layout.tsx
-   Theme: .aguila-dark class applies cinematic dark tokens to all authenticated pages
-*/
+/* PORTAL Design System — globals.css
+ * Block DD baseline (2026-04-17): PORTAL tokens + components are the
+ * canonical source of truth. Imported first so every CSS rule below
+ * (including .aguila-* legacy aliases) resolves var(--portal-*) correctly.
+ *
+ * Fonts: Geist + Geist Mono + Instrument Serif loaded via next/font in layout.tsx.
+ * Theme swap on <html data-accent="..." data-bg="..." data-density="..." data-motion="...">.
+ */
+@import './portal-tokens.css';
+@import './portal-components.css';
 
 @tailwind base;
 @tailwind components;

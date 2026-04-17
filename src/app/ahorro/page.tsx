@@ -5,7 +5,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { DollarSign, TrendingDown, Zap, Truck, Clock, Users2, Award } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtDate, fmtUSDCompact } from '@/lib/format-utils'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 
 interface CostInsight {
   id: string
@@ -86,10 +86,10 @@ export default function AhorroPage() {
           {[0, 1, 2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 8 }} />)}
         </div>
       ) : !data || data.insights.length === 0 ? (
-        <EmptyState
-          icon="💰"
-          title="Sin oportunidades"
-          description="El optimizador analiza costos semanalmente. Se necesitan 10+ operaciones para generar insights."
+        <CalmEmptyState
+          icon="report"
+          title="Sin oportunidades de ahorro por ahora"
+          message="El optimizador analiza costos semanalmente. Necesitamos 10+ operaciones para generar recomendaciones."
         />
       ) : (
         <>

@@ -15,14 +15,16 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { ClipboardList, ExternalLink, FileText, Search } from 'lucide-react'
+import { ClipboardList, ExternalLink, FileText, Search, Boxes, List } from 'lucide-react'
 import Link from 'next/link'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { getAnexoSnapshot, type AnexoSnapshot } from '@/lib/anexo24/snapshot'
+import { getAnexoByFraccion, type ByFraccionSnapshot } from '@/lib/anexo24/by-fraccion'
 import { PageShell, GlassCard, KPITile, CockpitSkeleton, CockpitErrorCard } from '@/components/aguila'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { Anexo24SkuTable } from './Anexo24SkuTable'
+import { Anexo24FraccionGrid } from './Anexo24FraccionGrid'
 import { Anexo24DownloadCta } from './Anexo24DownloadCta'
 
 export const dynamic = 'force-dynamic'
@@ -36,7 +38,9 @@ type SessionLike = {
   name?: string
 }
 
-export default async function Anexo24Page({ searchParams }: { searchParams?: Promise<{ q?: string }> }) {
+type ViewMode = 'skus' | 'fracciones'
+
+export default async function Anexo24Page({ searchParams }: { searchParams?: Promise<{ q?: string; view?: string }> }) {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token)
@@ -44,29 +48,42 @@ export default async function Anexo24Page({ searchParams }: { searchParams?: Pro
 
   const sp = (await searchParams) ?? {}
   const q = typeof sp.q === 'string' ? sp.q.trim() : ''
+  const view: ViewMode = sp.view === 'fracciones' ? 'fracciones' : 'skus'
 
   return (
     <Suspense fallback={<CockpitSkeleton />}>
-      <Anexo24Content session={session} q={q} />
+      <Anexo24Content session={session} q={q} view={view} />
     </Suspense>
   )
 }
 
-async function Anexo24Content({ session, q }: { session: SessionLike; q: string }) {
+async function Anexo24Content({ session, q, view }: { session: SessionLike; q: string; view: ViewMode }) {
   try {
     const supabase = createServerClient()
     const cookieStore = await cookies()
     const clientName = decodeURIComponent(cookieStore.get('company_name')?.value ?? 'Cliente')
 
-    const snapshot = await getAnexoSnapshot(supabase, session.companyId, { q, limit: 300 })
-    snapshot.client_name = clientName
-
     const isInternal = session.role === 'broker' || session.role === 'admin'
 
-    return <Anexo24Surface snapshot={snapshot} isInternal={isInternal} query={q} />
+    if (view === 'fracciones') {
+      // By-fracción surface — consolidates 148K SKUs into ~500 cards.
+      // Still fetches the flat SKU snapshot for the KPI strip at the
+      // top (count/YTD/proveedores read off the same numbers) while
+      // grouping runs in parallel.
+      const [snapshot, grouped] = await Promise.all([
+        getAnexoSnapshot(supabase, session.companyId, { q: '', limit: 1 }),
+        getAnexoByFraccion(supabase, session.companyId, { q, limit: 2000 }),
+      ])
+      snapshot.client_name = clientName
+      grouped.client_name = clientName
+      return <Anexo24Surface snapshot={snapshot} grouped={grouped} view={view} isInternal={isInternal} query={q} />
+    }
+
+    const snapshot = await getAnexoSnapshot(supabase, session.companyId, { q, limit: 300 })
+    snapshot.client_name = clientName
+    return <Anexo24Surface snapshot={snapshot} view={view} isInternal={isInternal} query={q} />
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    // Next redirect() throws — re-throw so the server framework routes.
     if (msg === 'NEXT_REDIRECT' || msg === 'NEXT_NOT_FOUND') throw err
     return <CockpitErrorCard message={`No se pudo cargar Anexo 24: ${msg}`} />
   }
@@ -74,15 +91,20 @@ async function Anexo24Content({ session, q }: { session: SessionLike; q: string 
 
 function Anexo24Surface({
   snapshot,
+  grouped,
+  view,
   isInternal,
   query,
 }: {
   snapshot: AnexoSnapshot
+  grouped?: ByFraccionSnapshot
+  view: ViewMode
   isInternal: boolean
   query: string
 }) {
   const { kpis, skus, recent_docs, client_name } = snapshot
   const hasData = kpis.total_skus > 0
+  const fraccionCount = grouped?.fraccion_count ?? kpis.unique_fracciones
 
   const subtitleParts = [
     `${client_name}`,
@@ -187,16 +209,16 @@ function Anexo24Surface({
           </section>
         )}
 
-        {/* SKU table — the catalog, Anexo-24 framed */}
+        {/* View toggle + SKU/Fraccion body */}
         {hasData && (
           <section className="aguila-reveal aguila-reveal-delay-2" style={{ marginBottom: 24 }}>
             <div style={{
               display: 'flex',
-              alignItems: 'baseline',
+              alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: 12,
               flexWrap: 'wrap',
-              gap: 8,
+              gap: 10,
             }}>
               <h2 style={{
                 margin: 0,
@@ -206,24 +228,94 @@ function Anexo24Surface({
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
               }}>
-                Inventario · {skus.length} de {kpis.total_skus}
+                {view === 'fracciones'
+                  ? `Fracciones · ${fraccionCount} tarifas`
+                  : `Inventario · ${skus.length} de ${kpis.total_skus}`}
               </h2>
-              {query && (
+              <div
+                role="tablist"
+                aria-label="Cambiar vista"
+                style={{
+                  display: 'inline-flex',
+                  padding: 4,
+                  borderRadius: 12,
+                  background: 'rgba(0,0,0,0.28)',
+                  border: '1px solid rgba(192,197,206,0.12)',
+                  gap: 4,
+                }}
+              >
                 <Link
-                  href="/anexo-24"
+                  href={`/anexo-24${query ? `?q=${encodeURIComponent(query)}` : ''}`}
+                  role="tab"
+                  aria-selected={view === 'skus'}
                   style={{
-                    fontSize: 'var(--aguila-fs-meta, 11px)',
-                    color: 'rgba(192,197,206,0.7)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 14px',
+                    minHeight: 44,
+                    borderRadius: 9,
+                    background: view === 'skus' ? 'rgba(192,197,206,0.14)' : 'transparent',
+                    color: view === 'skus' ? '#E6EDF3' : 'rgba(192,197,206,0.68)',
                     textDecoration: 'none',
+                    fontSize: 'var(--aguila-fs-meta, 11px)',
+                    fontWeight: 600,
                     letterSpacing: '0.06em',
                     textTransform: 'uppercase',
+                    border: view === 'skus' ? '1px solid rgba(192,197,206,0.22)' : '1px solid transparent',
                   }}
                 >
-                  Limpiar búsqueda
+                  <List size={14} strokeWidth={2} /> Por SKU
                 </Link>
-              )}
+                <Link
+                  href={`/anexo-24?view=fracciones${query ? `&q=${encodeURIComponent(query)}` : ''}`}
+                  role="tab"
+                  aria-selected={view === 'fracciones'}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 14px',
+                    minHeight: 44,
+                    borderRadius: 9,
+                    background: view === 'fracciones' ? 'rgba(201,167,74,0.18)' : 'transparent',
+                    color: view === 'fracciones' ? '#F4D47A' : 'rgba(192,197,206,0.68)',
+                    textDecoration: 'none',
+                    fontSize: 'var(--aguila-fs-meta, 11px)',
+                    fontWeight: 600,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    border: view === 'fracciones' ? '1px solid rgba(201,167,74,0.42)' : '1px solid transparent',
+                  }}
+                >
+                  <Boxes size={14} strokeWidth={2} /> Por Fracción
+                </Link>
+              </div>
             </div>
-            <Anexo24SkuTable skus={skus} initialQuery={query} />
+
+            {view === 'fracciones' && grouped ? (
+              <Anexo24FraccionGrid groups={grouped.groups} initialQuery={query} />
+            ) : (
+              <Anexo24SkuTable skus={skus} initialQuery={query} />
+            )}
+
+            {view === 'fracciones' && grouped && grouped.total_unclassified > 0 && (
+              <div
+                role="status"
+                style={{
+                  marginTop: 12,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  background: 'rgba(251,191,36,0.06)',
+                  border: '1px solid rgba(251,191,36,0.18)',
+                  fontSize: 'var(--aguila-fs-meta, 11px)',
+                  color: 'rgba(230,237,243,0.82)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {grouped.total_unclassified.toLocaleString('es-MX')} SKU{grouped.total_unclassified === 1 ? '' : 's'} todavía por clasificar no aparecen en esta vista — aparecerán aquí conforme CRUZ les asigne fracción.
+              </div>
+            )}
           </section>
         )}
 

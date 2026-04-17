@@ -57,15 +57,37 @@ const BodySchema = z.object({
   company_id: z.string().min(1).nullable().optional(),
 })
 
-interface PartidaRow {
-  cve_trafico: string | null
+/**
+ * Schema reality check (verified 2026-04-20):
+ *
+ *   globalpc_partidas has NO cve_trafico / descripcion / fraccion / umc.
+ *   Actual columns: id, folio, cve_producto, cve_cliente, cantidad,
+ *                   precio_unitario, peso, pais_origen, cve_proveedor.
+ *
+ *   The partida → trafico link runs through globalpc_facturas:
+ *     facturas.cve_trafico = traficos.trafico
+ *     partidas.folio       = facturas.folio
+ *
+ *   descripcion + fraccion live on globalpc_productos, resolved by
+ *   (cve_cliente, cve_producto).
+ *
+ * This mirrors the join chain used by /embarques/[id] and
+ * /api/auditoria-pdf — do not reinvent it.
+ */
+interface PartidaRaw {
+  id: number
+  folio: number | null
   cve_producto: string | null
-  fraccion_arancelaria: string | null
-  fraccion: string | null
-  descripcion: string | null
+  cve_cliente: string | null
   cantidad: number | null
   precio_unitario: number | null
-  umc: string | null
+  peso: number | null
+  pais_origen: string | null
+}
+
+interface FacturaLink {
+  cve_trafico: string | null
+  folio: number | null
 }
 
 interface TraficoLite {
@@ -76,6 +98,19 @@ interface TraficoLite {
   proveedores: string | null
   regimen: string | null
   pais_procedencia: string | null
+}
+
+interface ProductoEnrichment {
+  descripcion: string | null
+  fraccion: string | null
+}
+
+/** Chunk an array into batches of `size` — PostgREST `.in()` clauses
+ *  struggle past ~2000 values, so we paginate any bulk lookup. */
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
 }
 
 function isTmec(regimen: string | null): boolean {
@@ -123,7 +158,10 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
   // the ~693 parts the client actually imported.
   const active = await getActiveCveProductos(supabase, companyId)
   const activeList = activeCvesArray(active)
+  const activeSet = new Set(activeList)
+  const hasActiveFilter = activeList.length > 0
 
+  // --- Step 1: tráficos in window --------------------------------------
   let traficoQ = supabase
     .from('traficos')
     .select('trafico, pedimento, fecha_pago, fecha_llegada, proveedores, regimen, pais_procedencia')
@@ -132,51 +170,110 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
   if (dateFrom) traficoQ = traficoQ.gte('fecha_llegada', dateFrom)
   if (dateTo) traficoQ = traficoQ.lte('fecha_llegada', dateTo)
 
-  let partidaQ = supabase
-    .from('globalpc_partidas')
-    .select('cve_trafico, cve_producto, fraccion_arancelaria, fraccion, descripcion, cantidad, precio_unitario, umc')
-    .eq('company_id', companyId)
-    .limit(DEFAULT_PARTIDAS_LIMIT)
-  if (activeList.length > 0) {
-    partidaQ = partidaQ.in('cve_producto', activeList)
-  }
-
-  const [partidaRes, traficoRes] = await Promise.all([partidaQ, traficoQ])
-
-  if (partidaRes.error) {
-    return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando partidas: ${partidaRes.error.message}` } }
-  }
+  const traficoRes = await traficoQ
   if (traficoRes.error) {
     return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando tráficos: ${traficoRes.error.message}` } }
   }
-
-  const partidas = (partidaRes.data ?? []) as PartidaRow[]
-  const traficos = (traficoRes.data ?? []) as TraficoLite[]
+  const traficos = ((traficoRes.data ?? []) as TraficoLite[]).filter((t) => !!t.trafico)
+  const traficoIds = traficos.map((t) => t.trafico)
   const traficoMap = new Map<string, TraficoLite>()
   for (const t of traficos) traficoMap.set(t.trafico, t)
 
+  // --- Step 2: facturas → folios (chunked .in() lookup) ---------------
+  const facturaChunks = chunk(traficoIds, 1000)
+  const facturas: FacturaLink[] = []
+  for (const batch of facturaChunks) {
+    if (batch.length === 0) continue
+    const res = await supabase
+      .from('globalpc_facturas')
+      .select('cve_trafico, folio')
+      .eq('company_id', companyId)
+      .in('cve_trafico', batch)
+    if (res.error) {
+      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando facturas: ${res.error.message}` } }
+    }
+    for (const r of (res.data ?? []) as FacturaLink[]) facturas.push(r)
+  }
+  const folioToTrafico = new Map<number, string>()
+  for (const f of facturas) {
+    if (f.folio != null && f.cve_trafico) folioToTrafico.set(f.folio, f.cve_trafico)
+  }
+  const folios = Array.from(folioToTrafico.keys())
+
+  // --- Step 3: partidas by folio (chunked) -----------------------------
+  const partidas: PartidaRaw[] = []
+  const partidaChunks = chunk(folios, 1000)
+  for (const batch of partidaChunks) {
+    if (batch.length === 0) continue
+    const res = await supabase
+      .from('globalpc_partidas')
+      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
+      .eq('company_id', companyId)
+      .in('folio', batch)
+      .limit(DEFAULT_PARTIDAS_LIMIT)
+    if (res.error) {
+      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando partidas: ${res.error.message}` } }
+    }
+    for (const r of (res.data ?? []) as PartidaRaw[]) partidas.push(r)
+  }
+
+  // --- Step 4: productos enrichment (descripcion, fraccion) ------------
+  const cvesNeeded = Array.from(new Set(partidas.map((p) => p.cve_producto).filter((x): x is string => !!x)))
+  const productMap = new Map<string, ProductoEnrichment>()
+  const productChunks = chunk(cvesNeeded, 1000)
+  for (const batch of productChunks) {
+    if (batch.length === 0) continue
+    const res = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, descripcion, fraccion')
+      .eq('company_id', companyId)
+      .in('cve_producto', batch)
+    if (res.error) {
+      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando productos: ${res.error.message}` } }
+    }
+    for (const p of (res.data ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null }>) {
+      if (p.cve_producto) productMap.set(p.cve_producto, { descripcion: p.descripcion, fraccion: p.fraccion })
+    }
+  }
+
+  // --- Assembly -------------------------------------------------------
   const rows: Anexo24Row[] = []
   let seq = 0
   for (const p of partidas) {
-    if (!p.cve_trafico) continue
-    const t = traficoMap.get(p.cve_trafico)
+    if (p.folio == null) continue
+    const traficoId = folioToTrafico.get(p.folio)
+    if (!traficoId) continue
+    const t = traficoMap.get(traficoId)
     if (!t) continue
+    // Apply the active-parts filter at assembly time (same slice as
+    // the /anexo-24 page). Falling through the entire set is still
+    // acceptable for first-load tenants who have no active cache yet.
+    if (hasActiveFilter && p.cve_producto && !activeSet.has(p.cve_producto)) continue
+
     const fecha = t.fecha_pago ?? t.fecha_llegada ?? null
     if (dateFrom && fecha && fecha < dateFrom) continue
     if (dateTo && fecha && fecha > dateTo) continue
+
+    const enr = p.cve_producto ? productMap.get(p.cve_producto) : undefined
+    const cantidad = typeof p.cantidad === 'number' ? p.cantidad : (p.cantidad != null ? Number(p.cantidad) : null)
+    const precio = typeof p.precio_unitario === 'number' ? p.precio_unitario : (p.precio_unitario != null ? Number(p.precio_unitario) : null)
+    const valorUsd = cantidad != null && precio != null && Number.isFinite(cantidad * precio)
+      ? Math.round(cantidad * precio * 100) / 100
+      : null
+
     seq++
     rows.push({
       consecutivo: seq,
       pedimento: t.pedimento,
       fecha,
       trafico: t.trafico,
-      fraccion: p.fraccion_arancelaria ?? p.fraccion,
-      descripcion: p.descripcion,
-      cantidad: p.cantidad,
-      umc: p.umc,
-      valor_usd: p.precio_unitario,
+      fraccion: enr?.fraccion ?? null,
+      descripcion: enr?.descripcion ?? null,
+      cantidad,
+      umc: null, // UMC not on partidas; resolved via pedimento PDF in Phase 3
+      valor_usd: valorUsd,
       proveedor: t.proveedores,
-      pais_origen: t.pais_procedencia,
+      pais_origen: p.pais_origen ?? t.pais_procedencia,
       regimen: t.regimen,
       tmec: isTmec(t.regimen),
     })

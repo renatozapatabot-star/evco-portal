@@ -500,6 +500,45 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Block DD Phase 3 — PORTAL adoption ratchets.
+# Three counters: inline-hero-glass DOWN, inline-backdrop-filter DOWN,
+# portal-primitive imports UP. Each ratchet auto-promotes on improvement
+# (update the baseline inline when you see "improving ✓").
+# --------------------------------------------------------------------------
+PORTAL_INLINE_HERO_BASELINE=60
+header "PORTAL · inline hero-glass ratchet (target 0)"
+PORTAL_HERO_COUNT=$(set +eo pipefail;{ grep -rnE "rgba\(0, ?0, ?0, ?0\.(4|25|12)\)" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | grep -v "globals.css" | wc -l | tr -d ' ')
+if [ "$PORTAL_HERO_COUNT" -gt "$PORTAL_INLINE_HERO_BASELINE" ]; then
+  fail "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (baseline $PORTAL_INLINE_HERO_BASELINE). Route through <GlassCard>/<PortalCard> instead."
+elif [ "$PORTAL_HERO_COUNT" -lt "$PORTAL_INLINE_HERO_BASELINE" ]; then
+  pass "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (baseline $PORTAL_INLINE_HERO_BASELINE, improving ✓). Update PORTAL_INLINE_HERO_BASELINE in this script."
+else
+  warn "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (at baseline, awaiting cleanup block)"
+fi
+
+PORTAL_BACKDROP_BASELINE=179
+header "PORTAL · inline backdropFilter ratchet (target 0)"
+PORTAL_BACKDROP_COUNT=$(set +eo pipefail;{ grep -rn "backdropFilter" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
+if [ "$PORTAL_BACKDROP_COUNT" -gt "$PORTAL_BACKDROP_BASELINE" ]; then
+  fail "Inline backdropFilter: $PORTAL_BACKDROP_COUNT (baseline $PORTAL_BACKDROP_BASELINE). Chemistry belongs in .portal-card / .portal-sticky-topbar."
+elif [ "$PORTAL_BACKDROP_COUNT" -lt "$PORTAL_BACKDROP_BASELINE" ]; then
+  pass "Inline backdropFilter: $PORTAL_BACKDROP_COUNT (baseline $PORTAL_BACKDROP_BASELINE, improving ✓). Update PORTAL_BACKDROP_BASELINE in this script."
+else
+  warn "Inline backdropFilter: $PORTAL_BACKDROP_COUNT (at baseline, awaiting cleanup block)"
+fi
+
+PORTAL_IMPORT_BASELINE=3
+header "PORTAL · primitive adoption ratchet (target ↑)"
+PORTAL_IMPORTS=$(set +eo pipefail;{ grep -rln "from '@/components/portal'" src/app src/components 2>/dev/null || true; } | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
+if [ "$PORTAL_IMPORTS" -lt "$PORTAL_IMPORT_BASELINE" ]; then
+  fail "@/components/portal imports regressed: $PORTAL_IMPORTS (was $PORTAL_IMPORT_BASELINE). Adoption should only go UP."
+elif [ "$PORTAL_IMPORTS" -gt "$PORTAL_IMPORT_BASELINE" ]; then
+  pass "@/components/portal imports: $PORTAL_IMPORTS (was $PORTAL_IMPORT_BASELINE, growing ✓). Update PORTAL_IMPORT_BASELINE in this script."
+else
+  warn "@/components/portal imports: $PORTAL_IMPORTS (at baseline — next block should advance adoption)"
+fi
+
+# --------------------------------------------------------------------------
 # AGUILA palette guard — no blue/indigo/sky/cyan Tailwind classes outside
 # the semantic StatusBadge component.
 # --------------------------------------------------------------------------

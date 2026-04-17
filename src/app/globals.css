@@ -412,13 +412,57 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  /* Typography rendering — sharper glyph shapes + optical kerning.
+     optimizeLegibility enables kerning and ligatures; text-size-adjust
+     prevents iOS Safari's aggressive auto-zoom on landscape flip. */
+  text-rendering: optimizeLegibility;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  /* Stylistic set 01 on Inter/Geist = geometric single-story a + refined
+     punctuation spacing. tnum = tabular numbers at the root so every
+     bare number stays column-aligned without per-element opt-in. */
+  font-feature-settings: "kern" 1, "ss01" 1, "tnum" 1, "cv11" 1;
 }
 
 body {
   background: var(--bg-main);
   min-height: 100vh;
   overflow-x: hidden;
+  /* Kill the iOS/Android default blue tap highlight — every interactive
+     element owns its own :active feedback (scale 0.98 at 100ms). The
+     mobile-feel contract: tap is acknowledged by the element itself,
+     not by a system-level blue rectangle. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  /* touch-action: manipulation disables double-tap zoom on interactive
+     children while preserving pinch-zoom on the page body. Ursula on
+     mobile should feel iOS-native, not "web app." */
 }
+
+/* Every interactive primitive opts into manipulation touch so taps don't
+   pause for the 300ms double-tap-to-zoom window. Buttons, links, and
+   click-handled cards benefit most — the surface feels instant. */
+button, a, [role="button"], [tabindex]:not([tabindex="-1"]) {
+  touch-action: manipulation;
+}
+
+/* Premium custom scrollbar — thin silver on dark, invisible-until-needed
+   on light. Tuning: 6px width (not 16px browser default), rounded, with
+   a semi-transparent rail that becomes visible only on hover. */
+.aguila-dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+.aguila-dark ::-webkit-scrollbar-track { background: transparent; }
+.aguila-dark ::-webkit-scrollbar-thumb {
+  background: rgba(192,197,206,0.18);
+  border-radius: 3px;
+  transition: background 150ms ease;
+}
+.aguila-dark ::-webkit-scrollbar-thumb:hover { background: rgba(192,197,206,0.32); }
+.aguila-dark { scrollbar-width: thin; scrollbar-color: rgba(192,197,206,0.18) transparent; }
+
+/* Mobile safe-area support — iOS notch + bottom-home-indicator padding
+   applied to any surface that touches the screen edge. Opt-in via class. */
+.aguila-safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.aguila-safe-top    { padding-top:    max(16px, env(safe-area-inset-top)); }
 
 /* ── Layout Shell ── */
 .aduana-layout {
@@ -3461,15 +3505,10 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Focus-visible for keyboard navigation */
-:focus-visible {
-  outline: 2px solid var(--gold-400);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Skip-to-content link — canonical rule is at globals.css:1532.
-   This duplicate is intentionally empty to avoid cascade fights. */
+/* Focus-visible rule — canonical definition is at the ── Accessibility ──
+   section above (*:focus-visible, brand gold #C9A74A with border-radius
+   inherit). This duplicate was overriding that rule with silver; now
+   intentionally empty so the cascade lands on the canonical block. */
 
 /* Prevent layout shift on images */
 img {
@@ -3477,17 +3516,18 @@ img {
   max-width: 100%;
 }
 
-/* Table keyboard navigation */
+/* Table keyboard navigation — brand gold ring with negative offset so the
+   row's own border stays visible. Matches the canonical focus token. */
 tr:focus-within {
-  outline: 2px solid var(--gold-400);
+  outline: 2px solid #C9A74A;
   outline-offset: -2px;
 }
 
 
 /* Keyboard row selection (J/K navigation) */
 tr.row-selected {
-  background: rgba(196, 150, 60, 0.08) !important;
-  outline: 2px solid var(--gold-400);
+  background: rgba(201, 167, 74, 0.08) !important;
+  outline: 2px solid #C9A74A;
   outline-offset: -2px;
 }
 

@@ -9,12 +9,13 @@ const standardTiles: CockpitHeroKPI[] = [
   { key: 'cruces',        label: 'Cruces este mes',      value: 12, tone: 'silver' },
 ]
 
-describe('buildClientHeroTiles (quiet-season)', () => {
+describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
   it('activeCount > 0 → renders the caller-supplied standard KPI tiles unchanged', () => {
     const out = buildClientHeroTiles({
       activeCount: 3,
       standardTiles,
-      daysSinceLastIncident: 30,
+      successRatePct: 98,
+      avgClearanceDays: 1.8,
       lastCruceIso: '2026-04-13T18:00:00Z',
       crucesThisMonth: 12,
       tmecYtdUsd: 9000,
@@ -25,11 +26,12 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     expect(out.pedimentoMicroStatusOverride).toBeNull()
   })
 
-  it('activeCount === 0 → renders 4 quiet-season tiles when T-MEC YTD > 0', () => {
+  it('activeCount === 0 → 4-tile 2x2 grid: tasa + último cruce + volumen + velocidad', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
-      daysSinceLastIncident: 45,
+      successRatePct: 97,
+      avgClearanceDays: 1.9,
       lastCruceIso: '2026-04-13T18:00:00Z',
       crucesThisMonth: 10,
       tmecYtdUsd: 12500,
@@ -37,55 +39,70 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     expect(out.quietSeason).toBe(true)
     expect(out.heroKPIs.length).toBe(4)
     expect(out.heroKPIs.map(t => t.key)).toEqual([
-      'operacion-estable', 'ultimo-cruce', 'volumen-mes', 'tmec-ytd',
+      'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'velocidad-cruce',
     ])
-    const operacion = out.heroKPIs[0]
-    expect(operacion.label).toBe('Días sin incidencias')
-    expect(operacion.value).toBe(45)
-    // 1.4.A — Días sin incidencias now has a "desde {fecha}" sublabel
-    expect(operacion.sublabel).toMatch(/^desde \d+ \w+/)
-    // Último cruce tile now splits into value (relative) + sublabel (absolute)
-    const ultimo = out.heroKPIs[1]
-    expect(typeof ultimo.value).toBe('string')
-    expect(String(ultimo.value)).toMatch(/^hace \d+ días?$|^hoy$/)
-    expect(typeof ultimo.sublabel).toBe('string')
-    expect(ultimo.sublabel?.length ?? 0).toBeGreaterThan(0)
-    const tmec = out.heroKPIs[3]
-    expect(String(tmec.value)).toMatch(/^\$12,500 USD$/)
-    expect(out.summaryLine).toMatch(/al corriente/)
+    const tasa = out.heroKPIs[0]
+    expect(tasa.label).toBe('Tasa de éxito')
+    expect(String(tasa.value)).toBe('97%')
+    const velocidad = out.heroKPIs[3]
+    expect(String(velocidad.value)).toBe('1.9 d')
   })
 
-  it('activeCount === 0 + tmecYtdUsd === 0 → drops T-MEC tile, 3 tiles total', () => {
+  it('activeCount === 0 + no velocidad → T-MEC fills the 4th slot', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
-      daysSinceLastIncident: 30,
+      successRatePct: 95,
+      avgClearanceDays: null,
+      lastCruceIso: '2026-04-13T18:00:00Z',
+      crucesThisMonth: 10,
+      tmecYtdUsd: 12500,
+    })
+    expect(out.heroKPIs.length).toBe(4)
+    expect(out.heroKPIs.map(t => t.key)).toEqual([
+      'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'tmec-ytd',
+    ])
+    const tmec = out.heroKPIs[3]
+    expect(String(tmec.value)).toMatch(/^\$12,500 USD$/)
+  })
+
+  it('activeCount === 0 + no velocidad + no tmec → "Historial confiable" fallback', () => {
+    const out = buildClientHeroTiles({
+      activeCount: 0,
+      standardTiles,
+      successRatePct: 100,
+      avgClearanceDays: null,
       lastCruceIso: '2026-04-10T18:00:00Z',
       crucesThisMonth: 5,
       tmecYtdUsd: 0,
     })
-    expect(out.quietSeason).toBe(true)
-    expect(out.heroKPIs.length).toBe(3)
-    expect(out.heroKPIs.find(t => t.key === 'tmec-ytd')).toBeUndefined()
+    expect(out.heroKPIs.length).toBe(4)
+    expect(out.heroKPIs.map(t => t.key)).toEqual([
+      'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'historial',
+    ])
   })
 
-  it('activeCount === 0 + tmecYtdUsd === null → drops T-MEC tile', () => {
+  it('activeCount === 0 + no successRate data → "Operación estable" calm tile', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
-      daysSinceLastIncident: 10,
+      successRatePct: null,
+      avgClearanceDays: 2.0,
       lastCruceIso: '2026-04-10T18:00:00Z',
       crucesThisMonth: 5,
-      tmecYtdUsd: null,
+      tmecYtdUsd: 0,
     })
-    expect(out.heroKPIs.length).toBe(3)
+    const first = out.heroKPIs[0]
+    expect(first.key).toBe('operacion-estable')
+    expect(String(first.value)).toBe('Sin incidencias')
   })
 
   it('quiet-season with no cruce history shows "Sin cruces aún" tile + no sublabel', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
-      daysSinceLastIncident: 0,
+      successRatePct: null,
+      avgClearanceDays: null,
       lastCruceIso: null,
       crucesThisMonth: 0,
       tmecYtdUsd: 0,
@@ -100,7 +117,8 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
-      daysSinceLastIncident: 30,
+      successRatePct: 100,
+      avgClearanceDays: 1.5,
       lastCruceIso: null,
       crucesThisMonth: 0,
       tmecYtdUsd: 0,
@@ -114,7 +132,8 @@ describe('buildClientHeroTiles (quiet-season)', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
-      daysSinceLastIncident: 30,
+      successRatePct: 100,
+      avgClearanceDays: 1.5,
       lastCruceIso: null,
       crucesThisMonth: 0,
       tmecYtdUsd: 0,

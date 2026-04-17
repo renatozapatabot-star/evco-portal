@@ -256,16 +256,16 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     return n.toLocaleString('es-MX')
   }
 
-  // Catálogo sad-zero logic split from the historical-footnote logic so the
-  // microStatus is a live signal and the lifetime total sits in the microcopy.
+  // Catálogo microcopy — live metric only. Previous versions exposed
+  // the lifetime "+149K en catálogo" count as a parenthetical which
+  // read as noise on the home tile (Renato 2026-04-20 screenshot
+  // audit). Active-parts filter applies to the catalog too, so the
+  // lifetime number stopped being a useful reference point. Keep
+  // the live signal; drop the ghost count.
   const catalogoMicroStatus = catalogoMesCount > 0
     ? `${catalogoMesCount.toLocaleString('es-MX')} clasificada${catalogoMesCount === 1 ? '' : 's'} este mes`
-    : catalogoCount > 0
-      ? 'Catálogo disponible — sin movimiento este mes'
-      : 'Tu catálogo aparecerá cuando clasifiquemos tus productos'
-  const catalogoHistoricMicrocopy = catalogoCount > 0
-    ? `(+${compactK(catalogoCount)} en catálogo)`
-    : undefined
+    : 'Tu catálogo aparecerá conforme clasifiquemos tus productos'
+  const catalogoHistoricMicrocopy: string | undefined = undefined
 
   const expedientesMicroStatus = expedientesMesCount > 0
     ? `${expedientesMesCount.toLocaleString('es-MX')} documento${expedientesMesCount === 1 ? '' : 's'} este mes`
@@ -286,11 +286,12 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const anexo24MicroStatus = activeSkuCount > 0
     ? `${activeSkuCount.toLocaleString('es-MX')} SKU${activeSkuCount === 1 ? '' : 's'} en tu Anexo 24`
     : 'Anexo 24 aparecerá cuando empieces a importar'
-  const anexo24HistoricMicrocopy = catalogoCount > activeSkuCount && catalogoCount > 0
-    ? `(${compactK(catalogoCount - activeSkuCount)} más en el catálogo histórico)`
-    : catalogoMesCount > 0
-      ? `(${catalogoMesCount} clasificado${catalogoMesCount === 1 ? '' : 's'} este mes)`
-      : undefined
+  // 2026-04-20 audit: drop the "148K más en el catálogo histórico"
+  // parenthetical that Renato flagged as ghost noise on the nav card.
+  // The this-month classification count reads cleaner as a live signal.
+  const anexo24HistoricMicrocopy = catalogoMesCount > 0
+    ? `${catalogoMesCount} nuevo${catalogoMesCount === 1 ? '' : 's'} este mes`
+    : undefined
 
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
@@ -373,27 +374,43 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // Prevents an empty-looking cockpit during seasonal lulls (invariant #24 —
   // the client surface should feel calm and confident, not sad).
   const activeCount = activeTraficos.length
-  let daysSinceLastIncident = 30
   let tmecYtdUsd: number | null = null
   let lastPedimentoIso: string | null = null
+  // v3.3: replaced the old daysSinceLastIncident cap with real signals —
+  // successRatePct (cruzados / total in 90d) + avgClearanceDays (llegada →
+  // cruce). Both are computed from one 90-day tráficos scan below.
+  let successRatePct: number | null = null
+  let avgClearanceDays: number | null = null
   if (activeCount === 0) {
-    // Most-recent tráfico with a non-happy terminal state (rejected/detained
-    // proxies via estatus codes). soft-wrap all queries — nothing here is
-    // load-bearing; on failure the UI simply shows the 30-day cap.
+    // Single 90-day window fetch that computes both success rate + average
+    // clearance time. Capped at 2000 rows — EVCO crosses ~a few dozen per
+    // month, so 2000 covers multiple years for any realistic tenant.
     try {
-      const { data: lastIncident } = await supabase
+      const ninetyAgo = daysAgo(90).toISOString()
+      const { data: windowRows } = await supabase
         .from('traficos')
-        .select('updated_at')
+        .select('estatus, fecha_llegada, fecha_cruce')
         .eq('company_id', companyId)
-        .in('estatus', ['E2', 'E3', 'Rechazado', 'Detenido'])
-        .order('updated_at', { ascending: false, nullsFirst: false })
-        .limit(1)
-        .maybeSingle()
-      if (lastIncident?.updated_at) {
-        const days = Math.floor((Date.now() - new Date(lastIncident.updated_at as string).getTime()) / 86_400_000)
-        daysSinceLastIncident = Math.max(0, Math.min(days, 365))
+        .gte('fecha_llegada', ninetyAgo)
+        .limit(2000)
+      if (Array.isArray(windowRows) && windowRows.length > 0) {
+        const rows = windowRows as Array<{ estatus: string | null; fecha_llegada: string | null; fecha_cruce: string | null }>
+        const crossedEstatuses = new Set(['Cruzado', 'E1', 'Entregado'])
+        const totalWithLlegada = rows.filter((r) => r.fecha_llegada).length
+        const crossed = rows.filter((r) => crossedEstatuses.has(r.estatus ?? ''))
+        const crossedWithBoth = crossed.filter((r) => r.fecha_cruce && r.fecha_llegada)
+        if (totalWithLlegada > 0 && crossed.length > 0) {
+          successRatePct = Math.round((crossed.length / totalWithLlegada) * 100)
+        }
+        if (crossedWithBoth.length > 0) {
+          const sum = crossedWithBoth.reduce((acc, r) => {
+            const delta = (new Date(r.fecha_cruce as string).getTime() - new Date(r.fecha_llegada as string).getTime()) / 86_400_000
+            return acc + (delta >= 0 ? delta : 0)
+          }, 0)
+          avgClearanceDays = sum / crossedWithBoth.length
+        }
       }
-    } catch { /* soft — keep default 30 */ }
+    } catch { /* soft — leave metrics null so quiet-season falls back to "Operación estable" / "Historial confiable" */ }
 
     // T-MEC YTD savings — uses the same source as /ahorro
     // (src/app/api/cost-insights/route.ts: operations_savings table).
@@ -438,7 +455,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   const heroBuild = buildClientHeroTiles({
     activeCount,
     standardTiles: standardHeroKPIs,
-    daysSinceLastIncident,
+    successRatePct,
+    avgClearanceDays,
     lastCruceIso: lastCruzadoRow?.fecha_cruce ?? null,
     crucesThisMonth: cruzadosMesCount,
     tmecYtdUsd,

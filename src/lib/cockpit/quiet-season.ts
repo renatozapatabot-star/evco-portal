@@ -27,9 +27,15 @@ export interface ClientHeroInputs {
   /** Standard 4-tile hero KPIs to use when activeCount > 0 (not quiet-season). */
   standardTiles: CockpitHeroKPI[]
 
-  /** Days since the last incident (E2/E3 or similar). Capped at some UI max
-   *  by the caller. Used only in quiet-season. */
-  daysSinceLastIncident: number
+  /** Success rate over the last 90 days — (cruzados / total with fecha_llegada)
+   *  as a whole-number percentage. Typically 95+ for a disciplined broker.
+   *  Null when the window has no data (pre-first-shipment tenants). */
+  successRatePct?: number | null
+
+  /** Average clearance time in days (fecha_cruce minus fecha_llegada) over
+   *  the last 90 days. Typically 1–3 days for EVCO-scale tenants. Null when
+   *  no crossings have been recorded in the window. */
+  avgClearanceDays?: number | null
 
   /** ISO date string of the last cruzado tráfico (most recent). Null if
    *  the client has no history at all. */
@@ -38,8 +44,8 @@ export interface ClientHeroInputs {
   /** Count of tráficos cruzado in the current calendar month. */
   crucesThisMonth: number
 
-  /** T-MEC savings year-to-date in USD. 0 or null → the tile is dropped
-   *  and quiet-season renders 3 tiles instead of 4. */
+  /** T-MEC savings year-to-date in USD. 0 or null → T-MEC isn't surfaced.
+   *  Used as a fallback 4th-tile value when velocidad is unavailable. */
   tmecYtdUsd: number | null
 
   /** Optional: ISO date string of the last pedimento to power the nav-card
@@ -120,31 +126,40 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
     }
   }
 
-  // Quiet-season mode.
+  // Quiet-season mode — always emit 4 tiles for a balanced 2x2 grid
+  // (Renato 2026-04-20: "let's balance it by having another KPI"). The
+  // old "Días sin incidencias" tile was removed — its default-30-cap
+  // reading was a fake signal for clients without recorded incidents.
+  // Tasa de éxito + Velocidad promedio are real numbers that typically
+  // read strong for a disciplined broker (95%+ on success, 1–3d on
+  // clearance speed). T-MEC savings become the optional 5th if material.
   const tiles: CockpitHeroKPI[] = []
 
-  // Tile 1 — Operación estable. Sublabel gives the start date so
-  // "30 días" has a reference point ("desde 17 mar") in small mono
-  // under the headline. Matches the Último cruce tile shape: value
-  // is the readable headline, sublabel is the absolute anchor.
-  const days = Math.max(0, input.daysSinceLastIncident)
-  const since = new Date(Date.now() - days * 86_400_000)
-  const sinceLabel = !isNaN(since.getTime())
-    ? since.toLocaleDateString(LOCALE, { timeZone: TZ, day: 'numeric', month: 'short' })
-    : null
-  tiles.push({
-    key: 'operacion-estable',
-    label: 'Días sin incidencias',
-    value: days,
-    sublabel: sinceLabel ? `desde ${sinceLabel}` : undefined,
-    tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
-    ariaLabel: `${days} días sin incidencias`,
-  })
+  // Tile 1 — Tasa de éxito (replaces "Días sin incidencias").
+  // When null (no historical data), falls back to a calm "Operación
+  // estable" neutral tile so the first slot is never blank.
+  if (input.successRatePct != null && input.successRatePct >= 0) {
+    const pct = Math.max(0, Math.min(100, Math.round(input.successRatePct)))
+    tiles.push({
+      key: 'tasa-exito',
+      label: 'Tasa de éxito',
+      value: `${pct}%`,
+      sublabel: 'cruces completados · últimos 90 días',
+      tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
+      ariaLabel: `Tasa de éxito ${pct} por ciento`,
+    })
+  } else {
+    tiles.push({
+      key: 'operacion-estable',
+      label: 'Operación estable',
+      value: 'Sin incidencias',
+      sublabel: 'cruces registrados al corriente',
+      tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
+    })
+  }
 
   // Tile 2 — Último cruce. Splits relative + absolute into value +
-  // sublabel so KPITile can render them on two lines (fix 2026-04-16
-  // prod screenshot — the concatenated "hace 36 días · 10 mar 2026"
-  // wrapped badly at mobile widths and drifted at desktop).
+  // sublabel so KPITile renders them on two lines cleanly at mobile.
   if (input.lastCruceIso) {
     tiles.push({
       key: 'ultimo-cruce',
@@ -170,12 +185,32 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
     tone: 'slate' as QuietTone as CockpitHeroKPI['tone'],
   })
 
-  // Tile 4 — Ahorro T-MEC YTD (dropped when 0 or null)
-  if (input.tmecYtdUsd !== null && input.tmecYtdUsd > 0) {
+  // Tile 4 — cascade: velocidad (actionable speed) → tmec savings
+  // (financial) → "Cruces históricos" fallback. First non-null wins,
+  // so the 2x2 grid always fills 4 tiles regardless of which signals
+  // the tenant has data for.
+  if (input.avgClearanceDays != null && input.avgClearanceDays > 0) {
+    const days = Math.round(input.avgClearanceDays * 10) / 10
+    tiles.push({
+      key: 'velocidad-cruce',
+      label: 'Velocidad promedio',
+      value: `${days} d`,
+      sublabel: 'de llegada a cruce · últimos 90 días',
+      tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
+    })
+  } else if (input.tmecYtdUsd != null && input.tmecYtdUsd > 0) {
     tiles.push({
       key: 'tmec-ytd',
       label: 'Ahorrado con T-MEC este año',
       value: formatUsd(input.tmecYtdUsd),
+      tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
+    })
+  } else {
+    tiles.push({
+      key: 'historial',
+      label: 'Historial confiable',
+      value: 'Al día',
+      sublabel: 'todos los cruces registrados',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
     })
   }

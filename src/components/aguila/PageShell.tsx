@@ -20,6 +20,8 @@ function LiveTimestamp() {
   const [now, setNow] = useState<Date | null>(null)
   useEffect(() => {
     setNow(new Date())
+    // Tick every 30s — fast enough that the clock never drifts visibly
+    // on a parked tab, slow enough to stay imperceptible as CPU.
     const id = setInterval(() => setNow(new Date()), 30_000)
     return () => clearInterval(id)
   }, [])
@@ -35,8 +37,46 @@ function LiveTimestamp() {
       fontFamily: 'var(--font-jetbrains-mono), monospace',
       fontSize: 'var(--aguila-fs-meta, 11px)',
       color: TEXT_MUTED,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 8,
     }}>
-      {dateStr} · {timeStr} · Datos en vivo
+      <span>{dateStr} · {timeStr}</span>
+      {/* "Datos en vivo" pill — glass chip with a pulsing green dot.
+          The dot breath is the signal Ursula wants: the dashboard
+          feels alive, not static. Same .aguila-dot-pulse utility the
+          timeline's "Etapa actual" node uses, so motion reads as a
+          consistent brand signature. */}
+      <span
+        aria-label="Datos en vivo"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '2px 9px',
+          borderRadius: 999,
+          background: 'rgba(34,197,94,0.08)',
+          border: '1px solid rgba(34,197,94,0.22)',
+          color: 'rgba(134,239,172,0.9)',
+          fontSize: 'var(--aguila-fs-meta, 11px)',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          fontWeight: 600,
+        }}
+      >
+        <span
+          aria-hidden
+          className="aguila-dot-pulse"
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: '#22C55E',
+            boxShadow: '0 0 10px rgba(34,197,94,0.45)',
+          }}
+        />
+        Datos en vivo
+      </span>
     </span>
   )
 }

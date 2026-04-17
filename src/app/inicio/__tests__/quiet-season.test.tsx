@@ -26,12 +26,13 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
     expect(out.pedimentoMicroStatusOverride).toBeNull()
   })
 
-  it('activeCount === 0 → 4-tile 2x2 grid: tasa + último cruce + volumen + velocidad', () => {
+  it('activeCount === 0 → 4-tile 2x2 grid: tasa + último cruce + volumen + liberación', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
       successRatePct: 97,
       avgClearanceDays: 1.9,
+      greenLightPct: 98,
       lastCruceIso: '2026-04-13T18:00:00Z',
       crucesThisMonth: 10,
       tmecYtdUsd: 12500,
@@ -39,24 +40,26 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
     expect(out.quietSeason).toBe(true)
     expect(out.heroKPIs.length).toBe(4)
     expect(out.heroKPIs.map(t => t.key)).toEqual([
-      'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'velocidad-cruce',
+      'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'liberacion-inmediata',
     ])
     const tasa = out.heroKPIs[0]
     expect(tasa.label).toBe('Tasa de éxito')
     expect(String(tasa.value)).toBe('97%')
-    const velocidad = out.heroKPIs[3]
-    // v3.4: velocidad renders as a pure number so KPITile treats it as
-    // numeric and uses the mono display. "días" lives in the sublabel.
-    expect(velocidad.value).toBe(1.9)
-    expect(velocidad.sublabel).toMatch(/días/)
+    const liberacion = out.heroKPIs[3]
+    // v3.5 (2026-04-20): "Liberación inmediata" replaces "Velocidad
+    // promedio". Renders as a % with a semáforo-verde sublabel.
+    expect(liberacion.label).toBe('Liberación inmediata')
+    expect(String(liberacion.value)).toBe('98%')
+    expect(liberacion.sublabel).toMatch(/verde/)
   })
 
-  it('activeCount === 0 + no velocidad → T-MEC fills the 4th slot', () => {
+  it('activeCount === 0 + no greenLight → T-MEC fills the 4th slot', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
       successRatePct: 95,
       avgClearanceDays: null,
+      greenLightPct: null,
       lastCruceIso: '2026-04-13T18:00:00Z',
       crucesThisMonth: 10,
       tmecYtdUsd: 12500,
@@ -71,12 +74,13 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
     expect(tmec.sublabel).toMatch(/este año/)
   })
 
-  it('activeCount === 0 + no velocidad + no tmec → "Historial confiable" fallback', () => {
+  it('activeCount === 0 + no greenLight + no tmec → "Historial confiable" fallback', () => {
     const out = buildClientHeroTiles({
       activeCount: 0,
       standardTiles,
       successRatePct: 100,
       avgClearanceDays: null,
+      greenLightPct: null,
       lastCruceIso: '2026-04-10T18:00:00Z',
       crucesThisMonth: 5,
       tmecYtdUsd: 0,

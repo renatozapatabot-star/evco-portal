@@ -37,6 +37,14 @@ export interface ClientHeroInputs {
    *  no crossings have been recorded in the window. */
   avgClearanceDays?: number | null
 
+  /** Share of tráficos with semáforo = verde over the last 90 days,
+   *  expressed as a whole-number percentage. This is the broker's
+   *  job-performance metric — "how often did we get our tráficos green-
+   *  lit on first pass." A disciplined patente runs 95-99%. Null when
+   *  there are no scored crossings in the window (pre-activation or
+   *  quiet stretches with no semáforo data yet). */
+  greenLightPct?: number | null
+
   /** ISO date string of the last cruzado tráfico (most recent). Null if
    *  the client has no history at all. */
   lastCruceIso: string | null
@@ -205,18 +213,22 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
     tone: 'slate' as QuietTone as CockpitHeroKPI['tone'],
   })
 
-  // Tile 4 — cascade: velocidad → tmec → fallback. Velocidad renders
-  // as pure number so KPITile treats it as numeric (tight mono display)
-  // with "días" in the sublabel. Previously "7.9 d" was classified as
-  // prose and got truncated on narrow mobile columns.
-  if (input.avgClearanceDays != null && input.avgClearanceDays > 0) {
-    const days = Math.round(input.avgClearanceDays * 10) / 10
+  // Tile 4 — cascade: liberación inmediata → tmec → fallback. The
+  // "Liberación inmediata" metric = % of tráficos that went semáforo
+  // verde on first pass in the last 90 days. A disciplined patente
+  // lands 95-99% here; it's the broker's measurable job and stays
+  // consistently high without requiring velocity data (which was
+  // rendering as truncated "7.9" on narrow mobile — scrapped in favor
+  // of this broker-excellence signal per founder 2026-04-20).
+  if (input.greenLightPct != null && input.greenLightPct >= 0) {
+    const pct = Math.max(0, Math.min(100, Math.round(input.greenLightPct)))
     tiles.push({
-      key: 'velocidad-cruce',
-      label: 'Velocidad promedio',
-      value: days,
-      sublabel: 'días · llegada → cruce',
+      key: 'liberacion-inmediata',
+      label: 'Liberación inmediata',
+      value: `${pct}%`,
+      sublabel: 'semáforo verde · 90 d',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
+      ariaLabel: `Liberación inmediata ${pct} por ciento`,
     })
   } else if (input.tmecYtdUsd != null && input.tmecYtdUsd > 0) {
     tiles.push({

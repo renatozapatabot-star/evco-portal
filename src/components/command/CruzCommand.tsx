@@ -330,8 +330,8 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
         )}
         <kbd
           aria-hidden
+          className="cruz-command-kbd"
           style={{
-            display: 'inline-flex',
             alignItems: 'center',
             gap: 4,
             padding: '3px 8px',

@@ -13,6 +13,7 @@ import type { SparklineTone } from './Sparkline'
 import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
 import { UNIFIED_NAV_TILES, type NavCounts, type NavTileKey } from '@/lib/cockpit/nav-tiles'
 import { CockpitBanner, type CockpitRole } from './CockpitBanner'
+import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 
 type SystemStatus = 'healthy' | 'warning' | 'critical'
 
@@ -59,6 +60,10 @@ export interface CockpitInicioProps {
   actividadSlot?: ReactNode
   /** v10 — horizontal activity strip rendered above the hero KPIs. */
   actividadStripSlot?: ReactNode
+  /** Sync freshness signal rendered between the activity strip and the
+   *  hero KPIs. Typically a `<FreshnessBanner />` fed by the server
+   *  `readFreshness()` helper. Null when the caller opts out. */
+  freshnessSlot?: ReactNode
   /** v10 — capability cards row (Checklist / Clasificador / Mensajes) between nav and main. */
   capabilitySlot?: ReactNode
   /** Optional system-wide status dot next to the greeting. */
@@ -96,21 +101,16 @@ export function CockpitInicio({
   role, name, companyName,
   heroKPIs, navCounts, estadoSections, actividad,
   actividadEmptyLabel = 'Sin actividad reciente.',
-  actividadSlot, actividadStripSlot, capabilitySlot,
+  actividadSlot, actividadStripSlot, freshnessSlot, capabilitySlot,
   systemStatus, pulseSignal, summaryLine, liveTimestamp = true,
   metaPills, month,
 }: CockpitInicioProps) {
-  // Strip Mexican legal suffixes from the display title — "EVCO PLASTICS
-  // DE MEXICO, S.DE R.L.DE C.V." wraps to three ugly lines on mobile
-  // header (2026-04-20 screenshot). The suffix reads as legal
-  // boilerplate, not brand; the client-facing cockpit uses the display
-  // name. Matches the pattern /proveedor-names.ts applies to supplier
-  // names (canonical display vs. legal entity).
-  const cleanCompany = (companyName || 'Portal del cliente')
-    .replace(/,?\s*S\.?\s*DE\s+R\.?L\.?(\s*DE\s+C\.?V\.?)?\s*$/i, '')
-    .replace(/,?\s*S\.?\s*A\.?(\s*DE\s+C\.?V\.?)?\s*$/i, '')
-    .replace(/,?\s*S\.?A\.?P\.?I\.?\s*DE\s+C\.?V\.?\s*$/i, '')
-    .trim()
+  // Strip Mexican legal suffixes + title-case for the header. The full
+  // legal shape "EVCO PLASTICS DE MEXICO, S.DE R.L.DE C.V." wrapped to
+  // three lines on 393px mobile (2026-04-20 audit). Canonical helper
+  // lives in lib/format/company-name so the same cleaning applies in
+  // TopBar, greeting, and any other client-chrome surface.
+  const cleanCompany = cleanCompanyDisplayName(companyName) || 'Portal del cliente'
   const greetingTitle =
     role === 'client' ? cleanCompany
     : `${greetingFor(role)}, ${name}`
@@ -151,6 +151,11 @@ export function CockpitInicio({
     >
       {/* v10 — ActividadStrip rendered above hero when provided */}
       {actividadStripSlot}
+
+      {/* Sync freshness — "Sincronizado hace N min" under the strip, or a
+          calm amber banner when data is stale. Renders nothing for
+          pre-activation tenants (helper returns `hasData: false`). */}
+      {freshnessSlot}
 
       {/* Hero KPI strip */}
       <div

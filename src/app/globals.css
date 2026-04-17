@@ -680,6 +680,13 @@ button, a, [role="button"], [tabindex]:not([tabindex="-1"]) {
   .topbar-alive-desktop { display: none !important; }
   .topbar-alive-mobile  { display: inline-flex !important; }
 }
+
+/* CruzCommand keyboard hint — desktop-only signal. Touch users don't
+   press ⌘K, and the badge crowds the narrow mobile search bar. */
+.cruz-command-kbd { display: inline-flex; }
+@media (max-width: 767px) {
+  .cruz-command-kbd { display: none !important; }
+}
 .topbar-avatar {
   width: 32px;
   height: 32px;

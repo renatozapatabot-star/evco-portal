@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
+import { Search, Menu, LogOut, ChevronLeft, Home } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
-import { AguilaMark } from '@/components/brand/AguilaMark';
 import { TopbarStatus } from './TopbarStatus';
 import { AguilaLivePill } from './AguilaLivePill';
 import { CruzCommand } from '@/components/command/CruzCommand';
@@ -66,8 +65,9 @@ export default function TopBar({
           </Link>
         )}
 
-        {/* Home link — plain icon, no brand mark on authenticated surfaces.
-            Identity lives on the login hero only (per 2026-04-15 audit). */}
+        {/* Home link — plain home glyph. The Z wordmark belongs to the
+            login hero; the topbar carries the alive signal + search as
+            its identity elements, not a repeat brand mark (2026-04-20). */}
         <Link
           href="/"
           className="topbar-logo"
@@ -76,14 +76,17 @@ export default function TopBar({
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            // 60 × 60 tap target; 28 × 28 AguilaMark centered via padding.
             width: 60,
             height: 60,
-            padding: 16,
+            padding: 20,
             boxSizing: 'border-box',
+            color: 'rgba(255,255,255,0.55)',
+            transition: 'color 150ms',
           }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)' }}
         >
-          <AguilaMark size={28} />
+          <Home size={18} />
         </Link>
 
         {/* CruzCommand — live search + AI entry point. Replaces the
@@ -151,14 +154,17 @@ export default function TopBar({
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          // Operator topbar — 60 × 60 tap target parity with client topbar.
           width: 60,
           height: 60,
-          padding: 16,
+          padding: 20,
           boxSizing: 'border-box',
+          color: 'rgba(255,255,255,0.55)',
+          transition: 'color 150ms',
         }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF' }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)' }}
       >
-        <AguilaMark size={28} />
+        <Home size={18} />
       </Link>
       {/* Operator topbar gets the same inline CruzCommand — one search
           surface, same keyboard contract, regardless of portal type. */}

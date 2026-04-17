@@ -41,13 +41,16 @@ export interface InicioClientShellProps {
   /** Daily CRUZ briefing row. null = no briefing for today (feature
    *  dormant pre-migration, or user dismissed, or cron hasn't fired). */
   morningBriefing: MorningBriefingData | null
+  /** Pre-rendered freshness signal (FreshnessBanner). Optional — null
+   *  when the tenant has no sync_log rows yet (pre-activation). */
+  freshnessSlot?: React.ReactNode
 }
 
 export function InicioClientShell({
   role, name, companyName,
   heroKPIs, navCounts, actividadStripItems, capabilityCounts,
   summaryLine, pulseSignal, month, metaPills,
-  imminentShipment, morningBriefing,
+  imminentShipment, morningBriefing, freshnessSlot,
 }: InicioClientShellProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const kpiButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -87,6 +90,7 @@ export function InicioClientShell({
           </>
         }
         capabilitySlot={<CapabilityCardGrid counts={capabilityCounts} />}
+        freshnessSlot={freshnessSlot}
         summaryLine={summaryLine}
         pulseSignal={pulseSignal}
         month={month}

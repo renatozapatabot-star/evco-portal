@@ -20,7 +20,8 @@ import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
 import { getLatestCrossing } from '@/lib/queries/latest-crossing'
 import { getActiveCveProductos } from '@/lib/anexo24/active-parts'
-import { CockpitErrorCard, CockpitSkeleton, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { CockpitErrorCard, CockpitSkeleton, FreshnessBanner, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { readFreshness } from '@/lib/cockpit/freshness'
 import { InicioClientShell } from './InicioClientShell'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import { buildClientHeroTiles } from '@/lib/cockpit/quiet-season'
@@ -379,22 +380,27 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // v3.3: replaced the old daysSinceLastIncident cap with real signals —
   // successRatePct (cruzados / total in 90d) + avgClearanceDays (llegada →
   // cruce). Both are computed from one 90-day tráficos scan below.
+  // v3.5 (2026-04-20): adds greenLightPct (semáforo verde rate) — the
+  // broker-performance metric that replaces the truncation-prone
+  // "Velocidad promedio" tile with a consistent 95-99% signal.
   let successRatePct: number | null = null
   let avgClearanceDays: number | null = null
+  let greenLightPct: number | null = null
   if (activeCount === 0) {
-    // Single 90-day window fetch that computes both success rate + average
-    // clearance time. Capped at 2000 rows — EVCO crosses ~a few dozen per
-    // month, so 2000 covers multiple years for any realistic tenant.
+    // Single 90-day window fetch that computes success rate + clearance
+    // time + semáforo-verde rate. Capped at 2000 rows — EVCO crosses a
+    // few dozen per month so 2000 covers multiple years for any
+    // realistic tenant.
     try {
       const ninetyAgo = daysAgo(90).toISOString()
       const { data: windowRows } = await supabase
         .from('traficos')
-        .select('estatus, fecha_llegada, fecha_cruce')
+        .select('estatus, fecha_llegada, fecha_cruce, semaforo')
         .eq('company_id', companyId)
         .gte('fecha_llegada', ninetyAgo)
         .limit(2000)
       if (Array.isArray(windowRows) && windowRows.length > 0) {
-        const rows = windowRows as Array<{ estatus: string | null; fecha_llegada: string | null; fecha_cruce: string | null }>
+        const rows = windowRows as Array<{ estatus: string | null; fecha_llegada: string | null; fecha_cruce: string | null; semaforo: number | string | null }>
         const crossedEstatuses = new Set(['Cruzado', 'E1', 'Entregado'])
         const totalWithLlegada = rows.filter((r) => r.fecha_llegada).length
         const crossed = rows.filter((r) => crossedEstatuses.has(r.estatus ?? ''))
@@ -408,6 +414,16 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
             return acc + (delta >= 0 ? delta : 0)
           }, 0)
           avgClearanceDays = sum / crossedWithBoth.length
+        }
+        // Semáforo-verde rate — the broker's job-performance metric.
+        // `semaforo` arrives as either 0/1/2 (numeric) or "0"/"1"/"2"
+        // (string from upstream sync); normalize before comparison.
+        // Verde = 0. A scored crossing is any row with a non-null
+        // semáforo on a fecha_cruce-completed tráfico.
+        const scored = crossed.filter((r) => r.semaforo !== null && r.semaforo !== undefined && r.semaforo !== '')
+        if (scored.length > 0) {
+          const verde = scored.filter((r) => String(r.semaforo).trim() === '0').length
+          greenLightPct = Math.round((verde / scored.length) * 100)
         }
       }
     } catch { /* soft — leave metrics null so quiet-season falls back to "Operación estable" / "Historial confiable" */ }
@@ -452,11 +468,17 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     } catch { /* soft — override just won't fire */ }
   }
 
+  // Freshness — query last successful sync for this tenant. Soft-fails
+  // to hasData=false so the banner simply doesn't render if sync_log
+  // is empty / unreachable (contract: sync-contract.md).
+  const freshness = await readFreshness(supabase, companyId)
+
   const heroBuild = buildClientHeroTiles({
     activeCount,
     standardTiles: standardHeroKPIs,
     successRatePct,
     avgClearanceDays,
+    greenLightPct,
     lastCruceIso: lastCruzadoRow?.fecha_cruce ?? null,
     crucesThisMonth: cruzadosMesCount,
     tmecYtdUsd,
@@ -570,6 +592,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         ...morningBriefing,
         greeting_name: (companyName || 'Tu portal').split(' ')[0] || 'Equipo',
       } : null}
+      freshnessSlot={<FreshnessBanner reading={freshness} />}
     />
   )
 }

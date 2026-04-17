@@ -45,7 +45,10 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
     expect(tasa.label).toBe('Tasa de éxito')
     expect(String(tasa.value)).toBe('97%')
     const velocidad = out.heroKPIs[3]
-    expect(String(velocidad.value)).toBe('1.9 d')
+    // v3.4: velocidad renders as a pure number so KPITile treats it as
+    // numeric and uses the mono display. "días" lives in the sublabel.
+    expect(velocidad.value).toBe(1.9)
+    expect(velocidad.sublabel).toMatch(/días/)
   })
 
   it('activeCount === 0 + no velocidad → T-MEC fills the 4th slot', () => {
@@ -63,7 +66,9 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
       'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'tmec-ytd',
     ])
     const tmec = out.heroKPIs[3]
-    expect(String(tmec.value)).toMatch(/^\$12,500 USD$/)
+    // v3.4: tmec uses compact formatter (K/M) to fit narrow mobile tiles.
+    expect(String(tmec.value)).toBe('$12.5K')
+    expect(tmec.sublabel).toMatch(/este año/)
   })
 
   it('activeCount === 0 + no velocidad + no tmec → "Historial confiable" fallback', () => {
@@ -94,7 +99,9 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
     })
     const first = out.heroKPIs[0]
     expect(first.key).toBe('operacion-estable')
-    expect(String(first.value)).toBe('Sin incidencias')
+    // v3.4: copy tightened to fit mobile tiles without ellipsis.
+    expect(String(first.value)).toBe('Al día')
+    expect(first.sublabel).toMatch(/al corriente/)
   })
 
   it('quiet-season with no cruce history shows "Sin cruces aún" tile + no sublabel', () => {
@@ -108,7 +115,8 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
       tmecYtdUsd: 0,
     })
     const ultimo = out.heroKPIs.find(t => t.key === 'ultimo-cruce')
-    expect(ultimo?.value).toBe('Sin cruces aún')
+    // v3.4: "Sin cruces" fits the narrow mobile tile without ellipsis.
+    expect(ultimo?.value).toBe('Sin cruces')
     expect(ultimo?.sublabel).toBeUndefined()
   })
 

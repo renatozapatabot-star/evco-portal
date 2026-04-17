@@ -100,8 +100,19 @@ export function CockpitInicio({
   systemStatus, pulseSignal, summaryLine, liveTimestamp = true,
   metaPills, month,
 }: CockpitInicioProps) {
+  // Strip Mexican legal suffixes from the display title — "EVCO PLASTICS
+  // DE MEXICO, S.DE R.L.DE C.V." wraps to three ugly lines on mobile
+  // header (2026-04-20 screenshot). The suffix reads as legal
+  // boilerplate, not brand; the client-facing cockpit uses the display
+  // name. Matches the pattern /proveedor-names.ts applies to supplier
+  // names (canonical display vs. legal entity).
+  const cleanCompany = (companyName || 'Portal del cliente')
+    .replace(/,?\s*S\.?\s*DE\s+R\.?L\.?(\s*DE\s+C\.?V\.?)?\s*$/i, '')
+    .replace(/,?\s*S\.?\s*A\.?(\s*DE\s+C\.?V\.?)?\s*$/i, '')
+    .replace(/,?\s*S\.?A\.?P\.?I\.?\s*DE\s+C\.?V\.?\s*$/i, '')
+    .trim()
   const greetingTitle =
-    role === 'client' ? (companyName || 'Portal del cliente')
+    role === 'client' ? cleanCompany
     : `${greetingFor(role)}, ${name}`
 
   const monthQuery = month ? `?month=${encodeURIComponent(month)}` : ''
@@ -152,6 +163,12 @@ export function CockpitInicio({
         }}
       >
         <style>{`
+          /* Force grid children to respect 1fr instead of expanding to
+             content width. Without min-width: 0 a KPI tile with a long
+             value ("hace 2 días") overflows its column on mobile, making
+             the sibling tile appear narrower and its content truncate
+             (2026-04-20 screenshot audit). */
+          .aguila-cockpit-hero > * { min-width: 0; }
           @media (max-width: 1024px) {
             .aguila-cockpit-hero { grid-template-columns: repeat(2, 1fr) !important; }
           }

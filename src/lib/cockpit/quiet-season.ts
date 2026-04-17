@@ -98,6 +98,19 @@ function daysAgoLabel(iso: string): string {
   return `hace ${n} días`
 }
 
+// Compact relative-time variant for narrow KPI tile values.
+// "hoy" / "ayer" / "hace Nd" stay short enough to fit the mobile
+// 2-column layout without triggering the whitespace-nowrap ellipsis.
+function daysAgoShort(iso: string): string {
+  const n = daysAgo(iso)
+  if (n === 0) return 'hoy'
+  if (n === 1) return 'ayer'
+  if (n < 30) return `hace ${n}d`
+  const months = Math.floor(n / 30)
+  if (months === 1) return 'hace 1 mes'
+  return `hace ${months} meses`
+}
+
 function currentMonthLabel(): string {
   return new Date().toLocaleDateString(LOCALE, { timeZone: TZ, month: 'long' })
 }
@@ -105,6 +118,14 @@ function currentMonthLabel(): string {
 // USD formatter — whole dollars, JetBrains Mono handled by KPITile number slot.
 function formatUsd(n: number): string {
   return `$${Math.round(n).toLocaleString(LOCALE)} USD`
+}
+
+// Compact USD for tile values — $12.5K / $2.1M. Short enough to render
+// at the numeric tile's big-display size without truncation.
+function formatUsdCompact(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1).replace(/\.0$/, '')}K`
+  return `$${Math.round(n)}`
 }
 
 /**
@@ -127,24 +148,21 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
   }
 
   // Quiet-season mode — always emit 4 tiles for a balanced 2x2 grid
-  // (Renato 2026-04-20: "let's balance it by having another KPI"). The
-  // old "Días sin incidencias" tile was removed — its default-30-cap
-  // reading was a fake signal for clients without recorded incidents.
-  // Tasa de éxito + Velocidad promedio are real numbers that typically
-  // read strong for a disciplined broker (95%+ on success, 1–3d on
-  // clearance speed). T-MEC savings become the optional 5th if material.
+  // (Renato 2026-04-20). Copy is tuned for the ~170px-wide tile that
+  // lands on iPhone 393 viewports: labels fit one line, values stay
+  // short enough to render without ellipsis, sublabels cap ~28 chars.
+  // 2026-04-20 screenshot audit flagged "Último cruce exitoso" wrapping
+  // to 3 lines + "hac…" / "7.9" truncation — this pass fixes both.
   const tiles: CockpitHeroKPI[] = []
 
   // Tile 1 — Tasa de éxito (replaces "Días sin incidencias").
-  // When null (no historical data), falls back to a calm "Operación
-  // estable" neutral tile so the first slot is never blank.
   if (input.successRatePct != null && input.successRatePct >= 0) {
     const pct = Math.max(0, Math.min(100, Math.round(input.successRatePct)))
     tiles.push({
       key: 'tasa-exito',
       label: 'Tasa de éxito',
       value: `${pct}%`,
-      sublabel: 'cruces completados · últimos 90 días',
+      sublabel: 'últimos 90 días',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
       ariaLabel: `Tasa de éxito ${pct} por ciento`,
     })
@@ -152,65 +170,68 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
     tiles.push({
       key: 'operacion-estable',
       label: 'Operación estable',
-      value: 'Sin incidencias',
-      sublabel: 'cruces registrados al corriente',
+      value: 'Al día',
+      sublabel: 'cruces al corriente',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
     })
   }
 
-  // Tile 2 — Último cruce. Splits relative + absolute into value +
-  // sublabel so KPITile renders them on two lines cleanly at mobile.
+  // Tile 2 — Último cruce. Shorter label ("Último cruce" vs "Último
+  // cruce exitoso") fits one line in the 170px tile. Value "hace Nd"
+  // saves horizontal space; sublabel carries the full date.
   if (input.lastCruceIso) {
     tiles.push({
       key: 'ultimo-cruce',
-      label: 'Último cruce exitoso',
-      value: daysAgoLabel(input.lastCruceIso),
+      label: 'Último cruce',
+      value: daysAgoShort(input.lastCruceIso),
       sublabel: formatDateAbs(input.lastCruceIso),
       tone: 'slate' as QuietTone as CockpitHeroKPI['tone'],
     })
   } else {
     tiles.push({
       key: 'ultimo-cruce',
-      label: 'Último cruce exitoso',
-      value: 'Sin cruces aún',
+      label: 'Último cruce',
+      value: 'Sin cruces',
       tone: 'slate' as QuietTone as CockpitHeroKPI['tone'],
     })
   }
 
-  // Tile 3 — Volumen del mes
+  // Tile 3 — Volumen del mes. "Cruces en abril" reads cleanly and
+  // fits on one line; "Cruces completados en abril" wrapped to 2.
   tiles.push({
     key: 'volumen-mes',
-    label: `Cruces completados en ${currentMonthLabel()}`,
+    label: `Cruces en ${currentMonthLabel()}`,
     value: input.crucesThisMonth,
     tone: 'slate' as QuietTone as CockpitHeroKPI['tone'],
   })
 
-  // Tile 4 — cascade: velocidad (actionable speed) → tmec savings
-  // (financial) → "Cruces históricos" fallback. First non-null wins,
-  // so the 2x2 grid always fills 4 tiles regardless of which signals
-  // the tenant has data for.
+  // Tile 4 — cascade: velocidad → tmec → fallback. Velocidad renders
+  // as pure number so KPITile treats it as numeric (tight mono display)
+  // with "días" in the sublabel. Previously "7.9 d" was classified as
+  // prose and got truncated on narrow mobile columns.
   if (input.avgClearanceDays != null && input.avgClearanceDays > 0) {
     const days = Math.round(input.avgClearanceDays * 10) / 10
     tiles.push({
       key: 'velocidad-cruce',
       label: 'Velocidad promedio',
-      value: `${days} d`,
-      sublabel: 'de llegada a cruce · últimos 90 días',
+      value: days,
+      sublabel: 'días · llegada → cruce',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
     })
   } else if (input.tmecYtdUsd != null && input.tmecYtdUsd > 0) {
     tiles.push({
       key: 'tmec-ytd',
-      label: 'Ahorrado con T-MEC este año',
-      value: formatUsd(input.tmecYtdUsd),
+      label: 'Ahorro T-MEC',
+      value: formatUsdCompact(input.tmecYtdUsd),
+      sublabel: 'acumulado este año',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
     })
   } else {
     tiles.push({
       key: 'historial',
-      label: 'Historial confiable',
-      value: 'Al día',
-      sublabel: 'todos los cruces registrados',
+      label: 'Historial',
+      value: 'Confiable',
+      sublabel: 'cruces registrados',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
     })
   }

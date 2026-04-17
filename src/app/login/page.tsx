@@ -76,7 +76,7 @@ function LoginContent() {
         setError('Demasiados intentos. Espera un minuto antes de intentar de nuevo.')
         setPassword('')
       } else {
-        setError('Contraseña incorrecta. Contacta a Renato Zapata & Company.')
+        setError('Código incorrecto. Contacta a Renato Zapata & Company.')
         setPassword('')
       }
     } catch {

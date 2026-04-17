@@ -35,7 +35,7 @@ export function CockpitSkeleton() {
         </div>
         <Block width={320} height={28} radius={10} />
         <div style={{ fontSize: 13, color: TEXT_MUTED, margin: '8px 0 32px 0' }}>
-          Cargando cockpit…
+          Cargando tu panel…
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 16 }}>

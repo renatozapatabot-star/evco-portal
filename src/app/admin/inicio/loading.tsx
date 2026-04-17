@@ -19,7 +19,7 @@ export default function Loading() {
       }}
     >
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ marginBottom: 24, color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Cargando cockpit…</div>
+        <div style={{ marginBottom: 24, color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>Cargando tu panel…</div>
         <div
           style={{
             display: 'grid',

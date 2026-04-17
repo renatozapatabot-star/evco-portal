@@ -85,7 +85,7 @@ async function CockpitContent({ session, cookieStore, month }: { session: Sessio
     ) {
       throw err
     }
-    return <CockpitErrorCard message={`No se pudo cargar el cockpit: ${msg}`} />
+    return <CockpitErrorCard message={`No se pudo cargar tu panel: ${msg}`} />
   }
 }
 

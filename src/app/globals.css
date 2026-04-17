@@ -672,6 +672,14 @@ button, a, [role="button"], [tabindex]:not([tabindex="-1"]) {
   .topbar-mobile-spacer { display: block !important; }
   .aduana-topbar--client .topbar-right { margin-left: 0; }
 }
+/* Alive pill swap — full chip on desktop, compact dot-only on mobile.
+   Keeps the signal visible everywhere without crowding narrow topbars. */
+.topbar-alive-desktop { display: inline-flex; align-items: center; }
+.topbar-alive-mobile  { display: none; align-items: center; }
+@media (max-width: 767px) {
+  .topbar-alive-desktop { display: none !important; }
+  .topbar-alive-mobile  { display: inline-flex !important; }
+}
 .topbar-avatar {
   width: 32px;
   height: 32px;

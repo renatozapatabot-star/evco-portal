@@ -6,6 +6,7 @@ import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import { AguilaMark } from '@/components/brand/AguilaMark';
 import { TopbarStatus } from './TopbarStatus';
+import { AguilaLivePill } from './AguilaLivePill';
 import { CruzCommand } from '@/components/command/CruzCommand';
 
 interface TopBarProps {
@@ -93,9 +94,14 @@ export default function TopBar({
           <CruzCommand mode="compact" />
         </div>
 
-        {/* Right: status indicators + company name + logout */}
+        {/* Right: status indicators + alive pill + company name + logout */}
         <div className="topbar-right">
           <TopbarStatus />
+          {/* Alive signal — canonical breathing pill visible on every
+              authenticated page regardless of portal type. Compact on
+              mobile (just the pulsing dot), full chip on desktop. */}
+          <span className="topbar-alive-desktop"><AguilaLivePill label="En línea" /></span>
+          <span className="topbar-alive-mobile"><AguilaLivePill label="En línea" compact /></span>
           {clientName && (
             <span className="topbar-client-name">{clientName}</span>
           )}
@@ -162,6 +168,8 @@ export default function TopBar({
 
       <div className="topbar-right">
         <TopbarStatus />
+        <span className="topbar-alive-desktop"><AguilaLivePill label="En línea" /></span>
+        <span className="topbar-alive-mobile"><AguilaLivePill label="En línea" compact /></span>
         {showNotifications && <NotificationBell />}
         {onLogout && (
           <button

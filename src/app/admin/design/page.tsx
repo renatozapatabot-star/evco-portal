@@ -17,7 +17,20 @@ import {
   PortalStickyTopbar,
   PortalTable,
   PortalTheaterAnimation,
+  PortalGlobe,
+  PortalCruzMark,
+  PortalWorldMesh,
+  PortalGreeting,
+  PortalModuleCard,
+  PortalCrucesMap,
+  VizPulse,
+  VizPedimentoLedger,
+  VizDocs,
+  VizCatalog,
+  VizWarehouseDock,
+  VizRing,
 } from '@/components/portal'
+import { PortalLoginBackgroundLineMap, PortalLoginLiveWire } from '@/components/portal'
 
 /**
  * Living design-system gallery for every PORTAL primitive. Admin-only.
@@ -231,6 +244,151 @@ export default function DesignGalleryPage() {
             ]}
           />
         </PortalCard>
+      </PortalSection>
+
+      {/* ===== Phase 1–5 + Phases A, B, E primitives ===== */}
+      <PortalSection title="Brand primitives" eyebrow="portal-globe · cruzmark · worldmesh">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, alignItems: 'center' }}>
+          <PortalCard>
+            <PortalEyebrow>Globe</PortalEyebrow>
+            <div style={{ marginTop: 12, display: 'flex', gap: 20, alignItems: 'center' }}>
+              <PortalGlobe size={56} accent />
+              <PortalGlobe size={40} accent={false} />
+            </div>
+          </PortalCard>
+          <PortalCard>
+            <PortalEyebrow>Wordmark</PortalEyebrow>
+            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <PortalCruzMark size={15} tracking="0.45em" weight={300} />
+              <PortalCruzMark size={22} tracking="0.24em" weight={400} globe={false} />
+            </div>
+          </PortalCard>
+          <PortalCard>
+            <PortalEyebrow>World mesh</PortalEyebrow>
+            <p style={{ color: 'var(--portal-fg-4)', fontSize: 'var(--portal-fs-sm)', marginTop: 8 }}>
+              Mounted as a fixed background on every dashboard route.
+              Open <code>/inicio</code> to see it at 4% opacity behind the
+              grain overlay.
+            </p>
+          </PortalCard>
+        </div>
+      </PortalSection>
+
+      {/* Greeting */}
+      <PortalSection title="Greeting" eyebrow="portal-greeting">
+        <PortalCard tier="hero" padding={32}>
+          <PortalGreeting
+            name="Renato"
+            summary={
+              <>
+                Tu operación está en calma.{' '}
+                <span className="portal-num" style={{ color: 'var(--portal-fg-1)' }}>2</span>{' '}
+                embarques en tránsito,{' '}
+                <span className="portal-num" style={{ color: 'var(--portal-fg-1)' }}>3</span>{' '}
+                pedimentos hoy, y todo firmado.
+              </>
+            }
+          />
+        </PortalCard>
+      </PortalSection>
+
+      {/* Module-card + 6 bespoke vizzes */}
+      <PortalSection title="Module cards + bespoke vizzes" eyebrow="portal-module-card · viz/*">
+        <PortalModulesGrid>
+          <PortalModuleCard
+            icon={<span>🚚</span>}
+            title="Embarques"
+            desc="2 unidades en tránsito ahora mismo. 4 cruces programados esta semana."
+            badge={{ tone: 'live', label: '2 EN TRÁNSITO' }}
+            viz={<VizPulse items={[
+              { t: 'TX-4829 · N. Laredo II', v: 'en ruta', live: true },
+              { t: 'TX-4830 · Colombia',     v: '12m',     live: true },
+              { t: 'TX-4828 · entregado',    v: 'ayer',    live: false },
+            ]} />}
+            metric="18"
+            metricLabel="ACTIVOS"
+            accent
+          />
+          <PortalModuleCard
+            icon={<span>📄</span>}
+            title="Pedimentos"
+            desc="Declaraciones aduanales. 3 firmados hoy, todo al corriente."
+            badge={{ tone: 'info', label: '3 HOY' }}
+            viz={<VizPedimentoLedger />}
+            metric="10"
+            metricLabel="ESTE MES"
+            accent
+          />
+          <PortalModuleCard
+            icon={<span>📁</span>}
+            title="Expedientes"
+            desc="Carpetas de operación digitales. Firmas electrónicas al día."
+            viz={<VizDocs />}
+            metric="448"
+            metricLabel="ESTE MES"
+          />
+          <PortalModuleCard
+            icon={<span>📚</span>}
+            title="Catálogo"
+            desc="Partes, fracciones arancelarias e historial de clasificación IA."
+            badge={{ tone: 'neutral', label: 'PREVIEW' }}
+            viz={<VizCatalog />}
+            metric="Q2"
+            metricLabel="PRÓXIMAMENTE"
+          />
+          <PortalModuleCard
+            icon={<span>📦</span>}
+            title="Entradas"
+            desc="Recibos en almacén Laredo TX. 26 entradas esta semana."
+            viz={<VizWarehouseDock />}
+            metric="26"
+            metricLabel="ESTA SEMANA"
+          />
+          <PortalModuleCard
+            icon={<span>📋</span>}
+            title="Anexo 24"
+            desc="Padrón de SKUs con IMMEX vigente. Todos clasificados al día."
+            badge={{ tone: 'warn', label: '3 POR REVISAR' }}
+            viz={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <VizRing pct={98} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: 'var(--portal-fg-2)' }}>Clasificación al día</div>
+                  <div className="portal-meta" style={{ marginTop: 2 }}>
+                    242 DE 245 · <span className="portal-num">98.8%</span>
+                  </div>
+                </div>
+              </div>
+            }
+            metric="245"
+            metricLabel="SKUs EN ANEXO"
+          />
+        </PortalModulesGrid>
+      </PortalSection>
+
+      {/* Cruces map */}
+      <PortalSection title="Cruces map" eyebrow="portal-cruces-map">
+        <PortalCrucesMap />
+      </PortalSection>
+
+      {/* Login living background preview */}
+      <PortalSection title="Login atmosphere" eyebrow="living map + LiveWire">
+        <PortalCard tier="raised" padding={0} style={{ position: 'relative', height: 360, overflow: 'hidden' }}>
+          <PortalLoginBackgroundLineMap />
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 2,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: 24, gap: 12,
+            background: 'radial-gradient(ellipse at center, transparent 30%, var(--portal-ink-0) 90%)',
+          }}>
+            <PortalCruzMark size={44} tracking="0.24em" weight={200} globe={false} />
+            <p className="portal-meta" style={{ marginTop: 0 }}>preview · z-0 · opacity 0.55</p>
+          </div>
+        </PortalCard>
+        <div style={{ marginTop: 20 }}>
+          <PortalLoginLiveWire />
+        </div>
       </PortalSection>
     </div>
   )

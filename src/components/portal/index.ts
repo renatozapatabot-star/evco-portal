@@ -99,3 +99,13 @@ export type {
   DetailHeroStat,
   DetailHeroBadge,
 } from './PortalDetailHero'
+
+// Phase E — CrucesMap + OnboardingTour (dashboard-extras ports)
+export { PortalCrucesMap } from './PortalCrucesMap'
+export type {
+  PortalCrucesMapProps,
+  CrucesMapBridge,
+  CrucesMapShipment,
+} from './PortalCrucesMap'
+export { PortalOnboardingTour } from './PortalOnboardingTour'
+export type { PortalOnboardingTourProps, OnboardingStep } from './PortalOnboardingTour'

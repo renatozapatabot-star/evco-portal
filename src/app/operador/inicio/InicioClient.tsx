@@ -19,7 +19,7 @@ import {
   type CockpitHeroKPI,
   type ActividadStripItem,
 } from '@/components/aguila'
-import { PortalDashboard } from '@/components/portal'
+import { PortalDashboard, PortalCrucesMap } from '@/components/portal'
 import { ActiveTraficos } from './ActiveTraficos'
 import { RoleKPIBanner } from '@/components/RoleKPIBanner'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
@@ -232,8 +232,12 @@ export function InicioClient(props: Props) {
         navCounts={props.navCounts}
         month={props.month}
         extraRow={
-          <CockpitInicio
-            role="operator"
+          <>
+            <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
+              <PortalCrucesMap />
+            </div>
+            <CockpitInicio
+              role="operator"
             name={props.operatorName}
             heroKPIs={heroKPIs}
             navCounts={props.navCounts}
@@ -244,12 +248,13 @@ export function InicioClient(props: Props) {
             systemStatus={props.systemStatus}
             pulseSignal={props.pulseSignal}
             month={props.month}
-            metaPills={[
-              { label: 'ACTIVOS', value: props.kpis.activos, tone: 'silver' },
-              { label: 'PENDIENTES', value: props.kpis.pendientes, tone: props.kpis.pendientes > 3 ? 'warning' : 'silver' },
-              { label: 'ENTRADAS HOY', value: props.kpis.entradasHoy, tone: 'silver' },
-            ]}
-          />
+              metaPills={[
+                { label: 'ACTIVOS', value: props.kpis.activos, tone: 'silver' },
+                { label: 'PENDIENTES', value: props.kpis.pendientes, tone: props.kpis.pendientes > 3 ? 'warning' : 'silver' },
+                { label: 'ENTRADAS HOY', value: props.kpis.entradasHoy, tone: 'silver' },
+              ]}
+            />
+          </>
         }
       />
     </>

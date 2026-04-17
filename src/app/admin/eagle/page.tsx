@@ -19,7 +19,7 @@ import type { TimelineItem } from '@/components/aguila'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
 import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
-import { PortalDashboard } from '@/components/portal'
+import { PortalDashboard, PortalCrucesMap } from '@/components/portal'
 import { AsistenteButton } from '@/components/aguila/AsistenteButton'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { MonthSelector } from '@/components/admin/MonthSelector'
@@ -512,27 +512,32 @@ async function renderEagle(opName: string, rawMonth: string | null) {
         navCounts={navCounts}
         month={month.ym}
         extraRow={
-          <CockpitInicio
-            role="owner"
-            name={opName}
-            heroKPIs={heroKPIs}
-            navCounts={navCounts}
-            estadoSections={estadoSections}
-            actividadSlot={actividadSlot}
-            actividadStripSlot={actividadStripSlot}
-            capabilitySlot={capabilitySlot}
-            systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
-            pulseSignal={inTransitCount > 0}
-            month={month.ym}
-            metaPills={[
-              ...(escalatedThreads.length > 0
-                ? [{ label: 'ESCALADOS', value: escalatedThreads.length, tone: 'warning' as const }]
-                : []),
-              { label: 'CRUCES MES', value: cruzadosMesCount, tone: 'silver' },
-              { label: 'PEND. PEDIMENTO', value: pedimentosPendientesCount, tone: pedimentosPendientesCount > 0 ? 'warning' : 'silver' },
-              { label: 'EN TRÁNSITO', value: inTransitCount, tone: 'silver' },
-            ]}
-          />
+          <>
+            <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
+              <PortalCrucesMap />
+            </div>
+            <CockpitInicio
+              role="owner"
+              name={opName}
+              heroKPIs={heroKPIs}
+              navCounts={navCounts}
+              estadoSections={estadoSections}
+              actividadSlot={actividadSlot}
+              actividadStripSlot={actividadStripSlot}
+              capabilitySlot={capabilitySlot}
+              systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
+              pulseSignal={inTransitCount > 0}
+              month={month.ym}
+              metaPills={[
+                ...(escalatedThreads.length > 0
+                  ? [{ label: 'ESCALADOS', value: escalatedThreads.length, tone: 'warning' as const }]
+                  : []),
+                { label: 'CRUCES MES', value: cruzadosMesCount, tone: 'silver' },
+                { label: 'PEND. PEDIMENTO', value: pedimentosPendientesCount, tone: pedimentosPendientesCount > 0 ? 'warning' : 'silver' },
+                { label: 'EN TRÁNSITO', value: inTransitCount, tone: 'silver' },
+              ]}
+            />
+          </>
         }
       />
       <AsistenteButton roleTag="owner" />

@@ -504,7 +504,10 @@ fi
 #   20px stat-cell value). All handoff-specific values driving literal
 #   reference fidelity; tokenization deferred with the other reference
 #   pixels in a post-parity cleanup block.)
-INVARIANT_27_BASELINE=419
+# Baseline 2026-04-17 late evening = 421 (Phase E + Phase G gallery:
+#   +2 for PortalCrucesMap SVG font-size text labels (9px / 8px / 8.5px
+#   coordinates). Still handoff-specific.)
+INVARIANT_27_BASELINE=421
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
@@ -552,6 +555,31 @@ elif [ "$PORTAL_IMPORTS" -gt "$PORTAL_IMPORT_BASELINE" ]; then
   pass "@/components/portal imports: $PORTAL_IMPORTS (was $PORTAL_IMPORT_BASELINE, growing ✓). Update PORTAL_IMPORT_BASELINE in this script."
 else
   warn "@/components/portal imports: $PORTAL_IMPORTS (at baseline — next block should advance adoption)"
+fi
+
+# Reference-parity plan — PortalDashboard adoption across 3 cockpits.
+# Target 3 = /inicio + /operador/inicio + /admin/eagle. Currently at 3
+# after commit 54e3db5 layered the dashboard onto operator + owner.
+PORTAL_DASHBOARD_BASELINE=3
+header "PORTAL · dashboard adoption ratchet (target 3 = all cockpits)"
+PORTAL_DASHBOARD_COUNT=$(set +eo pipefail;{ grep -rln "<PortalDashboard" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
+if [ "$PORTAL_DASHBOARD_COUNT" -lt "$PORTAL_DASHBOARD_BASELINE" ]; then
+  fail "<PortalDashboard> usage regressed: $PORTAL_DASHBOARD_COUNT (was $PORTAL_DASHBOARD_BASELINE). Must render on /inicio, /operador/inicio, /admin/eagle."
+elif [ "$PORTAL_DASHBOARD_COUNT" -gt "$PORTAL_DASHBOARD_BASELINE" ]; then
+  pass "<PortalDashboard> usage: $PORTAL_DASHBOARD_COUNT (was $PORTAL_DASHBOARD_BASELINE, growing ✓). Update PORTAL_DASHBOARD_BASELINE."
+else
+  pass "<PortalDashboard> usage: $PORTAL_DASHBOARD_COUNT (all three cockpits covered)"
+fi
+
+# Reference-parity plan — living login presence. Must render exactly
+# once (on /login). Any regression means the atmosphere is gone.
+PORTAL_LIVING_LOGIN_BASELINE=1
+header "PORTAL · living login background ratchet (target 1 = /login)"
+PORTAL_LIVING_LOGIN_COUNT=$(set +eo pipefail;{ grep -rln "PortalLoginBackgroundLineMap" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
+if [ "$PORTAL_LIVING_LOGIN_COUNT" -lt "$PORTAL_LIVING_LOGIN_BASELINE" ]; then
+  fail "PortalLoginBackgroundLineMap render sites: $PORTAL_LIVING_LOGIN_COUNT (was $PORTAL_LIVING_LOGIN_BASELINE). /login must render the living map."
+else
+  pass "PortalLoginBackgroundLineMap render sites: $PORTAL_LIVING_LOGIN_COUNT (login atmosphere present)"
 fi
 
 # --------------------------------------------------------------------------

@@ -10,6 +10,7 @@ import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
+import { renderNull, renderPending } from '@/lib/ui/cell-renderers'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -304,13 +305,13 @@ function EntradasContent() {
                     </div>
                   )}
                   <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
-                    {fmtDesc(getDesc(r)) || '—'}
+                    {fmtDesc(getDesc(r)) || renderNull()}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {r.trafico ? (
                       <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
-                      <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>
+                      renderPending()
                     )}
                     {transporte
                       ? <span>{transporte}</span>

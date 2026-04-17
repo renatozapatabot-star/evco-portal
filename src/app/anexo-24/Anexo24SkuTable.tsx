@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import type { AnexoSku } from '@/lib/anexo24/snapshot'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { fmtUSDCompact } from '@/lib/format-utils'
+import { renderNull, renderEmpty } from '@/lib/ui/cell-renderers'
 
 interface Props {
   skus: AnexoSku[]
@@ -146,7 +147,7 @@ function MobileList({ skus }: { skus: AnexoSku[] }) {
                 flex: 1,
               }}
             >
-              {sku.cve_producto ?? '—'}
+              {sku.cve_producto ?? renderNull()}
             </span>
             {sku.fraccion && (
               <span
@@ -172,7 +173,7 @@ function MobileList({ skus }: { skus: AnexoSku[] }) {
               marginBottom: 6,
             }}
           >
-            {sku.descripcion || 'Sin descripción'}
+            {sku.descripcion || renderEmpty('Sin descripción')}
           </div>
           <div
             style={{
@@ -229,7 +230,7 @@ function DesktopTable({ skus }: { skus: AnexoSku[] }) {
               style={{ cursor: sku.cve_producto ? 'pointer' : 'default' }}
             >
               <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#E6EDF3' }}>
-                {sku.cve_producto ?? '—'}
+                {sku.cve_producto ?? renderNull()}
               </td>
               <td
                 className="desc-text"

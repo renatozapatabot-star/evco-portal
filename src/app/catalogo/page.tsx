@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { getCatalogo, groupCatalogoByFraccion, summarizeCatalogo } from '@/lib/catalogo/products'
+import { readFreshness } from '@/lib/cockpit/freshness'
 import { CatalogoTable } from './_components/CatalogoTable'
-import { PageShell } from '@/components/aguila'
+import { PageShell, FreshnessBanner } from '@/components/aguila'
 
 // 60 s revalidate smooths the 500-row slice so Ursula doesn't see KPIs
 // fluctuate on rapid refresh. Still force-dynamic at the page level —
@@ -32,6 +33,7 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
 
   const sp = await searchParams
   const supabase = createServerClient()
+  const freshness = await readFreshness(supabase, session.companyId)
   const rows = await getCatalogo(supabase, session.companyId, {
     q: sp.q,
     limit: 500,
@@ -56,6 +58,7 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
       subtitle="Partes de EVCO, proveedores y cobertura del Formato 53 — fuente SAT autoritativa."
       maxWidth={1100}
     >
+      <FreshnessBanner reading={freshness} />
       <CatalogoTable
         rows={rows}
         groups={groups}

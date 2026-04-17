@@ -9,6 +9,7 @@ import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
+import { renderNull, renderPending } from '@/lib/ui/cell-renderers'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import Link from 'next/link'
@@ -319,7 +320,7 @@ function PedimentosContent() {
                   )}
                 </div>
                 <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {getDesc(g) || '—'}
+                  {getDesc(g) || renderNull()}
                 </div>
               </button>
             ))}
@@ -366,12 +367,12 @@ function PedimentosContent() {
                       </Link>
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                      {g.fecha ? fmtDate(g.fecha) : '—'}
+                      {g.fecha ? fmtDate(g.fecha) : renderNull()}
                     </td>
                     <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {(() => {
                         const d = getDesc(g)
-                        if (!d) return '—'
+                        if (!d) return renderPending()
                         return (
                           <Link
                             href={`/catalogo?q=${encodeURIComponent(d)}`}
@@ -385,7 +386,7 @@ function PedimentosContent() {
                       })()}
                     </td>
                     <td style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                      {g.regimen || '—'}
+                      {g.regimen || renderNull()}
                       {g.tmec && <span style={{ marginLeft: 6, fontSize: 'var(--aguila-fs-meta)', color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>}
                     </td>
                     {hasUSDValues && (

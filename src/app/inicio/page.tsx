@@ -587,6 +587,17 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       : []),
   ]
 
+  // PORTAL ticker (Block DD · 2026-04-17) — three live signals above the hero.
+  // Each reads from data already fetched server-side; no extra query cost.
+  const tickerItems = [
+    { label: 'ACTIVOS', value: String(activeTraficosCount), tone: (activeTraficosCount > 0 ? 'live' : 'neutral') as 'live' | 'neutral' },
+    { label: 'CRUCES · MES', value: String(cruzadosMesCount ?? 0), tone: 'neutral' as const },
+    { label: 'PEDIMENTOS · MES', value: String(pedimentosMesCount ?? 0), tone: 'neutral' as const },
+    ...(daysSinceLastCruce != null
+      ? [{ label: 'ÚLT. CRUCE', value: daysSinceLastCruce === 0 ? 'hoy' : `${daysSinceLastCruce}d`, tone: 'neutral' as const }]
+      : []),
+  ]
+
   return (
     <InicioClientShell
       role="client"
@@ -594,6 +605,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       companyName={companyName || 'Tu portal'}
       heroKPIs={heroKPIs}
       navCounts={navCounts}
+      tickerItems={tickerItems}
       actividadStripItems={actividadStripItems}
       capabilityCounts={capabilityCounts}
       summaryLine={summaryLine}

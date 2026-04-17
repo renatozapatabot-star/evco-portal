@@ -10,6 +10,7 @@ import {
 } from '@/components/aguila'
 import { TimelineModal } from '@/components/cockpit/client/TimelineModal'
 import { MorningBriefing, type MorningBriefingData } from '@/components/cockpit/client/MorningBriefing'
+import { PortalTicker, type PortalTickerItem } from '@/components/portal'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
@@ -44,6 +45,9 @@ export interface InicioClientShellProps {
   /** Pre-rendered freshness signal (FreshnessBanner). Optional — null
    *  when the tenant has no sync_log rows yet (pre-activation). */
   freshnessSlot?: React.ReactNode
+  /** PORTAL ticker items (Block DD). Rendered above the hero as the
+   *  first live-data signal on the page. Pass [] to suppress. */
+  tickerItems?: PortalTickerItem[]
 }
 
 export function InicioClientShell({
@@ -51,6 +55,7 @@ export function InicioClientShell({
   heroKPIs, navCounts, actividadStripItems, capabilityCounts,
   summaryLine, pulseSignal, month, metaPills,
   imminentShipment, morningBriefing, freshnessSlot,
+  tickerItems,
 }: InicioClientShellProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const kpiButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -70,6 +75,11 @@ export function InicioClientShell({
 
   return (
     <>
+      {tickerItems && tickerItems.length > 0 && (
+        <div style={{ marginBottom: 'var(--portal-s-5, 16px)' }}>
+          <PortalTicker items={tickerItems} />
+        </div>
+      )}
       <CockpitInicio
         role={role}
         name={name}

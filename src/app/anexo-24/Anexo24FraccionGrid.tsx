@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Search, Truck, Users, ChevronDown, ChevronUp, Package } from 'lucide-react'
 import { fmtUSDCompact } from '@/lib/format-utils'
 import type { AnexoFraccionGroup } from '@/lib/anexo24/by-fraccion'
+import { renderNull, renderEmpty } from '@/lib/ui/cell-renderers'
 
 interface Props {
   groups: AnexoFraccionGroup[]
@@ -400,7 +401,7 @@ function FraccionCard({
                   whiteSpace: 'nowrap',
                 }}
               >
-                {sku.cve_producto ?? '—'}
+                {sku.cve_producto ?? renderNull()}
               </span>
               <span
                 style={{
@@ -413,7 +414,7 @@ function FraccionCard({
                   whiteSpace: 'nowrap',
                 }}
               >
-                {sku.descripcion || 'Sin descripción'}
+                {sku.descripcion || renderEmpty('Sin descripción')}
               </span>
               {sku.veces_importado > 0 && (
                 <span

@@ -85,3 +85,8 @@ export type { PortalDashboardProps, PortalDashboardRole } from './PortalDashboar
 // Phase 5 — Full-viewport 5-act pedimento theater. Mount once in app/layout.tsx
 // and invoke from anywhere via window.__portalOpenTheater(pedimentoId).
 export { PortalPedimentoTheater } from './PortalPedimentoTheater'
+
+// Phase A (reference-parity plan) — login living background + LiveWire strip
+export { PortalLoginBackgroundLineMap } from './login/PortalLoginBackgroundLineMap'
+export { PortalLoginLiveWire } from './login/PortalLoginLiveWire'
+export type { LiveWireItem } from './login/PortalLoginLiveWire'

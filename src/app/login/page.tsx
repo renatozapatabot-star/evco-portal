@@ -1,6 +1,10 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import {
+  PortalLoginBackgroundLineMap,
+  PortalLoginLiveWire,
+} from '@/components/portal'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
@@ -92,6 +96,14 @@ function LoginContent() {
 
   return (
     <div className="login-page">
+      {/* Living background — animated US↔MX border with bridges, trucks,
+          and periodic pedimento-cleared pings. Ported from
+          .planning/design-handoff/cruz-portal/project/src/login-backgrounds.jsx
+          (Bg_LineMap, the final default). Sits at z-index:1 behind the
+          existing topo/glow/aura overlays + the form card. */}
+      <div className="login-bg-livingmap" aria-hidden="true">
+        <PortalLoginBackgroundLineMap />
+      </div>
       {/* Topo hairline overlay */}
       <div className="login-topo" aria-hidden="true" />
       {/* Subtle radial silver glow */}
@@ -192,6 +204,10 @@ function LoginContent() {
               {loading && <span className="login-spinner" />}
             </button>
           </form>
+
+          {/* LiveWire — rotating border-status strip below the form.
+              Ticks through 6 live metrics every 2.6s. */}
+          <PortalLoginLiveWire />
         </div>
 
         {/* Footer identity */}
@@ -370,6 +386,13 @@ function LoginContent() {
         .login-corridor-mx {
           color: var(--portal-green-2);
           text-shadow: 0 0 14px color-mix(in oklch, var(--portal-green-2) 30%, transparent);
+        }
+        .login-bg-livingmap {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          opacity: 0.55;
+          pointer-events: none;
         }
         /* Alive signal — chip that breathes to signal the portal is
            connected + awake. Matches PageShell's "Datos en vivo"

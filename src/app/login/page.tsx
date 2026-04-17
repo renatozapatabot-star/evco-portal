@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { AguilaMark } from '@/components/brand/AguilaMark'
 import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 
 export default function LoginPage() {
@@ -103,15 +102,10 @@ function LoginContent() {
       <div
         className={`login-container${mounted && !entering ? ' is-entered' : ''}${entering ? ' is-exiting' : ''}`}
       >
-        {/* Centered mark — gold Z */}
-        <div className="login-eagle">
-          <AguilaMark size={140} />
-        </div>
-
-        {/* CRUZ wordmark — reinstated 2026-04-17. Sits directly under the
-            Z, thin weight + wide tracking, same silver palette so the
-            monogram + wordmark read as one lockup. */}
-        <p className="login-wordmark" aria-label="CRUZ">CRUZ</p>
+        {/* Wordmark-only lockup — Z monogram removed 2026-04-17 after
+            Tito's review ("tira la Z"). Wordmark stands alone in silver;
+            the tagline underneath carries the brand weight. */}
+        <p className="login-wordmark login-wordmark-hero" aria-label="CRUZ">CRUZ</p>
 
         {/* Tagline */}
         <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>
@@ -296,7 +290,7 @@ function LoginContent() {
           letter-spacing: 0.3em;
           /* Silver gradient — mirrors the monogram's highlight-to-shadow
              pass, flattened horizontally so the wordmark reads as a
-             metallic nameplate under the Z. */
+             metallic nameplate. */
           background: linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%);
           -webkit-background-clip: text;
           background-clip: text;
@@ -305,8 +299,18 @@ function LoginContent() {
           text-transform: uppercase;
           line-height: 1;
         }
+        /* Hero variant — used when the wordmark stands alone on the login
+           surface (no Z monogram above it). Larger scale + breathing room
+           so the name holds the visual weight the monogram used to carry. */
+        .login-wordmark-hero {
+          font-size: 44px;
+          letter-spacing: 0.4em;
+          margin: 24px 0 28px;
+          filter: drop-shadow(0 0 28px rgba(192,197,206,0.22));
+        }
         @media (min-width: 720px) {
           .login-wordmark { font-size: 32px; }
+          .login-wordmark-hero { font-size: 64px; letter-spacing: 0.45em; }
         }
         .login-tagline {
           font-size: 10px;

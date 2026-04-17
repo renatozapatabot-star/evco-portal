@@ -27,6 +27,11 @@ function syncDelayResponse(request: NextRequest, status: 404 | 422): NextRespons
     : 'Estamos sincronizando la factura de este pedimento. Por favor intenta en unos minutos.'
 
   if (wantsHtml) {
+    // This is a raw HTML error page served outside the React tree —
+    // intentionally self-contained with solid tokens (no glass blur, no
+    // gold hex) so it works even when stylesheets fail to load. Mirrors
+    // the login screen palette in spirit without importing the design
+    // system through Next's bundler.
     const html = `<!doctype html>
 <html lang="es">
 <head>
@@ -38,19 +43,19 @@ function syncDelayResponse(request: NextRequest, status: 404 | 422): NextRespons
     html, body { margin: 0; padding: 0; background: #05070B; color: #E6EDF3;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; }
     .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .card { max-width: 480px; width: 100%; background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 32px;
-      backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .card { max-width: 480px; width: 100%; background: #0D1014;
+      border: 1px solid #1E293B; border-radius: 20px; padding: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
     h1 { margin: 0 0 12px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; color: #E6EDF3; }
-    p { margin: 0 0 16px; font-size: 14px; line-height: 1.55; color: rgba(230,237,243,0.82); }
-    .meta { font-size: 12px; color: rgba(148,163,184,0.8); margin-top: 16px; }
-    .meta a { color: #C9A84C; text-decoration: none; }
+    p { margin: 0 0 16px; font-size: 14px; line-height: 1.55; color: #CBD5E1; }
+    .meta { font-size: 12px; color: #94A3B8; margin-top: 16px; }
+    .meta a { color: #E8EAED; text-decoration: underline; }
     .actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
     button { min-height: 60px; padding: 0 22px; font-size: 14px; font-weight: 600;
-      border-radius: 12px; border: 1px solid rgba(201,168,76,0.3); background: rgba(201,168,76,0.12);
+      border-radius: 12px; border: 1px solid #334155; background: #1E293B;
       color: #E6EDF3; cursor: pointer; }
     .foot { margin-top: 20px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: rgba(122,126,134,0.55); font-family: ui-monospace, 'JetBrains Mono', monospace; }
+      color: #64748B; font-family: ui-monospace, 'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>

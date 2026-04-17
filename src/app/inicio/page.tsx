@@ -17,7 +17,7 @@ import {
 } from '@/lib/cliente/dashboard'
 import { getClienteActivity } from '@/lib/cliente/activity'
 import { bucketDailySeries, daysAgo } from '@/lib/cockpit/fetch'
-import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
+import { softCount, softData, softFirst, createQuerySignals } from '@/lib/cockpit/safe-query'
 import { getLatestCrossing } from '@/lib/queries/latest-crossing'
 import { getActiveCveProductos } from '@/lib/anexo24/active-parts'
 import { CockpitErrorCard, CockpitSkeleton, FreshnessBanner, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
@@ -98,6 +98,10 @@ type CookieJar = Awaited<ReturnType<typeof cookies>>
 async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar, month: string) {
   const supabase = createServerClient()
   const companyId = session.companyId
+  // Per-render signal collector — each softCount/softData receives it and
+  // records suppressed errors. If ≥ 2 queries fail in this SSR, we render
+  // a partial-data banner instead of silent zeros (Phase 1 of v9.4).
+  const signals = createQuerySignals()
   const now = new Date()
   const sevenDaysAgoIso = daysAgo(7, now).toISOString()
   const fourteenDaysAgoIso = daysAgo(14, now).toISOString()
@@ -159,49 +163,54 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     withFallbackTimeout(getClienteActiveTraficos(supabase, companyId), 3500, []),
     withFallbackTimeout(getClienteDocuments(supabase, companyId), 3500, []),
     // Embarques activos: not crossed yet, with recent arrival activity (90d window).
-    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso), { label: 'traficos.activos', signals }),
     // Pedimentos listos: estatus=Pedimento Pagado, awaiting actual cruce,
     // with recency filter (90d) to exclude historical ghosts where the sync
     // never populated fecha_cruce. Without recency, EVCO has 900 hits but
     // only 18 represent real "waiting to cross right now."
-    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso), { label: 'traficos.listos', signals }),
     // Pedimentos nav-card count: mirrors the /pedimentos list-view filter
     // (pedimento set AND fecha_llegada within current month). Before this
     // helper the nav-card showed `pedimentosListosCount` ("awaiting cruce")
     // while the list showed every pedimento this month — so the nav-card
     // read "0" on pages with data. The hero KPI still uses the listos
     // count for the "Próximo cruce" signal.
-    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).gte('fecha_llegada', monthStartIso)),
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('pedimento', 'is', null).gte('fecha_llegada', monthStartIso), { label: 'traficos.pedimentos_mes', signals }),
     // Cruces este mes: real fecha_cruce >= start-of-month.
-    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', monthStartIso)),
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', monthStartIso), { label: 'traficos.cruzados_mes', signals }),
     // Cruces last 7d for nav microStatus.
-    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', sevenDaysAgoIso)),
+    softCount(supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_cruce', sevenDaysAgoIso), { label: 'traficos.cruzados_7d', signals }),
     // Entradas esta semana — entradas.fecha_llegada_mercancia is the truth source.
-    softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso)),
-    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
-    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('uploaded_at', monthStartIso)),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId)),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fraccion_classified_at', monthStartIso)),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null)),
+    softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso), { label: 'entradas.semana', signals }),
+    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId), { label: 'expedientes.total', signals }),
+    softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('uploaded_at', monthStartIso), { label: 'expedientes.mes', signals }),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId), { label: 'catalogo.total', signals }),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fraccion_classified_at', monthStartIso), { label: 'catalogo.mes', signals }),
+    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null), { label: 'catalogo.clasificaciones', signals }),
     // Sparkline series — bucket by the SAME field the headline KPI uses.
     softData<{ fecha_llegada: string }>(
-      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
+      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000),
+      { label: 'traficos.activos_series', signals }
     ),
     softData<{ fecha_llegada: string }>(
-      // Pedimentos-listos sparkline = arrivals trend among Pagado-but-pending-cruce embarques.
-      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
+      supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000),
+      { label: 'traficos.listos_series', signals }
     ),
     softData<{ uploaded_at: string }>(
-      supabase.from('expediente_documentos').select('uploaded_at').eq('company_id', companyId).gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
+      supabase.from('expediente_documentos').select('uploaded_at').eq('company_id', companyId).gte('uploaded_at', fourteenDaysAgoIso).limit(2000),
+      { label: 'expedientes.series', signals }
     ),
     softData<{ fecha_llegada_mercancia: string }>(
-      supabase.from('entradas').select('fecha_llegada_mercancia').eq('company_id', companyId).gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
+      supabase.from('entradas').select('fecha_llegada_mercancia').eq('company_id', companyId).gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000),
+      { label: 'entradas.series', signals }
     ),
     softData<{ fraccion_classified_at: string }>(
-      supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
+      supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000),
+      { label: 'catalogo.series', signals }
     ),
     softData<{ fecha_cruce: string }>(
-      supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
+      supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000),
+      { label: 'traficos.cruces_series', signals }
     ),
     // Último cruce — canonical helper, same source as WorkflowCard topbar
     // and hero "Último cruce" KPI. Collapsed from two divergent queries.
@@ -596,7 +605,32 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         ...morningBriefing,
         greeting_name: (companyName || 'Tu portal').split(' ')[0] || 'Equipo',
       } : null}
-      freshnessSlot={<FreshnessBanner reading={freshness} />}
+      freshnessSlot={
+        <>
+          {signals.failureCount >= 2 && (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                marginTop: 12,
+                padding: '10px 14px',
+                borderRadius: 12,
+                background: 'rgba(251,191,36,0.08)',
+                border: '1px solid rgba(251,191,36,0.28)',
+                color: '#FBBF24',
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: '0.01em',
+                lineHeight: 1.45,
+              }}
+            >
+              Algunos datos no cargaron. Estamos revisando con el servidor — {signals.failedLabels.slice(0, 3).join(' · ')}
+              {signals.failedLabels.length > 3 ? ` · +${signals.failedLabels.length - 3} más` : ''}.
+            </div>
+          )}
+          <FreshnessBanner reading={freshness} />
+        </>
+      }
     />
   )
 }

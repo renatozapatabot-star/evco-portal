@@ -147,6 +147,33 @@ async function main() {
     assert(secret && secret.length > 10, 'SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY too short')
   })
 
+  // ── 9. EVCO cockpit smoke — every nav card must have > 0 rows ──
+  // This is the regression guard against the 2026-04-17 zero-count
+  // incident. A future filter/RLS change that silently zeroes one of
+  // these tables fails here BEFORE it ships. The window is 365 days
+  // so seasonal lulls don't trip the check; we only fail on tables
+  // that have no history at all for EVCO.
+  {
+    const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString()
+    const cockpitTables = [
+      { table: 'traficos',              filter: (q) => q.gte('fecha_llegada', yearAgo) },
+      { table: 'entradas',              filter: (q) => q.gte('fecha_llegada_mercancia', yearAgo) },
+      { table: 'expediente_documentos', filter: (q) => q.gte('uploaded_at', yearAgo) },
+      { table: 'globalpc_productos',    filter: (q) => q }, // no time filter — the catalog is lifetime
+    ]
+    for (const { table, filter } of cockpitTables) {
+      await test(`EVCO cockpit: ${table} has rows (365d window)`, async () => {
+        const base = supabase
+          .from(table)
+          .select('*', { count: 'exact', head: true })
+          .eq('company_id', 'evco')
+        const { count, error } = await filter(base)
+        assert(!error, `${table} query errored: ${error?.message}`)
+        assert((count || 0) > 0, `EVCO ${table} returned 0 rows — cockpit will render zeros`)
+      })
+    }
+  }
+
   // ── Summary ──
   const elapsed = ((Date.now() - start) / 1000).toFixed(1)
   console.log(`\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━`)

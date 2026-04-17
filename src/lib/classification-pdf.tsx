@@ -145,7 +145,7 @@ function buildColumns(config: ClassificationSheetConfig): Column[] {
   const cols: Column[] = []
   if (t.print_fraction) cols.push({ label: 'Fraccion', width: '10%', get: (p) => p.fraction })
   if (t.print_description)
-    cols.push({ label: 'Descripcion', width: '28%', get: (p) => truncate(p.description, 60) })
+    cols.push({ label: 'Mercancia', width: '28%', get: (p) => truncate(p.description, 60) })
   if (t.print_umc) cols.push({ label: 'UMC', width: '6%', get: (p) => p.umc })
   if (t.print_country_origin) cols.push({ label: 'Pais', width: '6%', get: (p) => p.country })
   if (t.print_quantity)

@@ -519,7 +519,7 @@ function TraficosContent() {
               <thead>
                 <tr>
                   <th scope="col" style={{ width: 150, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Clave de Tráfico<SortArrow col="trafico" sort={sort} /></th>
-                  <th scope="col" style={{ minWidth: 220 }}>Descripción</th>
+                  <th scope="col" style={{ minWidth: 220 }}>Mercancía</th>
                   <th scope="col" style={{ width: 140 }}>Pedimento</th>
                   <th scope="col" style={{ width: 110 }}>Fecha Cruce</th>
                   <th scope="col" style={{ width: 80 }}>Guía</th>

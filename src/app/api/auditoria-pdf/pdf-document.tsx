@@ -276,7 +276,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
           <Text style={{ ...s.tableHeaderCell, width: 20 }}>#</Text>
           <Text style={{ ...s.tableHeaderCell, width: 45 }}>Entrada</Text>
           <Text style={{ ...s.tableHeaderCell, width: 35 }}>Fecha</Text>
-          <Text style={{ ...s.tableHeaderCell, width: 160 }}>Descripción Mercancía</Text>
+          <Text style={{ ...s.tableHeaderCell, width: 160 }}>Mercancía</Text>
           <Text style={{ ...s.tableHeaderCell, width: 50 }}># Pedido</Text>
           <Text style={{ ...s.tableHeaderCell, width: 35, textAlign: 'right' }}>Bultos</Text>
           <Text style={{ ...s.tableHeaderCell, width: 50, textAlign: 'right' }}>Peso</Text>

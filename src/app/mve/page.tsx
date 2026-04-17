@@ -177,10 +177,10 @@ export default function MvePage() {
           <table className="aguila-table" aria-label="Embarques pendientes MVE">
             <thead>
               <tr>
-                <th style={{ width: 160 }}>Embarque</th>
+                <th style={{ width: 160 }}>Tráfico</th>
                 <th style={{ width: 130 }}>Estado</th>
                 <th style={{ width: 120 }}>Fecha Llegada</th>
-                <th>Descripción</th>
+                <th>Mercancía</th>
                 <th style={{ width: 120 }}>Pedimento</th>
                 <th style={{ width: 100, textAlign: 'center' }}>MVE</th>
               </tr>

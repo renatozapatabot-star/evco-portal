@@ -102,7 +102,7 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
               {[
                 'Nº partida',
                 'Fracción',
-                'Descripción',
+                'Mercancía',
                 'Cantidad',
                 'País origen',
                 'T-MEC',

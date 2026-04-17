@@ -96,16 +96,20 @@ function EntradasContent() {
       })
       .finally(() => setLoading(false))
 
-    // Traficos for transport data
+    // Traficos for transport data — the `transportista_extranjero` column
+    // on traficos is the US-side carrier (the americano equivalent on
+    // entradas). Grab both so deriveTransporte() can fall back cleanly.
     const tParams = new URLSearchParams({ table: 'traficos', limit: '5000' })
     if (!isInternal && companyId) tParams.set('company_id', companyId)
     fetch(`/api/data?${tParams}`)
       .then(r => r.json()).then(d => {
         const transMap = new Map<string, string>()
         const arr = Array.isArray(d.data) ? d.data : []
-        arr.forEach((t: { trafico?: string; transportista_mexicano?: string; transportista_americano?: string }) => {
+        arr.forEach((t: { trafico?: string; transportista_mexicano?: string; transportista_extranjero?: string; transportista_americano?: string }) => {
           if (t.trafico && !transMap.has(t.trafico)) {
-            transMap.set(t.trafico, t.transportista_americano || t.transportista_mexicano || '')
+            // Prefer US carrier (extranjero on traficos is the US leg),
+            // fall back to MX. fmtCarrier upstream resolves codes to names.
+            transMap.set(t.trafico, t.transportista_extranjero || t.transportista_americano || t.transportista_mexicano || '')
           }
         })
         setTransportMap(transMap)
@@ -308,7 +312,9 @@ function EntradasContent() {
                     ) : (
                       <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>
                     )}
-                    {transporte && <span>{transporte}</span>}
+                    {transporte
+                      ? <span>{transporte}</span>
+                      : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>transporte pendiente</span>}
                     {(r.cantidad_bultos ?? 0) > 0 && <span>{r.cantidad_bultos} bto{r.cantidad_bultos !== 1 ? 's' : ''}</span>}
                     {(r.peso_bruto ?? 0) > 0 && <span>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>}
                     {guia && <span>{guia}</span>}
@@ -328,7 +334,7 @@ function EntradasContent() {
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" sort={sort} /></th>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" sort={sort} /></th>
                   <th style={{ width: 160 }}>Proveedor</th>
-                  <th style={{ minWidth: 160 }}>Descripción</th>
+                  <th style={{ minWidth: 160 }}>Mercancía</th>
                   <th style={{ width: 130 }}>Tráfico</th>
                   <th style={{ width: 120 }}>Transporte US</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" sort={sort} /></th>
@@ -363,7 +369,7 @@ function EntradasContent() {
                       )}
                     </td>
                     <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
-                      {getTransporte(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      {getTransporte(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>}
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
                       {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}

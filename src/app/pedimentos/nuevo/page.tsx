@@ -324,7 +324,7 @@ export default function NuevoPedimentoPage() {
                   <span className="mono text-[12.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>{draft.fraccion_arancelaria || ''}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Descripción</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Mercancía</span>
                   <span className="text-[12px]" style={{ color: 'var(--text-secondary)', maxWidth: 200, textAlign: 'right' }}>{draft.descripcion_mercancia.substring(0, 60)}</span>
                 </div>
               </div>
@@ -344,7 +344,7 @@ export default function NuevoPedimentoPage() {
                   <tr>
                     <th style={{ width: 40 }}>#</th>
                     <th>Fracción</th>
-                    <th>Descripción</th>
+                    <th>Mercancía</th>
                     <th style={{ textAlign: 'right' }}>Cantidad</th>
                     <th style={{ textAlign: 'right' }}>Valor</th>
                   </tr>

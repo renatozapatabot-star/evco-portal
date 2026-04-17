@@ -477,7 +477,7 @@ export function Anexo24View() {
                   <th>Pedimento</th>
                   <th>Fecha</th>
                   <th>Fracción</th>
-                  <th>Descripción</th>
+                  <th>Mercancía</th>
                   <th style={{ textAlign: 'right' }}>Cantidad</th>
                   <th style={{ textAlign: 'right' }}>Valor USD</th>
                   <th>Proveedor</th>

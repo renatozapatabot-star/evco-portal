@@ -282,7 +282,7 @@ function ExpedientesContent() {
                   <th scope="col" style={{ width: 110 }}>Estado</th>
                   <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" sort={sort} /></th>
                   <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('pct')}>Documentos<SortArrow col="pct" sort={sort} /></th>
-                  <th scope="col">Descripción</th>
+                  <th scope="col">Mercancía</th>
                   <th scope="col" style={{ width: 80, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>

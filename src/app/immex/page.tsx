@@ -89,7 +89,7 @@ export default function ImmexPage() {
                 <th>Límite 18m</th>
                 <th style={{ textAlign: 'right' }}>Días Restantes</th>
                 <th style={{ width: 180 }}>Uso del Período</th>
-                <th>Descripción</th>
+                <th>Mercancía</th>
                 <th style={{ textAlign: 'center' }}>Estado</th>
               </tr>
             </thead>

@@ -129,8 +129,13 @@ fi
 #   introduce ~17 new inline hex values for the gold CTA gradient,
 #   T-MEC pills, and amber context strip. These surfaces ship with
 #   the 2026 theme; tokenization follows in a post-Marathon-3 cleanup.)
+# Baseline 2026-04-19 = 2708 (Anexo 24 by-fracción view +
+#   TraficoTimeline introduce ~15 new inline hex values for the amber
+#   "Etapa actual" state, gold/green/red milestone status chrome, and
+#   cross-link pill palette on the fracción grid. Same deferred
+#   tokenization as the Anexo 24 surfaces above.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2693
+INVARIANT_HEX_BASELINE=2708
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

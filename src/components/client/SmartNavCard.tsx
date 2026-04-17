@@ -33,14 +33,14 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
   return (
     <Link href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
       <motion.div
-        whileHover={{ y: -2 }}
-        whileTap={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        whileHover={{ y: -3 }}
+        whileTap={{ y: 0, scale: 0.985 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 28 }}
         className="smart-nav-card"
         style={{
           background: 'rgba(0,0,0,0.4)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          backdropFilter: 'blur(20px) saturate(1.2)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
           border: '1px solid rgba(192,197,206,0.18)',
           borderRadius: 20,
           padding: '16px 20px',
@@ -50,7 +50,8 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           gap: 12,
           width: '100%',
           minHeight: 60,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08)',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07), 0 0 24px rgba(192,197,206,0.1)',
+          willChange: 'transform',
         }}
       >
         <div className="nav-card-icon" style={{

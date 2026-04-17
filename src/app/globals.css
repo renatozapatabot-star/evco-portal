@@ -286,15 +286,20 @@ html, body {
 /* Ensure content floats above the atmosphere */
 .aguila-canvas > * { position: relative; z-index: 1; }
 
-/* ── V1 Reveal: 4-step cockpit entrance mirroring login ── */
+/* ── V1 Reveal: 4-step cockpit entrance mirroring login ──
+   Tightened stagger (was 120/280/440ms) — 2026 premium platforms
+   (Linear, Vercel, Raycast) use tight-but-perceivable choreography
+   rather than slow serial reveals. 80/160/240 reads as "this page
+   assembled itself" rather than "this page is loading piece by piece."
+   Entrance curve uses --ease-brand for consistency with card hovers. */
 @keyframes aguilaReveal {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.aguila-reveal         { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 0ms both; }
-.aguila-reveal-delay-1 { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 120ms both; }
-.aguila-reveal-delay-2 { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 280ms both; }
-.aguila-reveal-delay-3 { animation: aguilaReveal 500ms cubic-bezier(.2,0,0,1) 440ms both; }
+.aguila-reveal         { animation: aguilaReveal 420ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)) 0ms both; }
+.aguila-reveal-delay-1 { animation: aguilaReveal 420ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)) 80ms both; }
+.aguila-reveal-delay-2 { animation: aguilaReveal 420ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)) 160ms both; }
+.aguila-reveal-delay-3 { animation: aguilaReveal 420ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)) 240ms both; }
 @media (prefers-reduced-motion: reduce) {
   .aguila-aura { animation: none; }
   .aguila-reveal,
@@ -2160,11 +2165,35 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 /* Universal focus ring — brand gold (ZAPATA_GOLD_BASE #C9A74A) so
    keyboard navigation lands on a visible, on-brand signal. Inherits the
    element's own border-radius so the ring wraps cards at 20px and pills
-   at 999px without manually tuning per component. */
+   at 999px without manually tuning per component.
+   The transition on outline-offset + outline-color lets the ring fade
+   in over 150ms when focus lands, instead of snapping. Tiny detail,
+   big "feels premium" delta. */
 *:focus-visible {
   outline: 2px solid #C9A74A;
   outline-offset: 2px;
   border-radius: inherit;
+  transition: outline-offset 150ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)), outline-color 150ms ease;
+}
+
+/* Universal active-tap feedback — every button, link, and role=button
+   acknowledges the tap with a short 98%-scale depress. iOS-native
+   feeling on mobile, subtle confidence-builder on desktop. 90ms ease
+   is fast enough to feel instant but long enough to be felt. Cards
+   use a smaller 99.5% scale (defined on GlassCard) so they don't
+   dip into a visually-jarring shrink. */
+button:active:not(:disabled),
+a:active,
+[role="button"]:active:not([aria-disabled="true"]) {
+  transform: scale(0.98);
+  transition: transform 90ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *:focus-visible { transition: none; }
+  button:active:not(:disabled),
+  a:active,
+  [role="button"]:active:not([aria-disabled="true"]) { transform: none; }
 }
 
 *:focus:not(:focus-visible) {

@@ -452,20 +452,30 @@ html, body {
 html {
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.5;
+  /* 1.55 line-height gives Spanish prose one extra notch of breathing
+     room (especially for paragraphs with accented characters whose
+     descenders otherwise kiss the line below). The tighter 1.5
+     persisted from tighter numeric-heavy cockpit views; v3 widens it. */
+  line-height: 1.55;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   /* Typography rendering — sharper glyph shapes + optical kerning.
      optimizeLegibility enables kerning and ligatures; text-size-adjust
-     prevents iOS Safari's aggressive auto-zoom on landscape flip. */
+     prevents iOS Safari's aggressive auto-zoom on landscape flip.
+     font-optical-sizing: auto lets Geist/Inter pick the right optical-
+     size glyph variant per point size (smaller sizes get slightly
+     thicker strokes for readability; larger sizes get finer strokes
+     for elegance). Free quality bump on variable-font displays. */
   text-rendering: optimizeLegibility;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
+  font-optical-sizing: auto;
   /* Stylistic set 01 on Inter/Geist = geometric single-story a + refined
      punctuation spacing. tnum = tabular numbers at the root so every
-     bare number stays column-aligned without per-element opt-in. */
+     bare number stays column-aligned without per-element opt-in.
+     cv11 = alternate single-story l (no hook) for data-dense displays. */
   font-feature-settings: "kern" 1, "ss01" 1, "tnum" 1, "cv11" 1;
 }
 

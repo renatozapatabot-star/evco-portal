@@ -1,5 +1,34 @@
 import { describe, it, expect } from 'vitest'
-import { formatFreshness } from '../freshness'
+import { formatFreshness, classifySyncHealth, type FreshnessReading } from '../freshness'
+
+function reading(minutesAgo: number | null, hasData = true): FreshnessReading {
+  return {
+    minutesAgo,
+    lastSyncedAt: hasData ? '2026-04-20T00:00:00Z' : null,
+    isStale: minutesAgo != null && minutesAgo > 90,
+    hasData,
+  }
+}
+
+describe('classifySyncHealth', () => {
+  it('returns "unknown" when no data', () => {
+    expect(classifySyncHealth(reading(null, false))).toBe('unknown')
+  })
+  it('returns "green" at or below 45 minutes (within 1.5× cadence)', () => {
+    expect(classifySyncHealth(reading(0))).toBe('green')
+    expect(classifySyncHealth(reading(28))).toBe('green')
+    expect(classifySyncHealth(reading(45))).toBe('green')
+  })
+  it('returns "amber" between 46 and 90 minutes', () => {
+    expect(classifySyncHealth(reading(46))).toBe('amber')
+    expect(classifySyncHealth(reading(75))).toBe('amber')
+    expect(classifySyncHealth(reading(90))).toBe('amber')
+  })
+  it('returns "red" above 90 minutes', () => {
+    expect(classifySyncHealth(reading(91))).toBe('red')
+    expect(classifySyncHealth(reading(60 * 4))).toBe('red')
+  })
+})
 
 describe('formatFreshness', () => {
   it('returns null when no data available', () => {

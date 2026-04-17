@@ -34,6 +34,25 @@ Full reconciliation: `scripts/globalpc-sync.js` via `nightly-pipeline.js`.
 Always emits a Telegram summary. Always records `heartbeat_log`. Failure
 rolls back to last known good checkpoint and fires a red alert.
 
+## 2.5. Pipeline-health bands (single source of truth)
+
+Thresholds are defined once in `src/lib/cockpit/freshness.ts` and used
+by both the UI banner and the monitoring scripts. Keeping them in one
+place prevents the client surface and the Telegram alerter from
+disagreeing about what "healthy" means.
+
+| Band | Minutes since last success | Behavior |
+|---|---|---|
+| `green`   | 0 – 45   | No signal. Cadence is healthy (1.5× the 30-min window gives headroom for one missed run). |
+| `amber`   | 46 – 90  | Inline freshness microcopy still renders; watch-list row on `/admin/eagle`. |
+| `red`     | > 90     | Client banner engages ("Revisando datos con el servidor de aduanas — puede tardar unos minutos"). SEV-2 Telegram alert fires. |
+| `unknown` | no data  | Pre-activation or query failure. Surface nothing rather than a misleading `—`. |
+
+`readPipelineHealth(supabase)` returns one `SyncHealthRow` per
+`sync_type` (globalpc, econta, etc.) with failed-since-last-success
+counts so a retrying-but-stuck pipeline (green age, amber failure
+count) is still surfaced.
+
 ## 3. Freshness signal on every client surface
 
 Every page Ursula reaches must either:

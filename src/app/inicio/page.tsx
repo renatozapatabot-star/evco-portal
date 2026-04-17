@@ -22,6 +22,7 @@ import { getLatestCrossing } from '@/lib/queries/latest-crossing'
 import { getActiveCveProductos } from '@/lib/anexo24/active-parts'
 import { CockpitErrorCard, CockpitSkeleton, FreshnessBanner, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
 import { readFreshness } from '@/lib/cockpit/freshness'
+import { computeSuccessRate } from '@/lib/cockpit/success-rate'
 import { InicioClientShell } from './InicioClientShell'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import { buildClientHeroTiles } from '@/lib/cockpit/quiet-season'
@@ -402,12 +403,15 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       if (Array.isArray(windowRows) && windowRows.length > 0) {
         const rows = windowRows as Array<{ estatus: string | null; fecha_llegada: string | null; fecha_cruce: string | null; semaforo: number | string | null }>
         const crossedEstatuses = new Set(['Cruzado', 'E1', 'Entregado'])
-        const totalWithLlegada = rows.filter((r) => r.fecha_llegada).length
         const crossed = rows.filter((r) => crossedEstatuses.has(r.estatus ?? ''))
         const crossedWithBoth = crossed.filter((r) => r.fecha_cruce && r.fecha_llegada)
-        if (totalWithLlegada > 0 && crossed.length > 0) {
-          successRatePct = Math.round((crossed.length / totalWithLlegada) * 100)
-        }
+        // Tasa de éxito uses a mature denominator (14 days minimum age)
+        // and a 10-sample floor — both defined once in success-rate.ts
+        // so the parameters never drift out of sync. Below the floor
+        // or with only in-flight tráficos, returns null → the tile
+        // falls back to the "Operación estable" variant instead of
+        // showing a misleading 43%.
+        successRatePct = computeSuccessRate(rows)
         if (crossedWithBoth.length > 0) {
           const sum = crossedWithBoth.reduce((acc, r) => {
             const delta = (new Date(r.fecha_cruce as string).getTime() - new Date(r.fecha_llegada as string).getTime()) / 86_400_000

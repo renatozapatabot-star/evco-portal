@@ -148,10 +148,20 @@ html, body {
   --ease-enter: cubic-bezier(.2, 0, 0, 1);
   --ease-exit: cubic-bezier(.4, 0, 1, 1);
   --ease-counting: cubic-bezier(.2, 0, .1, 1);
+  /* Brand ease — the single curve for hover lifts, card reveals, and
+     panel opens. Matches the login screen's entrance breath. */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-enter: 200ms;
   --dur-exit: 150ms;
   --dur-counting: 1200ms;
   --dur-shimmer: 1500ms;
+  /* Interaction durations — use these instead of ad-hoc 150/200/250/400.
+     Fast  = hover states + active tap feedback.
+     Base  = panel opens/closes, card lifts.
+     Slow  = page-level reveals, modal entrances. */
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
   --dur-micro: 100ms;
 
   /* ── Auto-dim (day mode defaults) ── */
@@ -1252,6 +1262,9 @@ body {
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   color: var(--navy-800);
   vertical-align: middle;
+  /* tabular-nums keeps numeric columns aligned even when the cell mixes
+     proportional text and numbers — defense-in-depth beyond JetBrains Mono. */
+  font-variant-numeric: tabular-nums;
 }
 
 .aguila-table tr:hover {
@@ -2060,10 +2073,14 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 
 /* ── Accessibility ───────────────────────────────── */
 
+/* Universal focus ring — brand gold (ZAPATA_GOLD_BASE #C9A74A) so
+   keyboard navigation lands on a visible, on-brand signal. Inherits the
+   element's own border-radius so the ring wraps cards at 20px and pills
+   at 999px without manually tuning per component. */
 *:focus-visible {
-  outline: 2px solid var(--gold-400, #C0C5CE);
+  outline: 2px solid #C9A74A;
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: inherit;
 }
 
 *:focus:not(:focus-visible) {

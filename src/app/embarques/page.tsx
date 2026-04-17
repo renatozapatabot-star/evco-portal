@@ -426,6 +426,7 @@ function TraficosContent() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtId(r.trafico)}</span>
                     <span className={`badge ${status === 'Cruzado' ? 'badge-cruzado' : 'badge-proceso'}`} style={{ fontSize: 'var(--aguila-fs-meta)' }}>
+                      <span className="badge-dot" aria-hidden="true" />
                       {status}
                     </span>
                   </div>

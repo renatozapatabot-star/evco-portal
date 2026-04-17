@@ -45,23 +45,40 @@ Run white-label dry-run (find every hardcoded "9254") BEFORE promising anything.
 ## BUILD STATE (update this section at session start)
 
 ```
-Branch:         feature/embarques-rename-month-scope
-Last commit:    11ad6d2 chore(eagle): soft-wrap owner active-count query
-Rating:         9.8/10 — code-side ceiling without real users
-Tests:          343/343 green
-Deploy:         LIVE — evco-portal.vercel.app + portal.renatozapata.com
-                (last prod push 2026-04-16 — client cockpit polish)
-Supabase:       db push current; 8 globalpc_* + 4 econta_* tables synced
+Branch:         overnight/ursula-ready
+Last commit:    e264cd4 revert(parts): most_used sort regression
+Rating:         9.5/10 — Sunday EOD, 3 external deps pending Renato
+Tests:          typecheck clean · build clean · 5/5 dry-runs READY
+Deploy:         LIVE — portal.renatozapata.com + evco-portal.vercel.app
+                (last prod push 2026-04-16 — Sunday EOD, parte intelligence + CRUZ wordmark)
+Supabase:       8 globalpc_* + 4 econta_* tables synced
+                TWO MIGRATIONS PENDING APPLY (see runbook /tmp/monday-launch-runbook.md):
+                  - 20260417_client_briefings.sql   (Monday briefing table)
+                  - 20260417_parts_rls.sql          (RLS + indexes for 4 parts tables)
 Storage:        7 buckets live (classification-sheets, pedimento-exports,
                 anexo-24-exports, warehouse-photos, regulatory-docs,
                 quickbooks-exports, mensajeria-attachments)
 Vercel env:     All 5 confirmed (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN,
                 TELEGRAM_CHAT_ID, TITO_EMAIL, RESEND_API_KEY)
-Active focus:   GlobalPC + eConta workflow audit pending Renato delivery
-Tito ETA:       awaiting walkthrough
-Known debt:     3 legacy dark-theme PDFs in app/api/ (auditoria-pdf, reportes-pdf, anexo24-pdf)
-                eConta MySQL writer (PM2) deferred until Anabel recon
-                WSDL document pull script exists, not in active cron
+                ⚠ ANTHROPIC credit balance insufficient — topup needed
+                  before Monday 7 AM (CRUZ AI + briefing depend on it)
+Active focus:   Monday ship to Ursula (EVCO). 3 Sunday evening manual steps:
+                  1) apply both migrations via Supabase SQL editor
+                  2) Anthropic credit topup
+                  3) pm2 start ecosystem.config.js --only client-briefing-generator && pm2 save
+Tito ETA:       Sunday evening review via /tmp/tito-review-script.md
+Known debt:     - /pedimentos/nuevo operator page queries globalpc_partidas via
+                  anon key → breaks after RLS migration applies (operator-only,
+                  not Ursula's path). Migrate to /api/data in follow-up.
+                - /catalogo default sort=most_used surfaces zero-usage parts
+                  on first page (148K/693 ratio). "Ver ficha" drilldown
+                  works from any row. Proper fix needs materialized view.
+                - classification_log empty today — "Revisado por Tito" badge
+                  hidden until Tito starts reviewing. Feature is plumbed.
+                - 3 legacy dark-theme PDFs in app/api/ (auditoria-pdf, reportes-pdf, anexo24-pdf)
+                - eConta MySQL writer (PM2) deferred until Anabel recon
+                - WSDL document pull script exists, not in active cron
+EVCO data:      148,537 parts · 290K partidas · 6,323 OCAs · 693 parts used in 24mo
 ```
 
 Run `/boot` at session start. Read `.claude/memory/learned-rules.md`. Fix all violations before building.
@@ -680,6 +697,13 @@ TARGET:     GlobalPC uninstalled: early-to-mid May 2026
 - GlobalPC is read-only forever. Mario Ramos must not perceive CRUZ as competition. Two-way sync is banned by contract, not just by code.
 - eConta cockpit at `/contabilidad/inicio` is Anabel's system today; the QB IIF writer to eConta MySQL is deferred until her credential recon. Don't ship features that assume the writer exists.
 - Client cockpit at `/inicio` shows monthly activity, not lifetime totals. The 214K product count was a regression — Expedientes/Catálogo tiles now show this-month counts with totals demoted to microStatus.
+- **Parte intelligence data flow:** `/api/catalogo/partes` is the list endpoint, `/api/catalogo/partes/[cveProducto]` is the detail. Both use service-role Supabase client (bypasses RLS). Client-role sessions cannot override `company_id` via query param — ignored server-side. Cross-tenant cveProducto returns **404**, not 403 (no info leak). `.maybeSingle()` on `globalpc_productos` is banned — legacy dupes per (cve_producto, company_id) cause it to 500; use `.order('created_at').limit(1)` instead.
+- **Legacy column names in `classification_log`:** tenant is `client_id` (not `company_id`), timestamp is `ts` (not `created_at`). Always use both in queries against that table.
+- **Anthropic graceful fallback is the contract.** Chat route (`/api/cruz-ai/ask`) classifies 3 error modes: credit_balance, rate_limit, generic — each has calm Spanish copy. Briefing generator (`scripts/generate-client-briefing.js`) fires ONE Telegram alert per run on credit failure (deduped). Users never see a hanging spinner or English stack trace.
+- **RLS migration pattern for parts tables:** `FOR ALL USING (false)` — service role bypasses automatically. Portal uses HMAC session (not Supabase auth), so JWT-claim policies always evaluate false. `USING (false)` is the simplest correct policy for tables queried only through `/api/` routes using `createServerClient`.
+- **Anon-key client queries are banned on tenant-scoped tables.** Every `'use client'` page that does `supabase.from('tenant_table')` with `NEXT_PUBLIC_SUPABASE_ANON_KEY` breaks after RLS applies. Route through `/api/data` or a dedicated `/api/` endpoint that uses service role. Operator-only page `/pedimentos/nuevo` is the current known violator — migrate before onboarding client #2.
+- **148K parts / 693 used in 24mo** — EVCO's product catalog is long-tail. Default list sort must prioritize parts with actual usage or the first page looks empty/dead. `partidasByCve` aggregate is the source of truth for "most used."
+- **SuperTito signal** comes from `classification_log.supertito_agreed` + `supertito_correction`. The "Revisado por Tito · N%" badge on parte detail renders only when `supertito_stats.total > 0`. Today the table is empty; the feature is plumbed for when Tito starts reviewing.
 
 ---
 

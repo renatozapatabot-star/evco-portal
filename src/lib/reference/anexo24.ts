@@ -129,31 +129,71 @@ export async function loadAnexo24Overlay(
   if (uniqueCves.length === 0 || !companyId) return map
 
   try {
+    // Production schema uses `anexo24_partidas` (row-per-pedimento-
+    // partida). We compute the part-level snapshot on the fly: group
+    // by numero_parte, pick the most-recent partida by fecha_pago.
+    //
+    // fecha_pago is stored as a DD/MM/YYYY string, not a timestamp, so
+    // we sort client-side after parsing. fraccion is stored packed (no
+    // dots) so we unpack via formatFraccion to the SAT canonical shape.
     const { data, error } = await supabase
-      .from('anexo24_parts')
-      .select('cve_producto, merchandise_name_official, merchandise_name_ingles, fraccion_official, umt_official, pais_origen_official')
+      .from('anexo24_partidas')
+      .select('numero_parte, descripcion, fraccion, um_comercial, pais_origen, fecha_pago')
       .eq('company_id', companyId)
-      .is('vigente_hasta', null)
-      .in('cve_producto', uniqueCves)
-    if (error) {
-      // Table may not be live yet (migration deferred) — silent fallback.
-      return map
-    }
-    for (const row of (data ?? [])) {
-      if (row.cve_producto) {
-        map.set(row.cve_producto, {
-          merchandise_name_official: row.merchandise_name_official,
-          merchandise_name_ingles: row.merchandise_name_ingles,
-          fraccion_official: row.fraccion_official,
-          umt_official: row.umt_official,
-          pais_origen_official: row.pais_origen_official,
+      .in('numero_parte', uniqueCves)
+      .limit(10000)
+    if (error) return map
+
+    // Group by numero_parte → pick max fecha_pago (DD/MM/YYYY → compare on epoch).
+    const latestPerCve = new Map<string, { descripcion: string | null; fraccion: string | null; um_comercial: string | null; pais_origen: string | null; ts: number }>()
+    for (const row of (data ?? []) as Array<{
+      numero_parte: string | null
+      descripcion: string | null
+      fraccion: string | null
+      um_comercial: string | null
+      pais_origen: string | null
+      fecha_pago: string | null
+    }>) {
+      const cve = row.numero_parte
+      if (!cve) continue
+      const ts = parseDDMMYYYY(row.fecha_pago)
+      const prev = latestPerCve.get(cve)
+      if (!prev || ts > prev.ts) {
+        latestPerCve.set(cve, {
+          descripcion: row.descripcion,
+          fraccion: row.fraccion,
+          um_comercial: row.um_comercial,
+          pais_origen: row.pais_origen,
+          ts,
         })
       }
+    }
+    for (const [cve, latest] of latestPerCve) {
+      map.set(cve, {
+        merchandise_name_official: latest.descripcion ?? cve,
+        merchandise_name_ingles: null,
+        // Unpack packed fracciones (39012001 → 3901.20.01) so every
+        // downstream comparison happens in canonical dotted form.
+        fraccion_official: latest.fraccion ? (formatFraccion(latest.fraccion) ?? latest.fraccion) : null,
+        umt_official: latest.um_comercial,
+        pais_origen_official: latest.pais_origen,
+      })
     }
   } catch {
     // Network/table error — fall back silently. Never break the page.
   }
   return map
+}
+
+/** DD/MM/YYYY → unix-ms. Returns 0 on parse failure so rows without a
+ *  date sort to the bottom but still surface as the overlay source. */
+function parseDDMMYYYY(s: string | null | undefined): number {
+  if (!s) return 0
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s.trim())
+  if (!m) return 0
+  const iso = `${m[3]}-${m[2]}-${m[1]}T00:00:00Z`
+  const t = new Date(iso).getTime()
+  return Number.isFinite(t) ? t : 0
 }
 
 /**

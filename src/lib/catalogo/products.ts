@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { resolveProveedorName } from '@/lib/proveedor-names'
+import { formatFraccion } from '@/lib/format/fraccion'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -350,8 +351,9 @@ export async function getCatalogo(
   }
 
   // Formato 53 overlay — when USE_ANEXO24_CANONICAL=true, fetch the
-  // current anexo24_parts rows for the resolved cve_productos and
-  // surface them as the source of truth + drift classification.
+  // current anexo24_partidas rows for the resolved cve_productos and
+  // surface them as the source of truth + drift classification. Each
+  // part's snapshot comes from its most-recent partida (by fecha_pago).
   const anexoOverlay = new Map<string, Anexo24Overlay>()
   const canonicalEnabled = (process.env.USE_ANEXO24_CANONICAL ?? '').toLowerCase() === 'true'
   if (canonicalEnabled) {
@@ -359,20 +361,32 @@ export async function getCatalogo(
     for (let i = 0; i < cves.length; i += 1000) {
       const batch = cves.slice(i, i + 1000)
       const { data } = await supabase
-        .from('anexo24_parts')
-        .select('cve_producto, merchandise_name_official, fraccion_official, umt_official, pais_origen_official')
+        .from('anexo24_partidas')
+        .select('numero_parte, descripcion, fraccion, um_comercial, pais_origen, fecha_pago')
         .eq('company_id', companyId)
-        .is('vigente_hasta', null)
-        .in('cve_producto', batch)
-      for (const r of (data ?? []) as Array<{ cve_producto: string | null; merchandise_name_official: string; fraccion_official: string | null; umt_official: string | null; pais_origen_official: string | null }>) {
-        if (r.cve_producto) {
-          anexoOverlay.set(r.cve_producto, {
-            merchandise: r.merchandise_name_official,
-            fraccion: r.fraccion_official,
-            umt: r.umt_official,
-            pais_origen: r.pais_origen_official,
-          })
+        .in('numero_parte', batch)
+        .limit(10000)
+      // Group by numero_parte → most-recent by fecha_pago (DD/MM/YYYY).
+      const latest = new Map<string, { desc: string | null; frac: string | null; umc: string | null; pais: string | null; ts: number }>()
+      for (const r of (data ?? []) as Array<{ numero_parte: string | null; descripcion: string | null; fraccion: string | null; um_comercial: string | null; pais_origen: string | null; fecha_pago: string | null }>) {
+        if (!r.numero_parte) continue
+        const m = r.fecha_pago ? /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(r.fecha_pago.trim()) : null
+        const ts = m ? new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00Z`).getTime() : 0
+        const prev = latest.get(r.numero_parte)
+        if (!prev || ts > prev.ts) {
+          latest.set(r.numero_parte, { desc: r.descripcion, frac: r.fraccion, umc: r.um_comercial, pais: r.pais_origen, ts })
         }
+      }
+      for (const [cve, l] of latest) {
+        // Unpack packed fracciones (39012001 → 3901.20.01) so drift
+        // comparison matches by canonical dotted form, not by
+        // raw-vs-packed.
+        anexoOverlay.set(cve, {
+          merchandise: l.desc ?? cve,
+          fraccion: l.frac ? (formatFraccion(l.frac) ?? l.frac) : null,
+          umt: l.umc,
+          pais_origen: l.pais,
+        })
       }
     }
   }

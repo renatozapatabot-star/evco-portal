@@ -146,21 +146,47 @@ export async function GET(request: NextRequest) {
           .or(`pedimento.ilike.%${safe}%,proveedor.ilike.%${safe}%,referencia.ilike.%${safe}%,num_factura.ilike.%${safe}%`)
           .limit(10)
     ),
-    // Phase 1A: Search products by description or fraccion
-    supabase.from('globalpc_productos')
-      .select('id, descripcion, fraccion, cve_producto')
-      .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
-      .limit(8),
-    // Phase 1A: Search suppliers by name or RFC
-    supabase.from('globalpc_proveedores')
-      .select('cve_proveedor, nombre, id_fiscal')
-      .or(`nombre.ilike.%${safe}%,cve_proveedor.ilike.%${safe}%,id_fiscal.ilike.%${safe}%`)
-      .limit(8),
-    // Phase 1A: Search partidas by description
-    supabase.from('globalpc_partidas')
-      .select('id, cve_trafico, descripcion, fraccion_arancelaria')
-      .or(`descripcion.ilike.%${safe}%,fraccion_arancelaria.ilike.%${safe}%,cve_trafico.ilike.%${safe}%`)
-      .limit(8),
+    // Products — client-scoped for non-internal sessions.
+    // Invariant 13 + 14: a client user must never see a SKU from a
+    // different tenant's catalog. Audit 2026-04-19 caught these three
+    // queries (productos, proveedores, partidas) running un-scoped;
+    // fix gates each one on isInternal the same way traficos +
+    // entradas + aduanet_facturas above do.
+    (isInternal
+      ? supabase.from('globalpc_productos')
+          .select('id, descripcion, fraccion, cve_producto')
+          .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
+          .limit(8)
+      : supabase.from('globalpc_productos')
+          .select('id, descripcion, fraccion, cve_producto')
+          .eq('company_id', companyId)
+          .or(`descripcion.ilike.%${safe}%,fraccion.ilike.%${safe}%,cve_producto.ilike.%${safe}%`)
+          .limit(8)
+    ),
+    // Suppliers — client-scoped.
+    (isInternal
+      ? supabase.from('globalpc_proveedores')
+          .select('cve_proveedor, nombre, id_fiscal')
+          .or(`nombre.ilike.%${safe}%,cve_proveedor.ilike.%${safe}%,id_fiscal.ilike.%${safe}%`)
+          .limit(8)
+      : supabase.from('globalpc_proveedores')
+          .select('cve_proveedor, nombre, id_fiscal')
+          .eq('company_id', companyId)
+          .or(`nombre.ilike.%${safe}%,cve_proveedor.ilike.%${safe}%,id_fiscal.ilike.%${safe}%`)
+          .limit(8)
+    ),
+    // Partidas — client-scoped.
+    (isInternal
+      ? supabase.from('globalpc_partidas')
+          .select('id, cve_trafico, descripcion, fraccion_arancelaria')
+          .or(`descripcion.ilike.%${safe}%,fraccion_arancelaria.ilike.%${safe}%,cve_trafico.ilike.%${safe}%`)
+          .limit(8)
+      : supabase.from('globalpc_partidas')
+          .select('id, cve_trafico, descripcion, fraccion_arancelaria')
+          .eq('company_id', companyId)
+          .or(`descripcion.ilike.%${safe}%,fraccion_arancelaria.ilike.%${safe}%,cve_trafico.ilike.%${safe}%`)
+          .limit(8)
+    ),
   ])
 
   const results = [

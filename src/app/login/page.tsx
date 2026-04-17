@@ -368,8 +368,8 @@ function LoginContent() {
           font-weight: 500;
         }
         .login-corridor-mx {
-          color: var(--portal-green-2, #58D18E);
-          text-shadow: 0 0 14px color-mix(in oklch, var(--portal-green-2, #58D18E) 30%, transparent);
+          color: var(--portal-green-2);
+          text-shadow: 0 0 14px color-mix(in oklch, var(--portal-green-2) 30%, transparent);
         }
         /* Alive signal — chip that breathes to signal the portal is
            connected + awake. Matches PageShell's "Datos en vivo"

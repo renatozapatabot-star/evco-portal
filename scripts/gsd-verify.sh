@@ -487,8 +487,17 @@ fi
 #   PedimentoTab + Anexo24FraccionGrid + TraficoTimeline introduce raw
 #   fontSize values for entity-specific typography sizing. Token migration
 #   follows the post-Marathon-3 design-system cleanup.)
+# Baseline 2026-04-17 PM = 415 (reference-faithful dashboard port:
+#   PortalTopBar, PortalGreeting, PortalAssistantFab, PortalCommandPalette,
+#   PortalModuleCard, 9 Viz* components, PortalPedimentoTheater, login
+#   editorial eyebrow/corridor introduce ~41 inline fontSize values. Most
+#   are handoff-specific pixel values — 64 for the giant pedimento number,
+#   32/40 for payment total + semáforo headline, 28/22 for module/card
+#   titles, 18 for doc simulation. These don't map to the --portal-fs-*
+#   scale and would break fidelity if forced. Tokenization in a follow-up
+#   design-audit block after the reference port lands in prod.)
 # --------------------------------------------------------------------------
-INVARIANT_27_BASELINE=374
+INVARIANT_27_BASELINE=415
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

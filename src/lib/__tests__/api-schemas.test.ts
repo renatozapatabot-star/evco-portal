@@ -54,8 +54,13 @@ describe('dataQuerySchema', () => {
     if (result.success) expect(result.data.limit).toBe(100)
   })
 
-  it('rejects limit over 5000', () => {
+  it('accepts limit up to the documented cap (10000)', () => {
     const result = dataQuerySchema.safeParse({ table: 'traficos', limit: '10000' })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects limit over the documented cap (10001)', () => {
+    const result = dataQuerySchema.safeParse({ table: 'traficos', limit: '10001' })
     expect(result.success).toBe(false)
   })
 

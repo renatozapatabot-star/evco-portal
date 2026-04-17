@@ -314,35 +314,36 @@ html, body {
   .aguila-reveal-delay-3 { animation: aguilaReveal 240ms ease both; animation-delay: 0ms; }
 }
 
-/* ── Aduana Cinematic Glass System — AI Control Tower Theme ── */
+/* ── PORTAL token bridge — Block DD Phase 3 ──
+   Every legacy token a list page / cockpit references re-routes to a
+   --portal-* equivalent. The chemistry flips from glass (rgba overlays
+   on a lit backdrop) to opaque ink with hairline borders and an
+   emerald-accent rail on hover. Any card composing .kpi-card,
+   .table-shell, .page-shell, or inheriting var(--bg-card) now inherits
+   the new skin without per-page edits. */
 .aguila-dark {
-  /* ── Backgrounds — gradient with visible depth ── */
-  --bg-main: #030508;
-  --bg-card: rgba(255,255,255,0.03);
-  --bg-surface: rgba(255,255,255,0.03);
-  --bg-elevated: rgba(255,255,255,0.04);
-  --bg-hover: rgba(255,255,255,0.08);
-  /* ── Glass system ──
-     Edge lighting (the inset 0 1px 0) simulates a top-lit panel: the
-     top edge catches ambient light like brushed metal. Bumping from
-     0.05 → 0.07 adds the whisper of depth that separates a premium
-     panel from a flat card. The elevated variant (hover state) goes
-     0.08 → 0.11 so the lift also brightens. */
-  --border-card: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.06);
-  --glass-bg: rgba(255,255,255,0.045);
-  --glass-border: rgba(192,197,206,0.3);
-  --glass-blur: 20px;
-  --glass-saturate: 1.2;
-  --glass-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
-  --glass-shadow-elevated: 0 14px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.11);
+  /* ── Backgrounds — opaque ink stack, depth via layering ── */
+  --bg-main:     var(--portal-ink-0);
+  --bg-card:     var(--portal-ink-1);
+  --bg-surface:  var(--portal-ink-1);
+  --bg-elevated: var(--portal-ink-2);
+  --bg-hover:    var(--portal-ink-3);
+  /* ── Borders + glass chemistry ── */
+  --border-card: var(--portal-line-1);
+  --border:      var(--portal-line-1);
+  --glass-bg:     var(--portal-ink-1);
+  --glass-border: var(--portal-line-2);
+  --glass-blur:      0px;  /* opaque cards now — blur belongs to transient overlays */
+  --glass-saturate:  1;
+  --glass-shadow:          var(--portal-shadow-2);
+  --glass-shadow-elevated: var(--portal-shadow-3);
   /* ── Text ── */
-  --text-primary: #E6EDF3;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary:   var(--portal-fg-1);
+  --text-secondary: var(--portal-fg-3);
+  --text-muted:     var(--portal-fg-4);
   /* ── Shadows ── */
-  --shadow-card: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07), 0 0 1px rgba(192,197,206,0.15);
-  --shadow-elevated: 0 14px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.11);
+  --shadow-card:     var(--portal-shadow-2);
+  --shadow-elevated: var(--portal-shadow-3);
   /* ── Semantic lighting — cyan = intelligence, gold = action ── */
   --accent-cyan: #C0C5CE;
   --accent-blue: #C0C5CE;

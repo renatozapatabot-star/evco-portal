@@ -18,6 +18,10 @@ export default function CruzChatPage() {
   // V1 · role-aware greeting passed via AsistenteButton (ctx=role, hello=message)
   const helloMessage = searchParams.get('hello')
   const roleCtx = searchParams.get('ctx')
+  // v3 Command Experience — CruzCommand routes ask-intent queries here
+  // with ?q=. The input auto-prefills so the first Enter fires the
+  // question the user already typed up top.
+  const initialQuery = searchParams.get('q')
   const isMobile = useIsMobile()
   const [panelData, setPanelData] = useState<{ enProceso: { trafico_number?: string; id?: string; estatus?: string }[]; urgent: { trafico_number?: string; id?: string }[]; alertTitle: string | null }>({
     enProceso: [], urgent: [], alertTitle: null,
@@ -58,7 +62,11 @@ export default function CruzChatPage() {
     }
     return []
   })
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(initialQuery ?? '')
+  // When CruzCommand routes here with ?q=, the input is pre-filled; we
+  // leave the focus + send decision to the user (one more Enter to ship)
+  // rather than auto-send — feels less surprising, never costs a token
+  // on a misclick.
   const [loading, setLoading] = useState(false)
   const [listening, setListening] = useState(false)
   const recognitionRef = useRef<InstanceType<NonNullable<typeof window.SpeechRecognition>> | null>(null)

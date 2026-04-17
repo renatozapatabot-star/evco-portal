@@ -6,6 +6,7 @@ import { Search, Menu, LogOut, ChevronLeft } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import { AguilaMark } from '@/components/brand/AguilaMark';
 import { TopbarStatus } from './TopbarStatus';
+import { CruzCommand } from '@/components/command/CruzCommand';
 
 interface TopBarProps {
   showNotifications?: boolean;
@@ -84,27 +85,13 @@ export default function TopBar({
           <AguilaMark size={28} />
         </Link>
 
-        {/* Wide search bar (desktop) */}
-        <button
-          className="topbar-search-wide"
-          onClick={openCommandPalette}
-          aria-label="Buscar"
-        >
-          <Search size={16} style={{ opacity: 0.5, flexShrink: 0 }} />
-          <span className="topbar-search-placeholder">
-            Buscar embarque, entradas, pedimentos...
-          </span>
-        </button>
-
-        {/* Compact search icon (mobile — shows when wide bar is hidden) */}
-        <div style={{ flex: 1 }} className="topbar-mobile-spacer" />
-        <button
-          className="topbar-search-icon-mobile"
-          onClick={openCommandPalette}
-          aria-label="Buscar"
-        >
-          <Search size={18} />
-        </button>
+        {/* CruzCommand — live search + AI entry point. Replaces the
+            legacy open-palette button with an always-visible inline
+            input. ⌘K focuses the input (wins over the legacy modal);
+            Shift+⌘K still falls through to the advanced palette. */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 12px', minWidth: 0 }}>
+          <CruzCommand mode="compact" />
+        </div>
 
         {/* Right: status indicators + company name + logout */}
         <div className="topbar-right">
@@ -167,15 +154,11 @@ export default function TopBar({
       >
         <AguilaMark size={28} />
       </Link>
-      <div style={{ flex: 1 }} />
-      <button
-        className="topbar-search-btn"
-        onClick={openCommandPalette}
-        aria-label="Buscar"
-      >
-        <Search size={16} />
-        <span className="topbar-search-label">Buscar embarque, pedimento...</span>
-      </button>
+      {/* Operator topbar gets the same inline CruzCommand — one search
+          surface, same keyboard contract, regardless of portal type. */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 12px', minWidth: 0 }}>
+        <CruzCommand mode="compact" />
+      </div>
 
       <div className="topbar-right">
         <TopbarStatus />

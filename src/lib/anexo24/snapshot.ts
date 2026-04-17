@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { loadAnexo24Overlay, resolveMerchName, resolveFraction, isAnexo24CanonicalEnabled } from '@/lib/reference/anexo24'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -239,22 +240,45 @@ export async function getAnexoSnapshot(
     partidaAgg.set(key, prev)
   }
 
+  // Canonical Anexo 24 overlay — Phase 3. When USE_ANEXO24_CANONICAL is
+  // true and anexo24_parts has matching rows, merchandise name + fraction
+  // resolve to the Formato 53 truth instead of globalpc_productos drift.
+  // When the flag is off (default), this is a no-op empty map.
+  const overlay = await loadAnexo24Overlay(
+    supabase,
+    companyId,
+    productos.map((p) => p.cve_producto),
+  )
+  const canonicalEnabled = isAnexo24CanonicalEnabled()
+
   // Compose rendered SKUs.
   const skus: AnexoSku[] = productos.map((p) => {
     const key = (p.descripcion ?? '').trim().toUpperCase()
     const agg = partidaAgg.get(key)
-    const ch = chapter(p.fraccion)
+    const canonical = canonicalEnabled && p.cve_producto ? overlay.get(p.cve_producto) : undefined
+    const merchName = resolveMerchName({
+      cve_producto: p.cve_producto,
+      anexo24_merchandise_name: canonical?.merchandise_name_official ?? null,
+      descripcion: p.descripcion,
+    })
+    const fraccionResolved = resolveFraction({
+      anexo24_fraccion: canonical?.fraccion_official ?? null,
+      fraccion: p.fraccion,
+    })
+    // Chapter is chosen from whichever fraction we landed on — keep
+    // T-MEC heuristic pointing at the authoritative-now value.
+    const ch = chapter(fraccionResolved ?? p.fraccion)
     return {
       id: String(p.id),
       cve_producto: p.cve_producto,
-      descripcion: p.descripcion ?? '',
-      fraccion: p.fraccion,
-      fraccion_source: p.fraccion_source,
+      descripcion: merchName,
+      fraccion: fraccionResolved ?? p.fraccion,
+      fraccion_source: canonical ? 'anexo24' : p.fraccion_source,
       fraccion_classified_at: p.fraccion_classified_at,
       cve_proveedor: p.cve_proveedor,
       proveedor_nombre: p.cve_proveedor ? proveedorMap.get(p.cve_proveedor) ?? null : null,
-      pais_origen: p.pais_origen,
-      umt: p.umt,
+      pais_origen: canonical?.pais_origen_official ?? p.pais_origen,
+      umt: canonical?.umt_official ?? p.umt,
       veces_importado: agg?.count ?? 0,
       valor_ytd_usd: agg && agg.valor > 0 ? Math.round(agg.valor * 100) / 100 : null,
       ultimo_cve_trafico: agg?.lastTrafico ?? null,

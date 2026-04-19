@@ -3,6 +3,7 @@ import type Anthropic from '@anthropic-ai/sdk'
 import type { PortalRole } from '@/lib/session'
 import { AguilaForbiddenError, canSeeAllClients, canSeeFinance } from './roles'
 import { resolveMentions, type MentionResult } from './mentions'
+import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -136,7 +137,9 @@ async function resolveClientScope(
     .or(`clave_cliente.eq.${trimmed},company_id.eq.${trimmed}`)
     .maybeSingle()
 
-  if (!data) return { companyId: null, allClients: false }
+  // Admin provided a filter that doesn't resolve. Silently dropping to an
+  // unfiltered query would cross-tenant on a typo; refuse instead.
+  if (!data) throw new AguilaForbiddenError(`scope:unknown_client:${trimmed}`)
   return { companyId: data.company_id, allClients: false }
 }
 
@@ -235,15 +238,36 @@ async function execQueryCatalogo(args: CatalogoArgs, ctx: AguilaCtx) {
   const scope = await resolveClientScope(ctx, args.clientFilter)
   const topN = Math.min(Math.max(args.topN ?? 5, 1), 20)
 
+  // Per-tenant catalog reads MUST also filter by the active-parts allowlist
+  // (cve_productos this client has actually imported) or legacy rows tagged
+  // with this company_id — pre-Block-EE residue, orphan syncs — surface to
+  // the client. Contract: .claude/rules/tenant-isolation.md. Admin/broker
+  // with allClients=true intentionally bypasses both filters for oversight.
+  let activeList: string[] | null = null
+  if (!scope.allClients && scope.companyId) {
+    activeList = activeCvesArray(
+      await getActiveCveProductos(supabaseAdmin, scope.companyId),
+    )
+    if (activeList.length === 0) {
+      return {
+        scope: scope.companyId,
+        topFracciones: [],
+        tmecSavingsYtd: null,
+        note: 'Sin partes verificadas en anexo 24 · catálogo aún no disponible.',
+      }
+    }
+  }
+
   let q = supabaseAdmin
     .from('globalpc_productos')
     .select('fraccion, descripcion')
     .not('fraccion', 'is', null)
-    .limit(5000)
 
-  if (!scope.allClients && scope.companyId) q = q.eq('company_id', scope.companyId)
+  if (!scope.allClients && scope.companyId && activeList) {
+    q = q.eq('company_id', scope.companyId).in('cve_producto', activeList)
+  }
 
-  const { data, error } = await q
+  const { data, error } = await q.limit(5000)
   if (error) throw new Error(`catalogo:${error.message}`)
 
   const counts = new Map<string, { count: number; descripcion: string }>()

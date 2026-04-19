@@ -54,14 +54,31 @@ export function parsePedimento(raw: string | null | undefined): PedimentoParts |
 /**
  * Render a pedimento in the canonical `DD AD PPPP SSSSSSS` format.
  * Returns the fallback (default `—`) when the input can't be parsed.
+ *
+ * Optional `defaults` allow reconstruction from a 7-digit sequential
+ * when DD/AD/PPPP context is known from the surrounding row (e.g. list
+ * pages where the DB column stores only the sequential, but the broker
+ * + aduana + year are known from the trafico/factura row). Audit
+ * 2026-04-19 caught naked 7-digit pedimentos rendering across
+ * /embarques, /pedimentos, /expedientes — the single most visible
+ * defect on the portal. Pass `{ dd, ad, pppp }` to reconstruct.
  */
 export function formatPedimento(
   raw: string | null | undefined,
   fallback = '—',
+  defaults?: { dd?: string; ad?: string; pppp?: string },
 ): string {
   const parts = parsePedimento(raw)
-  if (!parts) return fallback
-  return `${parts.dd} ${parts.ad} ${parts.pppp} ${parts.sssssss}`
+  if (parts) return `${parts.dd} ${parts.ad} ${parts.pppp} ${parts.sssssss}`
+
+  // Reconstruction path — 7-digit sequential + caller-supplied context.
+  if (raw && defaults) {
+    const seq = String(raw).trim().replace(/\D/g, '')
+    if (seq.length === 7 && defaults.dd && defaults.ad && defaults.pppp) {
+      return `${defaults.dd} ${defaults.ad} ${defaults.pppp} ${seq}`
+    }
+  }
+  return fallback
 }
 
 /**

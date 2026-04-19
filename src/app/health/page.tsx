@@ -15,9 +15,9 @@ interface JobHealth {
 }
 
 function StatusDot({ minutes, status }: { minutes: number; status: string }) {
-  if (status === 'failure') return <XCircle size={16} style={{ color: '#EF4444' }} />
-  if (minutes > 60) return <AlertTriangle size={16} style={{ color: '#FBBF24' }} />
-  return <CheckCircle2 size={16} style={{ color: '#22C55E' }} />
+  if (status === 'failure') return <XCircle size={16} style={{ color: 'var(--portal-status-red-fg)' }} />
+  if (minutes > 60) return <AlertTriangle size={16} style={{ color: 'var(--portal-status-amber-fg)' }} />
+  return <CheckCircle2 size={16} style={{ color: 'var(--portal-status-green-fg)' }} />
 }
 
 export default function HealthPage() {
@@ -46,18 +46,18 @@ export default function HealthPage() {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-        <Activity size={24} style={{ color: '#C0C5CE' }} />
-        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', margin: 0 }}>Estado del Sistema</h1>
+        <Activity size={24} style={{ color: 'var(--portal-fg-3)' }} />
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', margin: 0 }}>Estado del Sistema</h1>
       </div>
 
-      {loading && <div style={{ color: '#64748b' }}>Cargando estado...</div>}
-      {error && <div style={{ color: '#EF4444' }}>Error al cargar</div>}
+      {loading && <div style={{ color: 'var(--portal-fg-4)' }}>Cargando estado...</div>}
+      {error && <div style={{ color: 'var(--portal-status-red-fg)' }}>Error al cargar</div>}
 
       {!loading && jobs.length === 0 && (
         <div className="cc-card" style={{ padding: 40, textAlign: 'center', borderRadius: 20 }}>
-          <Activity size={32} style={{ color: '#22C55E', margin: '0 auto 12px' }} />
-          <div style={{ color: '#22C55E', fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Sistema operativo — sin alertas</div>
-          <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-compact)', marginTop: 4 }}>Todos los procesos funcionan correctamente.</div>
+          <Activity size={32} style={{ color: 'var(--portal-status-green-fg)', margin: '0 auto 12px' }} />
+          <div style={{ color: 'var(--portal-status-green-fg)', fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>Sistema operativo — sin alertas</div>
+          <div style={{ color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-compact)', marginTop: 4 }}>Todos los procesos funcionan correctamente.</div>
         </div>
       )}
 
@@ -71,14 +71,14 @@ export default function HealthPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <StatusDot minutes={job.minutes_since} status={job.status} />
                 <div>
-                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3', fontFamily: 'var(--font-mono)' }}>{job.job_name}</div>
-                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--portal-fg-1)', fontFamily: 'var(--portal-font-mono, var(--font-mono))' }}>{job.job_name}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)' }}>
                     {job.status} · {Math.round(job.minutes_since)}m ago · {job.rows_processed} rows
                   </div>
                 </div>
               </div>
               {job.error_message && (
-                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#EF4444', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-red-fg)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {job.error_message}
                 </div>
               )}

@@ -15,9 +15,9 @@ const supabase = createClient(
 )
 
 const STATUS_CFG: Record<DockStatus, { label: string; fg: string; bg: string; border: string }> = {
-  receiving: { label: 'Recibiendo', fg: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.25)' },
-  staged: { label: 'En patio', fg: TEXT_SECONDARY, bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.25)' },
-  released: { label: 'Liberado', fg: '#4ade80', bg: 'rgba(34,197,94,0.10)', border: 'rgba(34,197,94,0.25)' },
+  receiving: { label: 'Recibiendo', fg: 'var(--portal-status-amber-fg)', bg: 'var(--portal-status-amber-bg)', border: 'var(--portal-status-amber-ring)' },
+  staged:    { label: 'En patio',   fg: TEXT_SECONDARY,                  bg: 'var(--portal-status-gray-bg)',  border: 'var(--portal-status-gray-ring)'  },
+  released:  { label: 'Liberado',   fg: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)', border: 'var(--portal-status-green-ring)' },
 }
 
 function fmtKg(n: number | null): string {

@@ -134,9 +134,17 @@ export function PortalModuleCard({
     flexDirection: 'column' as const,
     gap: 16,
     minHeight: 200,
-    background: accent
-      ? 'radial-gradient(ellipse at 0% 0%, color-mix(in oklch, var(--portal-green-2) 8%, var(--portal-ink-1)), var(--portal-ink-1) 55%)'
-      : 'var(--portal-ink-1)',
+    // Background intentionally omitted for the non-accent case so the
+    // .portal-card class chemistry (rgba(0,0,0,0.25) + backdrop-blur +
+    // top-lit inset) takes effect. Inline styles override CSS class —
+    // setting background here matted the cards on /inicio. Audit
+    // 2026-04-19 caught this regression.
+    ...(accent
+      ? {
+          background:
+            'radial-gradient(ellipse at 0% 0%, color-mix(in oklch, var(--portal-green-2) 8%, var(--portal-ink-1)), var(--portal-ink-1) 55%)',
+        }
+      : {}),
     border: '1px solid var(--portal-line-1)',
     borderRadius: 'var(--portal-r-4)',
     color: 'inherit',

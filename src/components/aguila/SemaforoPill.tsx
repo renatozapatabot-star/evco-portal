@@ -5,14 +5,9 @@
  * 0 | 1 | 2 where 0=verde (sin revisión), 1=amarillo (revisión en puente),
  * 2=rojo (reconocimiento físico). Users should never see the raw integer.
  *
- * Pill design mirrors login's restraint:
- *   · green for verde (calm, healthy)
- *   · amber for amarillo (attention, not emergency)
- *   · red for rojo (real event)
- *   · muted for unknown/null
+ * Colors resolve through --portal-semaforo-* vars in portal-tokens.css so
+ * a palette change cascades to every list/detail page without hunting inline rgba.
  */
-
-import { AMBER, GREEN, RED, TEXT_MUTED } from '@/lib/design-system'
 
 export type SemaforoValue = 0 | 1 | 2 | null | undefined
 
@@ -27,15 +22,31 @@ interface Props {
 
 function mapValue(value: SemaforoValue): { label: string; color: string; bg: string } {
   if (value === 0) {
-    return { label: 'Verde', color: GREEN, bg: 'rgba(34,197,94,0.14)' }
+    return {
+      label: 'Verde',
+      color: 'var(--portal-semaforo-verde-fg)',
+      bg: 'var(--portal-semaforo-verde-bg)',
+    }
   }
   if (value === 1) {
-    return { label: 'Amarillo', color: AMBER, bg: 'rgba(251,191,36,0.14)' }
+    return {
+      label: 'Amarillo',
+      color: 'var(--portal-semaforo-amarillo-fg)',
+      bg: 'var(--portal-semaforo-amarillo-bg)',
+    }
   }
   if (value === 2) {
-    return { label: 'Rojo', color: RED, bg: 'rgba(239,68,68,0.14)' }
+    return {
+      label: 'Rojo',
+      color: 'var(--portal-semaforo-rojo-fg)',
+      bg: 'var(--portal-semaforo-rojo-bg)',
+    }
   }
-  return { label: 'Sin revisión', color: TEXT_MUTED, bg: 'rgba(148,163,184,0.1)' }
+  return {
+    label: 'Sin revisión',
+    color: 'var(--portal-semaforo-none-fg)',
+    bg: 'var(--portal-semaforo-none-bg)',
+  }
 }
 
 export function SemaforoPill({ value, size = 'default', showLabel = true }: Props) {

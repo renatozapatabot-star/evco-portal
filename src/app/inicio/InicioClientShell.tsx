@@ -9,7 +9,9 @@ import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentT
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
-import { AguilaFooter } from '@/components/aguila/AguilaFooter'
+// AguilaFooter is rendered by DashboardShellClient via AguilaFooterShellFallback —
+// importing/rendering it here would bypass the [data-identity-footer] dedup
+// and double-paint. Removed 2026-04-19 after Chrome audit found the regression.
 
 /**
  * Client-side shell for /inicio. Mounts the Próximo-cruce modal
@@ -123,7 +125,6 @@ export function InicioClientShell({
           </>
         }
       />
-      <AguilaFooter />
       <TimelineModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

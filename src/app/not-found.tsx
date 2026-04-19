@@ -63,7 +63,7 @@ export default function NotFound() {
         data-identity-footer
         style={{
           margin: 0, padding: '24px 16px',
-          fontSize: 9,
+          fontSize: 9, // WHY: identity-footer microtype is 9px portal-wide (matches AguilaFooter); no --aguila-fs-* token for 9
           color: 'var(--portal-fg-5)',
           letterSpacing: '0.12em',
           fontFamily: 'var(--portal-font-mono), monospace',

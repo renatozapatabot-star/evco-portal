@@ -317,7 +317,7 @@ export default function KPIsPage() {
           label="Cumplimiento T-MEC" value={`${kpis.tmecPct}%`}
           sub={`${kpis.tmecOps} operaciones con régimen T-MEC`} />
 
-        <KPICard icon={FileText} accent="#3B82F6"
+        <KPICard icon={FileText} accent="var(--portal-fg-3)"
           label="Pedimentos Asignados" value={`${Math.round(kpis.withPedimento / kpis.total * 100)}%`}
           sub={`${kpis.withPedimento} de ${kpis.total} embarques con pedimento`} />
       </div>

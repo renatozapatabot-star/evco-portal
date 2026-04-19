@@ -201,6 +201,39 @@ const HEX_MAP = {
 
   // Gold legacy
   '#eab308': 'var(--portal-gold-500)',
+
+  // Forbidden blue/indigo — invariant #2 violation (AGUILA palette).
+  // Mapping to silver chrome to retire decoratively; if semantic
+  // "info" intent, callers should switch to --portal-ice-3 explicitly.
+  '#2563EB': 'var(--portal-fg-3)',
+  '#3B82F6': 'var(--portal-fg-3)',
+  '#6366F1': 'var(--portal-fg-3)',
+  '#8B5CF6': 'var(--portal-fg-3)',
+  '#1E40AF': 'var(--portal-fg-4)',
+
+  // Navy 900 variant (legacy token)
+  '#0B1623': 'var(--portal-ink-0)',
+  '#0b1623': 'var(--portal-ink-0)',
+
+  // Z red brand mark — leave in design-system only (marker kept here
+  // for documentation). Do NOT migrate: '#CC1B2F' intentionally absent.
+
+  // Deep red semantic
+  '#991B1B': 'var(--portal-status-red-fg)',
+  '#b91c1c': 'var(--portal-status-red-fg)',
+  '#B91C1C': 'var(--portal-status-red-fg)',
+
+  // Pale amber bg
+  '#FFFBEB': 'var(--portal-status-amber-bg)',
+  '#fffbeb': 'var(--portal-status-amber-bg)',
+
+  // Warm-beige legacy (pre-v6)
+  '#f7f8fa': 'var(--portal-ink-2)',
+  '#F7F8FA': 'var(--portal-ink-2)',
+  '#EAE6DC': 'var(--portal-ink-2)',
+  '#E8E5DF': 'var(--portal-ink-2)',
+  '#d1d5db': 'var(--portal-fg-3)',
+  '#D1D5DB': 'var(--portal-fg-3)',
 }
 
 function transformHex(source) {

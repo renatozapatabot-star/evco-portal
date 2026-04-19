@@ -218,7 +218,7 @@ function DraftsContent() {
           }}>
             <AguilaMark size={120} />
           </div>
-          <div style={{ color: '#E8E5DF', fontSize: 'var(--aguila-fs-title)', fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
+          <div style={{ color: 'var(--portal-ink-2)', fontSize: 'var(--aguila-fs-title)', fontWeight: 800, marginTop: 24, letterSpacing: '-0.02em' }}>
             Patente 3596 honrada
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-body-lg)', marginTop: 8 }}>

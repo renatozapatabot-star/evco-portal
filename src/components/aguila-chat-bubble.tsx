@@ -283,11 +283,11 @@ export function AguilaChatBubble() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div className="aguila-brand" style={{ width: 32, height: 32 }}>
                 <svg viewBox="0 0 24 24" width={16} height={16} fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line x1="12" y1="3" x2="12" y2="21" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="3" y1="12" x2="21" y2="12" stroke="#0B1623" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M12 8.5L15.5 12L12 15.5L8.5 12Z" fill="#0B1623" />
-                  <path d="M12 3L14 6H10Z" fill="#0B1623" />
-                  <path d="M21 12L18 10V14Z" fill="#0B1623" />
+                  <line x1="12" y1="3" x2="12" y2="21" stroke="var(--portal-ink-0)" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="3" y1="12" x2="21" y2="12" stroke="var(--portal-ink-0)" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M12 8.5L15.5 12L12 15.5L8.5 12Z" fill="var(--portal-ink-0)" />
+                  <path d="M12 3L14 6H10Z" fill="var(--portal-ink-0)" />
+                  <path d="M21 12L18 10V14Z" fill="var(--portal-ink-0)" />
                 </svg>
               </div>
               <div>

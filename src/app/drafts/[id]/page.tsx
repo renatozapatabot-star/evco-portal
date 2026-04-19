@@ -320,7 +320,7 @@ export default function DraftReviewPage() {
               </span>
             )}
             {draft.source === 'ghost_pedimento' && (
-              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 10px', borderRadius: 4, background: '#F0F0FF', color: '#6366F1', border: '1px solid #C7D2FE' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 10px', borderRadius: 4, background: '#F0F0FF', color: 'var(--portal-fg-3)', border: '1px solid #C7D2FE' }}>
                 🤖 Ghost Pedimento
               </span>
             )}

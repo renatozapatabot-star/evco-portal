@@ -61,7 +61,7 @@ export const BORDER_EVENTS: BorderEvent[] = [
   {
     type: 'bridge_assigned',
     label: 'Puente asignado',
-    icon: '🌉', color: '#2563EB', bg: 'rgba(37,99,235,0.12)',
+    icon: '🌉', color: 'var(--portal-fg-3)', bg: 'rgba(37,99,235,0.12)',
     sequence: 7, clientVisible: true, publicVisible: true,
   },
   {
@@ -79,7 +79,7 @@ export const BORDER_EVENTS: BorderEvent[] = [
   {
     type: 'delivery_dispatched',
     label: 'En ruta a destino',
-    icon: '🚚', color: '#2563EB', bg: 'rgba(37,99,235,0.12)',
+    icon: '🚚', color: 'var(--portal-fg-3)', bg: 'rgba(37,99,235,0.12)',
     sequence: 10, clientVisible: true, publicVisible: true,
   },
   {

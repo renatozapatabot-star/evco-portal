@@ -68,7 +68,7 @@ function StatusPill({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string; bg: string }> = {
     prospect: { label: 'Prospecto', color: 'var(--gold-600)', bg: 'rgba(192,197,206,0.1)' },
     contacted: { label: 'Contactado', color: 'var(--info)', bg: 'rgba(37,99,235,0.08)' },
-    meeting: { label: 'Reunión', color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)' },
+    meeting: { label: 'Reunión', color: 'var(--portal-fg-3)', bg: 'rgba(139,92,246,0.08)' },
     proposal: { label: 'Propuesta', color: 'var(--warning)', bg: 'rgba(217,119,6,0.08)' },
     won: { label: 'Ganado', color: 'var(--success)', bg: 'rgba(22,163,74,0.08)' },
     lost: { label: 'Perdido', color: 'var(--danger)', bg: 'rgba(220,38,38,0.08)' },

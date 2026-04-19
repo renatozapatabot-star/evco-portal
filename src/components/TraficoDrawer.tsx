@@ -75,14 +75,14 @@ interface DetailItemProps {
 const DetailItem = ({ label, value, mono }: DetailItemProps) => (
   <div
     className="rounded-[7px] p-3"
-    style={{ background: '#f7f8fa' }}
+    style={{ background: 'var(--portal-ink-2)' }}
   >
     <div className="text-[10.5px] mb-1" style={{ color: 'var(--portal-fg-5)' }}>
       {label}
     </div>
     <div
       className={`text-[13px] font-medium ${mono ? 'mono' : ''}`}
-      style={{ color: typeof value === 'string' && value === '—' ? '#d1d5db' : 'var(--portal-ink-1)' }}
+      style={{ color: typeof value === 'string' && value === '—' ? 'var(--portal-fg-3)' : 'var(--portal-ink-1)' }}
     >
       {value}
     </div>
@@ -98,14 +98,14 @@ const DocRow = ({
 }) => {
   const colors = {
     ok:      { bg: '#d1fae5', color: '#065f46', label: 'OK' },
-    pending: { bg: '#fffbeb', color: '#92400e', label: 'Pendiente' },
-    missing: { bg: 'var(--portal-status-red-bg)', color: '#b91c1c', label: 'Falta' },
+    pending: { bg: 'var(--portal-status-amber-bg)', color: '#92400e', label: 'Pendiente' },
+    missing: { bg: 'var(--portal-status-red-bg)', color: 'var(--portal-status-red-fg)', label: 'Falta' },
   }
   const c = colors[status]
   return (
     <div
       className="flex items-center justify-between px-3 py-2 rounded-[6px]"
-      style={{ background: '#f7f8fa' }}
+      style={{ background: 'var(--portal-ink-2)' }}
     >
       <span className="text-[12px]" style={{ color: 'var(--text-primary)' }}>
         {name}
@@ -155,7 +155,7 @@ function Timeline({ traficoId }: { traficoId: string }) {
               className="absolute rounded-full"
               style={{
                 left: -23, top: 3, width: 8, height: 8,
-                background: i === 0 ? GOLD : '#d1d5db',
+                background: i === 0 ? GOLD : 'var(--portal-fg-3)',
                 border: `2px solid ${i === 0 ? GOLD : 'var(--portal-fg-2)'}`,
               }}
             />
@@ -167,7 +167,7 @@ function Timeline({ traficoId }: { traficoId: string }) {
                 {fmtDate(e.fecha)}
               </span>
               {e.registrado_por && (
-                <span className="text-[10px]" style={{ color: '#d1d5db' }}>
+                <span className="text-[10px]" style={{ color: 'var(--portal-fg-3)' }}>
                   · {e.registrado_por}
                 </span>
               )}
@@ -297,7 +297,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             <div
               className="flex items-start gap-2.5 rounded-[8px] px-3.5 py-3"
               style={{
-                background: '#fffbeb',
+                background: 'var(--portal-status-amber-bg)',
                 border: '1px solid rgba(245,158,11,0.2)',
               }}
             >
@@ -366,7 +366,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
               </div>
               <div
                 className="rounded-[7px] p-3 text-[13px]"
-                style={{ background: '#f7f8fa', color: 'var(--text-primary)' }}
+                style={{ background: 'var(--portal-ink-2)', color: 'var(--text-primary)' }}
               >
                 {trafico.descripcion_mercancia}
               </div>

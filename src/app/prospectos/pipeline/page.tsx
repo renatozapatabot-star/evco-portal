@@ -20,7 +20,7 @@ interface Prospect {
 const COLUMNS = [
   { key: 'prospect', label: 'Prospecto', color: 'var(--gold-600)' },
   { key: 'contacted', label: 'Contactado', color: 'var(--info)' },
-  { key: 'meeting', label: 'Reunión', color: '#8B5CF6' },
+  { key: 'meeting', label: 'Reunión', color: 'var(--portal-fg-3)' },
   { key: 'proposal', label: 'Propuesta', color: 'var(--warning)' },
   { key: 'won', label: 'Ganado', color: 'var(--success)' },
   { key: 'lost', label: 'Perdido', color: 'var(--danger)' },

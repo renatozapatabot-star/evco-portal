@@ -80,7 +80,7 @@ const s = StyleSheet.create({
   },
   execText: {
     fontSize: 'var(--aguila-fs-meta)',
-    color: '#EAE6DC',
+    color: 'var(--portal-ink-2)',
     lineHeight: 1.5,
   },
   // KPI row

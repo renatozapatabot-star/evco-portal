@@ -43,7 +43,7 @@ interface CostData {
 
 const TYPE_CONFIG: Record<string, { icon: typeof DollarSign; label: string; color: string }> = {
   bridge_optimization: { icon: Truck, label: 'Cruce', color: 'var(--portal-ice-3)' },
-  filing_timing: { icon: Clock, label: 'Timing', color: '#6366F1' },
+  filing_timing: { icon: Clock, label: 'Timing', color: 'var(--portal-fg-3)' },
   supplier_pricing: { icon: Users2, label: 'Proveedor', color: 'var(--portal-status-amber-fg)' },
   consolidation: { icon: Zap, label: 'Consolidar', color: 'var(--portal-status-green-fg)' },
   regime_optimization: { icon: Award, label: 'Régimen', color: 'var(--portal-ice-4)' },

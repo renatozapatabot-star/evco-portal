@@ -14,7 +14,7 @@ const C = {
   green: '#27AE60',
   greenDark: '#1E8449',
   red: '#E74C3C',
-  text: '#E8E5DF',
+  text: 'var(--portal-ink-2)',
   textSub: '#A09C94',
   textMuted: '#6B6860',
   white: 'var(--portal-fg-1)',

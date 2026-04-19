@@ -44,7 +44,7 @@ interface ProfitData {
 }
 
 const TIER_COLORS: Record<string, { color: string; bg: string }> = {
-  platinum: { color: '#6366F1', bg: '#EEF2FF' },
+  platinum: { color: 'var(--portal-fg-3)', bg: '#EEF2FF' },
   gold: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)' },
   silver: { color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)' },
   bronze: { color: 'var(--portal-status-amber-fg)', bg: 'var(--portal-status-amber-bg)' },

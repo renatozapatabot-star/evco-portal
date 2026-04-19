@@ -27,7 +27,7 @@ interface IntelData {
 }
 
 const TYPE_CONFIG: Record<string, { icon: typeof Eye; label: string; color: string }> = {
-  competitor_move: { icon: Eye, label: 'Competencia', color: '#6366F1' },
+  competitor_move: { icon: Eye, label: 'Competencia', color: 'var(--portal-fg-3)' },
   regulatory_change: { icon: Shield, label: 'Regulatorio', color: 'var(--portal-ice-4)' },
   market_opportunity: { icon: Zap, label: 'Oportunidad', color: 'var(--portal-status-green-fg)' },
   industry_trend: { icon: TrendingUp, label: 'Tendencia', color: 'var(--portal-ice-3)' },

@@ -18,7 +18,7 @@ import Link from 'next/link'
 const T = {
   navBg: '#1A1814',
   navBorder: '#2A2824',
-  text: '#EAE6DC',
+  text: 'var(--portal-ink-2)',
   textMuted: '#7C7870',
   gold: 'var(--gold)',
 } as const

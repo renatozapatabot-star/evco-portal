@@ -150,8 +150,8 @@ export default function CarriersPage() {
                     <td className="text-right mono text-[12px]" style={{ color: c.crossing_avg_days && c.crossing_avg_days > 3 ? 'var(--amber-600)' : 'var(--text-secondary)' }}>
                       {c.crossing_avg_days ? `${c.crossing_avg_days}d` : ''}
                     </td>
-                    <td className="text-right text-[12px]" style={{ color: c.faltantes_rate > 0 ? '#b91c1c' : 'var(--text-muted)' }}>{c.faltantes_rate}%</td>
-                    <td className="text-right text-[12px]" style={{ color: c.danos_rate > 0 ? '#b91c1c' : 'var(--text-muted)' }}>{c.danos_rate}%</td>
+                    <td className="text-right text-[12px]" style={{ color: c.faltantes_rate > 0 ? 'var(--portal-status-red-fg)' : 'var(--text-muted)' }}>{c.faltantes_rate}%</td>
+                    <td className="text-right text-[12px]" style={{ color: c.danos_rate > 0 ? 'var(--portal-status-red-fg)' : 'var(--text-muted)' }}>{c.danos_rate}%</td>
                     <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>{c.completion_rate}%</td>
                     <td className="text-center">
                       <span className="mono text-[11px] font-bold px-2 py-0.5 rounded-[4px]"

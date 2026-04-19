@@ -22,8 +22,8 @@ interface Props {
 const TYPE_COLORS: Record<string, string> = {
   trafico: 'var(--portal-fg-1)',
   entrada: 'var(--portal-ice-3)',
-  pedimento: '#8B5CF6',
-  expediente: '#3B82F6',
+  pedimento: 'var(--portal-fg-3)',
+  expediente: 'var(--portal-fg-3)',
   proveedor: 'var(--portal-status-amber-fg)',
   cliente: 'var(--portal-status-green-fg)',
   documento: 'var(--portal-fg-4)',

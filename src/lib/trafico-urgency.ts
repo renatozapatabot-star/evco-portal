@@ -27,7 +27,7 @@ export function getTraficoUrgency(t: {
     return {
       class: hasActivity ? 'stalled' : 'zombie',
       label: hasActivity ? 'Estancado' : 'Abandonado',
-      color: hasActivity ? '#991B1B' : 'var(--portal-fg-5)',
+      color: hasActivity ? 'var(--portal-status-red-fg)' : 'var(--portal-fg-5)',
       bgColor: hasActivity ? 'var(--portal-status-red-bg)' : 'var(--portal-ink-2)',
       action: hasActivity ? 'Intervención inmediata' : 'Archivar — sin actividad 90+ días',
       days,
@@ -35,7 +35,7 @@ export function getTraficoUrgency(t: {
   }
 
   if (days > 30) {
-    return { class: 'stalled', label: 'Estancado', color: '#991B1B', bgColor: 'var(--portal-status-red-bg)',
+    return { class: 'stalled', label: 'Estancado', color: 'var(--portal-status-red-fg)', bgColor: 'var(--portal-status-red-bg)',
       action: 'Seguimiento urgente', days }
   }
 
@@ -44,7 +44,7 @@ export function getTraficoUrgency(t: {
       action: 'Seguimiento necesario', days }
   }
 
-  return { class: 'active', label: 'En Proceso', color: 'var(--portal-status-amber-fg)', bgColor: '#FFFBEB', action: null, days }
+  return { class: 'active', label: 'En Proceso', color: 'var(--portal-status-amber-fg)', bgColor: 'var(--portal-status-amber-bg)', action: null, days }
 }
 
 export function classifyAllTraficos<T extends { estatus: string; fecha_llegada: string | null; pedimento?: string | null }>(traficos: T[]) {

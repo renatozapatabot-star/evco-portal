@@ -150,7 +150,7 @@ fi
 #   status-* tokens + Phase 2 /status rewrite + /anomalias SEV_CFG
 #   tokenized. Net 13-hex drop from the 2722 floor.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2686
+INVARIANT_HEX_BASELINE=2680
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

@@ -17,10 +17,10 @@ const T = {
   textSec: 'var(--text-secondary, #94a3b8)',
   textMuted: 'var(--text-muted, #64748b)',
   border: 'rgba(192,197,206,0.2)',
-  amber: '#FBBF24',
-  amberBg: 'rgba(251,191,36,0.12)',
-  green: '#22C55E',
-  greenBg: 'rgba(34,197,94,0.08)',
+  amber: 'var(--portal-status-amber-fg)',
+  amberBg: 'var(--portal-status-amber-bg)',
+  green: 'var(--portal-status-green-fg)',
+  greenBg: 'var(--portal-status-green-bg)',
   mono: 'var(--font-mono)',
 }
 
@@ -434,7 +434,7 @@ function ResultLine({ label, currency, value, note }: { label: string; currency:
         {value}
       </div>
       {note && (
-        <div style={{ fontSize: 'var(--aguila-fs-meta, 10px)', color: '#FBBF24', marginTop: 2 }}>{note}</div>
+        <div style={{ fontSize: 'var(--aguila-fs-meta, 10px)', color: 'var(--portal-status-amber-fg)', marginTop: 2 }}>{note}</div>
       )}
     </div>
   )

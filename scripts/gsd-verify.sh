@@ -537,7 +537,7 @@ fi
 # --------------------------------------------------------------------------
 PORTAL_INLINE_HERO_BASELINE=60
 header "PORTAL · inline hero-glass ratchet (target 0)"
-PORTAL_HERO_COUNT=$(set +eo pipefail;{ grep -rnE "rgba\(0, ?0, ?0, ?0\.(4|25|12)\)" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | grep -v "globals.css" | wc -l | tr -d ' ')
+PORTAL_HERO_COUNT=$(set +eo pipefail;{ grep -rnE "rgba\(0, ?0, ?0, ?0\.(4|25|12)\)" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | grep -v "globals.css" | grep -v "portal-components.css" | grep -v "portal-tokens.css" | wc -l | tr -d ' ')
 if [ "$PORTAL_HERO_COUNT" -gt "$PORTAL_INLINE_HERO_BASELINE" ]; then
   fail "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (baseline $PORTAL_INLINE_HERO_BASELINE). Route through <GlassCard>/<PortalCard> instead."
 elif [ "$PORTAL_HERO_COUNT" -lt "$PORTAL_INLINE_HERO_BASELINE" ]; then

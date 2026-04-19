@@ -73,7 +73,13 @@ DECLARE
     'compliance_predictions',     -- Tenant-scoped
     'mve_alerts',                 -- Tenant-scoped
     'client_profiles',            -- Per-tenant profile data
-    'client_briefings'            -- Morning briefing per tenant
+    'pedimentos',                -- 4,107 rows — SAT-audit record for Patente 3596
+    'anexo24_partidas',          -- 1,793 rows — prior migration header claimed covered but live probe contradicts
+    'supplier_network',          -- 101 rows — cross-tenant supplier intel
+    'cruz_conversations',        -- 33 rows — every tenant's AI chat transcripts
+    'system_config',             -- 7 rows — FX/DTA rates, lower sensitivity but deny
+    'regulatory_alerts',         -- 3 rows — tenant-scoped alerts
+        'client_briefings'            -- Morning briefing per tenant
   ];
   t text;
 BEGIN

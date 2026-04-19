@@ -302,7 +302,7 @@ export default function KPIsPage() {
           label="Valor Importado USD" value={fmtUSD(kpis.totalValueUSD)}
           sub={`DTA ${fmtUSD(kpis.totalDTA)} · IGI ${fmtUSD(kpis.totalIGI)} · IVA ${fmtUSD(kpis.totalIVA)}`} />
 
-        <KPICard icon={Zap} accent="#22C55E"
+        <KPICard icon={Zap} accent="var(--portal-status-green-fg)"
           label="Despacho Rápido"
           value={kpis.speedScore !== null ? `${kpis.speedScore}%` : 'N/D'}
           sub={kpis.speedScore !== null
@@ -358,12 +358,12 @@ export default function KPIsPage() {
         {kpis.regimenBreakdown.map(([reg, count]) => {
           const pct = Math.round(count / kpis.total * 100)
           const isTmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
-          const barColor = isTmec ? '#22C55E' : '#C0C5CE'
+          const barColor = isTmec ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-3)'
           return (
             <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
-                color: isTmec ? '#22C55E' : '#E6EDF3', minWidth: 44,
+                color: isTmec ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-1)', minWidth: 44,
               }}>
                 {reg}
               </span>

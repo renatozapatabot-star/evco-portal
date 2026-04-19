@@ -176,6 +176,23 @@ a { color: inherit; text-decoration: none; }
 /* Tabular numerics utility */
 .portal-tabular, .portal-num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum", "lnum"; }
 
+/* Universal tabular-nums for any element whose inline style uses the
+ * mono stack. Chrome-audit 2026-04-19: hero KPIs, pedimento numbers,
+ * and currency values rendered in proportional digits because inline
+ * `style={{ fontFamily: 'var(--font-mono)' }}` consumers never opted
+ * into `.portal-num`. This rule makes tabular-nums the default for
+ * every mono consumer — a broker dictating "6500284" on the phone
+ * needs monospace spacing. Override to `normal` inline if the rare
+ * caller wants proportional digits. */
+[style*="var(--font-mono)"],
+[style*="var(--font-jetbrains-mono)"],
+[style*="var(--portal-font-mono)"],
+[style*="JetBrains Mono"],
+[style*="Geist Mono"] {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "lnum";
+}
+
 /* Noise / film grain overlay (applied to body) */
 .portal-grain::before {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;

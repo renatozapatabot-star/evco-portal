@@ -110,9 +110,14 @@ html, body {
   --red-600: #DC2626;
   --red-800: #991B1B;
 
-  /* ── Typography ── */
+  /* ── Typography ──
+   * Mono stack routes through --portal-font-mono (Geist Mono canonical,
+   * JetBrains Mono back-compat fallback). Prior value forced JetBrains
+   * Mono first and dropped tabular-nums, producing proportional digits
+   * on every KPI — audited 2026-04-19.
+   */
   --font-sans: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-mono: var(--portal-font-mono, 'Geist Mono', 'JetBrains Mono', ui-monospace, Menlo, monospace);
 
   /* ── Radii ── */
   --radius-sm: 6px;

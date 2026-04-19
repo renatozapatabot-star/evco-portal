@@ -677,6 +677,82 @@ else
   pass "No forbidden blue/indigo/sky/cyan Tailwind classes"
 fi
 
+# ==========================================================================
+# Theme v6 migration ratchets (Block FF · theme/v6-migration branch)
+#
+# Each new aguila primitive should grow in adoption (positive ratchet).
+# tailwind.config.ts hex literals + inline @keyframes outside the design
+# system should shrink. Baselines seeded from the measured floor on the
+# branch where Phase 0 primitives landed.
+# ==========================================================================
+
+# R7 — tailwind.config.ts standalone hex literals (target ↓).
+# Phase 0.1 consolidated gold. Remaining hex (navy/z-red/canvas/status/
+# teal/plum/borderColor/backgroundColor/textColor/boxShadow) should
+# migrate to var(--portal-*) in future blocks.
+header "theme/v6 · tailwind.config.ts standalone hex literals (target ↓)"
+TAILWIND_HEX_BASELINE=${TAILWIND_HEX_BASELINE:-27}
+TAILWIND_HEX_HITS=$(grep -cE "'#[0-9a-fA-F]{3,8}'" tailwind.config.ts 2>/dev/null || echo 0)
+if [ "$TAILWIND_HEX_HITS" -gt "$TAILWIND_HEX_BASELINE" ]; then
+  fail "tailwind.config.ts hex literals: $TAILWIND_HEX_HITS (baseline $TAILWIND_HEX_BASELINE). Route through var(--portal-*)."
+elif [ "$TAILWIND_HEX_HITS" -lt "$TAILWIND_HEX_BASELINE" ]; then
+  pass "tailwind.config.ts hex literals: $TAILWIND_HEX_HITS (was $TAILWIND_HEX_BASELINE, improving ✓). Update TAILWIND_HEX_BASELINE."
+else
+  warn "tailwind.config.ts hex literals: $TAILWIND_HEX_HITS (at baseline — next block should reduce)"
+fi
+
+# R6 — inline @keyframes outside components/aguila + components/portal.
+# Motion chemistry lives in globals.css / portal-tokens.css. Keyframes
+# in one-off components drift the cadence.
+header "theme/v6 · inline @keyframes outside design system (target ↓)"
+INLINE_KEYFRAMES_BASELINE=${INLINE_KEYFRAMES_BASELINE:-57}
+INLINE_KEYFRAMES_HITS=$(grep -rnE "@keyframes[[:space:]]" src/ --include="*.tsx" --include="*.ts" 2>/dev/null \
+  | grep -v "components/aguila/\|components/portal/\|\.test\." \
+  | wc -l | tr -d ' ')
+if [ "$INLINE_KEYFRAMES_HITS" -gt "$INLINE_KEYFRAMES_BASELINE" ]; then
+  fail "Inline @keyframes outside aguila/portal: $INLINE_KEYFRAMES_HITS (baseline $INLINE_KEYFRAMES_BASELINE)."
+elif [ "$INLINE_KEYFRAMES_HITS" -lt "$INLINE_KEYFRAMES_BASELINE" ]; then
+  pass "Inline @keyframes outside aguila/portal: $INLINE_KEYFRAMES_HITS (was $INLINE_KEYFRAMES_BASELINE, improving ✓). Update INLINE_KEYFRAMES_BASELINE."
+else
+  warn "Inline @keyframes outside aguila/portal: $INLINE_KEYFRAMES_HITS (at baseline — next block should reduce)"
+fi
+
+# R8 — AguilaDataTable adoption (positive direction).
+header "theme/v6 · <AguilaDataTable> adoption (target ↑)"
+AGUILA_DT_BASELINE=${AGUILA_DT_BASELINE:-0}
+AGUILA_DT_COUNT=$(set +eo pipefail;{ grep -rln "<AguilaDataTable" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
+if [ "$AGUILA_DT_COUNT" -lt "$AGUILA_DT_BASELINE" ]; then
+  fail "<AguilaDataTable> usage regressed: $AGUILA_DT_COUNT (was $AGUILA_DT_BASELINE). Adoption should only grow."
+elif [ "$AGUILA_DT_COUNT" -gt "$AGUILA_DT_BASELINE" ]; then
+  pass "<AguilaDataTable> usage: $AGUILA_DT_COUNT (was $AGUILA_DT_BASELINE, growing ✓). Update AGUILA_DT_BASELINE."
+else
+  warn "<AguilaDataTable> usage: $AGUILA_DT_COUNT (at baseline — next list-page migration should advance)"
+fi
+
+# R9 — DetailPageShell adoption (positive direction).
+header "theme/v6 · <DetailPageShell> adoption (target ↑)"
+DETAIL_SHELL_BASELINE=${DETAIL_SHELL_BASELINE:-0}
+DETAIL_SHELL_COUNT=$(set +eo pipefail;{ grep -rln "<DetailPageShell" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
+if [ "$DETAIL_SHELL_COUNT" -lt "$DETAIL_SHELL_BASELINE" ]; then
+  fail "<DetailPageShell> usage regressed: $DETAIL_SHELL_COUNT (was $DETAIL_SHELL_BASELINE)."
+elif [ "$DETAIL_SHELL_COUNT" -gt "$DETAIL_SHELL_BASELINE" ]; then
+  pass "<DetailPageShell> usage: $DETAIL_SHELL_COUNT (was $DETAIL_SHELL_BASELINE, growing ✓). Update DETAIL_SHELL_BASELINE."
+else
+  warn "<DetailPageShell> usage: $DETAIL_SHELL_COUNT (at baseline)"
+fi
+
+# R10 — Aguila form primitive adoption (positive direction).
+header "theme/v6 · AguilaInput/Select/Checkbox adoption (target ↑)"
+AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-0}
+AGUILA_FORM_COUNT=$(set +eo pipefail;{ grep -rnE "<(AguilaInput|AguilaSelect|AguilaCheckbox)" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
+if [ "$AGUILA_FORM_COUNT" -lt "$AGUILA_FORM_BASELINE" ]; then
+  fail "Aguila form primitives usage regressed: $AGUILA_FORM_COUNT (was $AGUILA_FORM_BASELINE)."
+elif [ "$AGUILA_FORM_COUNT" -gt "$AGUILA_FORM_BASELINE" ]; then
+  pass "Aguila form primitives usage: $AGUILA_FORM_COUNT (was $AGUILA_FORM_BASELINE, growing ✓). Update AGUILA_FORM_BASELINE."
+else
+  warn "Aguila form primitives usage: $AGUILA_FORM_COUNT (at baseline)"
+fi
+
 # --------------------------------------------------------------------------
 # Results
 # --------------------------------------------------------------------------

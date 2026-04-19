@@ -149,8 +149,11 @@ fi
 #   Phase 0.4 SemaforoPill tokenization + Phase 0.8 StatusBadge --portal-
 #   status-* tokens + Phase 2 /status rewrite + /anomalias SEV_CFG
 #   tokenized. Net 13-hex drop from the 2722 floor.)
+# Baseline 2026-04-19 theme/v6 floor = 2658 (combined session + parallel
+#   data-trust session work: /catalogo SourceChip, /clasificar Bulk +
+#   Nuevo, plus additional drift pickups from the sibling session).
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2680
+INVARIANT_HEX_BASELINE=2658
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

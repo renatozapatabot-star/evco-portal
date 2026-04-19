@@ -26,8 +26,8 @@ function SourceChip({ row }: { row: CatalogoRow }) {
     return (
       <span title="No aparece en el último Formato 53 · revisar si es SKU activo" style={{
         display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)',
-        color: '#FBBF24', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+        background: 'var(--portal-status-amber-bg)', border: '1px solid var(--portal-status-amber-ring)',
+        color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
       }}>Solo GlobalPC</span>
     )
   }
@@ -35,8 +35,8 @@ function SourceChip({ row }: { row: CatalogoRow }) {
     return (
       <span title={`Fracción en GlobalPC difiere del Formato 53 · canónica: ${row.fraccion}`} style={{
         display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.32)',
-        color: '#FCA5A5', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+        background: 'var(--portal-status-red-bg)', border: '1px solid var(--portal-status-red-ring)',
+        color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
       }}>Fracción no coincide</span>
     )
   }
@@ -44,16 +44,16 @@ function SourceChip({ row }: { row: CatalogoRow }) {
     return (
       <span title={`Nombre en GlobalPC difiere del Formato 53 · canónico: ${row.merchandise}`} style={{
         display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)',
-        color: '#FBBF24', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+        background: 'var(--portal-status-amber-bg)', border: '1px solid var(--portal-status-amber-ring)',
+        color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
       }}>Nombre difiere</span>
     )
   }
   return (
     <span title="Respaldado por el Formato 53 oficial del SAT" style={{
       display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-      background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.32)',
-      color: '#86EFAC', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
+      background: 'var(--portal-status-green-bg)', border: '1px solid var(--portal-status-green-ring)',
+      color: 'var(--portal-status-green-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
     }}>Anexo 24 ✓</span>
   )
 }
@@ -226,7 +226,7 @@ function ModeTab({ label, active, onClick, disabled }: { label: string; active: 
 }
 
 function SummaryStat({ label, value, tone, hint }: { label: string; value: string; tone?: 'amber'; hint?: string }) {
-  const color = tone === 'amber' ? '#FBBF24' : '#E8EAED'
+  const color = tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
@@ -275,7 +275,7 @@ function FraccionGroupCard({ group }: { group: CatalogoFraccionGroup }) {
           <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>Fracción</p>
           <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, letterSpacing: '-0.01em', color: '#E6EDF3', textAlign: 'right' }}>{group.fraccion}</p>
           {group.variant_count >= 5 && (
-            <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', color: '#FBBF24', textTransform: 'uppercase' }}>Consolidar</span>
+            <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--portal-status-amber-fg)', textTransform: 'uppercase' }}>Consolidar</span>
           )}
         </div>
       </div>

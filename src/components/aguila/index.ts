@@ -38,3 +38,9 @@ export { AguilaFooter, AguilaFooterShellFallback } from './AguilaFooter'
 export { SemaforoPill } from './SemaforoPill'
 export type { SemaforoValue } from './SemaforoPill'
 export { FreshnessBanner } from './FreshnessBanner'
+export { AguilaDataTable } from './AguilaDataTable'
+export type {
+  AguilaColumn,
+  AguilaColumnType,
+  AguilaDataTableProps,
+} from './AguilaDataTable'

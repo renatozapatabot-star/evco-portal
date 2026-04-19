@@ -183,6 +183,8 @@ This document supersedes the earlier commit (`644c171`) which concluded "NO expl
 
 ---
 
+<<<<<<< HEAD
+=======
 ## Appendix A — Full blast radius (37-table anon-key sweep)
 
 Of 37 tenant-scoped or tenant-adjacent tables sampled with the public anon key, **36 are readable to anonymous browsers.** (The 37th, `operational_decisions`, timed out on every query shape — neither confirmed open nor confirmed blocked.)
@@ -247,5 +249,6 @@ The prior commit remains in the branch history intentionally. It documents what 
 
 ---
 
+>>>>>>> 8503174 (refactor(bodega/escanear): tokenize success-state green icon)
 *Live probes run 2026-04-19 from the `overnight/ursula-ready` working copy. Service-role for diagnostic counts; `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the exposure test. Temporary probe scripts removed after run.*
 *Patente 3596 · Aduana 240 · Laredo, Texas · Est. 1941*

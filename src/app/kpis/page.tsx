@@ -310,9 +310,9 @@ export default function KPIsPage() {
             ? `${kpis.fastClearCount} de ${kpis.clearWithDates} cruzados en menos de 48h`
             : 'Sin datos de pago/cruce disponibles'} />
 
-        <KPICard icon={Shield} accent="#10B981"
-          label="Tasa de Éxito" value={`${kpis.successRate}%`}
-          sub={`${kpis.cruzados} de ${kpis.total} operaciones completadas`} />
+        <KPICard icon={Shield} accent="var(--portal-status-green-fg)"
+          label="Operaciones Completadas" value={`${kpis.successRate}%`}
+          sub={`${kpis.cruzados} de ${kpis.total} embarques cruzados en el período`} />
 
         <KPICard icon={TrendingUp} accent="var(--portal-ice-3)"
           label="Cumplimiento T-MEC" value={`${kpis.tmecPct}%`}

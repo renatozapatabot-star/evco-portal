@@ -255,7 +255,7 @@ function ExpedientesContent() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {isCruzado
                           ? <DocCompleteness present={REQUIRED_DOCS.length} />
-                          : <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
+                          : <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Falta factura</span>
                         }
                       </div>
                     </div>
@@ -334,7 +334,7 @@ function ExpedientesContent() {
                         }} />
                       </td>
                       <td><span className="trafico-id">{fmtId(r.trafico)}</span></td>
-                      <td>{r.pedimento ? <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Pendiente</span>}</td>
+                      <td>{r.pedimento ? <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Sin pedimento</span>}</td>
                       <td>
                         <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
                           <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}

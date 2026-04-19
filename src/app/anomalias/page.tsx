@@ -24,10 +24,12 @@ const KIND_LABEL: Record<AnomalyKind, string> = {
   IVA_CASCADE: 'IVA cascada',
 }
 
+// Routed through --portal-status-* tokens (Phase 0.8) so recoloring the
+// severity palette cascades without hunting inline rgba here.
 const SEV_CFG: Record<Severity, { label: string; fg: string; bg: string; border: string; systemStatus: 'healthy' | 'warning' | 'critical' }> = {
-  alta: { label: 'Alta', fg: '#ef4444', bg: 'rgba(239,68,68,0.10)', border: 'rgba(239,68,68,0.30)', systemStatus: 'critical' },
-  media: { label: 'Media', fg: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.25)', systemStatus: 'warning' },
-  baja: { label: 'Baja', fg: TEXT_SECONDARY, bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.25)', systemStatus: 'healthy' },
+  alta:  { label: 'Alta',  fg: 'var(--portal-status-red-fg)',   bg: 'var(--portal-status-red-bg)',   border: 'var(--portal-status-red-ring)',   systemStatus: 'critical' },
+  media: { label: 'Media', fg: 'var(--portal-status-amber-fg)', bg: 'var(--portal-status-amber-bg)', border: 'var(--portal-status-amber-ring)', systemStatus: 'warning'  },
+  baja:  { label: 'Baja',  fg: TEXT_SECONDARY,                  bg: 'var(--portal-status-gray-bg)',  border: 'var(--portal-status-gray-ring)',  systemStatus: 'healthy'  },
 }
 
 function formatDate(iso: string | null): string {
@@ -139,7 +141,7 @@ function AnomalyCard({ a }: { a: Anomaly }) {
           </div>
           <div style={{
             fontSize: 'var(--aguila-fs-meta)', marginTop: 4,
-            color: upHigh ? '#ef4444' : '#4ade80',
+            color: upHigh ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)',
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontVariantNumeric: 'tabular-nums',
           }}>

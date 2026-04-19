@@ -241,7 +241,7 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
               {p.supplier}
             </span>
             {isMatched && (
-              <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: 'var(--portal-status-green-bg)', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
                 CONFIRMADO
               </span>
             )}

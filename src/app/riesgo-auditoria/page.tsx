@@ -42,7 +42,7 @@ const RISK_COLORS = {
   low: { color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)', border: 'rgba(34,197,94,0.2)', label: 'BAJO' },
   moderate: { color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)', border: 'var(--portal-fg-2)', label: 'MODERADO' },
   elevated: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ELEVADO' },
-  high: { color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: '#FECACA', label: 'ALTO' },
+  high: { color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: 'var(--portal-status-red-bg)', label: 'ALTO' },
 } as const
 
 const TREND_ICONS = {

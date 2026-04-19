@@ -155,7 +155,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
     <div style={{
       padding: '16px 20px', borderRadius: 10,
       background: isProfitable ? 'var(--portal-status-green-bg)' : 'var(--portal-status-red-bg)',
-      border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
+      border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'var(--portal-status-red-bg)'}`,
       borderLeft: `4px solid ${isProfitable ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)'}`,
     }}>
       {/* Header */}

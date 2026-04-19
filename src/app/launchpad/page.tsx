@@ -110,7 +110,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
         style={{
           height: 8,
           borderRadius: 4,
-          background: '#E8E5E0',
+          background: 'var(--portal-line-1)',
           overflow: 'hidden',
         }}
       >
@@ -583,7 +583,7 @@ export default function LaunchpadPage() {
       )}
 
       {/* Divider */}
-      <div style={{ height: 1, background: '#E8E5E0', margin: '32px 0' }} />
+      <div style={{ height: 1, background: 'var(--portal-line-1)', margin: '32px 0' }} />
 
       {/* PORTAL Auto Actions */}
       {data && (

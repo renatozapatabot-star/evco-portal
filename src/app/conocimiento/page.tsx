@@ -30,7 +30,7 @@ export default async function ConocimientoPage() {
     carrier: GREEN,
     supplier: AMBER,
     regulatory: 'var(--info-500)',
-    operational: '#9C9690',
+    operational: 'var(--portal-fg-4)',
   }
 
   return (

@@ -2,16 +2,16 @@ import React from 'react'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 const C = {
-  bg: '#FAFAF8',
+  bg: 'var(--portal-ink-2)',
   surface: 'var(--portal-fg-1)',
-  border: '#E8E5E0',
+  border: 'var(--portal-line-1)',
   text: 'var(--portal-ink-2)',
   textSub: 'var(--portal-fg-5)',
   textMuted: 'var(--portal-fg-4)',
   gold: 'var(--portal-fg-3)',
   green: 'var(--portal-status-green-fg)',
   amber: 'var(--portal-status-amber-fg)',
-  red: '#C23B22',
+  red: 'var(--portal-status-red-fg)',
   darkBg: '#1E1A16',
   darkGold: '#B8973A',
 }
@@ -118,7 +118,7 @@ const s = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#F5F3EF',
+    backgroundColor: 'var(--portal-ink-2)',
     borderBottomWidth: 1,
     borderBottomColor: C.border,
     paddingVertical: 6,

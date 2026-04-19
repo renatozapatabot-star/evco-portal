@@ -45,7 +45,7 @@ export default function SignupPage() {
           <div style={{
             padding: '10px 14px', borderRadius: 8, marginBottom: 16,
             background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
-            color: '#F87171', fontSize: 'var(--aguila-fs-body)',
+            color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)',
           }}>
             {state.error}
           </div>

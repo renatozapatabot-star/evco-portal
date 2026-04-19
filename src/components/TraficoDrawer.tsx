@@ -99,7 +99,7 @@ const DocRow = ({
   const colors = {
     ok:      { bg: '#d1fae5', color: '#065f46', label: 'OK' },
     pending: { bg: '#fffbeb', color: '#92400e', label: 'Pendiente' },
-    missing: { bg: '#fef2f2', color: '#b91c1c', label: 'Falta' },
+    missing: { bg: 'var(--portal-status-red-bg)', color: '#b91c1c', label: 'Falta' },
   }
   const c = colors[status]
   return (

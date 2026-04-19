@@ -20,7 +20,7 @@ const T = {
   greenBg: 'rgba(45,133,64,0.12)',
   amber: 'var(--portal-status-amber-fg)',
   amberBg: 'rgba(196,127,23,0.12)',
-  red: '#C23B22',
+  red: 'var(--portal-status-red-fg)',
   redBg: 'rgba(194,59,34,0.12)',
   r: 8,
 } as const
@@ -149,7 +149,7 @@ export default function PlantillasPage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '10px 20px', borderRadius: T.r,
-              background: T.gold, color: '#1A1A18',
+              background: T.gold, color: 'var(--portal-ink-1)',
               fontSize: 'var(--aguila-fs-section)', fontWeight: 700, border: 'none', cursor: 'pointer',
             }}
           >
@@ -338,7 +338,7 @@ export default function PlantillasPage() {
                 disabled={saving}
                 style={{
                   padding: '12px 24px', borderRadius: T.r,
-                  background: T.gold, color: '#1A1A18',
+                  background: T.gold, color: 'var(--portal-ink-1)',
                   fontSize: 'var(--aguila-fs-section)', fontWeight: 700, border: 'none', cursor: 'pointer',
                   opacity: saving ? 0.6 : 1,
                   marginTop: 8,

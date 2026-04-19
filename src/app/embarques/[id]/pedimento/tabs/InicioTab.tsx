@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; border: string }> 
   firmado:   { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER, border: 'rgba(192,197,206,0.35)' },
   pagado:    { bg: 'rgba(192,197,206,0.12)',   fg: 'var(--portal-status-amber-fg)', border: 'rgba(192,197,206,0.35)' },
   cruzado:   { bg: 'var(--portal-status-green-bg)',   fg: 'var(--portal-status-green-fg)', border: 'rgba(34,197,94,0.35)' },
-  cancelado: { bg: 'var(--portal-status-red-bg)',   fg: '#F87171', border: 'rgba(239,68,68,0.35)' },
+  cancelado: { bg: 'var(--portal-status-red-bg)',   fg: 'var(--portal-status-red-fg)', border: 'rgba(239,68,68,0.35)' },
 }
 
 export interface InicioTabProps {

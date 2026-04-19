@@ -28,19 +28,19 @@ export function getTraficoUrgency(t: {
       class: hasActivity ? 'stalled' : 'zombie',
       label: hasActivity ? 'Estancado' : 'Abandonado',
       color: hasActivity ? '#991B1B' : 'var(--portal-fg-5)',
-      bgColor: hasActivity ? '#FEF2F2' : '#F3F4F6',
+      bgColor: hasActivity ? 'var(--portal-status-red-bg)' : 'var(--portal-ink-2)',
       action: hasActivity ? 'Intervención inmediata' : 'Archivar — sin actividad 90+ días',
       days,
     }
   }
 
   if (days > 30) {
-    return { class: 'stalled', label: 'Estancado', color: '#991B1B', bgColor: '#FEF2F2',
+    return { class: 'stalled', label: 'Estancado', color: '#991B1B', bgColor: 'var(--portal-status-red-bg)',
       action: 'Seguimiento urgente', days }
   }
 
   if (days > 7) {
-    return { class: 'overdue', label: 'Retrasado', color: 'var(--danger-500)', bgColor: '#FEF2F2',
+    return { class: 'overdue', label: 'Retrasado', color: 'var(--danger-500)', bgColor: 'var(--portal-status-red-bg)',
       action: 'Seguimiento necesario', days }
   }
 

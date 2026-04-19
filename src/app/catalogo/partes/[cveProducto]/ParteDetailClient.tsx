@@ -348,7 +348,7 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
         </h2>
         {!hasOcas ? (
           <GlassCard padding="16px" style={{ borderColor: 'var(--portal-status-amber-ring)', background: 'rgba(251,191,36,0.04)' }}>
-            <p style={{ margin: 0, color: '#FCD34D', fontSize: 13, fontWeight: 600 }}>
+            <p style={{ margin: 0, color: 'var(--portal-status-amber-fg)', fontSize: 13, fontWeight: 600 }}>
               {formattedFraccion
                 ? `La fracción ${formattedFraccion} no tiene OCA firmada para EVCO.`
                 : 'Esta parte aún no tiene fracción clasificada.'}
@@ -503,7 +503,7 @@ function CostosTab({ data }: { data: DetailPayload }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {alertVariation && (
         <GlassCard padding="12px 16px" style={{ borderColor: 'rgba(251,191,36,0.28)', background: 'rgba(251,191,36,0.04)' }}>
-          <p style={{ margin: 0, color: '#FCD34D', fontSize: 13, fontWeight: 600 }}>
+          <p style={{ margin: 0, color: 'var(--portal-status-amber-fg)', fontSize: 13, fontWeight: 600 }}>
             El costo unitario ha {variationPct > 0 ? 'aumentado' : 'bajado'} un {Math.abs(variationPct)}% en los últimos 6 meses. Revisa con tu comprador.
           </p>
         </GlassCard>
@@ -572,7 +572,7 @@ function StatInline({ label, value, tone }: { label: string; value: string; tone
   return (
     <div>
       <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
-      <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: tone === 'amber' ? '#FCD34D' : 'var(--portal-fg-1)' }}>{value}</p>
+      <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)' }}>{value}</p>
     </div>
   )
 }

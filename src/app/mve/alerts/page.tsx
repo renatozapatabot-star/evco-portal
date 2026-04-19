@@ -31,7 +31,7 @@ interface MveAlert {
 
 const SEVERITY_COLOR: Record<Severity, { text: string; bg: string; border: string }> = {
   critical: { text: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: 'rgba(239,68,68,0.35)' },
-  warning:  { text: '#FCD34D', bg: 'var(--portal-status-amber-bg)', border: 'rgba(251,191,36,0.35)' },
+  warning:  { text: 'var(--portal-status-amber-fg)', bg: 'var(--portal-status-amber-bg)', border: 'rgba(251,191,36,0.35)' },
   info:     { text: ACCENT_SILVER, bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.25)' },
 }
 

@@ -164,6 +164,43 @@ const HEX_MAP = {
   // Pure white — rare, route to fg-1
   '#FFFFFF': 'var(--portal-fg-1)',
   '#ffffff': 'var(--portal-fg-1)',
+
+  // Warm-white legacy (pre-v6 canvas values)
+  '#FAFAF8': 'var(--portal-ink-2)',
+  '#fafaf8': 'var(--portal-ink-2)',
+  '#F5F3EF': 'var(--portal-ink-2)',
+  '#F3F4F6': 'var(--portal-ink-2)',
+  '#E8E5E0': 'var(--portal-line-1)',
+  '#e8e5e0': 'var(--portal-line-1)',
+  '#9C9690': 'var(--portal-fg-4)',
+
+  // Pale semantic backgrounds (saturated variants of status tokens)
+  '#FECACA': 'var(--portal-status-red-bg)',
+  '#fecaca': 'var(--portal-status-red-bg)',
+  '#FEE2E2': 'var(--portal-status-red-bg)',
+  '#fee2e2': 'var(--portal-status-red-bg)',
+  '#FEF2F2': 'var(--portal-status-red-bg)',
+  '#fef2f2': 'var(--portal-status-red-bg)',
+  '#DCFCE7': 'var(--portal-status-green-bg)',
+  '#dcfce7': 'var(--portal-status-green-bg)',
+  '#F87171': 'var(--portal-status-red-fg)',
+  '#f87171': 'var(--portal-status-red-fg)',
+  '#FCD34D': 'var(--portal-status-amber-fg)',
+  '#fcd34d': 'var(--portal-status-amber-fg)',
+
+  // Slate palette
+  '#E2E8F0': 'var(--portal-fg-2)',
+  '#e2e8f0': 'var(--portal-fg-2)',
+  '#CBD5E1': 'var(--portal-fg-2)',
+  '#cbd5e1': 'var(--portal-fg-2)',
+  '#94A3B8': 'var(--portal-fg-4)',
+
+  // Deep red / brand
+  '#C23B22': 'var(--portal-status-red-fg)',
+  '#1A1A18': 'var(--portal-ink-1)',
+
+  // Gold legacy
+  '#eab308': 'var(--portal-gold-500)',
 }
 
 function transformHex(source) {

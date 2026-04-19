@@ -7,7 +7,7 @@ import { getCookieValue, PORTAL_URL } from '@/lib/client-config'
 
 const T = {
   bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
-  text: 'var(--border)', sub: '#9C9690', muted: '#666',
+  text: 'var(--border)', sub: 'var(--portal-fg-4)', muted: '#666',
   gold: GOLD, green: GREEN, red: RED,
 }
 

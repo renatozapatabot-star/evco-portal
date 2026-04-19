@@ -54,8 +54,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
   new: { label: 'NUEVO', color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)' },
   reviewed: { label: 'REVISADO', color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)' },
   accepted: { label: 'ACEPTADO', color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)' },
-  implemented: { label: 'IMPLEMENTADO', color: 'var(--portal-status-green-fg)', bg: '#DCFCE7' },
-  rejected: { label: 'DESCARTADO', color: 'var(--portal-fg-4)', bg: '#F3F4F6' },
+  implemented: { label: 'IMPLEMENTADO', color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)' },
+  rejected: { label: 'DESCARTADO', color: 'var(--portal-fg-4)', bg: 'var(--portal-ink-2)' },
 }
 
 export default function AhorroPage() {

@@ -19,7 +19,7 @@ interface Carrier {
 }
 
 function scoreColor(s: number) { return s >= 90 ? 'var(--portal-status-green-fg)' : s >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }
-function scoreBg(s: number) { return s >= 90 ? '#DCFCE7' : s >= 70 ? 'var(--portal-status-amber-bg)' : '#FEE2E2' }
+function scoreBg(s: number) { return s >= 90 ? 'var(--portal-status-green-bg)' : s >= 70 ? 'var(--portal-status-amber-bg)' : 'var(--portal-status-red-bg)' }
 
 export default function CarriersPage() {
   const isMobile = useIsMobile()
@@ -192,7 +192,7 @@ export default function CarriersPage() {
                   <div className="mt-2">
                     <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
                       style={{
-                        background: selected.score >= 90 ? '#DCFCE7' : selected.score >= 70 ? 'var(--portal-status-amber-bg)' : '#FEE2E2',
+                        background: selected.score >= 90 ? 'var(--portal-status-green-bg)' : selected.score >= 70 ? 'var(--portal-status-amber-bg)' : 'var(--portal-status-red-bg)',
                         color: selected.score >= 90 ? 'var(--portal-status-green-fg)' : selected.score >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)',
                       }}>
                       {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atención'}

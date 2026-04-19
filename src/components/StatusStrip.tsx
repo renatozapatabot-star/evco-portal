@@ -43,7 +43,7 @@ export function StatusStrip({ override }: { override?: StatusOverride | null }) 
       {displayText ? (
         <>
           <span className={`status-strip-dot ${dotClass}`} style={{ borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-          <span className="status-strip-text" style={{ fontWeight: 600, color: '#1A1A18' }}>{displayText}</span>
+          <span className="status-strip-text" style={{ fontWeight: 600, color: 'var(--portal-ink-1)' }}>{displayText}</span>
         </>
       ) : (
         <div className="skeleton status-strip-skeleton" style={{ borderRadius: 4 }} />

@@ -55,7 +55,7 @@ export function BridgeTimes() {
               borderRadius: 8, padding: '12px 14px', position: 'relative',
             }}>
               {isFastest && (
-                <span style={{ position: 'absolute', top: 8, right: 8, background: '#DCFCE7', color: 'var(--success-dark, #166534)',
+                <span style={{ position: 'absolute', top: 8, right: 8, background: 'var(--portal-status-green-bg)', color: 'var(--success-dark, #166534)',
                   borderRadius: 4, padding: '1px 6px', fontSize: 9, fontWeight: 700 }}>MÁS RÁPIDO</span>
               )}
               <div style={{ color: 'var(--text-primary)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, marginBottom: 2 }}>{b.nameEs}</div>

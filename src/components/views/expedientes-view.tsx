@@ -114,7 +114,7 @@ function SummaryCard({
                 style={{
                   width: `${globalPct}%`,
                   height: '100%',
-                  background: globalPct >= 80 ? 'var(--portal-status-green-fg)' : globalPct >= 50 ? 'var(--portal-status-amber-fg)' : '#C23B22',
+                  background: globalPct >= 80 ? 'var(--portal-status-green-fg)' : globalPct >= 50 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)',
                   borderRadius: 9999,
                   transition: 'width 0.4s ease',
                 }}
@@ -199,7 +199,7 @@ function FilterTabs({
 // ── Progress Bar (inline) ───────────────────────────────
 
 function ProgressBar({ pct: p }: { pct: number }) {
-  const color = p >= 100 ? 'var(--portal-status-green-fg)' : p >= 50 ? 'var(--portal-status-amber-fg)' : '#C23B22'
+  const color = p >= 100 ? 'var(--portal-status-green-fg)' : p >= 50 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
       <div style={{ flex: 1, height: 5, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>

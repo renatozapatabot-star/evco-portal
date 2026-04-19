@@ -28,7 +28,7 @@ const SEVERITY_ICON: Record<string, typeof Bell> = {
 const SEVERITY_COLOR: Record<string, string> = {
   success: 'var(--portal-status-green-fg)',
   warning: 'var(--portal-status-amber-fg)',
-  critical: '#C23B22',
+  critical: 'var(--portal-status-red-fg)',
   info: 'var(--portal-fg-4)',
   celebration: 'var(--portal-fg-1)',
 }
@@ -176,7 +176,7 @@ export function NotificationPanel({
             {badgeText && (
               <span style={{
                 fontSize: 'var(--aguila-fs-label)', fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
-                background: '#C23B22', color: 'var(--bg-card)',
+                background: 'var(--portal-status-red-fg)', color: 'var(--bg-card)',
                 borderRadius: 9999, padding: '1px 6px', lineHeight: '16px', minWidth: 20, textAlign: 'center',
               }}>{badgeText}</span>
             )}
@@ -242,7 +242,7 @@ export function NotificationPanel({
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <GroupIcon size={16} style={{ color: unreadInGroup > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-4)', flexShrink: 0 }} />
-                        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: unreadInGroup > 0 ? 700 : 500, color: '#1A1A18' }}>
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: unreadInGroup > 0 ? 700 : 500, color: 'var(--portal-ink-1)' }}>
                           {config?.label(items.length) || `${items.length} ${type}`}
                         </span>
                       </div>
@@ -290,7 +290,7 @@ export function NotificationPanel({
                               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                                 <Icon size={12} style={{ color, flexShrink: 0, marginTop: 3 }} />
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: n.read ? 500 : 700, color: '#1A1A18' }}>{n.title}</div>
+                                  <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: n.read ? 500 : 700, color: 'var(--portal-ink-1)' }}>{n.title}</div>
                                   <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-4)', marginTop: 2, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDateTime(n.created_at)}</div>
                                 </div>
                               </div>
@@ -330,7 +330,7 @@ export function NotificationPanel({
                           style={{
                             fontSize: 'var(--aguila-fs-body)',
                             fontWeight: n.read ? 500 : 700,
-                            color: '#1A1A18',
+                            color: 'var(--portal-ink-1)',
                           }}
                         >
                           {n.title}

@@ -309,7 +309,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
             style={{
               minHeight: 60,
               borderRadius: 12,
-              background: pending || description.trim().length < 3 ? 'rgba(234,179,8,0.3)' : '#eab308',
+              background: pending || description.trim().length < 3 ? 'rgba(234,179,8,0.3)' : 'var(--portal-gold-500)',
               color: 'var(--portal-ink-0)',
               border: 'none',
               fontSize: 'var(--aguila-fs-body-lg)',

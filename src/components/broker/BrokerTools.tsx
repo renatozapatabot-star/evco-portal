@@ -160,10 +160,10 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
       background: ok ? 'var(--portal-status-green-bg)' : 'var(--portal-status-red-bg)',
-      border: `1px solid ${ok ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
+      border: `1px solid ${ok ? 'rgba(34,197,94,0.2)' : 'var(--portal-status-red-bg)'}`,
       borderRadius: 6,
     }}>
-      <Icon size={16} style={{ color: ok ? 'var(--portal-status-green-fg)' : '#C23B22', flexShrink: 0 }} />
+      <Icon size={16} style={{ color: ok ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
         {detail && (

@@ -234,7 +234,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
             padding: '10px 16px',
             borderRadius: 10,
             border: 'none',
-            background: selectedCount === 0 || classifying ? 'rgba(148,163,184,0.2)' : '#eab308',
+            background: selectedCount === 0 || classifying ? 'rgba(148,163,184,0.2)' : 'var(--portal-gold-500)',
             color: selectedCount === 0 || classifying ? 'rgba(255,255,255,0.5)' : 'var(--portal-ink-0)',
             fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,

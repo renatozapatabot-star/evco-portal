@@ -94,7 +94,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
     return (
       <div style={{ textAlign: 'center', padding: 24 }}>
         <svg width={80} height={80} viewBox="0 0 80 80">
-          <circle cx={40} cy={40} r={34} fill="none" stroke="#E8E5E0" strokeWidth={4} />
+          <circle cx={40} cy={40} r={34} fill="none" stroke="var(--portal-line-1)" strokeWidth={4} />
           <circle
             cx={40} cy={40} r={34}
             fill="none" stroke="var(--portal-fg-1)" strokeWidth={4}

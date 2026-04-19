@@ -10,7 +10,7 @@ const s = StyleSheet.create({
   value: { flex: 1, fontSize: 'var(--aguila-fs-label)', color: PDF_TEXT_PRIMARY },
   mono: { fontFamily: 'Courier', fontSize: 'var(--aguila-fs-meta)', color: PDF_TEXT_PRIMARY },
   para: { fontSize: 'var(--aguila-fs-label)', lineHeight: 1.5, marginTop: 6, textAlign: 'justify' },
-  ruling: { marginTop: 10, padding: 12, borderWidth: 0.5, borderColor: PDF_BORDER, backgroundColor: '#FAFAF8' },
+  ruling: { marginTop: 10, padding: 12, borderWidth: 0.5, borderColor: PDF_BORDER, backgroundColor: 'var(--portal-ink-2)' },
   rulingLabel: { fontSize: 8, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
   rulingValue: { fontSize: 'var(--aguila-fs-body-lg)', fontFamily: 'Courier-Bold', color: PDF_TEXT_PRIMARY, letterSpacing: 1 },
   sig: { marginTop: 28, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },

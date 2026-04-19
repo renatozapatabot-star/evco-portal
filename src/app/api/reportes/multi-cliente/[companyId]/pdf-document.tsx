@@ -19,7 +19,7 @@ const s = StyleSheet.create({
   kpiSub: { fontSize: 8, color: PDF_TEXT_MUTED, marginTop: 2 },
   table: { marginTop: 6, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },
   th: { flexDirection: 'row', paddingVertical: 4, borderBottomWidth: 0.5, borderBottomColor: PDF_BORDER, backgroundColor: PDF_ZEBRA },
-  td: { flexDirection: 'row', paddingVertical: 3, borderBottomWidth: 0.3, borderBottomColor: '#F3F4F6' },
+  td: { flexDirection: 'row', paddingVertical: 3, borderBottomWidth: 0.3, borderBottomColor: 'var(--portal-ink-2)' },
   cell: { fontSize: 9, color: PDF_TEXT_PRIMARY, paddingHorizontal: 4 },
   cellHead: { fontSize: 8, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.5, paddingHorizontal: 4 },
   footer: { marginTop: 24, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },

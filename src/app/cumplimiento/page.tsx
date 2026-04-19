@@ -17,7 +17,7 @@ const T = {
   textMuted: 'var(--text-muted)',
   red: 'var(--danger-500)',
   redBg: 'var(--portal-status-red-bg)',
-  redBorder: '#FECACA',
+  redBorder: 'var(--portal-status-red-bg)',
   green: 'var(--success)',
   greenBg: 'var(--portal-status-green-bg)',
   greenBorder: 'rgba(34,197,94,0.2)',

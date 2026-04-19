@@ -232,7 +232,7 @@ export function AuditoriaClient() {
           style={{
             ...GLASS,
             borderColor: 'var(--portal-status-red-ring)',
-            color: '#fecaca',
+            color: 'var(--portal-status-red-bg)',
             fontSize: 'var(--aguila-fs-body)',
           }}
         >

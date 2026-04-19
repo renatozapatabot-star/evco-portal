@@ -27,7 +27,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
           <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Traficos por mes</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8E5E0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--portal-line-1)" />
               <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-meta)' }} />
               <YAxis tick={{ fontSize: 'var(--aguila-fs-meta)' }} />
               <Tooltip formatter={(v) => [String(v), 'Traficos']} />
@@ -58,7 +58,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
           <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Ahorro T-MEC acumulado</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <LineChart data={tmecData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8E5E0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--portal-line-1)" />
               <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-meta)' }} />
               <YAxis tick={{ fontSize: 'var(--aguila-fs-meta)' }} tickFormatter={v => fmtUSDCompact(v)} />
               <Tooltip formatter={(v) => [fmtUSDCompact(Number(v)), 'Ahorro']} />
@@ -74,7 +74,7 @@ export default function AnalyticsCharts({ activeReport, monthlyData, supplierDat
           <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 16 }}>Distribucion de tiempo de despacho (dias)</div>
           <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
             <BarChart data={despachoData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8E5E0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--portal-line-1)" />
               <XAxis dataKey="range" tick={{ fontSize: 'var(--aguila-fs-meta)' }} />
               <YAxis tick={{ fontSize: 'var(--aguila-fs-meta)' }} />
               <Tooltip formatter={(v) => [String(v), 'Traficos']} />

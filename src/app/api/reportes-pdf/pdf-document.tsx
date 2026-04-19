@@ -11,7 +11,7 @@ const COLORS = {
   gold: 'var(--gold)',
   green: 'var(--portal-status-green-fg)',
   amber: 'var(--portal-status-amber-fg)',
-  red: '#C23B22',
+  red: 'var(--portal-status-red-fg)',
   darkBg: '#1E1A16',
   darkGold: '#B8973A',
 }
@@ -129,7 +129,7 @@ const s = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#F5F3EF',
+    backgroundColor: 'var(--portal-ink-2)',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     paddingVertical: 8,

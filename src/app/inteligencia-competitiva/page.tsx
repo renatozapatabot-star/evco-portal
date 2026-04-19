@@ -123,7 +123,7 @@ export default function IntelCompetitivaPage() {
                           {config.label.toUpperCase()}
                         </span>
                         {item.actionable && (
-                          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
+                          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'var(--portal-status-green-bg)', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
                             ACCIONABLE
                           </span>
                         )}

@@ -105,7 +105,7 @@ export default function UploadPage() {
             fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
           }}>Z</span>
           
-          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-2)', marginTop: 24, marginBottom: 8 }}>
             {error === 'expired' ? 'Enlace expirado' : error === 'not_found' ? 'Enlace no válido' : 'Ocurrió un error'}
           </div>
           <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-section)', marginBottom: 8 }}>
@@ -147,7 +147,7 @@ export default function UploadPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px', fontSize: 'var(--aguila-fs-kpi-compact)',
           }}>✅</div>
-          <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#CBD5E1', marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-2)', marginBottom: 8 }}>
             Expediente completo
           </div>
           <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-section)', marginBottom: 24 }}>
@@ -249,7 +249,7 @@ export default function UploadPage() {
           {/* Upload button */}
           <label style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '14px 20px', background: uploading ? '#E2E8F0' : 'var(--gold)',
+            padding: '14px 20px', background: uploading ? 'var(--portal-fg-2)' : 'var(--gold)',
             borderRadius: 10, cursor: uploading ? 'wait' : 'pointer',
             fontSize: 15, fontWeight: 700, color: uploading ? 'var(--portal-fg-4)' : 'var(--navy-900)',
             transition: 'background 150ms',
@@ -298,9 +298,9 @@ function ReferralForm() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre de la empresa"
-        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
+        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: 'var(--portal-fg-2)', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email de contacto (opcional)"
-        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
+        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: 'var(--portal-fg-2)', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
       <button onClick={submit} disabled={!name.trim()}
         style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
         Recomendar

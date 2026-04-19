@@ -8,7 +8,7 @@ import { getCookieValue, getClientNameCookie, getClientRfcCookie } from '@/lib/c
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const T = { bg: 'var(--bg-main)', surface: 'var(--card-bg)', border: 'var(--border)', surfaceAlt: '#F5F3EF', text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999', navy: 'var(--gold-dark)', gold: 'var(--gold-dark)', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: 'var(--success)', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
+const T = { bg: 'var(--bg-main)', surface: 'var(--card-bg)', border: 'var(--border)', surfaceAlt: 'var(--portal-ink-2)', text: 'var(--text-primary)', textSub: 'var(--text-secondary)', textMuted: '#999999', navy: 'var(--gold-dark)', gold: 'var(--gold-dark)', goldBg: '#FFF8EB', goldBorder: '#E8C84A', green: 'var(--success)', greenBg: '#EAF3DE', shadow: '0 1px 3px rgba(0,0,0,0.07)' }
 
 const ORIGIN_CRITERIA = [
   { code: 'A', label: 'A — Wholly obtained or produced entirely in USMCA territory' },
@@ -115,7 +115,7 @@ export function USMCAView() {
               <div style={{ color: T.textMuted, fontSize: 'var(--aguila-fs-meta)' }}><strong>Criterion {form.origin_criterion}:</strong> {ORIGIN_CRITERIA.find(c => c.code === form.origin_criterion)?.label}</div>
             </div>
           </div>
-          <button onClick={generateCertificate} disabled={generating || !form.goods_description || !form.hs_code} style={{ height: 44, background: generating || !form.goods_description || !form.hs_code ? '#CBD5E1' : T.navy, border: 'none', borderRadius: 10, color: 'rgba(255,255,255,0.045)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{generating ? '⏳ Validating...' : '📜 Generate USMCA Certificate'}</button>
+          <button onClick={generateCertificate} disabled={generating || !form.goods_description || !form.hs_code} style={{ height: 44, background: generating || !form.goods_description || !form.hs_code ? 'var(--portal-fg-2)' : T.navy, border: 'none', borderRadius: 10, color: 'rgba(255,255,255,0.045)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{generating ? '⏳ Validating...' : '📜 Generate USMCA Certificate'}</button>
         </div>
         {cert && (
           <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: T.shadow, padding: 20, borderTop: `3px solid ${T.gold}` }}>
@@ -123,7 +123,7 @@ export function USMCAView() {
               <div><div style={{ color: T.gold, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{certNum}</div><div style={{ color: T.text, fontSize: 15, fontWeight: 700, marginTop: 2 }}>Certificate of Origin</div></div>
               <button onClick={downloadCert} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: 'rgba(255,255,255,0.045)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Download</button>
             </div>
-            <div style={{ background: cert.qualifies ? T.greenBg : '#FEE2E2', border: `1px solid ${cert.qualifies ? T.green : 'var(--portal-status-red-fg)'}30`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ background: cert.qualifies ? T.greenBg : 'var(--portal-status-red-bg)', border: `1px solid ${cert.qualifies ? T.green : 'var(--portal-status-red-fg)'}30`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>{cert.qualifies ? '✅' : '⚠️'}</span>
               <div><div style={{ color: cert.qualifies ? T.green : 'var(--danger-text, #991B1B)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700 }}>{cert.qualifies ? 'QUALIFIES FOR USMCA' : 'REVIEW REQUIRED'}</div><div style={{ color: cert.qualifies ? T.green : 'var(--danger-text, #991B1B)', fontSize: 'var(--aguila-fs-meta)', marginTop: 2 }}>{cert.assessment}</div></div>
             </div>

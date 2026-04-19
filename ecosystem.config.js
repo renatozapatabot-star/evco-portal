@@ -266,6 +266,20 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     },
     {
+      // Tito's morning revenue snapshot — 8 AM America/Chicago every day
+      // Counts are real (pedimentos table); fees are estimated at
+      // $125 std / $400 IMMEX USD until eConta sync catches up.
+      name: 'morning-revenue-alert',
+      script: 'scripts/morning-revenue-alert.js',
+      cwd,
+      cron_restart: '0 8 * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production', TZ: 'America/Chicago' },
+      error_file: '/tmp/morning-revenue-error.log',
+      out_file: '/tmp/morning-revenue-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
       name: 'semaforo-watch',
       script: 'scripts/semaforo-watch.js',
       cwd,

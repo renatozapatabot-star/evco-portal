@@ -32,6 +32,38 @@ import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { withHardTimeout } from '@/lib/timeouts'
 
+/**
+ * Humanize technical query labels before surfacing them to Ursula.
+ * Chrome audit 2026-04-19 found the partial-data banner leaking
+ * raw labels like `expedientes.total · catalogo.mes · catalogo.series`.
+ * Ursula should read "tus expedientes y tu catálogo", not a state path.
+ */
+const LABEL_TO_HUMAN: Record<string, string> = {
+  'expedientes.total': 'tus expedientes',
+  'expedientes.mes':   'tus expedientes del mes',
+  'expedientes.series':'tu historial de expedientes',
+  'catalogo.total':    'tu catálogo',
+  'catalogo.mes':      'tu catálogo del mes',
+  'catalogo.series':   'tu historial del catálogo',
+  'catalogo.clasificaciones': 'tus clasificaciones',
+  'traficos.activos':  'tus embarques activos',
+  'traficos.series':   'tu historial de embarques',
+  'pedimentos.total':  'tus pedimentos',
+  'entradas.mes':      'tus entradas del mes',
+  'entradas.series':   'tu historial de entradas',
+  'facturas.mes':      'tus facturas del mes',
+}
+function humanizeFailedLabels(labels: string[]): string {
+  if (labels.length === 0) return 'algunos datos'
+  const phrases = labels
+    .slice(0, 3)
+    .map((l) => LABEL_TO_HUMAN[l] ?? l.split('.')[0])
+  const unique = Array.from(new Set(phrases))
+  if (unique.length === 1) return unique[0]!
+  if (unique.length === 2) return `${unique[0]} y ${unique[1]}`
+  return `${unique.slice(0, -1).join(', ')} y ${unique[unique.length - 1]}`
+}
+
 /** Aggregate-query timeout wrapper — returns caller-supplied fallback
  *  on timeout or error. Used inside Promise.all for data that can
  *  degrade gracefully (hero numbers, activity feeds). Session-validity
@@ -658,8 +690,7 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
                 lineHeight: 1.45,
               }}
             >
-              Algunos datos no cargaron. Estamos revisando con el servidor — {signals.failedLabels.slice(0, 3).join(' · ')}
-              {signals.failedLabels.length > 3 ? ` · +${signals.failedLabels.length - 3} más` : ''}.
+              Estamos revalidando {humanizeFailedLabels(signals.failedLabels)}. Los números volverán en unos minutos.
             </div>
           )}
           <FreshnessBanner reading={freshness} />

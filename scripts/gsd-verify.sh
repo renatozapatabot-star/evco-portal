@@ -145,8 +145,12 @@ fi
 #   component used in TopBar + the warning/error tones for future
 #   degraded states. All variants of the same canonical green signal;
 #   tokenization deferred with the rest of the v3 chrome.)
+# Baseline 2026-04-19 theme/v6 = 2709 (Phase 0.1 gold consolidation +
+#   Phase 0.4 SemaforoPill tokenization + Phase 0.8 StatusBadge --portal-
+#   status-* tokens + Phase 2 /status rewrite + /anomalias SEV_CFG
+#   tokenized. Net 13-hex drop from the 2722 floor.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2722
+INVARIANT_HEX_BASELINE=2709
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \
@@ -464,7 +468,7 @@ fi
 # Baseline 2026-04-17 = 18 (pre-existing drift during rebrand; none from
 #   Friday polish — pedimento-pdf HTML template uses solid dark tokens).
 # --------------------------------------------------------------------------
-INVARIANT_2_BASELINE=18
+INVARIANT_2_BASELINE=17
 header "Invariant 2 — Gold decorative ratchet"
 INV2_COUNT=$(set +eo pipefail;{ grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$INV2_COUNT" -gt "$INVARIANT_2_BASELINE" ]; then

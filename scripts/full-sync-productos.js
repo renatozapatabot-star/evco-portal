@@ -13,6 +13,23 @@ const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
   if (process.env.TELEGRAM_SILENT === 'true') return
+// ⚠ KNOWN BUGS — DO NOT FIX IN ISOLATION (2026-04-20 pre-launch audit):
+//   1. Line above this comment is a STRAY top-level `return` statement
+//      (parses fine in CJS — bare return at module level is allowed and
+//      exits the module). This makes the ENTIRE script a no-op whenever
+//      TELEGRAM_SILENT=true is set (which is currently the case on
+//      Throne per CLAUDE.md BUILD STATE).
+//   2. Line ~83 below has `company_id: ... || r.sCveCliente || 'unknown'`,
+//      which is FORBIDDEN by .claude/rules/tenant-isolation.md Block EE
+//      rule: "company_id: r.sCveCliente || 'unknown' — fallbacks mask
+//      mapping gaps". Rows with unknown sCveCliente get tagged 'unknown',
+//      which is cross-tenant contamination per the Block EE contract.
+//
+// Fixing bug 1 in isolation would ENABLE bug 2 to start growing contamination
+// the moment TELEGRAM_SILENT is flipped to false (which Monday runbook
+// Step 0 instructs). So both must be fixed together: replace the 'unknown'
+// fallback with the Block EE skip-and-alert pattern from globalpc-sync.js,
+// then remove the stray return. Scoped to the next session, NOT Monday.
 
 async function run() {
   console.log('\n📦 FULL PRODUCTOS SYNC (plain insert, no unique key)')

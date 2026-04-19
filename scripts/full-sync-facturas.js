@@ -10,6 +10,14 @@ const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
   if (process.env.TELEGRAM_SILENT === 'true') return
+// ⚠ SAME BUG-PAIR AS full-sync-productos.js (see its header for full
+// analysis). The line above is a stray top-level `return` that kills
+// the whole module when TELEGRAM_SILENT=true. Line ~57 has the
+// Block-EE-forbidden `|| 'unknown'` tenant fallback. DO NOT fix in
+// isolation — the return currently prevents contamination growth.
+// Full fix is a next-session task: replace the 'unknown' fallback
+// with skip-and-alert per tenant-isolation.md, THEN remove the return.
+// Scheduled in ecosystem.config.js as 'full-sync-facturas' (Sun 02:00).
 
 async function run() {
   console.log('\n📄 FULL FACTURAS SYNC (upsert on folio)')

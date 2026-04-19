@@ -23,15 +23,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Director context — loaded from DB at request time, fallback for server-to-server VAPI calls
-async function getDirectorContext() {
+// Director context — the company Tito's voice endpoint is currently
+// operating against. Pinned to EVCO for the Monday 2026-04-20 launch
+// because Vapi doesn't yet send a per-call company_id; EVCO is the only
+// client with active operations. MAFESA onboarding TODO: thread a
+// `company_id` from the Vapi request body here (~4 call sites to touch:
+// this fn signature, the POST handler around line 292, data queries
+// around line 245, and the cost-log shape around line 402). Until then,
+// Tito addressing a MAFESA issue via voice will see EVCO data — he
+// knows, he's the only caller. Tagged for post-launch milestone.
+async function getDirectorContext(companyIdOverride?: string) {
+  const targetCompanyId = companyIdOverride || 'evco'
   const { data } = await supabase
     .from('companies')
     .select('company_id, clave_cliente, name')
-    .eq('company_id', 'evco')
+    .eq('company_id', targetCompanyId)
     .single()
   return {
-    companyId: data?.company_id || 'evco',
+    companyId: data?.company_id || targetCompanyId,
     clientClave: data?.clave_cliente || '',
     clientName: data?.name || 'Cliente',
     patente: '3596',

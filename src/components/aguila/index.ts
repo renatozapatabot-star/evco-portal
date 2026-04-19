@@ -44,3 +44,11 @@ export type {
   AguilaColumnType,
   AguilaDataTableProps,
 } from './AguilaDataTable'
+export { AguilaBreadcrumb } from './AguilaBreadcrumb'
+export type { AguilaBreadcrumbItem, AguilaBreadcrumbProps } from './AguilaBreadcrumb'
+export { DetailPageShell } from './DetailPageShell'
+export type {
+  DetailPageShellProps,
+  DetailPageShellTab,
+  DetailTitleKind,
+} from './DetailPageShell'

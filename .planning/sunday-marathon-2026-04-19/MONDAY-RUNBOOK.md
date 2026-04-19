@@ -1,8 +1,31 @@
 # Monday 2026-04-20 Pre-Launch Runbook
 
 **Target:** portal.renatozapata.com credential send to Ursula Banda / EVCO Plastics at **08:00 Laredo CT**.
-**Source:** Sunday 2026-04-19 data-trust marathon. Branch `sunday/data-trust-v1` sits unmerged with 9 commits.
+**Source:** Sunday 2026-04-19 data-trust marathon. Branch `sunday/data-trust-v1` sits unmerged with 16 commits.
 **Owner:** Renato IV (you). Nothing in this runbook auto-executes; every step is a manual gate.
+
+---
+
+## ⛔ 06:30 — Step −1 · SEV-1 RLS DENY-ALL (BLOCKS EVERYTHING)
+
+**A parallel audit found that the anon key can read every tenant's data directly via Supabase REST.** The portal's HMAC session is a UI gate only; the database itself had no RLS enforcement on `traficos`, `companies`, `expediente_documentos`, `globalpc_productos`, and ~20 other tenant-scoped tables. Live probes 2026-04-19 confirmed this. Forensics: `.planning/tenant-isolation-audit-2026-04-19.md`.
+
+**Apply the migration BEFORE anything else. Without it, Ursula's portal is a data-exposure vector for all 51 tenants under Patente 3596.**
+
+```bash
+# 1. Open Supabase SQL Editor (db push banned per repo policy)
+# 2. Paste full contents of:
+#    supabase/migrations/20260420_rls_sev1_deny_all.sql
+# 3. Run it. Idempotent — safe to re-run.
+# 4. Verify in-editor (3 queries embedded at the bottom of that file):
+#    - pg_class.relrowsecurity = true on all 25 tables
+#    - pg_policies has a _deny_anon policy per table, qual = 'false'
+#    - Anon probe from a separate client returns empty OR permission_denied
+```
+
+**Pass criteria:** all three verification queries show expected. Any table still readable by anon = do not proceed.
+
+**Known casualty:** `/pedimentos/nuevo` (operator-only, known-debt) returns empty after migration. Not Ursula's path.
 
 ---
 

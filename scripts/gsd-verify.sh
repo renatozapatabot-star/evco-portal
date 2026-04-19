@@ -157,7 +157,7 @@ fi
 #   scripts/codemod-theme-v6.js. Commit 8742fd0. −700 inline hex in
 #   one pass, more than the entire hand-tokenization phase.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=1958
+INVARIANT_HEX_BASELINE=1353
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

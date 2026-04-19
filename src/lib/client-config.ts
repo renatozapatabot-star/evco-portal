@@ -116,18 +116,36 @@ export interface ClientConfig {
   ADUANA: string
 }
 
-const EVCO_DEFAULTS: ClientConfig = {
-  CLIENT_NAME: 'EVCO Plastics de México',
-  CLIENT_RFC: 'EPM001109I74',
-  CLIENT_CLAVE: 'evco',
-  COMPANY_ID: 'evco',
+// Tenant-neutral defaults. PATENTE + ADUANA reflect Renato Zapata & Company's
+// broker identity (invariant — applies to every tenant under the patente) so
+// those stay as stable constants. The client-identifying fields default to
+// empty so a MAFESA user with partial auth metadata never inherits EVCO's
+// name / RFC / clave. Surfaces that render "cliente" from CLIENT_NAME already
+// tolerate empty strings; a missing value is strictly better than a wrong
+// tenant's value on screen.
+const BROKER_IDENTITY = {
   PATENTE: '3596',
   ADUANA: '240',
+} as const
+
+const NEUTRAL_DEFAULTS: ClientConfig = {
+  CLIENT_NAME: '',
+  CLIENT_RFC: '',
+  CLIENT_CLAVE: '',
+  COMPANY_ID: '',
+  PATENTE: BROKER_IDENTITY.PATENTE,
+  ADUANA: BROKER_IDENTITY.ADUANA,
 }
 
 /**
  * Resolve client config from Supabase auth session → companies table.
- * Falls back to EVCO defaults for existing users without company metadata.
+ *
+ * MAFESA onboarding contract (codified 2026-04-20): never fall back to a
+ * specific tenant's identity when lookup fails. An empty session or a
+ * partial companies row returns NEUTRAL_DEFAULTS (broker identity only,
+ * client fields blank). Previously EVCO_DEFAULTS fired here and would
+ * paint a MAFESA user's cockpit with "EVCO Plastics de México" when their
+ * auth metadata was incomplete — silent cross-tenant display bug.
  */
 export async function getClientConfig(supabase: SupabaseClient): Promise<ClientConfig> {
   const { data: { session } } = await supabase.auth.getSession()
@@ -135,20 +153,26 @@ export async function getClientConfig(supabase: SupabaseClient): Promise<ClientC
     ?? session?.user?.user_metadata?.clave_cliente
     ?? ''
 
+  if (!companyId) {
+    // No session metadata — render neutral. Callers that need to redirect
+    // to login should check `COMPANY_ID === ''`.
+    return NEUTRAL_DEFAULTS
+  }
+
   const { data: company } = await supabase
     .from('companies')
     .select('name, rfc, clave_cliente, company_id, patente, aduana')
     .eq('company_id', companyId)
     .single()
 
-  if (!company) return EVCO_DEFAULTS
+  if (!company) return NEUTRAL_DEFAULTS
 
   return {
-    CLIENT_NAME: company.name ?? EVCO_DEFAULTS.CLIENT_NAME,
-    CLIENT_RFC: company.rfc ?? EVCO_DEFAULTS.CLIENT_RFC,
-    CLIENT_CLAVE: company.clave_cliente ?? EVCO_DEFAULTS.CLIENT_CLAVE,
-    COMPANY_ID: company.company_id ?? EVCO_DEFAULTS.COMPANY_ID,
-    PATENTE: company.patente ?? EVCO_DEFAULTS.PATENTE,
-    ADUANA: company.aduana ?? EVCO_DEFAULTS.ADUANA,
+    CLIENT_NAME: company.name ?? '',
+    CLIENT_RFC: company.rfc ?? '',
+    CLIENT_CLAVE: company.clave_cliente ?? '',
+    COMPANY_ID: company.company_id ?? companyId,
+    PATENTE: company.patente ?? BROKER_IDENTITY.PATENTE,
+    ADUANA: company.aduana ?? BROKER_IDENTITY.ADUANA,
   }
 }

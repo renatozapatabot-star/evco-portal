@@ -1,14 +1,48 @@
 # Monday 2026-04-20 Pre-Launch Runbook
 
 **Target:** portal.renatozapata.com credential send to Ursula Banda / EVCO Plastics at **08:00 Laredo CT**.
-**Source:** Sunday 2026-04-19 data-trust marathon. Branch `sunday/data-trust-v1` sits unmerged with 6 commits fixing one P0 + one P1 + five cleanup / guardrail commits.
+**Source:** Sunday 2026-04-19 data-trust marathon. Branch `sunday/data-trust-v1` sits unmerged with 9 commits.
 **Owner:** Renato IV (you). Nothing in this runbook auto-executes; every step is a manual gate.
+
+---
+
+## 06:55 — Step 0 · Unmute Telegram on Throne (URGENT)
+
+**CRUZ's failure alerts are currently deaf.** `TELEGRAM_SILENT=true` on
+Throne's `.env.local` (per CLAUDE.md BUILD STATE as of 2026-04-19) makes
+every `sendTelegram()` call a no-op — including the fresh alerts added
+to `globalpc-sync.js` and `full-client-sync.js` in commit `682d4a2`.
+If Throne still has this set, the whole Phase 8 resilience layer is
+shipping muted.
+
+```bash
+ssh <throne>
+grep TELEGRAM_SILENT ~/evco-portal/.env.local
+# If it prints TELEGRAM_SILENT=true → flip it:
+sed -i '' 's/^TELEGRAM_SILENT=true/TELEGRAM_SILENT=false/' ~/evco-portal/.env.local
+# OR: comment the line out entirely
+
+# Verify the next sync actually fires Telegram by triggering a
+# deliberate failure on a staging clone (do NOT run against prod data):
+TELEGRAM_SILENT=false node -e "require('./scripts/lib/telegram').sendTelegram('🧪 <b>Test</b> — Monday runbook probe '+new Date().toISOString())"
+# Expect a message in the RZ Ops group (-5085543275).
+
+pm2 restart all   # pick up the env change
+pm2 save
+```
+
+**Pass criteria:** a test message lands in the RZ Ops group.
+
+**Flag handling:** if the test message doesn't arrive:
+- Check `TELEGRAM_BOT_TOKEN` env var is set on Throne
+- Check bot is still in the chat (`-5085543275`)
+- Without this, shipping is a bet that no sync will crash between 08:00 Mon and the next human check — historically that's how the 10-day silent death happened. Do not ship until the test message lands.
 
 ---
 
 ## Gate rule (non-negotiable)
 
-All three verifications below must return clean. **Any flag = do not merge, do not ship.** Regroup, investigate, re-run. Shipping with a flagged verification has cost me 10 days of silent pipeline death before — never again.
+Steps 1-3 below must all return clean. **Any flag = do not merge, do not ship.** Regroup, investigate, re-run. Shipping with a flagged verification has cost me 10 days of silent pipeline death before — never again.
 
 ---
 

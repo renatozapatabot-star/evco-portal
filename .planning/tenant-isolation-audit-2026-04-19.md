@@ -183,5 +183,52 @@ This document supersedes the earlier commit (`644c171`) which concluded "NO expl
 
 ---
 
+## Appendix A — Full blast radius (37-table anon-key sweep)
+
+Of 37 tenant-scoped or tenant-adjacent tables sampled with the public anon key, **36 are readable to anonymous browsers.** (The 37th, `operational_decisions`, timed out on every query shape — neither confirmed open nor confirmed blocked.)
+
+| Table | Rows exposed to anon |
+|---|---|
+| `traficos` | 32,376 |
+| `entradas` | 64,790 |
+| `expediente_documentos` | 214,124* |
+| `globalpc_productos` | 149,710* |
+| `globalpc_partidas` | 22,599* |
+| `globalpc_facturas` | 64,467 |
+| `globalpc_eventos` | count timed out; plain select returns rows |
+| `globalpc_proveedores` | 1,972 |
+| `globalpc_contenedores` | 26,706 |
+| `globalpc_ordenes_carga` | 18,866 |
+| `globalpc_bultos` | 58,093 |
+| `anexo24_partidas` | 1,793 |
+| `pedimentos` | 4,107 |
+| `pedimento_drafts` | 2,185 |
+| `companies` | 307 (every tenant's name + clave_cliente) |
+| `supplier_network` | 101 |
+| `cruz_conversations` | 33 |
+| `sync_log` | 801 |
+| `system_config` | 7 (FX rates, DTA rates) |
+| `regulatory_alerts` | 3 |
+| `audit_log` / `classification_log` / `pedimento_ocas` / `proveedor_rfc_cache` | 0 (empty table, no visible policy) |
+| `mensajeria_threads` / `mensajeria_messages` | 0 |
+| `push_subscriptions` / `service_requests` / `user_preferences` | 0 |
+| `client_requests` / `calendar_events` / `streak_tracking` | 0 |
+| `tipo_cambio_history` / `trafico_notes` / `agent_decisions` | 0 |
+| `workflow_events` | 0 (anon returns empty — may be RLS, may be low-volume) |
+
+\* `count: 'exact'` timed out server-side (57014). Plain `.select('*').limit(2)` returned rows successfully, confirming the tables are readable — totals from `scripts/data-integrity-check.js` baseline at 2026-04-17.
+
+**Conservative minimum exposure**: ~660,000 rows of customs data (traficos + entradas + expediente_documentos + globalpc_productos + globalpc_partidas + globalpc_facturas + globalpc_bultos) visible to anonymous browser traffic. Every tenant, every shipment, every document record.
+
+## Appendix B — Is the anon key actually in Ursula's browser?
+
+Yes. `grep -rn "NEXT_PUBLIC_SUPABASE_ANON_KEY" src/` returns 10+ `'use client'` pages that instantiate Supabase with the key at module load time: `/calls`, `/calendario`, `/monitor`, `/simulador`, `/comunicaciones`, `/logros`, `/drafts`, `/admin/aprobaciones`, `/facturacion`. Next.js inlines `NEXT_PUBLIC_*` values into the client bundle at build time. Anyone who opens View Source or DevTools on portal.renatozapata.com finds the key plus `NEXT_PUBLIC_SUPABASE_URL` within seconds.
+
+## Appendix C — Earlier source-only audit (`644c171`) is preserved
+
+The prior commit remains in the branch history intentionally. It documents what a source-only audit concluded and where that conclusion was too narrow. Future audits should treat "portal reads are safe" and "database reads are safe" as two separate questions — the portal's `session.companyId` filter is a UI convenience, not a tenant gate. Only RLS (or revoking the anon key entirely) is a tenant gate.
+
+---
+
 *Live probes run 2026-04-19 from the `overnight/ursula-ready` working copy. Service-role for diagnostic counts; `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the exposure test. Temporary probe scripts removed after run.*
 *Patente 3596 · Aduana 240 · Laredo, Texas · Est. 1941*

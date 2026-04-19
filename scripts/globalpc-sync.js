@@ -6,6 +6,7 @@ const path = require('path')
 require('dotenv').config({ path: '.env.local' })
 const { fetchAll } = require('./lib/paginate')
 const { withSyncLog } = require('./lib/sync-log')
+const { sendTelegram } = require('./lib/telegram')
 
 // ─── Config ───
 const supabase = createClient(
@@ -890,7 +891,21 @@ async function run() {
   console.log(`📄 Sync completo · ${totalMin} min · MySQL ✅ · eConta ✅ · WSDL ✅ · TIGIE ✅`)
 }
 
-withSyncLog(supabase, { sync_type: 'globalpc', company_id: null }, run).catch(err => {
+withSyncLog(supabase, { sync_type: 'globalpc', company_id: null }, run).catch(async err => {
   console.error('Fatal error:', err)
+  // Operational resilience rule #1 (.claude/rules/operational-resilience.md):
+  // sync failures MUST fire Telegram before the morning report. Block EE
+  // reference writer — silent death here is SEV-1. Non-blocking: best-effort
+  // alert, then exit non-zero so pm2/cron knows it failed.
+  try {
+    await sendTelegram(
+      `🔴 <b>globalpc-sync FAILED</b>\n\n` +
+      `<code>${String(err?.message ?? err).slice(0, 500)}</code>\n\n` +
+      `Host: ${require('os').hostname()}\n` +
+      `Run: ${new Date().toISOString()}`
+    )
+  } catch (tgErr) {
+    console.error('Telegram alert also failed:', tgErr.message)
+  }
   process.exit(1)
 })

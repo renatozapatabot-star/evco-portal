@@ -20,6 +20,7 @@ const fs = require('fs')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
+const { sendTelegram } = require('./lib/telegram')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -479,7 +480,18 @@ async function run() {
   console.log(`\n\n✅ Report written to ${outPath}`)
 }
 
-run().catch(err => {
+run().catch(async err => {
   console.error('❌ Fatal:', err.message)
+  // Operational resilience rule #1 — no silent failures.
+  try {
+    await sendTelegram(
+      `🔴 <b>full-client-sync FAILED</b>\n\n` +
+      `<code>${String(err?.message ?? err).slice(0, 500)}</code>\n\n` +
+      `Host: ${require('os').hostname()}\n` +
+      `Run: ${new Date().toISOString()}`
+    )
+  } catch (tgErr) {
+    console.error('Telegram alert also failed:', tgErr.message)
+  }
   process.exit(1)
 })

@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     // Node.js CommonJS pipeline scripts — linted separately
     "scripts/**",
     "ecosystem.config.js",
+    // Design-handoff reference mockups (parallel session vendor drop).
+    // JSX files that rely on globals (Icon, Badge, Sparkline, React) —
+    // not production code. Excluding avoids 54 spurious react/jsx-no-undef.
+    ".planning/**",
   ]),
   // React Compiler rules downgraded to warnings: they flag optimization
   // opportunities (memoization skipped, setState-in-effect, impure render),

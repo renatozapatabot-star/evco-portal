@@ -132,3 +132,110 @@ What the next block should do:
 - Playwright screenshot baselines per Tier-1 route (deferred in
   this block — Phase 6 shipped counters only).
 - Lighthouse CI on `/login`, `/inicio`, `/embarques`, `/embarques/[id]`.
+
+---
+
+## Block FF · theme/v6-migration primitives + drift cleanup (2026-04-19)
+
+**Context:** Full-scope audit surfaced that only 12/183 authenticated
+pages were v6-compliant (6.6%) and that the design system itself had
+internal drift — gold hex split across three conflicting definitions
+(`#C9A84C` in `tokens.ts` + `tailwind.config.ts` vs canonical `#C9A74A`
+in `design-system.ts`), orphan `design-tokens.ts` `statusConfig` with
+zero consumers, and no `<AguilaDataTable>` primitive forcing every list
+page to reinvent `.portal-table` markup. Planned ~40 hours of work
+across 7 phases; executed Phase 0 + Phase 1 + 1/5 Phase 2 structural +
+9 drift-tokenization passes across one long marathon.
+
+**What shipped (branch `theme/v6-migration`, 24 commits):**
+- Phase 0.1-0.2: Gold consolidated to canonical `#C9A74A` across
+  `design-system.ts`, `tokens.ts`, `tailwind.config.ts`. Published
+  `--portal-gold-50..800` and `--portal-semaforo-{verde,amarillo,rojo,
+  none}-{bg,fg}` tokens in `portal-tokens.css`.
+- Phase 0.3: `formatFraccion()` gained 10-digit NICO-suffixed support
+  (XXXX.XX.XX.NN) + 18 regression tests locking core-invariant #8.
+- Phase 0.4: `<SemaforoPill>` dropped inline rgba for `var(--portal-
+  semaforo-*)` — palette change now cascades without hunting.
+- Phase 0.5: `<AguilaDataTable>` primitive with 9 column types
+  (text/pedimento/fraccion/currency/semaforo/status/number/date/custom)
+  composing `<PortalTable>` + auto-routing the cell-renderers. 8 tests
+  via `renderToStaticMarkup` (mirrors `<PortalTable>` test pattern
+  because `vi.mock('next/navigation')` + `@testing-library/react` does
+  not reliably resolve Next's hooks).
+- Phase 0.6: `<DetailPageShell>` + `<AguilaBreadcrumb>` unified `[id]`
+  route chrome. `titleKind` drives pedimento/fraccion/id formatting;
+  `sidebar` yields 2-col at ≥1024px and single-col below.
+- Phase 0.7: `<AguilaInput>` + `<AguilaSelect>` + `<AguilaCheckbox>`
+  form envelope with label + hint + error. `forwardRef`-aware.
+- Phase 0.8: `<StatusBadge>` added `variant='dark'` (new default)
+  reading through `--portal-status-*` tokens. Back-compat `variant=
+  'light'` kept for warm-white legacy callers.
+- Phase 1: 5 new ratchets in `gsd-verify.sh` — tailwind-hex (floor 27),
+  inline-@keyframes-outside-design-system (floor 57), and
+  positive-direction adoption counters for the 3 new primitives.
+- Phase 2: `/status` rewrite + 9 drift tokenization commits across
+  `/anomalias`, `/health`, `/usmca/certificados`, `/simulador`,
+  `/usmca` + `/oca` ApproveActions, `/comunicaciones`, `/kpis`,
+  `/oca`, `/catalogo/CatalogoTable`, `/clasificar/BulkTab`,
+  `/clasificar/ClasificarNuevoTab`.
+
+**Ratchet deltas (all locked):**
+- INVARIANT_HEX_BASELINE: 2722 → 2658 (−64 inline hex)
+- INVARIANT_2 (gold): 18 → 17
+- INVARIANT_CRUZ: 218 → 217
+
+What Block FF proved:
+- **Primitives-first cascades better than page-first.** One
+  `--portal-semaforo-verde-bg` token redirect in Phase 0.4 landed at
+  8 consumer files transparently. Hand-editing the same rgba in every
+  consumer would have been 10× the work.
+- **Back-compat by aliasing beats rename churn.** `GOLD` still exports
+  the same value it did pre-rebrand because it resolves to
+  `ZAPATA_GOLD_BRIGHT`. Zero consumer breaks despite a canonical-hex
+  swap underneath.
+- **Mechanical hex → token swaps scale linearly** with page count when
+  the target token already exists. Each drift-cleanup commit takes
+  3-8 minutes including typecheck. 9 commits dropped hex by ~45.
+- **The `renderToStaticMarkup + vi.mock('next/navigation')` pattern**
+  is the right test shape for primitives that wrap PortalTable et al.
+  `@testing-library/react` fights with Next's hooks unreliably.
+
+What Block FF did NOT attempt (deferred):
+- `<AguilaModal>` — blocked on Phase 5.2 (`/cliente/reportar-problema`
+  heavy lift). Deferred from Phase 0.7 because it wasn't yet needed.
+- `<AguilaWizard>` — blocked on Phase 5.4 (`/admin/onboard` rewrite).
+- `/proveedor/[token]` — blocks on Tito's explicit approval (external
+  supplier contract). Carve out with `// @theme-exempt:
+  supplier-contract` marker when Phase 5.5 ships.
+- Phase 3 codemod (`scripts/codemod-theme-v6.js`, jscodeshift) — the
+  remaining 67 partial-drift pages are 90% mechanical. A single
+  codemod run should drop hex count by ~500 in one commit.
+- Phase 4 detail routes (`/embarques/[id]`, `/pedimentos/[id]`,
+  `/expedientes/[id]`) adopting `<DetailPageShell>`. Highest visibility
+  target; recommend sequencing before Phase 3 for ROI.
+
+**The parallel-session branch-thrashing incident** — see
+`.claude/rules/parallel-sessions.md`. Codified 2026-04-19.
+Short version: never run two autonomous Claude sessions on sibling
+branches in the same working directory; every commit-cycle costs 3-5×
+more due to branch-swap reverts.
+
+What the next block should do:
+- Build `scripts/codemod-theme-v6.js` jscodeshift codemod with three
+  transforms: literal retired-gold hex → `var(--portal-gold-500)`,
+  `{amount.toLocaleString(...)}` → `<PortalNum>` wrap, raw `<div style={{
+  background: 'rgba(255,255,255,0.04)', backdropFilter... }}>` →
+  `<GlassCard tier="secondary">`. `--dry-run` → diff review → `--apply`.
+- Phase 4 before Phase 3: migrate `/embarques/[id]`, `/pedimentos/[id]`,
+  `/expedientes/[id]` to `<DetailPageShell>`. Three commits, moves R9
+  from 0 to 3, and those are the three most client-visible detail pages.
+- Complete Phase 2 remainders (`/alertas-internas`, `/excepciones`,
+  `/banco-facturas`) as dedicated sessions — each 200-800 LOC client
+  component needs its own focused pass.
+- Retire the warm-white `canvas: '#FAFAF8'`, `bg-primary: '#FAFAF8'`,
+  `bg-card: '#FFFFFF'`, `textColor.primary: '#1A1A1A'` extends in
+  `tailwind.config.ts`. Pre-v6 values kept only for back-compat. R7
+  tailwind-hex ratchet catches the regression.
+- Delete orphan `src/components/aguila/design-tokens.ts` (`statusConfig`
+  + `TraficoStatus` type have zero consumers). Move the type to
+  `@/types/supabase` if retained.

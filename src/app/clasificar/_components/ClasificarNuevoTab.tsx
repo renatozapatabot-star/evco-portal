@@ -47,7 +47,7 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 function ConfidenceBar({ value }: { value: number }) {
-  const tone = value >= 85 ? '#22C55E' : value >= 70 ? '#FBBF24' : '#EF4444'
+  const tone = value >= 85 ? 'var(--portal-status-green-fg)' : value >= 70 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -329,7 +329,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                 borderRadius: 12,
                 background: 'rgba(239,68,68,0.1)',
                 border: '1px solid rgba(239,68,68,0.3)',
-                color: '#FCA5A5',
+                color: 'var(--portal-status-red-fg)',
                 fontSize: 'var(--aguila-fs-body)',
               }}
             >
@@ -517,7 +517,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       minHeight: 60,
                       padding: '0 24px',
                       borderRadius: 12,
-                      background: insertState === 'inserting' || !traficoId.trim() ? 'rgba(34,197,94,0.3)' : '#22C55E',
+                      background: insertState === 'inserting' || !traficoId.trim() ? 'rgba(34,197,94,0.3)' : 'var(--portal-status-green-fg)',
                       color: '#0a0a0c',
                       border: 'none',
                       fontSize: 'var(--aguila-fs-section)',
@@ -545,7 +545,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                     insertState === 'inserted'
                       ? '1px solid rgba(34,197,94,0.3)'
                       : '1px solid rgba(239,68,68,0.3)',
-                  color: insertState === 'inserted' ? '#86EFAC' : '#FCA5A5',
+                  color: insertState === 'inserted' ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
                   fontSize: 'var(--aguila-fs-body)',
                 }}
               >

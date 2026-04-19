@@ -122,6 +122,27 @@ productoQuery = productoQuery
 Without the `.in()` filter, every row tagged `company_id='evco'` —
 including anything a past legacy sync left behind — surfaces.
 
+**This includes the CRUZ AI tool layer.** Every `.from('globalpc_productos')`
+call in `src/lib/aguila/tools.ts` (and any future AI-tool file that queries
+a tenant-scoped table) MUST apply the allowlist for client-role sessions.
+Admin/broker sessions with `allClients=true` intentionally bypass both
+filters for oversight — that branch is legitimate, but a client-role path
+that misses the `.in()` is a regression. The Phase 7 regression test
+(`src/lib/aguila/__tests__/tools.catalogo.test.ts`) asserts this contract;
+breaking it breaks the test. Audited + fixed 2026-04-19 (Sunday data-trust
+marathon) — `execQueryCatalogo` was written on 2026-04-16 before Block EE
+codified this rule and was the last remaining catalog surface missing
+the guard.
+
+### Scope resolution refuses unknown client filters
+
+`resolveClientScope()` in `src/lib/aguila/tools.ts` throws
+`AguilaForbiddenError('scope:unknown_client:...')` when an internal
+caller passes a `clientFilter` that doesn't resolve to a company in the
+`companies` table. Silently dropping to an unfiltered query on a typo
+would cross-tenant; refuse instead. All five tool executors inherit this
+guard because they all call `resolveClientScope` first.
+
 ---
 
 ## Auditing

@@ -618,6 +618,54 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Invariant Block-EE+ — globalpc_productos reads need allowlist guard
+#
+# Every .from('globalpc_productos') call in src/ must have a nearby
+# .in('cve_producto', …) guard (within ~20 lines after) OR an isInternal
+# branch OR the explicit comment marker `allowlist-ok:globalpc_productos`.
+# Missing guard = the same leak class that the Sunday 2026-04-19 marathon
+# fixed in src/lib/aguila/tools.ts.
+#
+# The active-parts helper file itself is excluded (it IS the allowlist).
+# --------------------------------------------------------------------------
+# Baseline ratchet: existing count established 2026-04-19 during Phase 7 of
+# the Sunday data-trust marathon. Count can only go DOWN; any new unguarded
+# read (in a client-role path) bumps this above baseline and fails the
+# build. Lower the baseline as call sites get audited + marked.
+PRODUCTOS_UNGUARDED_BASELINE=35
+header "Invariant Block-EE+ — globalpc_productos allowlist guard ratchet"
+PRODUCTOS_UNGUARDED_LIST=$(awk '
+  FNR == 1 { file = FILENAME }
+  /\.from\(["\x27]globalpc_productos["\x27]\)/ {
+    buf[NR] = file ":" FNR ":" $0
+    found_guard[NR] = 0
+  }
+  {
+    for (k in buf) {
+      if (NR > k && NR <= k + 20) {
+        if ($0 ~ /\.in\(["\x27]cve_producto/) found_guard[k] = 1
+        if ($0 ~ /isInternal/) found_guard[k] = 1
+        if ($0 ~ /allowlist-ok:globalpc_productos/) found_guard[k] = 1
+      }
+    }
+  }
+  END {
+    for (k in buf) {
+      if (found_guard[k] != 1) print buf[k]
+    }
+  }
+' $(find src -type f \( -name '*.ts' -o -name '*.tsx' \) 2>/dev/null | grep -v __tests__ | grep -v '.test.' | grep -v 'anexo24/active-parts.ts') 2>/dev/null | sort -u)
+PRODUCTOS_UNGUARDED_COUNT=$(echo "$PRODUCTOS_UNGUARDED_LIST" | grep -cE "^.+:" || echo 0)
+if [ "$PRODUCTOS_UNGUARDED_COUNT" -gt "$PRODUCTOS_UNGUARDED_BASELINE" ]; then
+  fail "Unguarded globalpc_productos reads: $PRODUCTOS_UNGUARDED_COUNT (baseline $PRODUCTOS_UNGUARDED_BASELINE). NEW call site added without allowlist guard. Add .in('cve_producto', activeList), an isInternal branch, or // allowlist-ok:globalpc_productos comment. See .claude/rules/tenant-isolation.md:"
+  echo "$PRODUCTOS_UNGUARDED_LIST" | head -25 | sed 's/^/    /'
+elif [ "$PRODUCTOS_UNGUARDED_COUNT" -lt "$PRODUCTOS_UNGUARDED_BASELINE" ]; then
+  pass "Unguarded globalpc_productos reads: $PRODUCTOS_UNGUARDED_COUNT (baseline $PRODUCTOS_UNGUARDED_BASELINE, improving ✓). Lower PRODUCTOS_UNGUARDED_BASELINE in this script."
+else
+  warn "Unguarded globalpc_productos reads: $PRODUCTOS_UNGUARDED_COUNT (at baseline — audit each site before next milestone, see Phase 9)"
+fi
+
+# --------------------------------------------------------------------------
 # AGUILA palette guard — no blue/indigo/sky/cyan Tailwind classes outside
 # the semantic StatusBadge component.
 # --------------------------------------------------------------------------

@@ -200,16 +200,43 @@ From the portal walkthrough materials and `/tmp/tito-review-script.md`:
 
 ---
 
+## Post-launch activation — `nightly-reconciliation.js`
+
+New script shipped in commit `a351bc9`, intentionally NOT scheduled yet. Dry-run + register via PM2 after 08:00 ship settles:
+
+```bash
+ssh <throne>
+cd ~/evco-portal
+git pull      # assumes sunday/data-trust-v1 merged in
+node scripts/nightly-reconciliation.js --dry-run
+```
+
+Expected: per-(company × table) drift report + a "would-send" Telegram summary. Drift > 5% exits 1 (RED). If dry-run is clean:
+
+```bash
+# Add to ecosystem.config.js:
+# { name: 'nightly-reconciliation', script: 'scripts/nightly-reconciliation.js',
+#   cron_restart: '0 3 * * *', autorestart: false }
+pm2 start ecosystem.config.js --only nightly-reconciliation
+pm2 save
+```
+
+First live firing 03:00 next morning. Green = ✅, amber/red investigate per `.claude/rules/tenant-isolation.md`.
+
+---
+
 ## What this runbook does NOT cover (deferred to post-launch)
 
-- 4 sync scripts missing Telegram alerts (`globalpc-sync.js` most critical) — silent-failure risk but no evidence of recent silent death
-- 15 sync scripts without safeUpsert wrapper — operational hygiene
+- ~~4 sync scripts missing Telegram alerts~~ — 2/4 done in `682d4a2` (globalpc-sync + full-client-sync); other 2 (drain-entrada-synced, pcnet-sync) are one-shot ops tools
+- ~~`src/lib/client-config.ts` EVCO_DEFAULTS footgun~~ — fixed in `3b4064f` (NEUTRAL_DEFAULTS)
+- ~~Nightly reconciliation cron~~ — script in `a351bc9`; activation = section above
+- ~~Two deferred UX decisions (`/inicio` catalogo counts + `/api/catalogo/partes` list allowlist)~~ — applied in `bfbea72`; visible effect ~149K → ~693 for EVCO
+- 15 sync scripts without safeUpsert wrapper — operational hygiene, no active issue
 - 54 orphan tables — Phase 9 cleanup, needs live dashboard
-- Two deferred UX decisions (`/inicio` catalogo counts + `/api/catalogo/partes` list allowlist) — you + Tito decide next session
-- `src/lib/client-config.ts` EVCO_DEFAULTS footgun — MAFESA onboarding checklist item
-- Live Supabase Pro dashboard enumeration (views, functions, triggers, buckets)
+- Live Supabase Pro dashboard enumeration (views / functions / triggers / buckets)
+- `src/app/api/vapi-llm/route.ts` hardcoded `'evco'` director context — cosmetic (Tito's voice endpoint only)
 
-None of these block the 08:00 credential send. All documented in `.planning/sunday-marathon-2026-04-19/` for future-you.
+None of these block 08:00 credential send. All documented in `.planning/sunday-marathon-2026-04-19/`.
 
 ---
 

@@ -274,7 +274,8 @@ export default function KPIsPage() {
     )
   }
 
-  const fmtUSD = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+  const fmtUSD = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD`
+  const fmtMXN = (n: number) => `$${n.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN`
   const maxMonthly = Math.max(...kpis.monthlyVolumes.map(([, v]) => v), 1)
 
   return (
@@ -300,7 +301,7 @@ export default function KPIsPage() {
 
         <KPICard icon={DollarSign} accent="var(--portal-fg-1)"
           label="Valor Importado USD" value={fmtUSD(kpis.totalValueUSD)}
-          sub={`DTA ${fmtUSD(kpis.totalDTA)} · IGI ${fmtUSD(kpis.totalIGI)} · IVA ${fmtUSD(kpis.totalIVA)}`} />
+          sub={`DTA ${fmtMXN(kpis.totalDTA)} · IGI ${fmtMXN(kpis.totalIGI)} · IVA ${fmtMXN(kpis.totalIVA)}`} />
 
         <KPICard icon={Zap} accent="var(--portal-status-green-fg)"
           label="Despacho Rápido"

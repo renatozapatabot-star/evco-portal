@@ -152,8 +152,12 @@ fi
 # Baseline 2026-04-19 theme/v6 floor = 2658 (combined session + parallel
 #   data-trust session work: /catalogo SourceChip, /clasificar Bulk +
 #   Nuevo, plus additional drift pickups from the sibling session).
+# Baseline 2026-04-19 theme/v6 codemod = 1958 (Phase 3 codemod --apply
+#   landed 788 hex + 148 rgba tokenizations across 144 files via
+#   scripts/codemod-theme-v6.js. Commit 8742fd0. −700 inline hex in
+#   one pass, more than the entire hand-tokenization phase.)
 # --------------------------------------------------------------------------
-INVARIANT_HEX_BASELINE=2658
+INVARIANT_HEX_BASELINE=1958
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \

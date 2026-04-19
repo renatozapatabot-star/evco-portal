@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   GOLD,
   GREEN,
@@ -74,16 +75,45 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'comunicacion', label: 'Comunicación' },
 ]
 
+const VALID_TABS: readonly TabId[] = ['pedimento', 'documentos', 'mercancia', 'cronologia', 'notas', 'comunicacion'] as const
+
+function parseTabParam(raw: string | null): TabId {
+  if (raw && (VALID_TABS as readonly string[]).includes(raw)) return raw as TabId
+  return 'pedimento'
+}
+
 export function TraficoDetail(props: TraficoDetailProps) {
   // Default tab is Pedimento — it's the SAT-audit truth + the first
   // thing Ursula wants to see. Documentos/Mercancía/etc. are one tap
   // away and the timeline already sits above the tabs as context.
-  const [active, setActive] = useState<TabId>('pedimento')
+  //
+  // URL-sync: ?tab=documentos survives refresh + shares bookmarkable
+  // state. Chrome audit 2026-04-19 flagged the refresh-loses-tab as a
+  // quiet trust erosion — broker dictates a URL on the phone and the
+  // receiver lands in the wrong tab without this wiring.
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const [active, setActive] = useState<TabId>(() => parseTabParam(searchParams.get('tab')))
+
+  // Sync state when URL changes externally (back button, shared link)
+  useEffect(() => {
+    const fromUrl = parseTabParam(searchParams.get('tab'))
+    if (fromUrl !== active) setActive(fromUrl)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
   const track = useTrack()
   const notasRef = useRef<NotasTabHandle | null>(null)
 
   function switchTo(next: TabId) {
     if (next === active) return
+    // Push URL state (replace, not push — tab swaps should not pollute
+    // the back stack; only navigation between pages should).
+    const params = new URLSearchParams(searchParams.toString())
+    if (next === 'pedimento') params.delete('tab')
+    else params.set('tab', next)
+    const query = params.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
     track('page_view', {
       entityType: 'trafico_tab',
       entityId: props.traficoId,

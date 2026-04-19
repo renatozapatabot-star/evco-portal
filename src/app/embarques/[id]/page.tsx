@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
 import { getRequiredDocs, type DocType } from '@/lib/doc-requirements'
 import type { Category } from '@/lib/events-catalog'
+import { DetailPageShell } from '@/components/aguila'
 import { TraficoDetail } from './TraficoDetail'
 import { TraficoTimeline, type TimelineInput } from './TraficoTimeline'
 import { buildChain, type FacturaRow as ChainFacturaRow, type EntradaRow as ChainEntradaRow, type PedimentoRow as ChainPedimentoRow } from './buildChain'
@@ -393,14 +394,23 @@ export default async function TraficoDetailPage({
   }
 
   return (
-    <div>
+    <DetailPageShell
+      breadcrumb={[
+        { label: 'Embarques', href: '/embarques' },
+        { label: traficoId },
+      ]}
+      title={traficoId}
+      titleKind="id"
+      subtitle={clientName ?? undefined}
+      maxWidth={1400}
+    >
       {/* Timeline — renders above the detail shell so the cinematic
           vertical status rail is the primary UX. The legacy hero +
           below-fold sections remain untouched underneath for deep data
           (partidas, notas, events log). When document uploads ramp up
           post-Marathon 3, the timeline absorbs more context without
           needing layout changes. */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '12px 16px 0' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '12px 0 0' }}>
         <TraficoTimeline input={timelineInput} />
       </div>
 
@@ -422,6 +432,6 @@ export default async function TraficoDetailPage({
         uploadedRequiredCount={uploadedRequiredCount}
         chain={chain}
       />
-    </div>
+    </DetailPageShell>
   )
 }

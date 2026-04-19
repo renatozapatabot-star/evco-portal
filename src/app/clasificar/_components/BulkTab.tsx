@@ -59,9 +59,9 @@ const STATUS_LABEL: Record<RowUiState, string> = {
 }
 
 function confidenceColor(pct: number): { bg: string; fg: string } {
-  if (pct >= 85) return { bg: 'rgba(34,197,94,0.14)', fg: '#86EFAC' }
-  if (pct >= 70) return { bg: 'rgba(192,197,206,0.12)', fg: '#C0C5CE' }
-  return { bg: 'rgba(239,68,68,0.14)', fg: '#FCA5A5' }
+  if (pct >= 85) return { bg: 'var(--portal-status-green-bg)', fg: 'var(--portal-status-green-fg)' }
+  if (pct >= 70) return { bg: 'var(--portal-status-gray-bg)',  fg: 'var(--portal-fg-3)' }
+  return { bg: 'var(--portal-status-red-bg)', fg: 'var(--portal-status-red-fg)' }
 }
 
 export function BulkTab({ canInsert }: { canInsert: boolean }) {
@@ -249,14 +249,14 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
       <div style={{ display: 'flex', gap: 12, marginBottom: 12, fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
         <span>Sin clasificar: {summary.pending}</span>
         <span>Con propuesta: {summary.classified}</span>
-        <span style={{ color: '#86EFAC' }}>Aplicadas: {summary.applied}</span>
-        {summary.error > 0 && <span style={{ color: '#FCA5A5' }}>Error: {summary.error}</span>}
+        <span style={{ color: 'var(--portal-status-green-fg)' }}>Aplicadas: {summary.applied}</span>
+        {summary.error > 0 && <span style={{ color: 'var(--portal-status-red-fg)' }}>Error: {summary.error}</span>}
       </div>
 
       {error && (
         <div style={{
           padding: 12, marginBottom: 12, borderRadius: 10,
-          background: 'rgba(239,68,68,0.12)', color: '#FCA5A5',
+          background: 'rgba(239,68,68,0.12)', color: 'var(--portal-status-red-fg)',
           border: '1px solid rgba(239,68,68,0.24)', fontSize: 'var(--aguila-fs-body)',
         }}>
           {error}
@@ -360,7 +360,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                     <span style={{
                       display: 'inline-block', marginLeft: 6,
                       padding: '1px 6px', borderRadius: 6,
-                      background: 'rgba(201,168,76,0.16)', color: '#FDE68A',
+                      background: 'rgba(201,168,76,0.16)', color: 'var(--portal-status-amber-fg)',
                       fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                     }}>
                       T-MEC
@@ -370,7 +370,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                     <span style={{
                       display: 'inline-block', marginLeft: 6,
                       padding: '1px 6px', borderRadius: 6,
-                      background: 'rgba(251,191,36,0.12)', color: '#FDE68A',
+                      background: 'rgba(251,191,36,0.12)', color: 'var(--portal-status-amber-fg)',
                       fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                     }}>
                       NOM ({r.nom_required.length})
@@ -400,8 +400,8 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                         onClick={() => void applyOne(row)}
                         style={{
                           padding: '6px 12px', borderRadius: 8,
-                          border: 'none', background: '#22C55E',
-                          color: '#0D0D0C', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
+                          border: 'none', background: 'var(--portal-status-green-fg)',
+                          color: 'var(--portal-ink-0)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                           cursor: 'pointer', minHeight: 32,
                         }}
                       >
@@ -421,13 +421,13 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                     </>
                   )}
                   {row.ui === 'applied' && (
-                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#86EFAC', fontWeight: 600 }}>✓ Aplicada</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>✓ Aplicada</span>
                   )}
                   {row.ui === 'rejected' && (
                     <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Rechazada</span>
                   )}
                   {row.ui === 'error' && (
-                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#FCA5A5' }}>{r?.error_code ?? 'error'}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-red-fg)' }}>{r?.error_code ?? 'error'}</span>
                   )}
                 </div>
               </div>

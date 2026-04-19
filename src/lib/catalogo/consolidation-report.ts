@@ -38,6 +38,9 @@ interface RawCompany {
 export async function getConsolidationReport(
   supabase: AnyClient,
 ): Promise<ConsolidationClientRow[]> {
+  // allowlist-ok:globalpc_productos — consolidation report aggregates
+  // cross-tenant by design (shows distribution of descripcion/fraccion
+  // across every company). Admin-only surface.
   const [productosRes, companiesRes] = await Promise.all([
     supabase
       .from('globalpc_productos')

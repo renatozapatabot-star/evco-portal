@@ -184,6 +184,11 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso), { label: 'entradas.semana', signals }),
     softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId), { label: 'expedientes.total', signals }),
     softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('uploaded_at', monthStartIso), { label: 'expedientes.mes', signals }),
+    // allowlist-ok:globalpc_productos — client cockpit KPI counts: count-only
+    // reads scoped by company_id. Switching to the anexo-24 allowlist would
+    // change Ursula's "catálogo total" from legacy-inclusive to imported-only
+    // (149K → ~693 for EVCO). Deferred as a deliberate UX choice with Tito
+    // + Renato IV; not a leak (rows stay tenant-tagged).
     softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId), { label: 'catalogo.total', signals }),
     softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fraccion_classified_at', monthStartIso), { label: 'catalogo.mes', signals }),
     softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null), { label: 'catalogo.clasificaciones', signals }),
@@ -204,6 +209,8 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       supabase.from('entradas').select('fecha_llegada_mercancia').eq('company_id', companyId).gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000),
       { label: 'entradas.series', signals }
     ),
+    // allowlist-ok:globalpc_productos — classification velocity series;
+    // scoped by company_id; same deferred allowlist-vs-total call as above.
     softData<{ fraccion_classified_at: string }>(
       supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000),
       { label: 'catalogo.series', signals }

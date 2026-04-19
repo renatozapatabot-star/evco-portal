@@ -43,6 +43,9 @@ export async function confirmAndAdvanceAction(formData: FormData) {
   // 3. Writeback to globalpc_productos if payload has product info
   const payload = decision.payload as Record<string, unknown> | null
   if (payload?.product_description && decision.decision) {
+    // allowlist-ok:globalpc_productos — operator classification writeback;
+    // UPDATE scoped by (decision.company_id, descripcion fuzzy match),
+    // limited to 1 row. Write op, not a read.
     await sb.from('globalpc_productos')
       .update({
         fraccion: decision.decision,

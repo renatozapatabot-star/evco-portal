@@ -134,6 +134,8 @@ async function renderBodegaCockpit(opName: string) {
       sb.from('traficos').select('fecha_cruce').not('pedimento', 'is', null).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', sevenDaysAgoIso)),
+    // allowlist-ok:globalpc_productos — warehouse operator cockpit intentionally
+    // counts across all tenants (ops-wide volume signal per invariant #31).
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null)),
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)

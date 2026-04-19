@@ -514,6 +514,10 @@ export async function reconcileAnexo24Drift(
     anexoMap.set(r.cve_producto, { merchandise: r.merchandise_name_official, fraccion: r.fraccion_official })
   }
 
+  // allowlist-ok:globalpc_productos — anexo24 ingest reconciliation query
+  // intentionally pulls the FULL tenant mirror to compute "only_in_anexo24
+  // vs only_in_gpc vs matched". Scoped by companyId; applying the anexo24
+  // allowlist here would be circular (we're building the allowlist).
   const { data: gpcData } = await supabase
     .from('globalpc_productos')
     .select('cve_producto, descripcion, fraccion')

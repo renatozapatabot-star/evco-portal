@@ -868,6 +868,9 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         const year = input.year || new Date().getFullYear()
         const { data: traf } = await supabase.from('traficos').select('trafico, pedimento, estatus').eq('company_id', cid4).gte('fecha_llegada', PORTAL_DATE_FROM).limit(1000)
         const noPedimento = (traf || []).filter(t => !t.pedimento).length
+        // allowlist-ok:globalpc_productos — simulate_audit count of
+        // unclassified products for (optionally admin-overridden) cid4.
+        // Count-only (doesn't expose per-row data to the LLM response).
         const { data: prods } = await supabase.from('globalpc_productos').select('fraccion').eq('company_id', cid4).is('fraccion', null).limit(5000)
         const noFraccion = prods?.length || 0
         const { data: docs } = await supabase.from('documents').select('trafico_id', { count: 'exact', head: true }).eq('company_id', cid4)

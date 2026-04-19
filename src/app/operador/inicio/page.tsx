@@ -162,6 +162,9 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('expediente_documentos').select('id', { count: 'exact', head: true })),
+    // allowlist-ok:globalpc_productos — operator cockpit is ops-wide by design
+    // (invariant #31). Classification counts, expiry alerts, and unclassified
+    // queues all need cross-tenant visibility for the operator to do their job.
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),
@@ -179,6 +182,8 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     softCount(sb.from('pedimento_facturas').select('id', { count: 'exact', head: true }).eq('status', 'assigned').gte('assigned_at', todayStartIso)),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])),
     softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('semaforo', 2).in('estatus', ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado'])),
+    // allowlist-ok:globalpc_productos — operator sees the unclassified queue
+    // and expiry horizon across every tenant (invariant #31).
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).or('fraccion.is.null,fraccion.eq.')),
     softCount(sb.from('classification_log').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null).gte('created_at', monthStartIso)),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true })),

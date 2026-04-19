@@ -47,6 +47,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
   // the same (cve_producto, company_id) — legacy sync data — so
   // maybeSingle() would 500 with "multiple rows". Take the newest row
   // instead (order by created_at desc, limit 1).
+  // allowlist-ok:globalpc_productos — detail lookup scoped by
+  // (cve_producto, company_id) with 404 on miss. Not a catalog aggregate.
   const { data: parteRows, error: parteErr } = await supabase
     .from('globalpc_productos')
     .select('*')

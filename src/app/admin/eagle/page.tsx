@@ -199,6 +199,8 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       sb.from('entradas').select('fecha_llegada_mercancia').gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
     ),
     softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', month.monthStart).lt('fecha_llegada_mercancia', month.monthEnd)),
+    // allowlist-ok:globalpc_productos — admin eagle dashboard intentionally aggregates
+    // cross-tenant to surface the broker's patente-wide view per invariant #31.
     softData<{ fraccion_classified_at: string }>(
       sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
     ),

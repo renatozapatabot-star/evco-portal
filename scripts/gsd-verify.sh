@@ -632,30 +632,31 @@ fi
 # the Sunday data-trust marathon. Count can only go DOWN; any new unguarded
 # read (in a client-role path) bumps this above baseline and fails the
 # build. Lower the baseline as call sites get audited + marked.
-PRODUCTOS_UNGUARDED_BASELINE=35
+PRODUCTOS_UNGUARDED_BASELINE=0
 header "Invariant Block-EE+ — globalpc_productos allowlist guard ratchet"
-PRODUCTOS_UNGUARDED_LIST=$(awk '
-  FNR == 1 { file = FILENAME }
-  /\.from\(["\x27]globalpc_productos["\x27]\)/ {
-    buf[NR] = file ":" FNR ":" $0
-    found_guard[NR] = 0
-  }
-  {
-    for (k in buf) {
-      if (NR > k && NR <= k + 20) {
-        if ($0 ~ /\.in\(["\x27]cve_producto/) found_guard[k] = 1
-        if ($0 ~ /isInternal/) found_guard[k] = 1
-        if ($0 ~ /allowlist-ok:globalpc_productos/) found_guard[k] = 1
-      }
-    }
-  }
-  END {
-    for (k in buf) {
-      if (found_guard[k] != 1) print buf[k]
-    }
-  }
-' $(find src -type f \( -name '*.ts' -o -name '*.tsx' \) 2>/dev/null | grep -v __tests__ | grep -v '.test.' | grep -v 'anexo24/active-parts.ts') 2>/dev/null | sort -u)
-PRODUCTOS_UNGUARDED_COUNT=$(echo "$PRODUCTOS_UNGUARDED_LIST" | grep -cE "^.+:" || echo 0)
+PRODUCTOS_UNGUARDED_LIST=$(
+  # For each .from('globalpc_productos') match, grep ±8 lines of context
+  # and check for a guard signal anywhere in the window. Produces
+  # "file:line:code" for each UNGUARDED match.
+  set +eo pipefail
+  for f in $(find src -type f \( -name '*.ts' -o -name '*.tsx' \) 2>/dev/null | grep -v __tests__ | grep -v '.test.' | grep -v 'anexo24/active-parts.ts'); do
+    grep -n "\.from(['\"]globalpc_productos['\"])" "$f" 2>/dev/null | while IFS=: read -r lineno _; do
+      # Window: 8 lines before, 20 lines after the match
+      lo=$((lineno > 8 ? lineno - 8 : 1))
+      hi=$((lineno + 20))
+      window=$(sed -n "${lo},${hi}p" "$f")
+      if ! echo "$window" | grep -qE "\.in\(['\"]cve_producto|isInternal|allowlist-ok:globalpc_productos"; then
+        code=$(sed -n "${lineno}p" "$f")
+        echo "$f:$lineno:$code"
+      fi
+    done
+  done | sort -u
+)
+if [ -z "$PRODUCTOS_UNGUARDED_LIST" ]; then
+  PRODUCTOS_UNGUARDED_COUNT=0
+else
+  PRODUCTOS_UNGUARDED_COUNT=$(printf '%s\n' "$PRODUCTOS_UNGUARDED_LIST" | grep -cE "^.+:" | head -1 | tr -d ' ')
+fi
 if [ "$PRODUCTOS_UNGUARDED_COUNT" -gt "$PRODUCTOS_UNGUARDED_BASELINE" ]; then
   fail "Unguarded globalpc_productos reads: $PRODUCTOS_UNGUARDED_COUNT (baseline $PRODUCTOS_UNGUARDED_BASELINE). NEW call site added without allowlist guard. Add .in('cve_producto', activeList), an isInternal branch, or // allowlist-ok:globalpc_productos comment. See .claude/rules/tenant-isolation.md:"
   echo "$PRODUCTOS_UNGUARDED_LIST" | head -25 | sed 's/^/    /'

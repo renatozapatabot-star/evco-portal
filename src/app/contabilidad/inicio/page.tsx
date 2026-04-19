@@ -165,6 +165,8 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
     softData<{ fecha_cruce: string }>(
       sb.from('traficos').select('fecha_cruce').not('pedimento', 'is', null).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000)
     ),
+    // allowlist-ok:globalpc_productos — accounting cockpit counts across all
+    // tenants (Anabel's broker-wide view per invariant #31).
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true })),
     softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion', 'is', null)),
     softData<{ fraccion_classified_at: string }>(

@@ -185,6 +185,8 @@ export async function getAnexoSnapshot(
       : supabase.from('globalpc_productos').select('fraccion').eq('company_id', companyId).not('fraccion', 'is', null).limit(0),
     hasActive
       ? supabase.from('globalpc_productos').select('cve_proveedor').eq('company_id', companyId).in('cve_producto', activeList).not('cve_proveedor', 'is', null).limit(10000)
+      // allowlist-ok:globalpc_productos — zero-active-parts fallback returns
+      // empty set via .limit(0); cannot leak cross-tenant.
       : supabase.from('globalpc_productos').select('cve_proveedor').eq('company_id', companyId).not('cve_proveedor', 'is', null).limit(0),
   ])
 

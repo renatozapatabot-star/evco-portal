@@ -55,6 +55,9 @@ export async function POST(req: NextRequest) {
     return err('VALIDATION_ERROR', 'producto_id inválido', 400)
   }
 
+  // allowlist-ok:globalpc_productos — single-row lookup by primary key with
+  // explicit ownership check below (returns 403 for cross-tenant). Not a
+  // catalog-style aggregate read.
   const { data: row, error: loadErr } = await supabase
     .from('globalpc_productos')
     .select('id, company_id, descripcion')
@@ -71,6 +74,8 @@ export async function POST(req: NextRequest) {
     return err('FORBIDDEN', 'Producto de otro cliente', 403)
   }
 
+  // allowlist-ok:globalpc_productos — update by primary key, ownership
+  // already verified above.
   const { error: updErr } = await supabase
     .from('globalpc_productos')
     .update({ fraccion: parsed.data.fraccion, updated_at: new Date().toISOString() })

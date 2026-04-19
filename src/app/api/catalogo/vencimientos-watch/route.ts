@@ -75,6 +75,10 @@ export async function GET(request: NextRequest) {
 
   const horizonTopIso = dayIso(60)
 
+  // allowlist-ok:globalpc_productos — CRON-invoked expiry watcher sweeps
+  // every tenant's permits. Per-row company_id is preserved so alert
+  // routing goes to the correct client via Mensajería. Gated by
+  // CRON_SECRET; no client role can reach this endpoint.
   const { data, error } = await supabase
     .from('globalpc_productos')
     .select('id, company_id, cve_producto, descripcion, fraccion, nom_numero, nom_expiry, sedue_permit, sedue_expiry, semarnat_cert, semarnat_expiry')

@@ -143,6 +143,7 @@ export async function getAnexoByFraccion(
       : supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null).limit(0),
     hasActive
       ? supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeList).is('fraccion', null)
+      // allowlist-ok:globalpc_productos — zero-active-parts fallback via .limit(0).
       : supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).is('fraccion', null).limit(0),
   ])
 

@@ -79,6 +79,8 @@ export async function POST(req: NextRequest) {
     product_error: null,
   }
 
+  // allowlist-ok:globalpc_productos — INSERT with explicit company_id per
+  // Block EE tenant-isolation contract. Not a read query.
   const { error: prodErr } = await supabase.from('globalpc_productos').insert({
     company_id: log.company_id,
     cve_trafico: trafico.trafico,

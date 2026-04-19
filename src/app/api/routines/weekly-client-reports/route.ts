@@ -118,6 +118,9 @@ export async function POST(request: NextRequest) {
         sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso).limit(1),
         sb.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).gte('fecha_cruce', sevenDaysAgoIso).limit(1),
         sb.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('is_required', true).is('storage_path', null).limit(1),
+        // allowlist-ok:globalpc_productos — weekly report loops over every
+        // company and counts per-tenant scoped by c.company_id (outer loop
+        // variable). Admin cron routine; head:true returns count only.
         sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', c.company_id).eq('pais_origen', 'USA').limit(1),
         computeARAging(sb, c.company_id),
       ])

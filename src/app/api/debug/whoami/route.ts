@@ -57,6 +57,8 @@ export async function GET() {
     probe('traficos_for_company', () => session ? sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('company_id', session.companyId) : Promise.resolve({ data: null, error: 'no-session', count: null })),
     probe('entradas_for_company', () => session ? sb.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', session.companyId) : Promise.resolve({ data: null, error: 'no-session', count: null })),
     probe('expediente_documentos', () => sb.from('expediente_documentos').select('id', { count: 'exact', head: true })),
+    // allowlist-ok:globalpc_productos — /api/debug/whoami diagnostic probe
+    // returning only a total row count (no per-row data exposure).
     probe('globalpc_productos', () => sb.from('globalpc_productos').select('id', { count: 'exact', head: true })),
     probe('companies_for_company', () => session ? sb.from('companies').select('company_id', { count: 'exact', head: true }).eq('company_id', session.companyId) : Promise.resolve({ data: null, error: 'no-session', count: null })),
   ])

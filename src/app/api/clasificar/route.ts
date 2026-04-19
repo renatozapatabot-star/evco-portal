@@ -108,6 +108,9 @@ export async function POST(request: NextRequest) {
       } else if (!resolvedFraccion) {
         writebackResult.error = 'No fracción to write'
       } else {
+        // allowlist-ok:globalpc_productos — Tito writeback: find rows for
+        // THIS decision's company_id by descripcion and update in place.
+        // Scoped by company_id from decisionRow (session-authoritative).
         const { data: matchingRows, error: matchErr } = await supabase
           .from('globalpc_productos')
           .select('id')
@@ -123,6 +126,8 @@ export async function POST(request: NextRequest) {
             const updateIds = matchingRows.map(r => r.id)
             const fraccionSource = wasCorrect ? 'human_tito' : 'human_correction_tito'
 
+            // allowlist-ok:globalpc_productos — UPDATE by primary-key set
+            // derived from the scoped match above.
             const { error: wbUpdateErr } = await supabase
               .from('globalpc_productos')
               .update({

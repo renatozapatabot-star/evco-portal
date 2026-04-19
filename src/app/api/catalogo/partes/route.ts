@@ -153,6 +153,12 @@ export async function GET(req: NextRequest) {
   const tmecFraccions = new Set<string>((tmecRows || []).map((t: any) => t.fraccion).filter(Boolean))
 
   // Step 4: productos with filters
+  // allowlist-ok:globalpc_productos — list endpoint for Ursula's /catalogo page.
+  // Scoped by company_id only. Applying the anexo-24 allowlist here would
+  // collapse the list from ~149K legacy-inclusive rows to ~693 imported-only
+  // rows for EVCO — a correctness improvement (per src/lib/anexo24/active-parts.ts
+  // doc comment) but a visible UX change. Deferred as a deliberate Renato + Tito
+  // decision post-Monday launch. Not a cross-tenant leak (company_id scoped).
   let q = supabase.from('globalpc_productos').select('*', { count: 'exact' }).eq('company_id', companyId)
 
   if (search && search.trim()) {

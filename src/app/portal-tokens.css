@@ -77,6 +77,32 @@
   --portal-semaforo-none-bg:      rgba(148,163,184,0.10);
   --portal-semaforo-none-fg:      var(--portal-fg-4);
 
+  /* —— Status badge palette (dark-canvas compatible) ——————
+     StatusBadge was originally built for warm-white surfaces (bg-amber-50
+     etc.). These tokens give it a dark-canvas variant so the badge reads
+     correctly on /inicio, /embarques, and every authenticated surface. */
+  --portal-status-gray-bg:     rgba(148,163,184,0.10);
+  --portal-status-gray-fg:     var(--portal-fg-3);
+  --portal-status-gray-ring:   rgba(148,163,184,0.22);
+  --portal-status-slate-bg:    rgba(100,116,139,0.14);
+  --portal-status-slate-fg:    #CBD5E1;
+  --portal-status-slate-ring:  rgba(148,163,184,0.26);
+  --portal-status-amber-bg:    rgba(251,191,36,0.14);
+  --portal-status-amber-fg:    #FBBF24;
+  --portal-status-amber-ring:  rgba(251,191,36,0.30);
+  --portal-status-orange-bg:   rgba(249,115,22,0.14);
+  --portal-status-orange-fg:   #FB923C;
+  --portal-status-orange-ring: rgba(249,115,22,0.30);
+  --portal-status-teal-bg:     rgba(20,184,166,0.14);
+  --portal-status-teal-fg:     #2DD4BF;
+  --portal-status-teal-ring:   rgba(20,184,166,0.30);
+  --portal-status-green-bg:    rgba(34,197,94,0.14);
+  --portal-status-green-fg:    #4ADE80;
+  --portal-status-green-ring:  rgba(34,197,94,0.30);
+  --portal-status-red-bg:      rgba(239,68,68,0.14);
+  --portal-status-red-fg:      #F87171;
+  --portal-status-red-ring:    rgba(239,68,68,0.32);
+
   /* —— Typography —————————————————————————————— */
   --portal-font-display: 'Geist', 'Söhne', -apple-system, system-ui, sans-serif;
   --portal-font-serif:   'Instrument Serif', 'GT Sectra', 'Times New Roman', serif;

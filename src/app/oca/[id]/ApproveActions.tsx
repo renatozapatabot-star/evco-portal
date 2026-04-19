@@ -110,9 +110,9 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
             onClick={cancelCountdown}
             style={{
               minHeight: 60, padding: '0 24px',
-              background: 'rgba(239,68,68,0.10)',
-              color: '#ef4444',
-              border: '1px solid rgba(239,68,68,0.3)',
+              background: 'var(--portal-status-red-bg)',
+              color: 'var(--portal-status-red-fg)',
+              border: '1px solid var(--portal-status-red-ring)',
               borderRadius: 10, fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 0.5,
               cursor: 'pointer',
@@ -146,7 +146,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
       )}
 
       {err && (
-        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#ef4444', margin: 0 }}>{err}</p>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-red-fg)', margin: 0 }}>{err}</p>
       )}
     </div>
   )

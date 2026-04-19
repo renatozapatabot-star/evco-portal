@@ -724,7 +724,7 @@ fi
 # teal/plum/borderColor/backgroundColor/textColor/boxShadow) should
 # migrate to var(--portal-*) in future blocks.
 header "theme/v6 · tailwind.config.ts standalone hex literals (target ↓)"
-TAILWIND_HEX_BASELINE=${TAILWIND_HEX_BASELINE:-27}
+TAILWIND_HEX_BASELINE=${TAILWIND_HEX_BASELINE:-13}
 TAILWIND_HEX_HITS=$(grep -cE "'#[0-9a-fA-F]{3,8}'" tailwind.config.ts 2>/dev/null || echo 0)
 if [ "$TAILWIND_HEX_HITS" -gt "$TAILWIND_HEX_BASELINE" ]; then
   fail "tailwind.config.ts hex literals: $TAILWIND_HEX_HITS (baseline $TAILWIND_HEX_BASELINE). Route through var(--portal-*)."

@@ -28,35 +28,41 @@ const config: Config = {
         },
         // Brand — Z Red (mark only)
         'z-red': '#CC1B2F',
-        // Warm canvas
-        canvas: '#FAFAF8',
+        // Canvas (v6 dark — was #FAFAF8 warm-white in pre-v6)
+        canvas: 'rgb(from var(--portal-ink-0) r g b / <alpha-value>)',
         // Status
         status: {
-          green: '#16A34A',
-          red: '#DC2626',
-          amber: '#D4952A',
+          green: 'rgb(from var(--portal-status-green-fg) r g b / <alpha-value>)',
+          red:   'rgb(from var(--portal-status-red-fg) r g b / <alpha-value>)',
+          amber: 'rgb(from var(--portal-status-amber-fg) r g b / <alpha-value>)',
         },
         // Emotional (max 3 visible simultaneously)
-        teal: '#0D9488',
-        plum: '#7E22CE',
+        teal: 'rgb(from var(--portal-ice-3) r g b / <alpha-value>)',
+        plum: 'rgb(from var(--portal-ice-4) r g b / <alpha-value>)',
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-jetbrains-mono)', 'var(--font-geist-mono)', 'monospace'],
       },
       borderColor: {
-        card: '#E8E5E0',
+        // Retired warm-white #E8E5E0 → dark hairline
+        card: 'rgb(from var(--portal-line-1) r g b / <alpha-value>)',
       },
       backgroundColor: {
-        primary: '#FAFAF8',
-        card: '#FFFFFF',
-        elevated: '#F8F7F4',
-        hover: '#F5F4F0',
+        // Pre-v6 warm-white tokens retired in favor of --portal-ink-* dark canvas.
+        // bg-primary / bg-card / bg-elevated / bg-hover now render correctly on
+        // the dark system. Any residual consumer that expected cream reads as
+        // ink-1/2/3 graceful progression, not a jarring light surface.
+        primary:  'rgb(from var(--portal-ink-1) r g b / <alpha-value>)',
+        card:     'rgb(from var(--portal-ink-2) r g b / <alpha-value>)',
+        elevated: 'rgb(from var(--portal-ink-3) r g b / <alpha-value>)',
+        hover:    'rgb(from var(--portal-ink-4) r g b / <alpha-value>)',
       },
       textColor: {
-        primary: '#1A1A1A',
-        secondary: '#6B6B6B',
-        muted: '#737373',
+        // Retired warm-white #1A1A1A/#6B6B6B/#737373 → dark-canvas fg
+        primary:   'rgb(from var(--portal-fg-1) r g b / <alpha-value>)',
+        secondary: 'rgb(from var(--portal-fg-3) r g b / <alpha-value>)',
+        muted:     'rgb(from var(--portal-fg-4) r g b / <alpha-value>)',
       },
       borderRadius: {
         sm: '6px',

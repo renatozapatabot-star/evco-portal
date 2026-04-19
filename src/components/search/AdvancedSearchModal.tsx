@@ -120,7 +120,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
           borderRadius: 20,
           boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
           overflow: 'hidden',
-          color: '#E6EDF3',
+          color: 'var(--portal-fg-1)',
           fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
         }}
       >
@@ -191,9 +191,9 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               {response.message && (
                 <div style={{
                   padding: '12px', marginBottom: 12,
-                  background: 'rgba(251,191,36,0.1)',
-                  border: '1px solid rgba(251,191,36,0.3)',
-                  borderRadius: 12, color: '#FBBF24', fontSize: 'var(--aguila-fs-body)',
+                  background: 'var(--portal-status-amber-bg)',
+                  border: '1px solid var(--portal-status-amber-ring)',
+                  borderRadius: 12, color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-body)',
                 }}>
                   {response.message}
                 </div>
@@ -219,7 +219,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
                         minHeight: 60, padding: '10px 12px',
                         background: 'transparent', border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
                         borderRadius: 12, marginBottom: 6,
-                        color: '#E6EDF3', cursor: 'pointer',
+                        color: 'var(--portal-fg-1)', cursor: 'pointer',
                       }}
                     >
                       <span style={{
@@ -248,7 +248,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
             style={{
               minHeight: 44, padding: '8px 16px',
               background: 'transparent', border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
-              borderRadius: 10, color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)', cursor: 'pointer',
+              borderRadius: 10, color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body)', cursor: 'pointer',
             }}
           >
             Limpiar
@@ -259,9 +259,9 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
             onClick={onSubmit}
             style={{
               minHeight: 44, padding: '8px 20px',
-              background: canSubmit ? '#E8EAED' : 'rgba(192,197,206,0.3)',
+              background: canSubmit ? 'var(--portal-fg-1)' : 'rgba(192,197,206,0.3)',
               border: 'none', borderRadius: 10,
-              color: canSubmit ? '#05070B' : '#94a3b8',
+              color: canSubmit ? '#05070B' : 'var(--portal-fg-4)',
               fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               cursor: canSubmit ? 'pointer' : 'not-allowed',
             }}
@@ -280,7 +280,7 @@ const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)',
   border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
   borderRadius: 10,
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 'var(--aguila-fs-body)',
   outline: 'none',
   fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',

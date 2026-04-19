@@ -63,9 +63,9 @@ export function StreakBadge() {
 
   if (data.daysNoIncident >= 7) {
     badges.push({
-      icon: <Flame size={14} style={{ color: '#F59E0B' }} />,
+      icon: <Flame size={14} style={{ color: 'var(--portal-status-amber-fg)' }} />,
       text: `${data.daysNoIncident} operaciones sin incidencia`,
-      color: '#F59E0B',
+      color: 'var(--portal-status-amber-fg)',
       bg: 'rgba(245, 158, 11, 0.08)',
     })
   }

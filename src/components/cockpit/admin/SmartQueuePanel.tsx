@@ -39,7 +39,7 @@ export function SmartQueuePanel({ queue, onItemClick }: Props) {
                 borderRadius: 8, border: '1px solid rgba(255,255,255,0.045)',
                 textDecoration: 'none',
               }}>
-                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED', flexShrink: 0 }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)', flexShrink: 0 }}>
                   {item.trafico}
                 </span>
                 <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

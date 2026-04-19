@@ -89,7 +89,7 @@ export function CRUZChatSuggestions({ context, onPick, hidden }: Props) {
             background: 'rgba(192,197,206,0.06)',
             border: '1px solid rgba(192,197,206,0.18)',
             borderRadius: 999,
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 'var(--aguila-fs-body, 13px)',
             fontWeight: 500,
             whiteSpace: 'nowrap',

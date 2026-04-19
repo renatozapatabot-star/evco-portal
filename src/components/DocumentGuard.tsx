@@ -25,7 +25,7 @@ export function DocumentGuard({ traficoId }: { traficoId: string }) {
 
   return (
     <div style={{
-      background: canTransmit ? 'var(--status-green-bg, rgba(34,197,94,0.06))' : 'var(--status-red-bg, rgba(239,68,68,0.06))',
+      background: canTransmit ? 'var(--status-green-bg, var(--portal-status-green-bg))' : 'var(--status-red-bg, var(--portal-status-red-bg))',
       border: `1px solid ${canTransmit ? 'var(--status-green-border, rgba(34,197,94,0.2))' : 'var(--status-red-border, rgba(239,68,68,0.2))'}`,
       borderRadius: 12,
       padding: '16px 20px',

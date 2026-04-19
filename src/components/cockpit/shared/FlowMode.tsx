@@ -80,7 +80,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         padding: 24,
       }}>
         <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>🦀</div>
-        <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
           ¡{approved.size} aprobaciones completadas!
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', marginBottom: 24 }}>
@@ -88,7 +88,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         </div>
         <button onClick={onClose} style={{
           padding: '14px 32px', borderRadius: 10,
-          background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
+          background: 'var(--portal-fg-1)', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           border: 'none', cursor: 'pointer', minHeight: 60,
         }}>
           Volver al cockpit →
@@ -114,7 +114,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         marginBottom: 24,
       }}>
         <div>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#E8EAED' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-1)' }}>
             Modo flujo
           </span>
           <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', marginLeft: 12 }}>
@@ -134,7 +134,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 24, overflow: 'hidden' }}>
         <div style={{
           width: `${((currentIndex + 1) / items.length) * 100}%`,
-          height: '100%', background: '#E8EAED', borderRadius: 2,
+          height: '100%', background: 'var(--portal-fg-1)', borderRadius: 2,
           transition: 'width 300ms ease',
         }} />
       </div>
@@ -164,7 +164,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         background: 'rgba(255,255,255,0.045)', borderRadius: 10, padding: '10px 20px',
         border: '1px solid rgba(192,197,206,0.2)',
       }}>
-        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#E8EAED' }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: 'var(--portal-fg-1)' }}>
           {approved.size}
         </span>
         <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 8 }}>

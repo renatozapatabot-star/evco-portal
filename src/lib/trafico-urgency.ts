@@ -16,7 +16,7 @@ export function getTraficoUrgency(t: {
   doc_count?: number
 }): UrgencyResult {
   if ((t.estatus || '').toLowerCase().includes('cruz')) {
-    return { class: 'completed', label: 'Cruzado', color: '#16A34A', bgColor: '#F0FDF4', action: null, days: 0 }
+    return { class: 'completed', label: 'Cruzado', color: 'var(--portal-status-green-fg)', bgColor: '#F0FDF4', action: null, days: 0 }
   }
 
   const days = t.fecha_llegada
@@ -44,7 +44,7 @@ export function getTraficoUrgency(t: {
       action: 'Seguimiento necesario', days }
   }
 
-  return { class: 'active', label: 'En Proceso', color: '#D4952A', bgColor: '#FFFBEB', action: null, days }
+  return { class: 'active', label: 'En Proceso', color: 'var(--portal-status-amber-fg)', bgColor: '#FFFBEB', action: null, days }
 }
 
 export function classifyAllTraficos<T extends { estatus: string; fecha_llegada: string | null; pedimento?: string | null }>(traficos: T[]) {

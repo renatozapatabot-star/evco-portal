@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 16,
     backgroundColor: '#FFFFFF',
-    color: '#0A0A0C',
+    color: 'var(--portal-ink-0)',
     fontFamily: 'Helvetica',
   },
   header: {

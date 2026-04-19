@@ -66,7 +66,7 @@ function getDocUrgency(deadline: string | null | undefined): { color: string; la
   if (daysUntil < 0) return { color: 'var(--danger)', label: `Venció hace ${Math.abs(daysUntil)} días` }
   if (daysUntil <= 7) return { color: 'var(--danger)', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
   if (daysUntil <= 30) return { color: '#C47F17', label: `Vence en ${daysUntil} días` }
-  if (daysUntil <= 90) return { color: '#D4952A', label: `Vence en ${daysUntil} días` }
+  if (daysUntil <= 90) return { color: 'var(--portal-status-amber-fg)', label: `Vence en ${daysUntil} días` }
   return { color: 'var(--text-muted)', label: '' }
 }
 

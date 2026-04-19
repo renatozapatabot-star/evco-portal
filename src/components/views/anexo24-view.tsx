@@ -309,7 +309,7 @@ export function Anexo24View() {
             disabled={generating || loading}
             style={{
               display: 'flex', alignItems: 'center', gap: 8, minHeight: 60, padding: '0 20px',
-              borderRadius: 12, border: 'none', background: '#E8EAED', cursor: generating ? 'wait' : 'pointer',
+              borderRadius: 12, border: 'none', background: 'var(--portal-fg-1)', cursor: generating ? 'wait' : 'pointer',
               fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#000', opacity: generating ? 0.7 : 1,
               transition: 'opacity 0.2s',
             }}
@@ -330,11 +330,11 @@ export function Anexo24View() {
         }}>
           {[
             { label: 'Total Partidas', value: kpis.totalPartidas.toLocaleString('es-MX'), color: 'var(--text-primary, #E6EDF3)' },
-            { label: 'Valor Total USD', value: fmtUSDCompact(kpis.totalValue), color: '#E8EAED' },
+            { label: 'Valor Total USD', value: fmtUSDCompact(kpis.totalValue), color: 'var(--portal-fg-1)' },
             { label: 'Fracciones', value: String(kpis.uniqueFracciones), color: 'var(--text-primary, #E6EDF3)' },
-            { label: 'T-MEC', value: `${kpis.tmecPct}%`, color: kpis.tmecPct >= 50 ? '#22C55E' : '#FBBF24' },
+            { label: 'T-MEC', value: `${kpis.tmecPct}%`, color: kpis.tmecPct >= 50 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-amber-fg)' },
             { label: 'Proveedores', value: String(kpis.uniqueProveedores), color: 'var(--text-primary, #E6EDF3)' },
-            { label: 'Pendientes', value: kpis.pendientes.toLocaleString('es-MX'), color: kpis.pendientes > 0 ? '#FBBF24' : '#22C55E' },
+            { label: 'Pendientes', value: kpis.pendientes.toLocaleString('es-MX'), color: kpis.pendientes > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-green-fg)' },
           ].map(kpi => (
             <div key={kpi.label} style={{ ...glassCard, padding: 16, textAlign: 'center' }}>
               <div style={{
@@ -368,10 +368,10 @@ export function Anexo24View() {
         }}>
           <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>⚠️</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
               {kpis.pendientes.toLocaleString('es-MX')} partidas sin pedimento asignado
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', marginTop: 2 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', marginTop: 2 }}>
               Esperando próxima sincronización GlobalPC. Los renglones marcados &ldquo;Pendiente&rdquo; abajo se reconciliarán automáticamente.
             </div>
           </div>
@@ -403,7 +403,7 @@ export function Anexo24View() {
               minHeight: 40,
               border: `1px solid ${tmecFilter === v ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
               background: tmecFilter === v ? 'rgba(192,197,206,0.08)' : 'transparent',
-              color: tmecFilter === v ? '#C0C5CE' : 'var(--text-muted, #64748b)',
+              color: tmecFilter === v ? 'var(--portal-fg-3)' : 'var(--text-muted, #64748b)',
               transition: 'all 0.15s',
             }}>
             {v === 'all' ? 'Todos' : v === 'si' ? 'T-MEC' : 'Sin T-MEC'}
@@ -415,7 +415,7 @@ export function Anexo24View() {
         {(dateFrom || dateTo) && (
           <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
             style={{
-              fontSize: 'var(--aguila-fs-body)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)',
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-red-fg)', border: '1px solid var(--portal-status-red-ring)',
               background: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: '0 12px',
               minWidth: 40, minHeight: 40, cursor: 'pointer', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
@@ -447,14 +447,14 @@ export function Anexo24View() {
                     {fmtPedimentoShort(r.pedimento)}
                   </span>
                   {r.tmec ? (
-                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-status-green-fg)', background: 'var(--portal-status-green-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                   ) : null}
                 </div>
                 <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.descripcion}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                     {r.fraccion}
                   </span>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #E6EDF3)' }}>
@@ -497,7 +497,7 @@ export function Anexo24View() {
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
                       {fmtDate(r.fecha)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                       {r.fraccion}
                     </td>
                     <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
@@ -515,7 +515,7 @@ export function Anexo24View() {
                     <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>{r.origen}</td>
                     <td>
                       {r.tmec ? (
-                        <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.12)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-status-green-fg)', background: 'var(--portal-status-green-bg)', padding: '2px 8px', borderRadius: 9999 }}>T-MEC</span>
                       ) : (
                         <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted, #64748b)' }}>—</span>
                       )}
@@ -554,7 +554,7 @@ export function Anexo24View() {
             <div style={{
               minWidth: 40, height: 40, borderRadius: 8, border: '1px solid rgba(192,197,206,0.3)',
               background: 'rgba(192,197,206,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#C0C5CE',
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-3)',
             }}>
               {page + 1}
             </div>

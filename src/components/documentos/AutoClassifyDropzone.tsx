@@ -422,7 +422,7 @@ export function AutoClassifyDropzone() {
               justifyContent: 'center',
               padding: 32,
               cursor: 'pointer',
-              background: dragOver ? 'rgba(34,197,94,0.06)' : 'transparent',
+              background: dragOver ? 'var(--portal-status-green-bg)' : 'transparent',
               transition: 'background 160ms ease, border-color 160ms ease',
             }}
           >
@@ -510,7 +510,7 @@ export function AutoClassifyDropzone() {
                     ? 'rgba(255,255,255,0.04)'
                     : 'rgba(234,179,8,0.9)',
                   border: '1px solid rgba(234,179,8,0.3)',
-                  color: textSubmitting || textInput.trim().length < 10 ? TEXT_MUTED : '#0a0a0c',
+                  color: textSubmitting || textInput.trim().length < 10 ? TEXT_MUTED : 'var(--portal-ink-0)',
                   fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   cursor: textSubmitting || textInput.trim().length < 10 ? 'not-allowed' : 'pointer',

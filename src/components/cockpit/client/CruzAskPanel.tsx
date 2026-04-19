@@ -92,7 +92,7 @@ export function AduanaAskPanel() {
             borderRadius: 10,
             padding: '14px 16px',
             fontSize: 'var(--aguila-fs-section)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             outline: 'none',
             minHeight: 48,
           }}
@@ -101,7 +101,7 @@ export function AduanaAskPanel() {
           type="submit"
           disabled={loading || !question.trim()}
           style={{
-            background: '#E8EAED',
+            background: 'var(--portal-fg-1)',
             color: '#05070B',
             border: 'none',
             borderRadius: 10,
@@ -128,9 +128,9 @@ export function AduanaAskPanel() {
             padding: '12px 16px',
             background: isFallback ? 'rgba(251,191,36,0.06)' : 'rgba(192,197,206,0.06)',
             borderRadius: 10,
-            border: `1px solid ${isFallback ? 'rgba(251,191,36,0.25)' : 'rgba(192,197,206,0.15)'}`,
+            border: `1px solid ${isFallback ? 'var(--portal-status-amber-ring)' : 'rgba(192,197,206,0.15)'}`,
             fontSize: 'var(--aguila-fs-section)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             lineHeight: 1.5,
             display: 'flex',
             gap: 10,

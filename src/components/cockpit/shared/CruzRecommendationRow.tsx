@@ -28,14 +28,14 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
         display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px',
         background: 'rgba(22,163,74,0.06)', borderRadius: 4, marginTop: 4,
       }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#16A34A' }}>✓ Aprobado</span>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-green-fg)' }}>✓ Aprobado</span>
       </div>
     )
   }
 
-  const dotColor = proposal.confidence >= 0.90 ? '#16A34A'
-    : proposal.confidence >= 0.75 ? '#E8EAED'
-    : '#D97706'
+  const dotColor = proposal.confidence >= 0.90 ? 'var(--portal-status-green-fg)'
+    : proposal.confidence >= 0.75 ? 'var(--portal-fg-1)'
+    : 'var(--portal-status-amber-fg)'
 
   const handleApprove = async () => {
     if (loading) return
@@ -65,7 +65,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
 
       {/* Proposal text */}
       <span style={{
-        fontSize: 'var(--aguila-fs-meta)', color: '#E8EAED', flex: 1,
+        fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-1)', flex: 1,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {proposal.proposal_label_es}
@@ -78,7 +78,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
           disabled={loading}
           style={{
             fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#111',
-            background: '#E8EAED', border: 'none',
+            background: 'var(--portal-fg-1)', border: 'none',
             padding: '4px 12px', borderRadius: 4,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1,

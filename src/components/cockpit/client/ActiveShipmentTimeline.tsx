@@ -89,7 +89,7 @@ export function ActiveShipmentTimeline({ shipment }: { shipment: ActiveShipment 
           <div style={{ fontSize: 'var(--aguila-fs-label)', letterSpacing: 'var(--aguila-ls-label)', textTransform: 'uppercase', color: 'rgba(148,163,184,0.7)' }}>
             Tu próximo embarque
           </div>
-          <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: '#E6EDF3', marginTop: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 700, color: 'var(--portal-fg-1)', marginTop: 4 }}>
             {shipment.trafico}
           </div>
         </div>
@@ -183,7 +183,7 @@ export function ActiveShipmentTimeline({ shipment }: { shipment: ActiveShipment 
           fontSize: 'var(--aguila-fs-body)',
           color: 'rgba(230,237,243,0.85)',
         }}>
-          Llegada prevista: <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600, color: '#E6EDF3' }}>{eta}</span>
+          Llegada prevista: <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>{eta}</span>
         </div>
       )}
 
@@ -192,7 +192,7 @@ export function ActiveShipmentTimeline({ shipment }: { shipment: ActiveShipment 
         <Link
           href="/traficos"
           style={{
-            color: '#C0C5CE',
+            color: 'var(--portal-fg-3)',
             fontSize: 'var(--aguila-fs-body)',
             textDecoration: 'none',
             borderBottom: '1px dashed rgba(192,197,206,0.4)',

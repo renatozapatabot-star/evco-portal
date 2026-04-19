@@ -82,16 +82,16 @@ export function TeamLivePanel() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
                       width: 8, height: 8, borderRadius: '50%',
-                      background: isActive ? '#16A34A' : '#6E7681',
+                      background: isActive ? 'var(--portal-status-green-fg)' : '#6E7681',
                       display: 'inline-block',
                     }} />
-                    <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: isActive ? 600 : 400 }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: isActive ? 600 : 400 }}>
                       {op.name}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {op.actionsToday > 0 && (
-                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600 }}>
+                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                         {op.actionsToday}
                       </span>
                     )}

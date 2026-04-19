@@ -20,7 +20,7 @@ import { BankSelector } from '@/components/banks/BankSelector'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
 const BORDER_FOCUS = 'rgba(192,197,206,0.55)'
-const RED = '#EF4444'
+const RED = 'var(--portal-status-red-fg)'
 
 export type ColumnVariant = 'text' | 'number' | 'select' | 'textarea' | 'bank'
 

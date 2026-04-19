@@ -120,7 +120,7 @@ export function AguilaAutonomoPanel({ decisions, decisions30d, decisionsAllTime,
               >
                 <div className="font-mono" style={{
                   fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
-                  color: count > 0 ? '#E8EAED' : '#6E7681',
+                  color: count > 0 ? 'var(--portal-fg-1)' : '#6E7681',
                 }}>
                   {count}
                 </div>
@@ -163,7 +163,7 @@ function KPI({ value, label, sub }: { value: number | string; label: string; sub
   return (
     <div>
       <div className="font-mono" style={{
-        fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#E6EDF3', lineHeight: 1,
+        fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: 'var(--portal-fg-1)', lineHeight: 1,
       }}>
         {value}
       </div>

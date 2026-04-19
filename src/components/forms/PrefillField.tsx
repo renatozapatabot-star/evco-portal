@@ -33,7 +33,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
   const [showReasoning, setShowReasoning] = useState(false)
 
   const isPrefilled = !!prefill && !touched
-  const textColor = isPrefilled ? '#E8EAED' : '#E6EDF3'
+  const textColor = isPrefilled ? 'var(--portal-fg-1)' : 'var(--portal-fg-1)'
   const borderColor = isPrefilled ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.12)'
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,13 +51,13 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em', color: '#8B949E',
         }}>
-          {label} {required && <span style={{ color: '#DC2626' }}>*</span>}
+          {label} {required && <span style={{ color: 'var(--portal-status-red-fg)' }}>*</span>}
         </label>
         {isPrefilled && (
           <button
             onClick={() => setShowReasoning(!showReasoning)}
             style={{
-              fontSize: 9, fontWeight: 600, color: '#E8EAED',
+              fontSize: 9, fontWeight: 600, color: 'var(--portal-fg-1)',
               background: 'rgba(192,197,206,0.1)', border: 'none',
               padding: '2px 8px', borderRadius: 3, cursor: 'pointer',
               textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -109,7 +109,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
         {isPrefilled && (
           <span style={{
             position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-            fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', pointerEvents: 'none',
+            fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', pointerEvents: 'none',
           }}>
             ⚡
           </span>
@@ -146,7 +146,7 @@ export function ConfirmAllButton({
       justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
     }}>
       <div>
-        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
           PORTAL pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>
@@ -158,7 +158,7 @@ export function ConfirmAllButton({
         disabled={loading}
         style={{
           padding: '12px 24px', borderRadius: 8,
-          background: '#E8EAED', color: '#111',
+          background: 'var(--portal-fg-1)', color: '#111',
           fontSize: 'var(--aguila-fs-section)', fontWeight: 700, border: 'none',
           cursor: loading ? 'wait' : 'pointer',
           opacity: loading ? 0.6 : 1, minHeight: 48,

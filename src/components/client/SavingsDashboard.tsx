@@ -65,7 +65,7 @@ function KPICard({ icon, label, value, accent, subtitle }: KPICardProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {icon}
         <span style={{
-          fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#64748b',
+          fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-5)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           {label}
@@ -81,7 +81,7 @@ function KPICard({ icon, label, value, accent, subtitle }: KPICardProps) {
         {value}
       </div>
       {subtitle && (
-        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', marginTop: -4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', marginTop: -4 }}>
           {subtitle}
         </div>
       )}
@@ -96,9 +96,9 @@ function SavingsBar({ categories, maxAmount }: { categories: SavingsCategory[]; 
     return (
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: 8, padding: '24px 0', color: '#64748b',
+        gap: 8, padding: '24px 0', color: 'var(--portal-fg-5)',
       }}>
-        <BarChart3 size={24} color="#64748b" />
+        <BarChart3 size={24} color="var(--portal-fg-5)" />
         <span style={{ fontSize: 'var(--aguila-fs-body)' }}>Sin datos de ahorro por categoría</span>
       </div>
     )
@@ -114,7 +114,7 @@ function SavingsBar({ categories, maxAmount }: { categories: SavingsCategory[]; 
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               marginBottom: 6,
             }}>
-              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 500 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: 500 }}>
                 {cat.category}
               </span>
               <span style={{
@@ -205,8 +205,8 @@ export function SavingsDashboard() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 12, minHeight: 200,
       }}>
-        <Loader2 size={20} color="#C0C5CE" style={{ animation: 'spin 1s linear infinite' }} />
-        <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8' }}>Cargando indicadores...</span>
+        <Loader2 size={20} color="var(--portal-fg-3)" style={{ animation: 'spin 1s linear infinite' }} />
+        <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)' }}>Cargando indicadores...</span>
         <style>{`
           @keyframes spin {
             from { transform: rotate(0deg); }
@@ -225,11 +225,11 @@ export function SavingsDashboard() {
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           gap: 12, padding: '24px 0', textAlign: 'center',
         }}>
-          <AlertTriangle size={28} color="#EF4444" />
-          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#EF4444', fontWeight: 600 }}>
+          <AlertTriangle size={28} color="var(--portal-status-red-fg)" />
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-status-red-fg)', fontWeight: 600 }}>
             Error al cargar indicadores
           </div>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b' }}>{errorMsg}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)' }}>{errorMsg}</div>
           <button
             type="button"
             onClick={fetchData}
@@ -239,7 +239,7 @@ export function SavingsDashboard() {
               borderRadius: 12,
               border: '1px solid rgba(255,255,255,0.12)',
               background: 'rgba(255,255,255,0.04)',
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               cursor: 'pointer',
@@ -276,9 +276,9 @@ export function SavingsDashboard() {
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <TrendingUp size={18} color="#C0C5CE" />
+          <TrendingUp size={18} color="var(--portal-fg-3)" />
           <span style={{
-            fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#C0C5CE',
+            fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-3)',
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             Valor Generado
@@ -289,7 +289,7 @@ export function SavingsDashboard() {
           onClick={fetchData}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#64748b', padding: 8, lineHeight: 0,
+            color: 'var(--portal-fg-5)', padding: 8, lineHeight: 0,
           }}
           title="Actualizar"
         >
@@ -304,11 +304,11 @@ export function SavingsDashboard() {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             gap: 12, padding: '32px 16px', textAlign: 'center',
           }}>
-            <TrendingUp size={32} color="#64748b" />
-            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#E6EDF3' }}>
+            <TrendingUp size={32} color="var(--portal-fg-5)" />
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
               Sin datos de ahorro disponibles
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', maxWidth: 360, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', maxWidth: 360, lineHeight: 1.5 }}>
               Los indicadores de valor se calcularán automáticamente conforme
               se procesen operaciones a través de ADUANA.
             </div>
@@ -323,30 +323,30 @@ export function SavingsDashboard() {
             gap: 16,
           }}>
             <KPICard
-              icon={<Banknote size={16} color="#22C55E" />}
+              icon={<Banknote size={16} color="var(--portal-status-green-fg)" />}
               label="Ahorro T-MEC YTD"
               value={fmtUSDCompact(data.tmec_savings_ytd)}
-              accent="#22C55E"
+              accent="var(--portal-status-green-fg)"
               subtitle={`${new Date().getFullYear()}`}
             />
             <KPICard
-              icon={<Package size={16} color="#C0C5CE" />}
+              icon={<Package size={16} color="var(--portal-fg-3)" />}
               label="Operaciones procesadas"
               value={operationCount.toLocaleString('es-MX')}
-              accent="#E6EDF3"
+              accent="var(--portal-fg-1)"
             />
             <KPICard
-              icon={<Clock size={16} color="#FBBF24" />}
+              icon={<Clock size={16} color="var(--portal-status-amber-fg)" />}
               label="Tiempo promedio despacho"
               value={data.avg_clearance_days > 0 ? `${data.avg_clearance_days.toFixed(1)}d` : '—'}
-              accent="#FBBF24"
+              accent="var(--portal-status-amber-fg)"
               subtitle="días hábiles"
             />
             <KPICard
-              icon={<Target size={16} color="#C0C5CE" />}
+              icon={<Target size={16} color="var(--portal-fg-3)" />}
               label="Precisión clasificación"
               value={data.classification_accuracy > 0 ? `${data.classification_accuracy.toFixed(1)}%` : '—'}
-              accent={data.classification_accuracy >= 90 ? '#22C55E' : data.classification_accuracy >= 75 ? '#FBBF24' : '#EF4444'}
+              accent={data.classification_accuracy >= 90 ? 'var(--portal-status-green-fg)' : data.classification_accuracy >= 75 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'}
             />
           </div>
 
@@ -356,9 +356,9 @@ export function SavingsDashboard() {
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20,
               }}>
-                <ShieldCheck size={16} color="#22C55E" />
+                <ShieldCheck size={16} color="var(--portal-status-green-fg)" />
                 <span style={{
-                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#22C55E',
+                  fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: 'var(--portal-status-green-fg)',
                   textTransform: 'uppercase', letterSpacing: '0.08em',
                 }}>
                   Desglose de Ahorro

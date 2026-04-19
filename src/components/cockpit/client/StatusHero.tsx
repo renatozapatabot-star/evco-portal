@@ -15,8 +15,8 @@ interface Props {
 
 export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, activeShipments, nextCrossing }: Props) {
   const cardState = computeStatusHeroState(activeShipments, entradasThisMonth)
-  const dotColor = statusLevel === 'green' ? '#16A34A'
-    : statusLevel === 'amber' ? '#D97706' : '#DC2626'
+  const dotColor = statusLevel === 'green' ? 'var(--portal-status-green-fg)'
+    : statusLevel === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
 
   return (
     <IfThenCard
@@ -36,18 +36,18 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
               width: 10, height: 10, borderRadius: '50%',
               background: dotColor, display: 'inline-block', flexShrink: 0,
             }} />
-            <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#E6EDF3' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
               {statusLevel === 'green' ? 'Todo en orden' : statusLevel === 'amber' ? 'Atención' : 'Acción requerida'}
             </span>
           </div>
           <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', marginBottom: 10 }}>{statusSentence}</div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <div>
-              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>{entradasThisMonth}</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{entradasThisMonth}</span>
               <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>entrada{entradasThisMonth !== 1 ? 's' : ''} este mes</span>
             </div>
             <div>
-              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>{activeShipments}</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{activeShipments}</span>
               <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>envío{activeShipments !== 1 ? 's' : ''} en tránsito</span>
             </div>
           </div>
@@ -63,7 +63,7 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
             approveHref="/embarques"
           />
         ) : nextCrossing ? (
-          <span style={{ color: '#E8EAED' }}>
+          <span style={{ color: 'var(--portal-fg-1)' }}>
             Próximo cruce: <span className="font-mono" style={{ fontWeight: 600 }}>{nextCrossing.trafico}</span>
           </span>
         ) : undefined

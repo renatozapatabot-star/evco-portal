@@ -16,7 +16,7 @@ export function Trend({ delta, label, size = 'sm' }: TrendProps) {
   }
 
   const arrow = delta > 0 ? '↑' : '↓'
-  const color = delta > 0 ? '#16A34A' : '#DC2626'
+  const color = delta > 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)'
 
   return (
     <span className="font-mono" style={{

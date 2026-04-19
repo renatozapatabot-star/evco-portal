@@ -37,12 +37,12 @@ export function WeeklyTrendCard({ trend }: Props) {
                   <div style={{
                     width: '100%', minHeight: 4,
                     height: `${Math.max(pct, 6)}%`,
-                    background: isToday ? '#E8EAED' : 'rgba(192,197,206,0.3)',
+                    background: isToday ? 'var(--portal-fg-1)' : 'rgba(192,197,206,0.3)',
                     borderRadius: '3px 3px 0 0',
                     transition: 'height 300ms ease',
                   }} />
                   <span style={{
-                    fontSize: 9, color: isToday ? '#E8EAED' : '#6E7681',
+                    fontSize: 9, color: isToday ? 'var(--portal-fg-1)' : '#6E7681',
                     fontFamily: 'var(--font-jetbrains-mono)',
                     fontWeight: isToday ? 700 : 400,
                   }}>

@@ -55,10 +55,10 @@ export function RoleKPIBanner({
       role="status"
       aria-label={metricLabel}
       style={{
-        background: 'rgba(34,197,94,0.08)',
+        background: 'var(--portal-status-green-bg)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(34,197,94,0.25)',
+        border: '1px solid var(--portal-status-green-ring)',
         borderRadius: 20,
         padding: '16px 20px',
         marginBottom: 16,
@@ -74,7 +74,7 @@ export function RoleKPIBanner({
           fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
           fontSize: 'var(--aguila-fs-kpi-mid)',
           fontWeight: 800,
-          color: '#22C55E',
+          color: 'var(--portal-status-green-fg)',
           lineHeight: 1,
           flexShrink: 0,
         }}
@@ -86,7 +86,7 @@ export function RoleKPIBanner({
           style={{
             fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
-            color: '#22C55E',
+            color: 'var(--portal-status-green-fg)',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 2,
@@ -94,7 +94,7 @@ export function RoleKPIBanner({
         >
           {metricLabel}
         </div>
-        <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 500, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)', fontWeight: 500, lineHeight: 1.35 }}>
           {message}
         </div>
       </div>

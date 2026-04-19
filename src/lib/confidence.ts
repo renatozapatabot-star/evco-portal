@@ -58,8 +58,8 @@ export function calculateConfidence(trafico: Record<string, unknown>): Confidenc
 
   if (score >= 90) { level = 'alta'; label = 'Alta certeza'; color = '#0D9488' }
   else if (score >= 70) { level = 'encamino'; label = 'En camino'; color = '#475569' }
-  else if (score >= 50) { level = 'atencion'; label = 'Atención necesaria'; color = '#D97706' }
-  else { level = 'accion'; label = 'Requiere acción'; color = '#DC2626' }
+  else if (score >= 50) { level = 'atencion'; label = 'Atención necesaria'; color = 'var(--portal-status-amber-fg)' }
+  else { level = 'accion'; label = 'Requiere acción'; color = 'var(--portal-status-red-fg)' }
 
   return { score, level, label, color, factors }
 }

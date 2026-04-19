@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 6,
     borderWidth: 0.5,
-    borderColor: '#F59E0B',
+    borderColor: 'var(--portal-status-amber-fg)',
     backgroundColor: '#FEF3C7',
     borderRadius: 2,
   },

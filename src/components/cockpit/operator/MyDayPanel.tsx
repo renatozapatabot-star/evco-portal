@@ -32,13 +32,13 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
         quietContent={
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <StatRow label="Asignados" value={myDay.assigned} />
-            <StatRow label="✅ Completados" value={myDay.completed} color="#16A34A" />
-            <StatRow label="⏳ En progreso" value={myDay.inProgress} color="#D97706" />
+            <StatRow label="✅ Completados" value={myDay.completed} color="var(--portal-status-green-fg)" />
+            <StatRow label="⏳ En progreso" value={myDay.inProgress} color="var(--portal-status-amber-fg)" />
             {myDay.nextDeadline && (
               <div style={{
                 padding: '8px 12px', background: 'rgba(217,119,6,0.06)',
                 borderRadius: 8, border: '1px solid rgba(217,119,6,0.15)',
-                fontSize: 'var(--aguila-fs-compact)', color: '#D97706',
+                fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-amber-fg)',
               }}>
                 Próximo vencimiento: {myDay.nextDeadline.trafico}
               </div>
@@ -61,7 +61,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
               <div key={op.name} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0',
               }}>
-                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{op.name}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{op.name}</span>
                 <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>{op.assigned}</span>
               </div>
             ))}
@@ -75,7 +75,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
                   Listos para asignar: {unassignedCount}
                 </span>
                 <Link href="/embarques" style={{
-                  background: 'rgba(192,197,206,0.15)', color: '#E8EAED',
+                  background: 'rgba(192,197,206,0.15)', color: 'var(--portal-fg-1)',
                   borderRadius: 8, padding: '8px 16px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                   textDecoration: 'none', minHeight: 36, display: 'flex', alignItems: 'center',
                 }}>
@@ -95,8 +95,8 @@ function StatRow({ label, value, color }: { label: string; value: number; color?
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0',
     }}>
-      <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{label}</span>
-      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: color || '#E6EDF3' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{label}</span>
+      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: color || 'var(--portal-fg-1)' }}>
         {value}
       </span>
     </div>

@@ -46,12 +46,12 @@ export function NeedsJudgmentPanel({ escalations }: Props) {
                 border: '1px solid rgba(255,255,255,0.045)',
               }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', marginBottom: 2 }}>{e.description}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', marginBottom: 2 }}>{e.description}</div>
                   <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>{e.company} · {fmtDateTime(e.created_at)}</div>
                 </div>
                 <Link href="/drafts" style={{
                   padding: '8px 16px', background: 'rgba(192,197,206,0.15)',
-                  color: '#E8EAED', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
+                  color: 'var(--portal-fg-1)', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                   textDecoration: 'none', flexShrink: 0, minHeight: 36,
                   display: 'flex', alignItems: 'center',
                 }}>

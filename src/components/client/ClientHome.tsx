@@ -39,9 +39,9 @@ const TILES: NavTile[] = [
 // ── Helpers ────────────────────────────────────────────────
 
 function statusColor(level: ClientData['statusLevel']): string {
-  if (level === 'red') return '#EF4444'
-  if (level === 'amber') return '#FBBF24'
-  return '#22C55E'
+  if (level === 'red') return 'var(--portal-status-red-fg)'
+  if (level === 'amber') return 'var(--portal-status-amber-fg)'
+  return 'var(--portal-status-green-fg)'
 }
 
 function tileCount(tile: NavTile, data: ClientData): number | null {
@@ -110,10 +110,10 @@ function toDisplayName(legalName: string): { display: string; suffix: string } {
 // ── Fix 4: Activity status pills ──────────────────────────
 
 const TONE_STYLES: Record<EstatusTone, { bg: string; text: string }> = {
-  positive:  { bg: 'rgba(34,197,94,0.12)',   text: '#22C55E' },
-  in_flight: { bg: 'rgba(192,197,206,0.12)', text: '#C0C5CE' },
-  neutral:   { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8' },
-  unknown:   { bg: 'rgba(148,163,184,0.10)', text: '#64748b' },
+  positive:  { bg: 'var(--portal-status-green-bg)',   text: 'var(--portal-status-green-fg)' },
+  in_flight: { bg: 'rgba(192,197,206,0.12)', text: 'var(--portal-fg-3)' },
+  neutral:   { bg: 'var(--portal-status-gray-bg)', text: 'var(--portal-fg-4)' },
+  unknown:   { bg: 'var(--portal-status-gray-bg)', text: 'var(--portal-fg-5)' },
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -156,7 +156,7 @@ function LiveTimestamp() {
   return (
     <div style={{
       fontFamily: 'var(--font-mono)',
-      fontSize: 'var(--aguila-fs-meta)', color: '#64748b', marginTop: 4,
+      fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', marginTop: 4,
     }}>
       {dateStr} · {timeStr} · Datos en vivo
     </div>
@@ -187,7 +187,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
             return (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                 <h1 style={{
-                  fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3',
+                  fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)',
                   margin: 0, letterSpacing: '-0.03em',
                 }}>
                   {display}
@@ -195,7 +195,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 {suffix && (
                   <span style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 'var(--aguila-fs-label)', color: '#64748b',
+                    fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)',
                     textTransform: 'uppercase', letterSpacing: '0.04em',
                   }}>
                     {suffix}
@@ -205,7 +205,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
             )
           })()}
           <p style={{
-            fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginTop: 2, fontWeight: 500,
+            fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', marginTop: 2, fontWeight: 500,
           }}>
             {data.statusSentence}
           </p>
@@ -279,9 +279,9 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 cursor: 'pointer', padding: 0, marginBottom: hasActivity ? 12 : 0,
               }}
             >
-              <Activity size={14} color="#C0C5CE" />
+              <Activity size={14} color="var(--portal-fg-3)" />
               <span style={{
-                fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#94a3b8',
+                fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-fg-4)',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
               }}>
                 Actividad reciente
@@ -289,14 +289,14 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
               {hasActivity && (
                 <span style={{
                   width: 6, height: 6, borderRadius: '50%',
-                  background: '#22C55E', boxShadow: '0 0 6px #22C55E',
+                  background: 'var(--portal-status-green-fg)', boxShadow: '0 0 6px #22C55E',
                   marginLeft: 4,
                 }} />
               )}
               <span style={{ marginLeft: 'auto' }}>
                 {activityExpanded
-                  ? <ChevronUp size={14} color="#64748b" />
-                  : <ChevronDown size={14} color="#64748b" />
+                  ? <ChevronUp size={14} color="var(--portal-fg-5)" />
+                  : <ChevronDown size={14} color="var(--portal-fg-5)" />
                 }
               </span>
             </button>
@@ -318,7 +318,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                         </span>
                         <span style={{
                           fontFamily: 'var(--font-mono)',
-                          fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3',
+                          fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {event.trafico}
@@ -326,7 +326,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                       </div>
                       <span style={{
                         fontFamily: 'var(--font-mono)',
-                        fontSize: 'var(--aguila-fs-label)', color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap',
+                        fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', flexShrink: 0, whiteSpace: 'nowrap',
                       }}>
                         {fmtDateTime(event.updated_at)}
                       </span>
@@ -334,7 +334,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                     {/* Line 2: description + status pill */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 20 }}>
                       <span style={{
-                        fontSize: 'var(--aguila-fs-meta)', color: '#64748b',
+                        fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         flex: 1, minWidth: 0,
                       }}>
@@ -349,7 +349,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                     onClick={() => setActivityExpanded(true)}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: 'var(--aguila-fs-compact)', color: '#C0C5CE', fontWeight: 600,
+                      fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-3)', fontWeight: 600,
                       padding: '6px 0', textAlign: 'left',
                     }}
                   >
@@ -363,7 +363,7 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 justifyContent: 'center', padding: '24px 16px', gap: 8,
               }}>
                 <Clock size={24} color="#475569" />
-                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', textAlign: 'center' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', textAlign: 'center' }}>
                   Sin actividad reciente
                 </span>
                 <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#475569', textAlign: 'center' }}>

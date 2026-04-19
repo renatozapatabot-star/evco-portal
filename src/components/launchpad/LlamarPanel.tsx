@@ -104,7 +104,7 @@ export function LlamarPanel({ detail, onComplete, loading }: Props) {
         style={{
           minHeight: 60,
           borderRadius: 12,
-          background: '#E8EAED',
+          background: 'var(--portal-fg-1)',
           color: '#FFFFFF',
           border: 'none',
           fontSize: 'var(--aguila-fs-body-lg)',

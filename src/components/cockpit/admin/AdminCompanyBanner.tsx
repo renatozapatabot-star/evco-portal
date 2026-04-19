@@ -130,7 +130,7 @@ function Kpi({
           fontFamily: MONO,
           fontSize: 'var(--aguila-fs-headline)',
           fontWeight: 800,
-          color: tone === 'warn' ? '#FBBF24' : ACCENT_SILVER_BRIGHT,
+          color: tone === 'warn' ? 'var(--portal-status-amber-fg)' : ACCENT_SILVER_BRIGHT,
           lineHeight: 1.1,
         }}
       >

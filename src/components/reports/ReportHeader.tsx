@@ -16,7 +16,7 @@ export function ReportHeader({
       <div>
         <div
           className="font-mono text-2xl font-bold tracking-[0.08em]"
-          style={{ color: '#C0C5CE' }}
+          style={{ color: 'var(--portal-fg-3)' }}
         >
           PORTAL
         </div>

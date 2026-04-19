@@ -38,7 +38,7 @@ export function TeamPanel({ team, unassigned }: Props) {
               background: 'rgba(255,255,255,0.02)',
               borderRadius: 8,
             }}>
-              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{op.name}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{op.name}</span>
               <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
                 {op.assigned} asignados
               </span>
@@ -53,8 +53,8 @@ export function TeamPanel({ team, unassigned }: Props) {
               borderRadius: 8,
               border: '1px solid rgba(217,119,6,0.15)',
             }}>
-              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#D97706' }}>Sin asignar</span>
-              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#D97706', fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-amber-fg)' }}>Sin asignar</span>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-amber-fg)', fontWeight: 600 }}>
                 {unassigned}
               </span>
             </div>

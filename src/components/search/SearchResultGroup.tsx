@@ -78,7 +78,7 @@ export function SearchResultGroup({
             width: '100%', textAlign: 'left',
             padding: '8px 20px', minHeight: 36,
             background: 'transparent', border: 'none',
-            color: '#C0C5CE', fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer',
+            color: 'var(--portal-fg-3)', fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer',
           }}
         >
           Ver más en {config.labelEs} →

@@ -34,7 +34,7 @@ function LiveIndicator({ lastFetchTime }: { lastFetchTime: number | null }) {
   if (!lastFetchTime) return null
   const secsAgo = Math.round((now - lastFetchTime) / 1000)
   const minsAgo = Math.round(secsAgo / 60)
-  const color = secsAgo < 300 ? '#16A34A' : secsAgo < 1800 ? '#D97706' : '#DC2626'
+  const color = secsAgo < 300 ? 'var(--portal-status-green-fg)' : secsAgo < 1800 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
   const label = secsAgo < 60 ? `${secsAgo}s` : `${minsAgo}m`
   return (
     <div style={{
@@ -106,7 +106,7 @@ function ProgressRing({ pct, size = 56, animate = false }: { pct: number; size?:
   }, [pct, animate])
 
   const offset = circ - (displayPct / 100) * circ
-  const color = displayPct === 100 ? '#16A34A' : 'var(--gold, #E8EAED)'
+  const color = displayPct === 100 ? 'var(--portal-status-green-fg)' : 'var(--gold, #E8EAED)'
   const approaching = pct >= 95 && pct < 100
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }} className={approaching ? 'ring-approaching' : undefined}>
@@ -130,9 +130,9 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
 }) {
   const bannerLevel = urgentes > 0 ? 'red' : criticalCount > 0 ? 'amber' : 'green' as const
   const bannerColors = {
-    red:   { border: '#DC2626', bg: 'rgba(220,38,38,0.06)', text: '#DC2626', btn: '#DC2626' },
-    amber: { border: '#D97706', bg: 'rgba(217,119,6,0.06)', text: '#D97706', btn: '#D97706' },
-    green: { border: '#16A34A', bg: 'rgba(22,163,74,0.06)', text: '#16A34A', btn: '#16A34A' },
+    red:   { border: 'var(--portal-status-red-fg)', bg: 'rgba(220,38,38,0.06)', text: 'var(--portal-status-red-fg)', btn: 'var(--portal-status-red-fg)' },
+    amber: { border: 'var(--portal-status-amber-fg)', bg: 'rgba(217,119,6,0.06)', text: 'var(--portal-status-amber-fg)', btn: 'var(--portal-status-amber-fg)' },
+    green: { border: 'var(--portal-status-green-fg)', bg: 'rgba(22,163,74,0.06)', text: 'var(--portal-status-green-fg)', btn: 'var(--portal-status-green-fg)' },
   }
   const bc = bannerColors[bannerLevel]
   const bannerText = bannerLevel === 'red'
@@ -246,7 +246,7 @@ function PasswordResetBanner() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: 8,
     }}>
-      <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3' }}>
+      <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
         Te recomendamos cambiar tu contraseña temporal
       </span>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -372,7 +372,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
         const rawName = typeof document !== 'undefined' ? getCookieValue('company_name') || getCookieValue('operator_name') || '' : ''
         const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName
         return (
-          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#E6EDF3', marginBottom: 8, opacity: 0.8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--portal-fg-1)', marginBottom: 8, opacity: 0.8 }}>
             {greeting}{name ? `, ${name}` : ''}
           </div>
         )
@@ -391,7 +391,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {data.facturacionMes > 0 && (
               <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary, #94a3b8)' }}>
-                Facturado este mes: <strong style={{ color: '#E8EAED', fontFamily: 'var(--font-mono)' }}>
+                Facturado este mes: <strong style={{ color: 'var(--portal-fg-1)', fontFamily: 'var(--font-mono)' }}>
                   ${data.facturacionMes > 1000 ? `${Math.round(data.facturacionMes / 1000)}K` : data.facturacionMes.toFixed(0)} MXN
                 </strong>
               </span>
@@ -463,7 +463,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
           <ProgressRing pct={completionPct} size={isMobile ? 52 : 56} animate={!prefersReduced} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: completionPct >= 100 ? '#16A34A' : 'var(--text-primary, #1A1A1A)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: completionPct >= 100 ? 'var(--portal-status-green-fg)' : 'var(--text-primary, #1A1A1A)' }}>
             {totalActions > 0
               ? `Faltan ${totalActions} acción${totalActions !== 1 ? 'es' : ''}`
               : 'Día perfecto'

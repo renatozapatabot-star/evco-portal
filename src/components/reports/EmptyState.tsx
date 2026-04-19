@@ -9,7 +9,7 @@ export function ReportsEmptyState({ message }: { message?: string }) {
     <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-10 text-center">
       <div
         className="font-mono text-4xl tracking-[0.08em]"
-        style={{ color: '#E8EAED' }}
+        style={{ color: 'var(--portal-fg-1)' }}
       >
         PORTAL
       </div>

@@ -25,7 +25,7 @@ function shapeFor(type: LandmarkType): string {
       return `<rect x="5" y="5" width="14" height="14" fill="none" stroke="${dim}" stroke-width="1" stroke-dasharray="2 2" />`
     case 'customs_us':
     case 'customs_mx':
-      return `<rect x="5" y="5" width="14" height="14" fill="${silver}" opacity="0.6" /><circle cx="12" cy="12" r="2.2" fill="#0A0A0C" />`
+      return `<rect x="5" y="5" width="14" height="14" fill="${silver}" opacity="0.6" /><circle cx="12" cy="12" r="2.2" fill="var(--portal-ink-0)" />`
     default:
       return `<circle cx="12" cy="12" r="5" fill="${silver}" />`
   }

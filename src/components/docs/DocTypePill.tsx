@@ -99,7 +99,7 @@ export function DocTypePill({ documentId, currentType, confidence }: DocTypePill
 
   const isPendingManual = currentType === 'pending_manual'
   const pillBorder = isPendingManual ? 'rgba(239,68,68,0.5)' : BORDER
-  const pillColor = isPendingManual ? '#FCA5A5' : TEXT_PRIMARY
+  const pillColor = isPendingManual ? 'var(--portal-status-red-fg)' : TEXT_PRIMARY
   const pct =
     typeof confidence === 'number' && Number.isFinite(confidence) && currentType !== 'pending_manual'
       ? Math.round(confidence * 100)

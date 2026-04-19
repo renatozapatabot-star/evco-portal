@@ -44,19 +44,19 @@ const STATE_STYLES: Record<IfThenCardState | 'cleared', {
   active: {
     border: '1px solid rgba(192,197,206,0.3)',
     borderTop: '3px solid rgba(192,197,206,0.6)',
-    conditionColor: '#E8EAED',
+    conditionColor: 'var(--portal-fg-1)',
     actionBg: 'rgba(192,197,206,0.15)',
   },
   urgent: {
     border: '1px solid rgba(232,234,237,0.35)',
     borderTop: '3px solid rgba(232,234,237,0.7)',
-    conditionColor: '#E8EAED',
+    conditionColor: 'var(--portal-fg-1)',
     actionBg: 'rgba(232,234,237,0.15)',
   },
   cleared: {
     border: '1px solid rgba(22,163,74,0.25)',
     borderTop: '3px solid rgba(22,163,74,0.4)',
-    conditionColor: '#16A34A',
+    conditionColor: 'var(--portal-status-green-fg)',
     actionBg: 'rgba(22,163,74,0.1)',
   },
 }
@@ -97,12 +97,12 @@ export function IfThenCard({
         }}
       >
         {/* Checkmark */}
-        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 'var(--aguila-fs-body-lg)', color: '#16A34A' }}>✓</div>
+        <div style={{ position: 'absolute', top: 12, right: 14, fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--portal-status-green-fg)' }}>✓</div>
 
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8,
         }}>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#16A34A' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-status-green-fg)' }}>
             {title} — limpiada
           </span>
         </div>
@@ -176,7 +176,7 @@ export function IfThenCard({
           {/* Clear button for operators */}
           {onClear && state !== 'quiet' && (
             <button onClick={onClear} style={{
-              fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: '#16A34A',
+              fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: 'var(--portal-status-green-fg)',
               background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.2)',
               borderRadius: 4, padding: '3px 8px', cursor: 'pointer',
               textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -200,7 +200,7 @@ export function IfThenCard({
 
       {/* Content */}
       <div style={{
-        color: state === 'quiet' ? '#E6EDF3' : '#8B949E',
+        color: state === 'quiet' ? 'var(--portal-fg-1)' : '#8B949E',
         fontSize: state === 'quiet' ? 14 : 12,
       }}>
         {quietContent}

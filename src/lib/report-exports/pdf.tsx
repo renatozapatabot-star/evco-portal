@@ -18,8 +18,8 @@ import {
 } from '@react-pdf/renderer'
 import type { ColumnSpec } from '@/types/reports'
 
-const ACCENT_SILVER = '#C0C5CE'
-const TEXT_MUTED = '#64748b'
+const ACCENT_SILVER = 'var(--portal-fg-3)'
+const TEXT_MUTED = 'var(--portal-fg-5)'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#e5e7eb'
 const ZEBRA = '#f9fafb'

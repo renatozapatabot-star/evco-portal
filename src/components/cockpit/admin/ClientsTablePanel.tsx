@@ -56,22 +56,22 @@ export function ClientsTablePanel({ companies }: Props) {
                 <tr key={c.company_id} style={{
                   background: i % 2 === 0 ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.02)',
                 }}>
-                  <td style={{ padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>
+                  <td style={{ padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>
                     <Link
                       href={`/embarques?company=${encodeURIComponent(c.company_id)}`}
-                      style={{ color: '#E6EDF3', textDecoration: 'none' }}
+                      style={{ color: 'var(--portal-fg-1)', textDecoration: 'none' }}
                     >
                       {c.name}
                     </Link>
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: '#E8EAED', textAlign: 'right', fontWeight: 600,
+                    padding: '10px 12px', fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', textAlign: 'right', fontWeight: 600,
                   }}>
                     {c.trafico_count}
                   </td>
                   <td className="font-mono" style={{
                     padding: '10px 12px', fontSize: 'var(--aguila-fs-body)',
-                    color: c.valor_ytd > 0 ? '#E6EDF3' : '#6E7681',
+                    color: c.valor_ytd > 0 ? 'var(--portal-fg-1)' : '#6E7681',
                     textAlign: 'right',
                   }}>
                     {c.valor_ytd > 0 ? fmtUSDCompact(c.valor_ytd) : '—'}

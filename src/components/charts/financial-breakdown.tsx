@@ -53,13 +53,13 @@ export function FinancialBreakdown({ facturas }: Props) {
             contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)' }}
             formatter={(value) => [`$${Math.round(Number(value)).toLocaleString()}`]}
           />
-          <Bar dataKey="dta" stackId="a" fill="#E8EAED" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="dta" stackId="a" fill="var(--portal-fg-1)" radius={[0, 0, 0, 0]} />
           <Bar dataKey="igi" stackId="a" fill="#2563EB" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="iva" stackId="a" fill="#16A34A" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="iva" stackId="a" fill="var(--portal-status-green-fg)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
-        {[{ label: 'DTA', color: '#E8EAED' }, { label: 'IGI', color: '#2563EB' }, { label: 'IVA', color: '#16A34A' }].map(l => (
+        {[{ label: 'DTA', color: 'var(--portal-fg-1)' }, { label: 'IGI', color: '#2563EB' }, { label: 'IVA', color: 'var(--portal-status-green-fg)' }].map(l => (
           <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>
             <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color }} />
             {l.label}

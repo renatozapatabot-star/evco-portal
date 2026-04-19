@@ -12,9 +12,9 @@ interface Props {
 }
 
 const severityAccent: Record<ClientInsight['severity'], string> = {
-  critical: '#EF4444',
-  warning: '#FBBF24',
-  info: '#C0C5CE',
+  critical: 'var(--portal-status-red-fg)',
+  warning: 'var(--portal-status-amber-fg)',
+  info: 'var(--portal-fg-3)',
 }
 
 const typeIcon: Record<ClientInsight['type'], typeof AlertTriangle> = {
@@ -28,7 +28,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
   const hasCritical = computedInsights.some(i => i.severity === 'critical')
   const hasWarning = computedInsights.some(i => i.severity === 'warning')
   const headerLabel = hasCritical ? 'Requiere atención' : hasWarning ? 'Pendientes' : 'Estado de operaciones'
-  const headerColor = hasCritical ? '#EF4444' : hasWarning ? '#FBBF24' : '#C0C5CE'
+  const headerColor = hasCritical ? 'var(--portal-status-red-fg)' : hasWarning ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-3)'
 
   return (
     <div style={{
@@ -72,7 +72,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
               >
                 <Icon size={14} color={accentColor} style={{ flexShrink: 0, marginTop: 1 }} />
                 <span style={{
-                  fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', lineHeight: 1.5,
+                  fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', lineHeight: 1.5,
                   fontWeight: insight.severity === 'critical' ? 600 : 400,
                 }}>
                   {insight.text}
@@ -91,7 +91,7 @@ export function IntelligencePanel({ computedInsights, activeShipments, cruzadosY
         </div>
       ) : (
         <p style={{
-          fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px',
+          fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', lineHeight: 1.6, margin: '0 0 16px',
         }}>
           {activeShipments > 0 ? (
             <>

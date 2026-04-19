@@ -53,12 +53,12 @@ export function WeekAheadPanel({ weekAhead }: Props) {
                     {item.statusIcon}
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E8EAED',
+                    padding: '10px', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)',
                   }}>
                     {item.trafico}
                   </td>
                   <td style={{
-                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3',
+                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)',
                     maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {item.description}

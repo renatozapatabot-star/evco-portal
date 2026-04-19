@@ -59,7 +59,7 @@ const glassCard: React.CSSProperties = {
 }
 
 const sectionTitle: React.CSSProperties = {
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 15,
   fontWeight: 600,
   display: 'flex',
@@ -69,22 +69,22 @@ const sectionTitle: React.CSSProperties = {
 }
 
 const mutedText: React.CSSProperties = {
-  color: '#64748b',
+  color: 'var(--portal-fg-5)',
   fontSize: 'var(--aguila-fs-meta)',
 }
 
 const secondaryText: React.CSSProperties = {
-  color: '#94a3b8',
+  color: 'var(--portal-fg-4)',
   fontSize: 'var(--aguila-fs-body)',
 }
 
 // ── Severity helpers ──
 
 const SEVERITY_COLORS: Record<string, string> = {
-  low: '#22C55E',
-  medium: '#FBBF24',
-  high: '#EF4444',
-  critical: '#DC2626',
+  low: 'var(--portal-status-green-fg)',
+  medium: 'var(--portal-status-amber-fg)',
+  high: 'var(--portal-status-red-fg)',
+  critical: 'var(--portal-status-red-fg)',
 }
 
 const SEVERITY_LABELS: Record<string, string> = {
@@ -95,9 +95,9 @@ const SEVERITY_LABELS: Record<string, string> = {
 }
 
 const RISK_COLORS: Record<string, string> = {
-  low: '#22C55E',
-  medium: '#FBBF24',
-  high: '#EF4444',
+  low: 'var(--portal-status-green-fg)',
+  medium: 'var(--portal-status-amber-fg)',
+  high: 'var(--portal-status-red-fg)',
 }
 
 function riskLabel(level: string): string {
@@ -120,8 +120,8 @@ function PanelLoading({ label }: { label: string }) {
 function PanelEmpty({ icon: Icon, message }: { icon: typeof AlertTriangle; message: string }) {
   return (
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
-      <Icon size={28} style={{ color: '#64748b', marginBottom: 8 }} />
-      <div style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-compact)' }}>{message}</div>
+      <Icon size={28} style={{ color: 'var(--portal-fg-5)', marginBottom: 8 }} />
+      <div style={{ color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-compact)' }}>{message}</div>
     </div>
   )
 }
@@ -151,14 +151,14 @@ function AnomalyPanel() {
     <div style={glassCard}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={sectionTitle}>
-          <AlertTriangle size={16} style={{ color: '#EF4444' }} />
+          <AlertTriangle size={16} style={{ color: 'var(--portal-status-red-fg)' }} />
           Anomalías
           {anomalies.length > 0 && (
             <span style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 'var(--aguila-fs-meta)',
               background: 'rgba(239,68,68,0.15)',
-              color: '#EF4444',
+              color: 'var(--portal-status-red-fg)',
               padding: '2px 8px',
               borderRadius: 6,
               fontWeight: 700,
@@ -170,7 +170,7 @@ function AnomalyPanel() {
         <button
           onClick={fetchData}
           type="button"
-          style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 4, display: 'flex' }}
+          style={{ background: 'none', border: 'none', color: 'var(--portal-fg-5)', cursor: 'pointer', padding: 4, display: 'flex' }}
         >
           <RefreshCw size={12} />
         </button>
@@ -192,7 +192,7 @@ function AnomalyPanel() {
                 padding: '8px 10px',
                 background: 'rgba(255,255,255,0.02)',
                 borderRadius: 10,
-                borderLeft: `3px solid ${SEVERITY_COLORS[a.severity] ?? '#64748b'}`,
+                borderLeft: `3px solid ${SEVERITY_COLORS[a.severity] ?? 'var(--portal-fg-5)'}`,
               }}
             >
               <div style={{ flex: 1 }}>
@@ -206,7 +206,7 @@ function AnomalyPanel() {
               <span style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 'var(--aguila-fs-label)',
-                color: SEVERITY_COLORS[a.severity] ?? '#64748b',
+                color: SEVERITY_COLORS[a.severity] ?? 'var(--portal-fg-5)',
                 fontWeight: 600,
                 textTransform: 'uppercase' as const,
                 whiteSpace: 'nowrap',
@@ -245,7 +245,7 @@ function RiskMatrixPanel() {
   return (
     <div style={glassCard}>
       <h3 style={sectionTitle}>
-        <Shield size={16} style={{ color: '#FBBF24' }} />
+        <Shield size={16} style={{ color: 'var(--portal-status-amber-fg)' }} />
         Matriz de Riesgo
       </h3>
 
@@ -288,7 +288,7 @@ function RiskMatrixPanel() {
                   <div style={{
                     width: `${Math.min(r.risk_score, 100)}%`,
                     height: '100%',
-                    background: RISK_COLORS[r.risk_level] ?? '#64748b',
+                    background: RISK_COLORS[r.risk_level] ?? 'var(--portal-fg-5)',
                     borderRadius: 3,
                   }} />
                 </div>
@@ -296,7 +296,7 @@ function RiskMatrixPanel() {
                 <span style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 'var(--aguila-fs-meta)',
-                  color: RISK_COLORS[r.risk_level] ?? '#64748b',
+                  color: RISK_COLORS[r.risk_level] ?? 'var(--portal-fg-5)',
                   fontWeight: 600,
                   minWidth: 50,
                   textAlign: 'right',
@@ -338,7 +338,7 @@ function ProfitabilityPanel() {
   return (
     <div style={glassCard}>
       <h3 style={sectionTitle}>
-        <TrendingUp size={16} style={{ color: '#22C55E' }} />
+        <TrendingUp size={16} style={{ color: 'var(--portal-status-green-fg)' }} />
         Rentabilidad
       </h3>
 
@@ -360,13 +360,13 @@ function ProfitabilityPanel() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ ...secondaryText, fontWeight: 500 }}>{e.company_name}</span>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3', fontWeight: 600 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                     ${(e.revenue / 1000).toFixed(1)}K USD
                   </span>
                   <span style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 'var(--aguila-fs-meta)',
-                    color: e.margin >= 30 ? '#22C55E' : e.margin >= 15 ? '#FBBF24' : '#EF4444',
+                    color: e.margin >= 30 ? 'var(--portal-status-green-fg)' : e.margin >= 15 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)',
                     fontWeight: 600,
                   }}>
                     {e.margin.toFixed(1)}%
@@ -426,14 +426,14 @@ function GhostPanel() {
     <div style={glassCard}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={sectionTitle}>
-          <Ghost size={16} style={{ color: '#C0C5CE' }} />
+          <Ghost size={16} style={{ color: 'var(--portal-fg-3)' }} />
           Embarques Fantasma
           {ghosts.length > 0 && (
             <span style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 'var(--aguila-fs-meta)',
               background: 'rgba(192,197,206,0.12)',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               padding: '2px 8px',
               borderRadius: 6,
               fontWeight: 700,
@@ -445,7 +445,7 @@ function GhostPanel() {
         <button
           onClick={fetchData}
           type="button"
-          style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 4, display: 'flex' }}
+          style={{ background: 'none', border: 'none', color: 'var(--portal-fg-5)', cursor: 'pointer', padding: 4, display: 'flex' }}
         >
           <RefreshCw size={12} />
         </button>
@@ -470,7 +470,7 @@ function GhostPanel() {
               }}
             >
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 500 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: 500 }}>
                   {g.trafico_number}
                 </span>
                 <div style={mutedText}>
@@ -481,7 +481,7 @@ function GhostPanel() {
               <span style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 'var(--aguila-fs-compact)',
-                color: g.days_stuck > 30 ? '#EF4444' : g.days_stuck > 14 ? '#FBBF24' : '#94a3b8',
+                color: g.days_stuck > 30 ? 'var(--portal-status-red-fg)' : g.days_stuck > 14 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-4)',
                 fontWeight: 600,
               }}>
                 {g.days_stuck}d

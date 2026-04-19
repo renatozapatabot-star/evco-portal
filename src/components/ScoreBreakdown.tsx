@@ -24,12 +24,12 @@ export function ScoreBreakdown({ breakdown, score }: Props) {
           <div style={{ flex: 1, height: 6, background: 'var(--n-100)', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{
               width: `${item.score}%`, height: '100%', borderRadius: 3,
-              background: item.score >= 80 ? 'var(--success)' : item.score >= 50 ? '#D4952A' : 'var(--danger-500)',
+              background: item.score >= 80 ? 'var(--success)' : item.score >= 50 ? 'var(--portal-status-amber-fg)' : 'var(--danger-500)',
               transition: 'width 0.5s ease',
             }} />
           </div>
           <span style={{ width: 36, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textAlign: 'right', fontFamily: 'var(--font-mono)',
-            color: item.score >= 80 ? 'var(--success)' : item.score >= 50 ? '#D4952A' : 'var(--danger-500)' }}>
+            color: item.score >= 80 ? 'var(--success)' : item.score >= 50 ? 'var(--portal-status-amber-fg)' : 'var(--danger-500)' }}>
             {item.score}
           </span>
           <span style={{ width: 32, fontSize: 'var(--aguila-fs-label)', color: 'var(--n-400)', textAlign: 'right' }}>
@@ -40,7 +40,7 @@ export function ScoreBreakdown({ breakdown, score }: Props) {
       <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: 'var(--b-default)', paddingTop: 8, marginTop: 4 }}>
         <span style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 800, color: 'var(--n-700)' }}>Total</span>
         <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 900, fontFamily: 'var(--font-mono)',
-          color: score >= 80 ? 'var(--success)' : score >= 50 ? '#D4952A' : 'var(--danger-500)' }}>{score}/100</span>
+          color: score >= 80 ? 'var(--success)' : score >= 50 ? 'var(--portal-status-amber-fg)' : 'var(--danger-500)' }}>{score}/100</span>
       </div>
     </div>
   )

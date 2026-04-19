@@ -76,7 +76,7 @@ export function OperatorSearch() {
   }
 
   const typeColors: Record<string, string> = {
-    trafico: '#E8EAED',
+    trafico: 'var(--portal-fg-1)',
     entrada: '#0D9488',
     pedimento: '#8B949E',
   }
@@ -106,7 +106,7 @@ export function OperatorSearch() {
           placeholder="Buscar embarque, entrada, pedimento, proveedor..."
           style={{
             flex: 1, background: 'transparent', border: 'none', outline: 'none',
-            color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)', padding: '10px 0',
+            color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body)', padding: '10px 0',
             fontFamily: 'var(--font-jetbrains-mono)',
           }}
         />
@@ -114,7 +114,7 @@ export function OperatorSearch() {
           onClick={doSearch}
           disabled={loading || query.trim().length < 2}
           style={{
-            background: 'rgba(192,197,206,0.15)', color: '#E8EAED',
+            background: 'rgba(192,197,206,0.15)', color: 'var(--portal-fg-1)',
             border: 'none', borderRadius: 8, padding: '8px 16px',
             fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
             minHeight: 36, opacity: loading || query.trim().length < 2 ? 0.5 : 1,
@@ -144,7 +144,7 @@ export function OperatorSearch() {
               }}>
                 {typeLabels[r.type]}
               </span>
-              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', flexShrink: 0 }}>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)', flexShrink: 0 }}>
                 {r.id}
               </span>
               <span style={{

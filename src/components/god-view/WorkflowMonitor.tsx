@@ -34,9 +34,9 @@ const PIPELINE_STAGES = [
 ] as const
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: '#C0C5CE',
-  completed: '#22C55E',
-  failed: '#EF4444',
+  pending: 'var(--portal-fg-3)',
+  completed: 'var(--portal-status-green-fg)',
+  failed: 'var(--portal-status-red-fg)',
 }
 
 // ── Helpers ──
@@ -92,7 +92,7 @@ const glassCard: React.CSSProperties = {
 }
 
 const sectionTitle: React.CSSProperties = {
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 'var(--aguila-fs-body-lg)',
   fontWeight: 600,
   display: 'flex',
@@ -102,12 +102,12 @@ const sectionTitle: React.CSSProperties = {
 }
 
 const mutedText: React.CSSProperties = {
-  color: '#64748b',
+  color: 'var(--portal-fg-5)',
   fontSize: 'var(--aguila-fs-meta)',
 }
 
 const secondaryText: React.CSSProperties = {
-  color: '#94a3b8',
+  color: 'var(--portal-fg-4)',
   fontSize: 'var(--aguila-fs-body)',
 }
 
@@ -145,7 +145,7 @@ export function WorkflowMonitor() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Activity size={16} style={{ color: '#C0C5CE' }} />
+          <Activity size={16} style={{ color: 'var(--portal-fg-3)' }} />
           Monitor de Workflows
         </h2>
         <div style={{ ...mutedText, marginTop: 16 }}>Cargando eventos...</div>
@@ -158,11 +158,11 @@ export function WorkflowMonitor() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Activity size={16} style={{ color: '#C0C5CE' }} />
+          <Activity size={16} style={{ color: 'var(--portal-fg-3)' }} />
           Monitor de Workflows
         </h2>
         <div style={{ ...secondaryText, marginTop: 16 }}>
-          <AlertTriangle size={14} style={{ color: '#EF4444', marginRight: 6 }} />
+          <AlertTriangle size={14} style={{ color: 'var(--portal-status-red-fg)', marginRight: 6 }} />
           Sin datos de workflow disponibles
         </div>
       </div>
@@ -175,7 +175,7 @@ export function WorkflowMonitor() {
       <div style={glassCard}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={sectionTitle}>
-            <Activity size={16} style={{ color: '#C0C5CE' }} />
+            <Activity size={16} style={{ color: 'var(--portal-fg-3)' }} />
             Pipeline de Workflows
           </h2>
           <button
@@ -184,7 +184,7 @@ export function WorkflowMonitor() {
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#64748b',
+              color: 'var(--portal-fg-5)',
               cursor: 'pointer',
               padding: 4,
               display: 'flex',
@@ -213,7 +213,7 @@ export function WorkflowMonitor() {
                       background: hasPending
                         ? 'rgba(192,197,206,0.15)'
                         : 'rgba(255,255,255,0.06)',
-                      border: `2px solid ${hasPending ? '#C0C5CE' : 'rgba(255,255,255,0.12)'}`,
+                      border: `2px solid ${hasPending ? 'var(--portal-fg-3)' : 'rgba(255,255,255,0.12)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -221,7 +221,7 @@ export function WorkflowMonitor() {
                     }}
                   >
                     {hasPending ? (
-                      <span style={{ color: '#C0C5CE', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ color: 'var(--portal-fg-3)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                         {stats.pending}
                       </span>
                     ) : (
@@ -230,16 +230,16 @@ export function WorkflowMonitor() {
                   </div>
 
                   {/* Label */}
-                  <span style={{ color: hasPending ? '#E6EDF3' : '#64748b', fontSize: 'var(--aguila-fs-meta)', fontWeight: 500, textAlign: 'center' }}>
+                  <span style={{ color: hasPending ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-meta)', fontWeight: 500, textAlign: 'center' }}>
                     {stage.label}
                   </span>
 
                   {/* Stats */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: '#22C55E' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-status-green-fg)' }}>
                       {stats.completedToday} hoy
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: '#64748b' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)' }}>
                       {stats.successRate}%
                     </span>
                   </div>
@@ -264,14 +264,14 @@ export function WorkflowMonitor() {
       {/* Recent events table */}
       <div style={glassCard}>
         <h2 style={{ ...sectionTitle, marginBottom: 12 }}>
-          <Clock size={16} style={{ color: '#C0C5CE' }} />
+          <Clock size={16} style={{ color: 'var(--portal-fg-3)' }} />
           Eventos Recientes
         </h2>
 
         {events.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
-            <Activity size={32} style={{ color: '#64748b', marginBottom: 8 }} />
-            <div style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-body)' }}>Sin eventos registrados</div>
+            <Activity size={32} style={{ color: 'var(--portal-fg-5)', marginBottom: 8 }} />
+            <div style={{ color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-body)' }}>Sin eventos registrados</div>
             <div style={mutedText}>Los workflows generarán eventos al procesar embarques</div>
           </div>
         ) : (
@@ -315,8 +315,8 @@ export function WorkflowMonitor() {
                           fontFamily: 'var(--font-mono)',
                           fontSize: 'var(--aguila-fs-meta)',
                           fontWeight: 600,
-                          color: STATUS_COLORS[ev.status] ?? '#94a3b8',
-                          background: `${STATUS_COLORS[ev.status] ?? '#94a3b8'}18`,
+                          color: STATUS_COLORS[ev.status] ?? 'var(--portal-fg-4)',
+                          background: `${STATUS_COLORS[ev.status] ?? 'var(--portal-fg-4)'}18`,
                           padding: '2px 8px',
                           borderRadius: 6,
                         }}
@@ -324,10 +324,10 @@ export function WorkflowMonitor() {
                         {ev.status}
                       </span>
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', padding: '8px 8px 8px 0' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', padding: '8px 8px 8px 0' }}>
                       {getAge(ev.created_at)}
                     </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b', padding: '8px 8px 8px 0', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', padding: '8px 8px 8px 0', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {ev.trigger_id ?? '—'}
                     </td>
                   </tr>

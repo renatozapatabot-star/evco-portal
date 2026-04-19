@@ -45,7 +45,7 @@ const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 12,
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
@@ -55,7 +55,7 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   fontSize: 'var(--aguila-fs-compact)',
   fontWeight: 600,
-  color: '#94a3b8',
+  color: 'var(--portal-fg-4)',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   marginBottom: 6,
@@ -67,9 +67,9 @@ const labelStyle: React.CSSProperties = {
 // ── Confidence color helper ────────────────────────────────
 
 function confidenceColor(pct: number): string {
-  if (pct >= 85) return '#22C55E'
-  if (pct >= 70) return '#FBBF24'
-  return '#EF4444'
+  if (pct >= 85) return 'var(--portal-status-green-fg)'
+  if (pct >= 70) return 'var(--portal-status-amber-fg)'
+  return 'var(--portal-status-red-fg)'
 }
 
 function confidenceLabel(pct: number): string {
@@ -134,9 +134,9 @@ export function SelfClassify() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Search size={18} color="#C0C5CE" />
+        <Search size={18} color="var(--portal-fg-3)" />
         <span style={{
-          fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#C0C5CE',
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-3)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           Clasificar Producto
@@ -149,7 +149,7 @@ export function SelfClassify() {
           {/* Descripcion */}
           <div>
             <label style={labelStyle}>
-              <Package size={14} color="#94a3b8" />
+              <Package size={14} color="var(--portal-fg-4)" />
               Descripción del producto *
             </label>
             <textarea
@@ -172,7 +172,7 @@ export function SelfClassify() {
             {/* Pais de origen */}
             <div>
               <label style={labelStyle}>
-                <Globe size={14} color="#94a3b8" />
+                <Globe size={14} color="var(--portal-fg-4)" />
                 País de origen
               </label>
               <input
@@ -187,7 +187,7 @@ export function SelfClassify() {
             {/* Material */}
             <div>
               <label style={labelStyle}>
-                <Layers size={14} color="#94a3b8" />
+                <Layers size={14} color="var(--portal-fg-4)" />
                 Composición / Material
               </label>
               <input
@@ -202,7 +202,7 @@ export function SelfClassify() {
             {/* Uso previsto */}
             <div>
               <label style={labelStyle}>
-                <Target size={14} color="#94a3b8" />
+                <Target size={14} color="var(--portal-fg-4)" />
                 Uso previsto
               </label>
               <input
@@ -217,7 +217,7 @@ export function SelfClassify() {
             {/* Valor unitario */}
             <div>
               <label style={labelStyle}>
-                <DollarSign size={14} color="#94a3b8" />
+                <DollarSign size={14} color="var(--portal-fg-4)" />
                 Valor unitario estimado USD
               </label>
               <input
@@ -244,8 +244,8 @@ export function SelfClassify() {
               padding: '16px 32px',
               borderRadius: 14,
               border: 'none',
-              background: canSubmit && state !== 'loading' ? '#E8EAED' : 'rgba(255,255,255,0.06)',
-              color: canSubmit && state !== 'loading' ? '#000' : '#64748b',
+              background: canSubmit && state !== 'loading' ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.06)',
+              color: canSubmit && state !== 'loading' ? '#000' : 'var(--portal-fg-5)',
               fontSize: 15,
               fontWeight: 700,
               cursor: canSubmit && state !== 'loading' ? 'pointer' : 'not-allowed',
@@ -276,17 +276,17 @@ export function SelfClassify() {
       {state === 'error' && (
         <div style={{
           ...glassCard,
-          borderColor: 'rgba(239,68,68,0.3)',
+          borderColor: 'var(--portal-status-red-ring)',
           display: 'flex',
           alignItems: 'center',
           gap: 12,
         }}>
-          <XCircle size={20} color="#EF4444" />
+          <XCircle size={20} color="var(--portal-status-red-fg)" />
           <div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#EF4444' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--portal-status-red-fg)' }}>
               Error en clasificación
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginTop: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginTop: 4 }}>
               {errorMsg}
             </div>
           </div>
@@ -301,7 +301,7 @@ export function SelfClassify() {
           boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 25px -8px rgba(192,197,206,0.15)',
         }}>
           <div style={{
-            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#C0C5CE',
+            fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-fg-3)',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             marginBottom: 16,
           }}>
@@ -311,20 +311,20 @@ export function SelfClassify() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Fraccion */}
             <div>
-              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600, marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontWeight: 600, marginBottom: 4 }}>
                 Fracción sugerida
               </div>
               <div style={{
                 fontSize: 'var(--aguila-fs-kpi-mid)',
                 fontWeight: 800,
                 fontFamily: 'var(--font-mono)',
-                color: '#C0C5CE',
+                color: 'var(--portal-fg-3)',
                 letterSpacing: '0.04em',
               }}>
                 {result.fraccion}
               </div>
               {result.description && (
-                <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginTop: 4 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginTop: 4 }}>
                   {result.description}
                 </div>
               )}
@@ -342,7 +342,7 @@ export function SelfClassify() {
                 borderRadius: 12,
                 padding: 16,
               }}>
-                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontWeight: 600, marginBottom: 6 }}>
                   Confianza
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -387,21 +387,21 @@ export function SelfClassify() {
                 borderRadius: 12,
                 padding: 16,
               }}>
-                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontWeight: 600, marginBottom: 6 }}>
                   T-MEC elegible
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {result.tmec_eligible ? (
                     <>
-                      <CheckCircle size={22} color="#22C55E" />
-                      <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#22C55E' }}>
+                      <CheckCircle size={22} color="var(--portal-status-green-fg)" />
+                      <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-status-green-fg)' }}>
                         Sí
                       </span>
                     </>
                   ) : (
                     <>
-                      <XCircle size={22} color="#EF4444" />
-                      <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#EF4444' }}>
+                      <XCircle size={22} color="var(--portal-status-red-fg)" />
+                      <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-status-red-fg)' }}>
                         No
                       </span>
                     </>
@@ -414,7 +414,7 @@ export function SelfClassify() {
             {result.notes && (
               <div style={{
                 fontSize: 'var(--aguila-fs-body)',
-                color: '#94a3b8',
+                color: 'var(--portal-fg-4)',
                 lineHeight: 1.5,
                 borderTop: '1px solid rgba(255,255,255,0.06)',
                 paddingTop: 12,
@@ -439,7 +439,7 @@ export function SelfClassify() {
                   padding: '14px 28px',
                   borderRadius: 14,
                   border: 'none',
-                  background: '#E8EAED',
+                  background: 'var(--portal-fg-1)',
                   color: '#000',
                   fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
@@ -463,7 +463,7 @@ export function SelfClassify() {
                   borderRadius: 14,
                   border: '1px solid rgba(255,255,255,0.12)',
                   background: 'rgba(255,255,255,0.04)',
-                  color: '#94a3b8',
+                  color: 'var(--portal-fg-4)',
                   fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 600,
                   cursor: 'pointer',

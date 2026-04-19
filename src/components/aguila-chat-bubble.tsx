@@ -31,14 +31,14 @@ const D = {
   bg: '#0a0f1c',
   surface: '#1a2338',
   border: '#334155',
-  text: '#E6EDF3',
-  textMuted: '#64748b',
-  textSub: '#94a3b8',
+  text: 'var(--portal-fg-1)',
+  textMuted: 'var(--portal-fg-5)',
+  textSub: 'var(--portal-fg-4)',
   userBubble: 'rgba(192,197,206,0.12)',
   userBorder: 'rgba(192,197,206,0.25)',
   aiBubble: '#0f1729',
   aiBorder: 'rgba(51,65,85,0.5)',
-  aiText: '#E6EDF3',
+  aiText: 'var(--portal-fg-1)',
 }
 
 export function AguilaChatBubble() {
@@ -414,8 +414,8 @@ export function AguilaChatBubble() {
                   {msg.role === 'assistant' && msg.content && !msg.content.includes('Error') && (
                     <div style={{ display: 'flex', gap: 4, marginTop: 6, opacity: 0.4 }}>
                       <button onClick={() => speak(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: D.aiText, padding: 2 }}><Volume2 size={12} /></button>
-                      <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? '#16A34A' : D.aiText, padding: 2 }}><ThumbsUp size={12} /></button>
-                      <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? '#DC2626' : D.aiText, padding: 2 }}><ThumbsDown size={12} /></button>
+                      <button onClick={() => saveFeedback(msg.id, true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === true ? 'var(--portal-status-green-fg)' : D.aiText, padding: 2 }}><ThumbsUp size={12} /></button>
+                      <button onClick={() => saveFeedback(msg.id, false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: msg.feedback === false ? 'var(--portal-status-red-fg)' : D.aiText, padding: 2 }}><ThumbsDown size={12} /></button>
                     </div>
                   )}
                 </div>
@@ -513,14 +513,14 @@ export function AguilaChatBubble() {
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(192,197,206,0.25)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(192,197,206,0.15)' }}
         >
-          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', lineHeight: 1, color: '#C0C5CE' }}>&#10022;</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 800, color: '#C0C5CE', letterSpacing: '0.06em' }}>Asistente PORTAL</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', lineHeight: 1, color: 'var(--portal-fg-3)' }}>&#10022;</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 800, color: 'var(--portal-fg-3)', letterSpacing: '0.06em' }}>Asistente PORTAL</span>
           {/* Unread indicator */}
           {hasUnread && (
             <div style={{
               position: 'absolute', top: -2, right: -2,
               width: 12, height: 12, borderRadius: '50%',
-              background: '#DC2626', border: '2px solid #0A0A0A',
+              background: 'var(--portal-status-red-fg)', border: '2px solid #0A0A0A',
             }} />
           )}
         </button>

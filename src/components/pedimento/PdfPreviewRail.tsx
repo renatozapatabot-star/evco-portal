@@ -134,7 +134,7 @@ export function PdfPreviewRail() {
         <span
           style={{
             fontSize: 'var(--aguila-fs-label)',
-            color: loading ? '#C0C5CE' : 'var(--text-muted)',
+            color: loading ? 'var(--portal-fg-3)' : 'var(--text-muted)',
             fontFamily: 'var(--font-mono)',
           }}
         >
@@ -170,7 +170,7 @@ export function PdfPreviewRail() {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 'var(--aguila-fs-compact)',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               background:
                 'linear-gradient(135deg, rgba(192,197,206,0.08), rgba(192,197,206,0.02))',
             }}
@@ -189,7 +189,7 @@ export function PdfPreviewRail() {
               padding: 16,
               textAlign: 'center',
               fontSize: 'var(--aguila-fs-compact)',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
             }}
           >
             No se pudo generar vista previa — corrige errores
@@ -221,7 +221,7 @@ export function PdfPreviewRail() {
               padding: '4px 10px',
               borderRadius: 999,
               background: 'rgba(192,197,206,0.18)',
-              color: '#E8EAED',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-label)',
               letterSpacing: '0.04em',
               textTransform: 'uppercase',

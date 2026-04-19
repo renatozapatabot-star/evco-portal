@@ -63,7 +63,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Icon className="nav-card-icon-svg" size={18} color="#C0C5CE" strokeWidth={1.8} />
+          <Icon className="nav-card-icon-svg" size={18} color="var(--portal-fg-3)" strokeWidth={1.8} />
           {isLive && (
             <span
               aria-hidden
@@ -75,7 +75,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                background: '#22C55E',
+                background: 'var(--portal-status-green-fg)',
                 boxShadow: '0 0 8px rgba(34,197,94,0.8)',
               }}
             />
@@ -83,7 +83,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="nav-card-label" style={{
-            fontSize: 15, fontWeight: 700, color: '#E6EDF3', lineHeight: 1.3,
+            fontSize: 15, fontWeight: 700, color: 'var(--portal-fg-1)', lineHeight: 1.3,
           }}>
             {label}
           </div>
@@ -96,7 +96,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
             <div className="nav-card-micro" style={{
               fontSize: 'var(--aguila-fs-meta)', marginTop: 4, lineHeight: 1.3,
               fontFamily: 'var(--font-mono)',
-              color: microStatusWarning ? '#FBBF24' : '#64748b',
+              color: microStatusWarning ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-5)',
               fontWeight: microStatusWarning ? 600 : 400,
             }}>
               {microStatus}
@@ -126,10 +126,10 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           <div className="nav-card-count" style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 'var(--aguila-fs-title)', fontWeight: 800,
-            color: count > 0 ? '#E6EDF3' : '#475569',
+            color: count > 0 ? 'var(--portal-fg-1)' : '#475569',
             flexShrink: 0,
           }}>
-            {count}{countSuffix ? <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#94a3b8', marginLeft: 2 }}>{countSuffix}</span> : null}
+            {count}{countSuffix ? <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-4)', marginLeft: 2 }}>{countSuffix}</span> : null}
           </div>
         )}
       </motion.div>

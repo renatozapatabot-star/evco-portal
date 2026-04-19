@@ -79,7 +79,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
                 minHeight: 44,
                 padding: '10px 20px',
                 background: 'transparent', border: 'none', cursor: 'pointer',
-                color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)',
+                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body)',
                 fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
               }}
             >
@@ -109,7 +109,7 @@ export function SmartSuggestions({ onPick, onSuggestionClick }: Props) {
               minHeight: 44,
               padding: '10px 20px',
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)',
+              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body)',
               fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
             }}
           >

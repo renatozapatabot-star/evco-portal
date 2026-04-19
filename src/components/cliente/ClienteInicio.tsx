@@ -45,10 +45,10 @@ const ICONS: Record<ClienteEventLabel['icon'], LucideIcon> = {
 // ── Status pulse color ────────────────────────────────────────
 function statusPulse(estatus: string | null): string {
   const s = (estatus ?? '').toLowerCase()
-  if (s.includes('cruzad')) return '#22C55E'
-  if (s.includes('deten') || s.includes('riesgo') || s.includes('rojo')) return '#EF4444'
-  if (s.includes('aduana') || s.includes('proceso') || s.includes('documen')) return '#FBBF24'
-  return '#C0C5CE'
+  if (s.includes('cruzad')) return 'var(--portal-status-green-fg)'
+  if (s.includes('deten') || s.includes('riesgo') || s.includes('rojo')) return 'var(--portal-status-red-fg)'
+  if (s.includes('aduana') || s.includes('proceso') || s.includes('documen')) return 'var(--portal-status-amber-fg)'
+  return 'var(--portal-fg-3)'
 }
 
 // ── Shared surface tokens ─────────────────────────────────────
@@ -87,12 +87,12 @@ export function ClienteInicio({
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
-          fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E6EDF3',
+          fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)',
           margin: 0, letterSpacing: '-0.03em',
         }}>
           {companyName || 'Mi portal'}
         </h1>
-        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', margin: '4px 0 0' }}>
           Estado en tiempo real de tus operaciones
         </p>
       </div>
@@ -120,7 +120,7 @@ export function ClienteInicio({
                   : '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 999,
                 background: active ? 'rgba(192,197,206,0.12)' : 'rgba(255,255,255,0.04)',
-                color: active ? '#E8EAED' : '#94a3b8',
+                color: active ? 'var(--portal-fg-1)' : 'var(--portal-fg-4)',
                 cursor: 'pointer',
                 fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                 backdropFilter: 'blur(12px)',
@@ -137,7 +137,7 @@ export function ClienteInicio({
                 padding: '2px 8px',
                 borderRadius: 999,
                 background: 'rgba(0,0,0,0.35)',
-                color: active ? '#E8EAED' : '#64748b',
+                color: active ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
               }}>
                 {t.count}
               </span>
@@ -199,7 +199,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <div style={{
                 ...MONO,
-                fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {r.trafico}
@@ -221,13 +221,13 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
                   fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                   padding: '3px 10px', borderRadius: 999,
                   background: 'rgba(192,197,206,0.12)',
-                  color: '#C0C5CE',
+                  color: 'var(--portal-fg-3)',
                 }}>
                   {r.estatus}
                 </span>
               )}
               {r.fecha_llegada && (
-                <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>
+                <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
                   ETA {fmtDate(r.fecha_llegada)}
                 </span>
               )}
@@ -240,16 +240,16 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
                 paddingTop: 8,
                 borderTop: '1px solid rgba(255,255,255,0.06)',
               }}>
-                <Icon size={14} color="#C0C5CE" />
+                <Icon size={14} color="var(--portal-fg-3)" />
                 <span style={{
-                  fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8',
+                  fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   flex: 1, minWidth: 0,
                 }}>
                   {lastLabel.label}
                 </span>
                 {r.last_event_at && (
-                  <span style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: '#64748b', flexShrink: 0 }}>
+                  <span style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', flexShrink: 0 }}>
                     {fmtDateTime(r.last_event_at)}
                   </span>
                 )}
@@ -292,18 +292,18 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
             display: 'flex', alignItems: 'center', gap: 8,
             marginBottom: 12,
           }}>
-            <Truck size={14} color="#C0C5CE" />
+            <Truck size={14} color="var(--portal-fg-3)" />
             <Link
               href={`/embarques/${encodeURIComponent(traficoRef)}/trace`}
               style={{
                 ...MONO,
-                fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--portal-fg-1)',
                 textDecoration: 'none',
               }}
             >
               {traficoRef}
             </Link>
-            <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: '#64748b', marginLeft: 'auto' }}>
+            <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', marginLeft: 'auto' }}>
               {docs.length} {docs.length === 1 ? 'documento' : 'documentos'}
             </span>
           </div>
@@ -316,16 +316,16 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
                   ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 minHeight: 44,
               }}>
-                <FileText size={14} color="#64748b" style={{ flexShrink: 0 }} />
+                <FileText size={14} color="var(--portal-fg-5)" style={{ flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     ...MONO,
-                    fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3',
+                    fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {d.nombre ?? 'Sin nombre'}
                   </div>
-                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#64748b', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', marginTop: 2 }}>
                     {d.doc_type ?? 'Documento'}
                     {d.created_at && (
                       <>
@@ -345,7 +345,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
                       minHeight: 44, padding: '8px 12px',
                       borderRadius: 10,
                       background: 'rgba(192,197,206,0.12)',
-                      color: '#C0C5CE',
+                      color: 'var(--portal-fg-3)',
                       fontSize: 'var(--aguila-fs-meta)', fontWeight: 600,
                       textDecoration: 'none',
                       flexShrink: 0,
@@ -390,22 +390,22 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
               ? '1px solid rgba(255,255,255,0.04)' : 'none',
             minHeight: 60,
           }}>
-            <Icon size={16} color="#C0C5CE" style={{ flexShrink: 0 }} />
+            <Icon size={16} color="var(--portal-fg-3)" style={{ flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', fontWeight: 500,
+                fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: 500,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {label.label}
               </div>
               {n.trafico_id && (
-                <div style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: '#64748b', marginTop: 2 }}>
+                <div style={{ ...MONO, fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', marginTop: 2 }}>
                   {n.trafico_id}
                 </div>
               )}
             </div>
             {n.created_at && (
-              <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: '#64748b', flexShrink: 0 }}>
+              <span style={{ ...MONO, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', flexShrink: 0 }}>
                 {fmtDateTime(n.created_at)}
               </span>
             )}
@@ -441,8 +441,8 @@ function EmptyCard({
       }}
     >
       {icon}
-      <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', fontWeight: 600 }}>{title}</div>
-      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', textAlign: 'center', maxWidth: 360 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', fontWeight: 600 }}>{title}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', textAlign: 'center', maxWidth: 360 }}>
         {subtitle}
       </div>
     </GlassCard>

@@ -60,14 +60,14 @@ export function RightRail() {
 
   const statusDot = (s: string) => {
     const colors: Record<string, string> = {
-      green: '#16A34A', amber: '#D97706', red: '#DC2626', unknown: '#6E7681',
+      green: 'var(--portal-status-green-fg)', amber: 'var(--portal-status-amber-fg)', red: 'var(--portal-status-red-fg)', unknown: '#6E7681',
     }
     return colors[s] || colors.unknown
   }
 
   const severityColor = (s: string) => {
     const colors: Record<string, string> = {
-      critical: '#DC2626', warning: '#D97706', info: '#8B949E',
+      critical: 'var(--portal-status-red-fg)', warning: 'var(--portal-status-amber-fg)', info: '#8B949E',
     }
     return colors[s] || colors.info
   }
@@ -98,7 +98,7 @@ export function RightRail() {
                     width: 8, height: 8, borderRadius: '50%',
                     background: statusDot(b.status), display: 'inline-block',
                   }} />
-                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{b.nameEs}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{b.nameEs}</span>
                 </div>
                 <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
                   {b.commercial}m
@@ -126,7 +126,7 @@ export function RightRail() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {intel.map(item => (
               <div key={item.id} style={{
-                fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)',
                 paddingLeft: 12,
                 borderLeft: `2px solid ${severityColor(item.severity)}`,
               }}>
@@ -169,10 +169,10 @@ export function RightRail() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{
                     width: 8, height: 8, borderRadius: '50%',
-                    background: s.healthy ? '#16A34A' : '#DC2626',
+                    background: s.healthy ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
                     display: 'inline-block',
                   }} />
-                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3' }}>{s.source}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)' }}>{s.source}</span>
                 </div>
                 {s.minutesAgo !== null && (
                   <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>

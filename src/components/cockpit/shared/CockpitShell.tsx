@@ -23,7 +23,7 @@ export async function CockpitShell({ children }: CockpitShellProps) {
         position: 'relative',
         minHeight: '100vh',
         background: COCKPIT_CANVAS,
-        color: '#E6EDF3',
+        color: 'var(--portal-fg-1)',
         overflow: 'hidden',
       }}
     >

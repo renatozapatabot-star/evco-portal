@@ -25,7 +25,7 @@ export function AguilaWordmark({
 }: AguilaWordmarkProps) {
   const gradId = `zapata-wordmark-${tone}`
   const fill =
-    tone === 'silver-bright' ? '#E8EAED' : `url(#${gradId})`
+    tone === 'silver-bright' ? 'var(--portal-fg-1)' : `url(#${gradId})`
   // "PORTAL" in Instrument Serif · letter-spacing 0.24em (hero spec) ·
   // viewBox sized for 6-char wordmark at fontSize 28.
   const viewW = 300
@@ -41,8 +41,8 @@ export function AguilaWordmark({
   )
   const silverStops = (
     <>
-      <stop offset="0%" stopColor="#E8EAED" />
-      <stop offset="50%" stopColor="#C0C5CE" />
+      <stop offset="0%" stopColor="var(--portal-fg-1)" />
+      <stop offset="50%" stopColor="var(--portal-fg-3)" />
       <stop offset="100%" stopColor="#7A7E86" />
     </>
   )

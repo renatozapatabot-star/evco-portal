@@ -33,7 +33,7 @@ export function InventoryPanel({ inventory }: Props) {
             <Stat value={`${inventory.tons} ton`} label="peso" />
             <Stat value={`${inventory.oldestDays}d`} label="más antiguo" />
             {inventory.pendingRelease > 0 && (
-              <Stat value={inventory.pendingRelease} label="pendiente liberar" color="#D97706" />
+              <Stat value={inventory.pendingRelease} label="pendiente liberar" color="var(--portal-status-amber-fg)" />
             )}
           </div>
         )
@@ -45,7 +45,7 @@ export function InventoryPanel({ inventory }: Props) {
 function Stat({ value, label, color }: { value: number | string; label: string; color?: string }) {
   return (
     <div>
-      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: color || '#E6EDF3', lineHeight: 1 }}>
+      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: color || 'var(--portal-fg-1)', lineHeight: 1 }}>
         {value}
       </div>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>{label}</div>

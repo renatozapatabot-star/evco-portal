@@ -131,7 +131,7 @@ export function ActivityStrip() {
           width: 6,
           height: 6,
           borderRadius: '50%',
-          background: hasNew ? '#C0C5CE' : 'rgba(255,255,255,0.2)',
+          background: hasNew ? 'var(--portal-fg-3)' : 'rgba(255,255,255,0.2)',
           flexShrink: 0,
           transition: 'background 300ms',
           boxShadow: hasNew ? '0 0 8px rgba(192,197,206,0.6)' : 'none',
@@ -140,7 +140,7 @@ export function ActivityStrip() {
         <span style={{
           fontSize: 'var(--aguila-fs-meta)',
           fontWeight: 600,
-          color: '#94a3b8',
+          color: 'var(--portal-fg-4)',
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
           flex: 1,
@@ -150,7 +150,7 @@ export function ActivityStrip() {
         </span>
         <span style={{
           fontSize: 'var(--aguila-fs-label)',
-          color: '#64748b',
+          color: 'var(--portal-fg-5)',
           transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
           transition: 'transform 200ms',
         }}>
@@ -166,11 +166,11 @@ export function ActivityStrip() {
           gap: 2,
         }}>
           {loading ? (
-            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', padding: '8px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', padding: '8px 0', textAlign: 'center' }}>
               Cargando...
             </div>
           ) : items.length === 0 ? (
-            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', padding: '8px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', padding: '8px 0', textAlign: 'center' }}>
               Sin actividad reciente
             </div>
           ) : (
@@ -182,21 +182,21 @@ export function ActivityStrip() {
                 <div style={{
                   fontSize: 'var(--aguila-fs-compact)',
                   lineHeight: '16px',
-                  color: '#E6EDF3',
+                  color: 'var(--portal-fg-1)',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}>
                   <span style={{ fontWeight: 600 }}>{item.operatorName}</span>
                   {' '}
-                  <span style={{ color: '#94a3b8' }}>{item.action}</span>
+                  <span style={{ color: 'var(--portal-fg-4)' }}>{item.action}</span>
                   {item.entityRef && item.entityHref && (
                     <>
                       {' '}
                       <Link
                         href={item.entityHref}
                         style={{
-                          color: '#C0C5CE',
+                          color: 'var(--portal-fg-3)',
                           textDecoration: 'none',
                           fontFamily: 'var(--font-mono)',
                           fontSize: 'var(--aguila-fs-meta)',
@@ -210,7 +210,7 @@ export function ActivityStrip() {
                 {/* Timestamp */}
                 <div style={{
                   fontSize: 'var(--aguila-fs-label)',
-                  color: '#64748b',
+                  color: 'var(--portal-fg-5)',
                   fontFamily: 'var(--font-mono)',
                   marginTop: 1,
                 }}>

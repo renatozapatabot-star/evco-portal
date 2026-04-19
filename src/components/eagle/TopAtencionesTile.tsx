@@ -6,7 +6,7 @@ import { TileShell } from './tile-shell'
 import type { AtencionItem } from '@/app/api/eagle/overview/route'
 
 const KIND_DOT: Record<AtencionItem['kind'], string> = {
-  mve_critical: '#EF4444',
+  mve_critical: 'var(--portal-status-red-fg)',
   audit_suggestion: ACCENT_SILVER,
   dormant: ACCENT_SILVER_DIM,
 }

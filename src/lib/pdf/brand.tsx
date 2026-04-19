@@ -18,8 +18,8 @@ import {
   Stop,
 } from '@react-pdf/renderer'
 
-export const PDF_SILVER = '#C0C5CE'
-export const PDF_SILVER_BRIGHT = '#E8EAED'
+export const PDF_SILVER = 'var(--portal-fg-3)'
+export const PDF_SILVER_BRIGHT = 'var(--portal-fg-1)'
 export const PDF_SILVER_DIM = '#7A7E86'
 export const PDF_TEXT_MUTED = '#6B7280'
 export const PDF_TEXT_PRIMARY = '#111827'

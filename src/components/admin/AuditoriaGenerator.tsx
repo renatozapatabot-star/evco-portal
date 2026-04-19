@@ -247,7 +247,7 @@ export function AuditoriaGenerator({ clients }: Props) {
                 borderRadius: 12,
                 background: canGenerate ? 'rgba(234,179,8,0.9)' : 'rgba(255,255,255,0.04)',
                 border: canGenerate ? '1px solid rgba(234,179,8,0.3)' : `1px solid ${BORDER_HAIRLINE}`,
-                color: canGenerate ? '#0a0a0c' : TEXT_MUTED,
+                color: canGenerate ? 'var(--portal-ink-0)' : TEXT_MUTED,
                 fontSize: 'var(--aguila-fs-section)',
                 fontWeight: 700,
                 cursor: canGenerate ? 'pointer' : 'not-allowed',
@@ -264,9 +264,9 @@ export function AuditoriaGenerator({ clients }: Props) {
             <div style={{
               padding: '10px 14px',
               borderRadius: 10,
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.25)',
-              color: '#FCA5A5',
+              background: 'var(--portal-status-red-bg)',
+              border: '1px solid var(--portal-status-red-ring)',
+              color: 'var(--portal-status-red-fg)',
               fontSize: 'var(--aguila-fs-compact)',
             }}>
               {error}

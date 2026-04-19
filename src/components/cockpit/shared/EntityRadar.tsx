@@ -20,12 +20,12 @@ interface Props {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  trafico: '#E8EAED',
+  trafico: 'var(--portal-fg-1)',
   entrada: '#0D9488',
   pedimento: '#8B5CF6',
   expediente: '#3B82F6',
-  proveedor: '#F59E0B',
-  cliente: '#16A34A',
+  proveedor: 'var(--portal-status-amber-fg)',
+  cliente: 'var(--portal-status-green-fg)',
   documento: '#8B949E',
 }
 
@@ -40,9 +40,9 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const STATUS_DOTS: Record<string, string> = {
-  green: '#16A34A',
-  amber: '#D97706',
-  red: '#DC2626',
+  green: 'var(--portal-status-green-fg)',
+  amber: 'var(--portal-status-amber-fg)',
+  red: 'var(--portal-status-red-fg)',
   neutral: '#6E7681',
 }
 
@@ -72,7 +72,7 @@ export function EntityRadar({ center, nodes }: Props) {
       {/* Header */}
       <div style={{
         fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
-        letterSpacing: '0.08em', color: '#E8EAED', marginBottom: 12,
+        letterSpacing: '0.08em', color: 'var(--portal-fg-1)', marginBottom: 12,
       }}>
         Radar de entidades
       </div>
@@ -83,10 +83,10 @@ export function EntityRadar({ center, nodes }: Props) {
         background: 'rgba(192,197,206,0.08)', borderRadius: 10,
         border: '1px solid rgba(192,197,206,0.15)',
       }}>
-        <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#E8EAED', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-1)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
           {center.type}
         </div>
-        <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>
+        <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
           {center.label}
         </div>
       </div>

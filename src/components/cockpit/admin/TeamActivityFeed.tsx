@@ -90,7 +90,7 @@ export function TeamActivityFeed() {
                 animation: i === 0 ? 'fadeIn 300ms ease' : undefined,
               }}>
                 <span style={{ fontSize: 'var(--aguila-fs-section)', flexShrink: 0, width: 20, textAlign: 'center' }}>{item.icon}</span>
-                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E8EAED', fontWeight: 600, flexShrink: 0 }}>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', fontWeight: 600, flexShrink: 0 }}>
                   {item.operatorName.split(' ')[0]}
                 </span>
                 <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -105,7 +105,7 @@ export function TeamActivityFeed() {
         )
       }
       footer={
-        <span style={{ color: isLive ? '#16A34A' : '#6E7681' }}>
+        <span style={{ color: isLive ? 'var(--portal-status-green-fg)' : '#6E7681' }}>
           {isLive ? '● En vivo' : '○ Sin conexión en tiempo real'}
         </span>
       }

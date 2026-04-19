@@ -39,15 +39,15 @@ export function BridgeCard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{
                     width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
-                    background: (b.commercial ?? 0) <= 30 ? '#16A34A' : (b.commercial ?? 0) <= 60 ? '#D97706' : '#DC2626',
+                    background: (b.commercial ?? 0) <= 30 ? 'var(--portal-status-green-fg)' : (b.commercial ?? 0) <= 60 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)',
                   }} />
-                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#E6EDF3' }}>{b.nameEs || b.name}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)' }}>{b.nameEs || b.name}</span>
                 </div>
                 <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{b.commercial}m</span>
               </div>
             ))}
             {best && (
-              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#E8EAED', marginTop: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-1)', marginTop: 4 }}>
                 Recomendado: {best.nameEs || best.name} ({best.commercial}m)
               </div>
             )}

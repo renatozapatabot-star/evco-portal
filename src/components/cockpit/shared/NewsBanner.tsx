@@ -52,14 +52,14 @@ export function NewsBanner({ items, interval = 5000 }: NewsBannerProps) {
       {/* Gold pulse dot */}
       <span style={{
         width: 6, height: 6, borderRadius: '50%',
-        background: '#E8EAED', flexShrink: 0,
+        background: 'var(--portal-fg-1)', flexShrink: 0,
         opacity: 0.8,
       }} />
 
       {/* Item text with fade */}
       <span style={{
         fontSize: 'var(--aguila-fs-compact)', fontWeight: 500,
-        color: '#E8EAED',
+        color: 'var(--portal-fg-1)',
         fontFamily: 'var(--font-jetbrains-mono)',
         transition: prefersReduced ? 'none' : 'opacity 300ms ease',
         opacity: visible ? 1 : 0,
@@ -77,7 +77,7 @@ export function NewsBanner({ items, interval = 5000 }: NewsBannerProps) {
           {filtered.map((_, i) => (
             <span key={i} style={{
               width: 4, height: 4, borderRadius: '50%',
-              background: i === index % filtered.length ? '#E8EAED' : 'rgba(255,255,255,0.15)',
+              background: i === index % filtered.length ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.15)',
               transition: 'background 300ms ease',
             }} />
           ))}

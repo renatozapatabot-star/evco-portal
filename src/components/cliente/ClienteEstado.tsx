@@ -38,9 +38,9 @@ const ICONS: Record<ClienteEventLabel['icon'], LucideIcon> = {
 
 function statusPulse(estatus: string | null): string {
   const s = (estatus ?? '').toLowerCase()
-  if (s.includes('cruzad')) return '#22C55E'
-  if (s.includes('deten') || s.includes('riesgo') || s.includes('rojo')) return '#EF4444'
-  if (s.includes('aduana') || s.includes('proceso') || s.includes('documen')) return '#FBBF24'
+  if (s.includes('cruzad')) return 'var(--portal-status-green-fg)'
+  if (s.includes('deten') || s.includes('riesgo') || s.includes('rojo')) return 'var(--portal-status-red-fg)'
+  if (s.includes('aduana') || s.includes('proceso') || s.includes('documen')) return 'var(--portal-status-amber-fg)'
   return ACCENT_SILVER
 }
 

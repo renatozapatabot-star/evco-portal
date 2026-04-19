@@ -223,7 +223,7 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
         <div className="flex flex-col gap-1">
           {docs.map((d, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border-subtle, rgba(255,255,255,0.06))' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--portal-status-green-fg)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
                   {d.type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}

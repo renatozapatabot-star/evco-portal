@@ -36,14 +36,14 @@ export function PipelineFinanceCard({ pipeline }: Props) {
           <>
             {/* Aging bar */}
             <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', marginBottom: 12 }}>
-              {cartera30d > 0 && <div style={{ flex: cartera30d, background: '#16A34A' }} />}
-              {cartera60d > 0 && <div style={{ flex: cartera60d, background: '#D97706' }} />}
-              {cartera90plus > 0 && <div style={{ flex: cartera90plus, background: '#DC2626' }} />}
+              {cartera30d > 0 && <div style={{ flex: cartera30d, background: 'var(--portal-status-green-fg)' }} />}
+              {cartera60d > 0 && <div style={{ flex: cartera60d, background: 'var(--portal-status-amber-fg)' }} />}
+              {cartera90plus > 0 && <div style={{ flex: cartera90plus, background: 'var(--portal-status-red-fg)' }} />}
             </div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <AgingBucket label="0-30d" value={cartera30d} color="#16A34A" />
-              <AgingBucket label="30-60d" value={cartera60d} color="#D97706" />
-              <AgingBucket label="90+d" value={cartera90plus} color="#DC2626" />
+              <AgingBucket label="0-30d" value={cartera30d} color="var(--portal-status-green-fg)" />
+              <AgingBucket label="30-60d" value={cartera60d} color="var(--portal-status-amber-fg)" />
+              <AgingBucket label="90+d" value={cartera90plus} color="var(--portal-status-red-fg)" />
             </div>
           </>
         )

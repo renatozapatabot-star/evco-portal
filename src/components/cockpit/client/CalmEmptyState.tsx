@@ -89,7 +89,7 @@ export function CalmEmptyState({
       <h2 style={{
         fontSize: 'var(--aguila-fs-section, 16px)',
         fontWeight: 600,
-        color: '#E6EDF3',
+        color: 'var(--portal-fg-1)',
         margin: 0,
         letterSpacing: '-0.01em',
       }}>
@@ -123,7 +123,7 @@ export function CalmEmptyState({
               background: 'rgba(201,168,76,0.12)',
               border: '1px solid rgba(201,168,76,0.3)',
               borderRadius: 12,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-body, 13px)',
               fontWeight: 600,
               textDecoration: 'none',
@@ -148,7 +148,7 @@ export function CalmEmptyState({
               background: 'rgba(201,168,76,0.12)',
               border: '1px solid rgba(201,168,76,0.3)',
               borderRadius: 12,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-body, 13px)',
               fontWeight: 600,
               cursor: 'pointer',

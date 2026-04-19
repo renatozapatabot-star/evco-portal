@@ -26,7 +26,7 @@ export default function LocaleToggle() {
   }
   const activeBtn: React.CSSProperties = {
     ...baseBtn,
-    color: '#E8EAED',
+    color: 'var(--portal-fg-1)',
     background: 'rgba(192,197,206,0.12)',
   }
 

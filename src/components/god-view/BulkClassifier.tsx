@@ -31,7 +31,7 @@ const glassCard: React.CSSProperties = {
 }
 
 const sectionTitle: React.CSSProperties = {
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 'var(--aguila-fs-body-lg)',
   fontWeight: 600,
   display: 'flex',
@@ -41,18 +41,18 @@ const sectionTitle: React.CSSProperties = {
 }
 
 const mutedText: React.CSSProperties = {
-  color: '#64748b',
+  color: 'var(--portal-fg-5)',
   fontSize: 'var(--aguila-fs-meta)',
 }
 
 const secondaryText: React.CSSProperties = {
-  color: '#94a3b8',
+  color: 'var(--portal-fg-4)',
   fontSize: 'var(--aguila-fs-body)',
 }
 
 const goldButton: React.CSSProperties = {
-  background: '#E8EAED',
-  color: '#0D0D0C',
+  background: 'var(--portal-fg-1)',
+  color: 'var(--portal-ink-0)',
   border: 'none',
   borderRadius: 10,
   padding: '10px 20px',
@@ -74,9 +74,9 @@ const goldButtonDisabled: React.CSSProperties = {
 // ── Helpers ──
 
 function confidenceColor(score: number): string {
-  if (score >= 80) return '#22C55E'
-  if (score >= 50) return '#FBBF24'
-  return '#EF4444'
+  if (score >= 80) return 'var(--portal-status-green-fg)'
+  if (score >= 50) return 'var(--portal-status-amber-fg)'
+  return 'var(--portal-status-red-fg)'
 }
 
 function confidenceLabel(score: number): string {
@@ -171,7 +171,7 @@ export function BulkClassifier() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Package size={16} style={{ color: '#C0C5CE' }} />
+          <Package size={16} style={{ color: 'var(--portal-fg-3)' }} />
           Clasificador Masivo
         </h2>
         <div style={{ ...mutedText, marginTop: 16 }}>Cargando productos...</div>
@@ -184,7 +184,7 @@ export function BulkClassifier() {
     return (
       <div style={glassCard}>
         <h2 style={sectionTitle}>
-          <Package size={16} style={{ color: '#C0C5CE' }} />
+          <Package size={16} style={{ color: 'var(--portal-fg-3)' }} />
           Clasificador Masivo
         </h2>
         <div style={{ ...secondaryText, marginTop: 16 }}>Sin datos de productos disponibles</div>
@@ -198,11 +198,11 @@ export function BulkClassifier() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={sectionTitle}>
-            <Package size={16} style={{ color: '#C0C5CE' }} />
+            <Package size={16} style={{ color: 'var(--portal-fg-3)' }} />
             Clasificador Masivo
           </h2>
           <p style={{ ...secondaryText, marginTop: 4 }}>
-            <span style={{ fontFamily: 'var(--font-mono)', color: '#C0C5CE', fontWeight: 700 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-3)', fontWeight: 700 }}>
               {productos.length}
             </span>{' '}
             producto{productos.length !== 1 ? 's' : ''} sin clasificar
@@ -227,8 +227,8 @@ export function BulkClassifier() {
       {/* Empty state */}
       {productos.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '32px 0' }}>
-          <Package size={40} style={{ color: '#64748b', marginBottom: 12 }} />
-          <div style={{ color: '#94a3b8', fontSize: 'var(--aguila-fs-section)' }}>Todos los productos tienen fracción asignada</div>
+          <Package size={40} style={{ color: 'var(--portal-fg-5)', marginBottom: 12 }} />
+          <div style={{ color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-section)' }}>Todos los productos tienen fracción asignada</div>
           <div style={mutedText}>No hay productos pendientes de clasificación</div>
         </div>
       ) : (
@@ -243,9 +243,9 @@ export function BulkClassifier() {
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                   >
                     {selected.size === productos.length ? (
-                      <CheckSquare size={16} style={{ color: '#C0C5CE' }} />
+                      <CheckSquare size={16} style={{ color: 'var(--portal-fg-3)' }} />
                     ) : (
-                      <Square size={16} style={{ color: '#64748b' }} />
+                      <Square size={16} style={{ color: 'var(--portal-fg-5)' }} />
                     )}
                   </button>
                 </th>
@@ -286,9 +286,9 @@ export function BulkClassifier() {
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', minHeight: 44, alignItems: 'center' }}
                       >
                         {selected.has(p.id) ? (
-                          <CheckSquare size={16} style={{ color: '#C0C5CE' }} />
+                          <CheckSquare size={16} style={{ color: 'var(--portal-fg-3)' }} />
                         ) : (
-                          <Square size={16} style={{ color: '#64748b' }} />
+                          <Square size={16} style={{ color: 'var(--portal-fg-5)' }} />
                         )}
                       </button>
                     </td>
@@ -299,16 +299,16 @@ export function BulkClassifier() {
                     </td>
 
                     {/* Proveedor */}
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', padding: '8px 8px 8px 0' }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', padding: '8px 8px 8px 0' }}>
                       {p.cve_proveedor || '—'}
                     </td>
 
                     {/* Fraccion sugerida */}
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', padding: '8px 8px 8px 0' }}>
                       {result ? (
-                        <span style={{ color: '#E6EDF3', fontWeight: 600 }}>{result.fraccion}</span>
+                        <span style={{ color: 'var(--portal-fg-1)', fontWeight: 600 }}>{result.fraccion}</span>
                       ) : (
-                        <span style={{ color: '#64748b' }}>—</span>
+                        <span style={{ color: 'var(--portal-fg-5)' }}>—</span>
                       )}
                     </td>
 
@@ -340,7 +340,7 @@ export function BulkClassifier() {
                           </span>
                         </div>
                       ) : (
-                        <span style={{ color: '#64748b', fontSize: 'var(--aguila-fs-meta)' }}>—</span>
+                        <span style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-meta)' }}>—</span>
                       )}
                     </td>
                   </tr>

@@ -64,7 +64,7 @@ export function NextActions({ pendingEntradas, activeTraficosList, docsPendiente
 
   return (
     <div className="cc-card" style={{ padding: '16px 20px', borderRadius: 16, marginBottom: 12 }}>
-      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 10 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--portal-fg-5)', marginBottom: 10 }}>
         Próximas acciones
       </div>
 
@@ -77,13 +77,13 @@ export function NextActions({ pendingEntradas, activeTraficosList, docsPendiente
             borderLeft: item.urgent ? '3px solid rgba(251,191,36,0.5)' : '3px solid transparent',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-              <item.icon size={14} style={{ color: item.urgent ? '#C0C5CE' : '#22C55E', flexShrink: 0 }} />
-              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{item.text}</span>
+              <item.icon size={14} style={{ color: item.urgent ? 'var(--portal-fg-3)' : 'var(--portal-status-green-fg)', flexShrink: 0 }} />
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{item.text}</span>
             </div>
             {item.actionLabel && (
               <Link href={item.href} style={{
                 padding: '4px 14px', borderRadius: 8,
-                background: 'rgba(192,197,206,0.1)', color: '#C0C5CE',
+                background: 'rgba(192,197,206,0.1)', color: 'var(--portal-fg-3)',
                 fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textDecoration: 'none',
                 transition: 'background 150ms',
                 minHeight: 32, display: 'inline-flex', alignItems: 'center',

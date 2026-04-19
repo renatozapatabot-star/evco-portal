@@ -50,7 +50,7 @@ interface WorkflowCardProps {
 const CARD_BORDER = 'rgba(192,197,206,0.2)'
 const CARD_SHADOW = 'rgba(0,0,0,0.3)'
 const U_ICON   = { red: 'rgba(192,197,206,0.8)', amber: 'rgba(192,197,206,0.7)', green: 'rgba(192,197,206,0.5)', neutral: 'rgba(255,255,255,0.4)' }
-const U_SPARK  = { red: '#C0C5CE', amber: '#C0C5CE', green: '#C0C5CE', neutral: '#C0C5CE' }
+const U_SPARK  = { red: 'var(--portal-fg-3)', amber: 'var(--portal-fg-3)', green: 'var(--portal-fg-3)', neutral: 'var(--portal-fg-3)' }
 
 function needsActionClass(u: CardUrgency) {
   return (u === 'red' || u === 'amber') ? 'needs-action' : ''
@@ -140,7 +140,7 @@ export function WorkflowCard({
             {trendDelta !== undefined && trendDelta !== 0 && (
               <span className="font-mono" style={{
                 fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
-                color: trendDelta > 0 ? '#16A34A' : '#DC2626',
+                color: trendDelta > 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
               }}>
                 {trendDelta > 0 ? '↑' : '↓'}{Math.abs(Math.round(trendDelta))}%
                 <span style={{ color: '#6E7681', fontWeight: 400, marginLeft: 4, fontFamily: 'var(--font-geist-sans)' }}>vs semana pasada</span>
@@ -177,7 +177,7 @@ export function WorkflowCard({
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.045)',
                   }}>
-                    <span style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#E6EDF3' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
                       {item.pedimento || item.trafico}
                     </span>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -185,7 +185,7 @@ export function WorkflowCard({
                       <span style={{
                         fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 6px', borderRadius: 4,
                         background: item.daysOld > 5 ? 'rgba(220,38,38,0.15)' : item.daysOld > 2 ? 'rgba(217,119,6,0.12)' : 'rgba(255,255,255,0.06)',
-                        color: item.daysOld > 5 ? '#DC2626' : item.daysOld > 2 ? '#D97706' : '#8B949E',
+                        color: item.daysOld > 5 ? 'var(--portal-status-red-fg)' : item.daysOld > 2 ? 'var(--portal-status-amber-fg)' : '#8B949E',
                       }}>
                         {item.daysOld}d
                       </span>
@@ -202,11 +202,11 @@ export function WorkflowCard({
                 {(totalTraficos ?? 0) > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#E6EDF3' }}>{totalTraficos?.toLocaleString()}</span> operaciones desde 2024
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{totalTraficos?.toLocaleString()}</span> operaciones desde 2024
                     </span>
                     {(totalCruzados ?? 0) > 0 && (
                       <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#E6EDF3' }}>{totalCruzados?.toLocaleString()}</span> cruces completados
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{totalCruzados?.toLocaleString()}</span> cruces completados
                       </span>
                     )}
                   </div>
@@ -234,7 +234,7 @@ export function WorkflowCard({
             <div style={{
               height: '100%', borderRadius: 2,
               width: `${Math.min(completionPct, 100)}%`,
-              background: completionPct >= 100 ? '#16A34A' : 'var(--gold, #E8EAED)',
+              background: completionPct >= 100 ? 'var(--portal-status-green-fg)' : 'var(--gold, #E8EAED)',
               transition: 'width 800ms ease',
             }} />
           </div>
@@ -284,7 +284,7 @@ export function WorkflowCard({
               {trendDelta !== undefined && trendDelta !== 0 && (
                 <span className="font-mono" style={{
                   fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
-                  color: trendDelta > 0 ? '#16A34A' : '#DC2626',
+                  color: trendDelta > 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
                 }}>
                   {trendDelta > 0 ? '↑' : '↓'}{Math.abs(Math.round(trendDelta))}%
                 </span>
@@ -337,7 +337,7 @@ export function WorkflowCard({
         >
           <Icon size={18} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3' }}>{label}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>{label}</div>
             <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
           </div>
         </motion.div>
@@ -386,13 +386,13 @@ export function WorkflowCard({
             <svg width={36} height={36} style={{ flexShrink: 0 }}>
               <circle cx={18} cy={18} r={15} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={3} />
               <circle cx={18} cy={18} r={15} fill="none"
-                stroke={completionRing >= 90 ? '#16A34A' : 'var(--gold, #E8EAED)'}
+                stroke={completionRing >= 90 ? 'var(--portal-status-green-fg)' : 'var(--gold, #E8EAED)'}
                 strokeWidth={3} strokeDasharray={2 * Math.PI * 15}
                 strokeDashoffset={2 * Math.PI * 15 * (1 - Math.min(completionRing, 100) / 100)}
                 strokeLinecap="round"
                 style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 800ms ease' }} />
               <text x="50%" y="50%" textAnchor="middle" dy="0.35em"
-                style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, fontFamily: 'var(--font-mono)', fill: '#E6EDF3' }}>
+                style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, fontFamily: 'var(--font-mono)', fill: 'var(--portal-fg-1)' }}>
                 {completionRing}%
               </text>
             </svg>

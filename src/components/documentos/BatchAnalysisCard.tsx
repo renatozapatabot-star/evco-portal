@@ -214,7 +214,7 @@ export function BatchAnalysisCard({ summary, onReset }: Props) {
                     minHeight: 36,
                     padding: '0 12px',
                     borderRadius: 999,
-                    background: 'rgba(34,197,94,0.08)',
+                    background: 'var(--portal-status-green-bg)',
                     border: '1px solid rgba(34,197,94,0.22)',
                     color: GREEN,
                     fontSize: 'var(--aguila-fs-compact)',

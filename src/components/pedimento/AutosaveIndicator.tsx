@@ -10,7 +10,7 @@ import { fmtDateTime } from '@/lib/format-utils'
 import { ACCENT_SILVER_DIM, ACCENT_SILVER } from '@/lib/design-system'
 import type { AutosaveStatus } from '@/lib/hooks/useAutosaveField'
 
-const RED = '#EF4444'
+const RED = 'var(--portal-status-red-fg)'
 
 export interface AutosaveIndicatorProps {
   status: AutosaveStatus

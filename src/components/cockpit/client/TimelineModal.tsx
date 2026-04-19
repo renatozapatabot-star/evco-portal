@@ -149,7 +149,7 @@ export function TimelineModal({ open, onClose, shipment, returnFocusRef }: Timel
             style={{
               fontSize: 'var(--aguila-fs-title)',
               fontWeight: 600,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               margin: 0,
               letterSpacing: '-0.01em',
             }}
@@ -171,7 +171,7 @@ export function TimelineModal({ open, onClose, shipment, returnFocusRef }: Timel
               border: '1px solid rgba(192,197,206,0.18)',
               borderRadius: 12,
               cursor: 'pointer',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               flexShrink: 0,
             }}
           >

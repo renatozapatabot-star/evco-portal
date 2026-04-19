@@ -61,11 +61,11 @@ export function PipelineFunnel() {
       }}>
         <span style={{
           fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '0.08em', color: '#64748b',
+          letterSpacing: '0.08em', color: 'var(--portal-fg-5)',
         }}>
           Pipeline autónomo
         </span>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontFamily: 'var(--font-mono)' }}>
           {total} en proceso
         </span>
       </div>
@@ -115,14 +115,14 @@ export function PipelineFunnel() {
                 <div style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800,
-                  color: hasItems ? '#C0C5CE' : '#64748b',
+                  color: hasItems ? 'var(--portal-fg-3)' : 'var(--portal-fg-5)',
                 }}>
                   {stage.count}
                 </div>
                 <div style={{
                   fontSize: 8, fontWeight: 700, textTransform: 'uppercase',
                   letterSpacing: '0.06em',
-                  color: hasItems ? '#94a3b8' : '#475569',
+                  color: hasItems ? 'var(--portal-fg-4)' : '#475569',
                   marginTop: 2,
                   lineHeight: 1.2,
                 }}>

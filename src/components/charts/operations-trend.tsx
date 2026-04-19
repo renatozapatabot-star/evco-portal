@@ -47,12 +47,12 @@ export function OperationsTrend({ traficos }: Props) {
         <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
           <defs>
             <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#E8EAED" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="#E8EAED" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="var(--portal-fg-1)" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="var(--portal-fg-1)" stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#16A34A" stopOpacity={0.2} />
-              <stop offset="100%" stopColor="#16A34A" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="var(--portal-status-green-fg)" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="var(--portal-status-green-fg)" stopOpacity={0.02} />
             </linearGradient>
           </defs>
           <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
@@ -61,8 +61,8 @@ export function OperationsTrend({ traficos }: Props) {
             contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', backdropFilter: 'blur(8px)' }}
             formatter={(value) => [String(value)]}
           />
-          <Area type="monotone" dataKey="total" stroke="#E8EAED" strokeWidth={2} fill="url(#goldGrad)" />
-          <Area type="monotone" dataKey="cruzado" stroke="#16A34A" strokeWidth={1.5} fill="url(#greenGrad)" />
+          <Area type="monotone" dataKey="total" stroke="var(--portal-fg-1)" strokeWidth={2} fill="url(#goldGrad)" />
+          <Area type="monotone" dataKey="cruzado" stroke="var(--portal-status-green-fg)" strokeWidth={1.5} fill="url(#greenGrad)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

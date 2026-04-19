@@ -83,7 +83,7 @@ export function MorningBriefing({ briefing }: Props) {
         style={{
           fontSize: 'var(--aguila-fs-body, 13px)',
           lineHeight: 1.55,
-          color: '#E6EDF3',
+          color: 'var(--portal-fg-1)',
           margin: 0,
           maxWidth: 680,
         }}
@@ -104,7 +104,7 @@ export function MorningBriefing({ briefing }: Props) {
             borderRadius: 12,
             background: 'rgba(201,168,76,0.14)',
             border: '1px solid rgba(201,168,76,0.3)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 'var(--aguila-fs-body, 13px)',
             fontWeight: 600,
             textDecoration: 'none',

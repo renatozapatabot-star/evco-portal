@@ -49,7 +49,7 @@ export function DecisionesPanel({ items }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span aria-hidden style={{
             width: 8, height: 8, borderRadius: '50%',
-            background: '#22C55E',
+            background: 'var(--portal-status-green-fg)',
             boxShadow: '0 0 8px rgba(34,197,94,0.6)',
           }} />
           <div>

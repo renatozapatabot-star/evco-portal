@@ -45,8 +45,8 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         border: '1px solid rgba(22,163,74,0.2)', marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-headline)', color: '#16A34A' }}>✓</span>
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#16A34A' }}>Aprobado — PORTAL avanza</span>
+          <span style={{ fontSize: 'var(--aguila-fs-headline)', color: 'var(--portal-status-green-fg)' }}>✓</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--portal-status-green-fg)' }}>Aprobado — PORTAL avanza</span>
         </div>
       </div>
     )
@@ -59,15 +59,15 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         border: '1px solid rgba(220,38,38,0.2)', marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#DC2626' }}>Rechazado — PORTAL aprende de esto</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--portal-status-red-fg)' }}>Rechazado — PORTAL aprende de esto</span>
         </div>
       </div>
     )
   }
 
-  const confidenceColor = proposal.confidence >= 0.90 ? '#16A34A'
-    : proposal.confidence >= 0.75 ? '#E8EAED'
-    : '#D97706'
+  const confidenceColor = proposal.confidence >= 0.90 ? 'var(--portal-status-green-fg)'
+    : proposal.confidence >= 0.75 ? 'var(--portal-fg-1)'
+    : 'var(--portal-status-amber-fg)'
   const confidencePct = Math.round(proposal.confidence * 100)
 
   const handleApprove = async () => {
@@ -104,13 +104,13 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         {/* Header */}
         <div style={{
           fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '0.08em', color: '#E8EAED', marginBottom: 12,
+          letterSpacing: '0.08em', color: 'var(--portal-fg-1)', marginBottom: 12,
         }}>
           PORTAL propone
         </div>
 
         {/* Proposal headline */}
-        <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3', lineHeight: 1.4, marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)', lineHeight: 1.4, marginBottom: 12 }}>
           {proposal.proposal_label_es}
         </div>
 
@@ -162,7 +162,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             disabled={status === 'loading'}
             style={{
               flex: 1, minWidth: 140, padding: '14px 24px', borderRadius: 10,
-              background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
+              background: 'var(--portal-fg-1)', color: '#111', fontSize: 15, fontWeight: 700,
               border: 'none', cursor: status === 'loading' ? 'wait' : 'pointer',
               minHeight: 60, opacity: status === 'loading' ? 0.6 : 1,
             }}
@@ -193,7 +193,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             background: 'rgba(255,255,255,0.045)', borderRadius: 16, padding: 24,
             maxWidth: 400, width: '100%', border: '1px solid rgba(255,255,255,0.08)',
           }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#E6EDF3', marginBottom: 16 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 16 }}>
               ¿Por qué no?
             </div>
             {[
@@ -204,7 +204,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
               <button key={opt.key} onClick={() => handleReject(opt.key)} style={{
                 display: 'block', width: '100%', padding: '12px 16px', marginBottom: 8,
                 borderRadius: 8, background: 'rgba(255,255,255,0.045)',
-                border: '1px solid rgba(255,255,255,0.08)', color: '#E6EDF3',
+                border: '1px solid rgba(255,255,255,0.08)', color: 'var(--portal-fg-1)',
                 fontSize: 'var(--aguila-fs-section)', textAlign: 'left', cursor: 'pointer', minHeight: 48,
               }}>
                 {opt.label}
@@ -217,7 +217,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 8, marginTop: 8,
                 background: '#222', border: '1px solid rgba(255,255,255,0.08)',
-                color: '#E6EDF3', fontSize: 'var(--aguila-fs-body)', resize: 'vertical', minHeight: 60,
+                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body)', resize: 'vertical', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />

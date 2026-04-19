@@ -19,7 +19,7 @@ export function ClientCockpit({ data, companyName }: Props) {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{
-          fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: '#E6EDF3', margin: 0,
+          fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: 'var(--portal-fg-1)', margin: 0,
         }}>
           {companyName}
         </h1>

@@ -10,8 +10,8 @@ interface Props {
 }
 
 function ConfidenceBadge({ value }: { value: number }) {
-  const color = value >= 85 ? '#16A34A' : value >= 70 ? '#D4952A' : '#DC2626'
-  const bg = value >= 85 ? 'rgba(34,197,94,0.1)' : value >= 70 ? 'rgba(192,197,206,0.08)' : 'rgba(239,68,68,0.1)'
+  const color = value >= 85 ? 'var(--portal-status-green-fg)' : value >= 70 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
+  const bg = value >= 85 ? 'var(--portal-status-green-bg)' : value >= 70 ? 'rgba(192,197,206,0.08)' : 'var(--portal-status-red-bg)'
   return (
     <span
       className="font-mono"
@@ -101,7 +101,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 gap: 12,
                 padding: 12,
                 borderRadius: 8,
-                border: `1px solid ${selected === alt.fraccion ? '#E8EAED' : '#E8E5E0'}`,
+                border: `1px solid ${selected === alt.fraccion ? 'var(--portal-fg-1)' : '#E8E5E0'}`,
                 background: selected === alt.fraccion ? 'rgba(192,197,206,0.08)' : 'rgba(255,255,255,0.045)',
                 cursor: 'pointer',
                 minHeight: 48,
@@ -113,7 +113,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 value={alt.fraccion}
                 checked={selected === alt.fraccion}
                 onChange={() => setSelected(alt.fraccion)}
-                style={{ accentColor: '#E8EAED' }}
+                style={{ accentColor: 'var(--portal-fg-1)' }}
               />
               <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
                 {alt.fraccion}
@@ -144,7 +144,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 flex: 1,
                 minHeight: 60,
                 borderRadius: 12,
-                background: '#E8EAED',
+                background: 'var(--portal-fg-1)',
                 color: 'rgba(255,255,255,0.045)',
                 border: 'none',
                 fontSize: 'var(--aguila-fs-body-lg)',
@@ -180,7 +180,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
               flex: 1,
               minHeight: 60,
               borderRadius: 12,
-              background: selected ? '#E8EAED' : '#E8E5E0',
+              background: selected ? 'var(--portal-fg-1)' : '#E8E5E0',
               color: selected ? '#FFFFFF' : '#9B9B9B',
               border: 'none',
               fontSize: 'var(--aguila-fs-body-lg)',

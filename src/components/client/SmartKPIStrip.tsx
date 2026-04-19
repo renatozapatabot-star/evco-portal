@@ -26,7 +26,7 @@ function DeltaBadge({ delta, label, anomaly, isUrgency }: {
     return (
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 3,
-        fontSize: 'var(--aguila-fs-meta)', color: '#FBBF24', fontWeight: 600,
+        fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-amber-fg)', fontWeight: 600,
       }}>
         <AlertTriangle size={10} /> anormal
       </span>
@@ -34,7 +34,7 @@ function DeltaBadge({ delta, label, anomaly, isUrgency }: {
   }
   if (delta === 0) {
     return (
-      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 500 }}>
+      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontWeight: 500 }}>
         → sin cambio
       </span>
     )
@@ -45,13 +45,13 @@ function DeltaBadge({ delta, label, anomaly, isUrgency }: {
 
   if (isUrgency) {
     // Urgency metrics: more = bad (red), less = good (green)
-    color = isPositive ? '#EF4444' : '#22C55E'
+    color = isPositive ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)'
   } else {
     // Volume metrics: small change = noise (gray), big positive = green, big negative = gray
     if (Math.abs(delta) < 5) {
-      color = '#64748b'
+      color = 'var(--portal-fg-5)'
     } else {
-      color = isPositive ? '#22C55E' : '#64748b'
+      color = isPositive ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-5)'
     }
   }
 
@@ -91,7 +91,7 @@ export function SmartKPIStrip(props: Props) {
       value: props.activeShipments,
       delta: props.activeShipments - props.activeShipmentsYesterday,
       deltaLabel: 'hoy',
-      color: '#C0C5CE',
+      color: 'var(--portal-fg-3)',
       isUrgency: true,
       calmLabel: 'Despejado',
     },
@@ -109,7 +109,7 @@ export function SmartKPIStrip(props: Props) {
       value: props.cruzadosYTD,
       delta: props.cruzadosYTD - props.cruzadosLastMonth,
       deltaLabel: 'vs mes pasado',
-      color: '#22C55E',
+      color: 'var(--portal-status-green-fg)',
       isUrgency: false,
     },
     {
@@ -144,7 +144,7 @@ export function SmartKPIStrip(props: Props) {
               {calm ? (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
-                    <Check size={24} color="#C0C5CE" strokeWidth={2.5} />
+                    <Check size={24} color="var(--portal-fg-3)" strokeWidth={2.5} />
                   </div>
                   <div className="kpi-label-full" style={{
                     fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
@@ -161,7 +161,7 @@ export function SmartKPIStrip(props: Props) {
                   }}>
                     {kpi.shortLabel}
                   </div>
-                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 500 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontWeight: 500 }}>
                     {kpi.calmLabel}
                   </span>
                 </>
@@ -173,7 +173,7 @@ export function SmartKPIStrip(props: Props) {
                     className="kpi-number"
                     style={{
                       fontWeight: 800,
-                      color: kpi.color || '#E6EDF3',
+                      color: kpi.color || 'var(--portal-fg-1)',
                       lineHeight: 1.1,
                       display: 'block',
                     }}

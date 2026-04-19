@@ -19,7 +19,7 @@ export function ActivityPulse({ status = 'healthy' }: { status?: 'healthy' | 'at
 
   const colors = {
     healthy: 'var(--success)',
-    attention: '#D4952A',
+    attention: 'var(--portal-status-amber-fg)',
     issue: 'var(--danger-500)',
   }
 

@@ -37,7 +37,7 @@ const BG     = '#1a1a2e'
 const CARD   = '#16213e'
 const TEXT   = '#e0e0e0'
 const MUTED  = '#888'
-const GREEN  = '#4ade80'
+const GREEN  = 'var(--portal-status-green-fg)'
 const RED    = '#f87171'
 
 /* ── Insight Generator ── */

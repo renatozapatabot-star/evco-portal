@@ -301,7 +301,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: isHero ? 'var(--aguila-fs-title, 20px)' : 'var(--aguila-fs-section, 15px)',
             fontWeight: isHero ? 500 : 400,
             fontFamily: 'var(--font-sans)',
@@ -418,7 +418,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 13, fontWeight: 600, color: '#E6EDF3',
+                      fontSize: 13, fontWeight: 600, color: 'var(--portal-fg-1)',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       Preguntarle a PORTAL sobre &ldquo;{value.trim()}&rdquo;
@@ -465,7 +465,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                     <span
                       style={{
-                        fontSize: 13, fontWeight: 600, color: '#E6EDF3',
+                        fontSize: 13, fontWeight: 600, color: 'var(--portal-fg-1)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         maxWidth: '100%',
                         fontFamily: 'var(--font-mono)',

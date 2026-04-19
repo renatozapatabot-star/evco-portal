@@ -23,8 +23,8 @@ import type {
   Partida,
 } from '@/types/classification'
 
-const SILVER = '#C0C5CE'
-const SILVER_BRIGHT = '#E8EAED'
+const SILVER = 'var(--portal-fg-3)'
+const SILVER_BRIGHT = 'var(--portal-fg-1)'
 const TEXT_MUTED = '#6B7280'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#E5E7EB'
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 6,
     borderWidth: 0.5,
-    borderColor: '#F59E0B',
+    borderColor: 'var(--portal-status-amber-fg)',
     backgroundColor: '#FEF3C7',
     borderRadius: 2,
   },

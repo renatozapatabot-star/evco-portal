@@ -159,7 +159,7 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-      background: ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+      background: ok ? 'var(--portal-status-green-bg)' : 'var(--portal-status-red-bg)',
       border: `1px solid ${ok ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
       borderRadius: 6,
     }}>

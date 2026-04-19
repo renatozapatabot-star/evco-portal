@@ -22,7 +22,7 @@ export function ExchangeRateCard() {
       quietContent={
         tc ? (
           <div>
-            <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: '#E8EAED', lineHeight: 1 }}>
+            <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)', lineHeight: 1 }}>
               ${tc.tc.toFixed(4)}
             </div>
             <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 4 }}>

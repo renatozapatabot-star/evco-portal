@@ -47,7 +47,7 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
     return (
       <div style={{
         position: 'absolute', top: 8, right: 8,
-        fontSize: 'var(--aguila-fs-body-lg)', color: '#16A34A', zIndex: 30, pointerEvents: 'none',
+        fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--portal-status-green-fg)', zIndex: 30, pointerEvents: 'none',
       }}>
         ✓
       </div>
@@ -69,7 +69,7 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
   if (variant === 'large') {
     return (
       <div style={{ ...baseStyle, inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 36, color: '#E8EAED', animation: 'cruzPing 600ms ease-out' }}>✓</span>
+        <span style={{ fontSize: 36, color: 'var(--portal-fg-1)', animation: 'cruzPing 600ms ease-out' }}>✓</span>
       </div>
     )
   }
@@ -77,14 +77,14 @@ export function CardClearAnimation({ show, variant = 'small', onComplete }: Prop
   if (variant === 'medium') {
     return (
       <div style={{ ...baseStyle, top: 8, right: 8 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-title)', color: '#16A34A', animation: 'cruzPulseSubtle 400ms ease' }}>✓</span>
+        <span style={{ fontSize: 'var(--aguila-fs-title)', color: 'var(--portal-status-green-fg)', animation: 'cruzPulseSubtle 400ms ease' }}>✓</span>
       </div>
     )
   }
 
   return (
     <div style={{ ...baseStyle, top: 8, right: 8 }}>
-      <span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: '#16A34A' }}>✓</span>
+      <span style={{ fontSize: 'var(--aguila-fs-body-lg)', color: 'var(--portal-status-green-fg)' }}>✓</span>
     </div>
   )
 }

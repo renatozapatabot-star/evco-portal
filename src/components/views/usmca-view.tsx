@@ -123,7 +123,7 @@ export function USMCAView() {
               <div><div style={{ color: T.gold, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{certNum}</div><div style={{ color: T.text, fontSize: 15, fontWeight: 700, marginTop: 2 }}>Certificate of Origin</div></div>
               <button onClick={downloadCert} style={{ background: T.navy, border: 'none', borderRadius: 7, padding: '7px 14px', color: 'rgba(255,255,255,0.045)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇️ Download</button>
             </div>
-            <div style={{ background: cert.qualifies ? T.greenBg : '#FEE2E2', border: `1px solid ${cert.qualifies ? T.green : '#FCA5A5'}30`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ background: cert.qualifies ? T.greenBg : '#FEE2E2', border: `1px solid ${cert.qualifies ? T.green : 'var(--portal-status-red-fg)'}30`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>{cert.qualifies ? '✅' : '⚠️'}</span>
               <div><div style={{ color: cert.qualifies ? T.green : 'var(--danger-text, #991B1B)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700 }}>{cert.qualifies ? 'QUALIFIES FOR USMCA' : 'REVIEW REQUIRED'}</div><div style={{ color: cert.qualifies ? T.green : 'var(--danger-text, #991B1B)', fontSize: 'var(--aguila-fs-meta)', marginTop: 2 }}>{cert.assessment}</div></div>
             </div>

@@ -31,7 +31,7 @@ function TrendGlyph({ trend }: { trend?: TickerTrend }) {
       style={{
         marginLeft: 4,
         fontSize: 'var(--aguila-fs-label)',
-        color: isUp ? '#E8EAED' : '#D4952A',
+        color: isUp ? 'var(--portal-fg-1)' : 'var(--portal-status-amber-fg)',
         fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
       }}
     >
@@ -56,7 +56,7 @@ function TickerRow({ items }: { items: TickerItem[] }) {
               gap: 6,
               paddingInline: 18,
               whiteSpace: 'nowrap',
-              color: '#E8EAED',
+              color: 'var(--portal-fg-1)',
               textDecoration: 'none',
               cursor: it.href ? 'pointer' : 'default',
             }}
@@ -66,7 +66,7 @@ function TickerRow({ items }: { items: TickerItem[] }) {
             <span
               style={{
                 fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
-                color: '#E8EAED',
+                color: 'var(--portal-fg-1)',
               }}
             >
               {it.value}

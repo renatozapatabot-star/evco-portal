@@ -32,7 +32,7 @@ export function SearchResultRow({ hit, active, entityLabel, onMouseEnter, onClic
         background: active ? 'rgba(192,197,206,0.08)' : 'transparent',
         borderLeft: active ? `2px solid ${ZAPATA.ACCENT_SILVER}` : '2px solid transparent',
         border: 'none', borderRadius: 0, cursor: 'pointer',
-        color: '#E6EDF3',
+        color: 'var(--portal-fg-1)',
       }}
     >
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>

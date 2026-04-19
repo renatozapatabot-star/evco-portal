@@ -25,8 +25,8 @@ import {
 } from '@react-pdf/renderer'
 import { AguilaPdfHeader, AguilaPdfFooter } from '@/lib/pdf/brand'
 
-const SILVER = '#C0C5CE'
-const SILVER_BRIGHT = '#E8EAED'
+const SILVER = 'var(--portal-fg-3)'
+const SILVER_BRIGHT = 'var(--portal-fg-1)'
 const TEXT_MUTED = '#6B7280'
 const TEXT_PRIMARY = '#111827'
 const BORDER = '#E5E7EB'

@@ -15,12 +15,12 @@ const urgencyStyles: Record<ClientSuggestedAction['urgency'], {
   high: {
     border: 'rgba(251,191,36,0.2)',
     bg: 'rgba(251,191,36,0.06)',
-    iconColor: '#FBBF24',
+    iconColor: 'var(--portal-status-amber-fg)',
   },
   medium: {
     border: 'rgba(192,197,206,0.15)',
     bg: 'rgba(192,197,206,0.04)',
-    iconColor: '#C0C5CE',
+    iconColor: 'var(--portal-fg-3)',
   },
   low: {
     border: 'rgba(255,255,255,0.08)',
@@ -57,10 +57,10 @@ export function SuggestedActions({ suggestedActions }: Props) {
             >
               <Icon size={14} color={style.iconColor} style={{ flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)', whiteSpace: 'nowrap' }}>
                   {action.label}
                 </div>
-                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', whiteSpace: 'nowrap' }}>
                   {action.reason}
                 </div>
               </div>

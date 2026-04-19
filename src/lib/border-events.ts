@@ -43,19 +43,19 @@ export const BORDER_EVENTS: BorderEvent[] = [
   {
     type: 'customs_cleared',
     label: 'Despacho autorizado',
-    icon: '✅', color: '#16A34A', bg: 'rgba(22,163,74,0.12)',
+    icon: '✅', color: 'var(--portal-status-green-fg)', bg: 'rgba(22,163,74,0.12)',
     sequence: 4, clientVisible: true, publicVisible: true,
   },
   {
     type: 'exam_flagged',
     label: 'Semáforo rojo — reconocimiento',
-    icon: '🔴', color: '#DC2626', bg: 'rgba(220,38,38,0.12)',
+    icon: '🔴', color: 'var(--portal-status-red-fg)', bg: 'rgba(220,38,38,0.12)',
     sequence: 5, clientVisible: true, publicVisible: false,
   },
   {
     type: 'exam_cleared',
     label: 'Reconocimiento completado',
-    icon: '🟢', color: '#16A34A', bg: 'rgba(22,163,74,0.12)',
+    icon: '🟢', color: 'var(--portal-status-green-fg)', bg: 'rgba(22,163,74,0.12)',
     sequence: 6, clientVisible: true, publicVisible: false,
   },
   {
@@ -67,13 +67,13 @@ export const BORDER_EVENTS: BorderEvent[] = [
   {
     type: 'crossing_start',
     label: 'Cruce iniciado',
-    icon: '🚛', color: '#D97706', bg: 'rgba(217,119,6,0.12)',
+    icon: '🚛', color: 'var(--portal-status-amber-fg)', bg: 'rgba(217,119,6,0.12)',
     sequence: 8, clientVisible: true, publicVisible: true,
   },
   {
     type: 'crossing_complete',
     label: 'Cruce completado',
-    icon: '🏁', color: '#16A34A', bg: 'rgba(22,163,74,0.12)',
+    icon: '🏁', color: 'var(--portal-status-green-fg)', bg: 'rgba(22,163,74,0.12)',
     sequence: 9, clientVisible: true, publicVisible: true,
   },
   {
@@ -85,7 +85,7 @@ export const BORDER_EVENTS: BorderEvent[] = [
   {
     type: 'delivery_confirmed',
     label: 'Entrega confirmada',
-    icon: '📦', color: '#16A34A', bg: 'rgba(22,163,74,0.12)',
+    icon: '📦', color: 'var(--portal-status-green-fg)', bg: 'rgba(22,163,74,0.12)',
     sequence: 11, clientVisible: true, publicVisible: true,
   },
   {

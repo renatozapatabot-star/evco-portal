@@ -29,8 +29,8 @@ export function IntelligenceCard({ intelligence }: Props) {
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <Stat value={emailsToday} label="emails hoy" />
           <Stat value={classificationsToday} label="clasificaciones" />
-          <Stat value={`${otroRate}%`} label="tasa OTRO" color={otroRate > 20 ? '#D97706' : '#8B949E'} />
-          <Stat value={riskAlerts} label="alertas" color={riskAlerts > 0 ? '#D97706' : '#8B949E'} />
+          <Stat value={`${otroRate}%`} label="tasa OTRO" color={otroRate > 20 ? 'var(--portal-status-amber-fg)' : '#8B949E'} />
+          <Stat value={riskAlerts} label="alertas" color={riskAlerts > 0 ? 'var(--portal-status-amber-fg)' : '#8B949E'} />
         </div>
       }
       footer={riskAlerts > 0 || otroRate > 15 ? (
@@ -54,7 +54,7 @@ export function IntelligenceCard({ intelligence }: Props) {
 function Stat({ value, label, color }: { value: number | string; label: string; color?: string }) {
   return (
     <div>
-      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: color || '#E6EDF3', lineHeight: 1 }}>
+      <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: color || 'var(--portal-fg-1)', lineHeight: 1 }}>
         {value}
       </div>
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>{label}</div>

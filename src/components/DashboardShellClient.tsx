@@ -265,7 +265,7 @@ export default function DashboardShellClient({ children }: Props) {
             background: 'rgba(0,0,0,0.55)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            color: '#E8EAED',
+            color: 'var(--portal-fg-1)',
             border: '1px solid rgba(192,197,206,0.18)',
             cursor: 'pointer',
             fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
@@ -290,7 +290,7 @@ export default function DashboardShellClient({ children }: Props) {
         <div className="idle-overlay" onClick={() => { setIdle(false); setShowWarning(false) }}>
           <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>&#128274;</div>
           <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginBottom: 20 }}>Haz clic o toca para continuar</div>
         </div>
       )}
       </TelemetryProvider>

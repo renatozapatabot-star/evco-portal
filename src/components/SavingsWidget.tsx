@@ -90,7 +90,7 @@ export function SavingsWidget() {
 
   return (
     <div style={{
-      background: 'var(--status-green-bg, rgba(34,197,94,0.06))',
+      background: 'var(--status-green-bg, var(--portal-status-green-bg))',
       border: '1px solid var(--status-green-border, rgba(34,197,94,0.2))',
       borderRadius: 12,
       padding: '16px 20px',

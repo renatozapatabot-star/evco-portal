@@ -48,9 +48,9 @@ function CardShell({ title, icon: Icon, children, loading }: {
           border: '1px solid rgba(192,197,206,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Icon size={16} color="#C0C5CE" strokeWidth={1.8} />
+          <Icon size={16} color="var(--portal-fg-3)" strokeWidth={1.8} />
         </div>
-        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#E6EDF3' }}>{title}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{title}</span>
       </div>
       {loading ? (
         <div className="skeleton-shimmer" style={{ height: 40, borderRadius: 8 }} />
@@ -72,12 +72,12 @@ export function DemandForecastCard() {
           {forecasts.map((f, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)',
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                 {String(f.description || f.supplier || f.product || `Pronóstico ${i + 1}`)}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', color: '#E6EDF3', fontWeight: 600 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                 {f.predicted_qty ? `${Number(f.predicted_qty).toLocaleString('es-MX')} uds` :
                  f.predicted_value ? `$${Number(f.predicted_value).toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—'}
               </span>
@@ -85,7 +85,7 @@ export function DemandForecastCard() {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', margin: 0 }}>
           Los pronósticos se generan con datos históricos de embarques.
         </p>
       )}
@@ -106,12 +106,12 @@ export function InventoryEstimateCard() {
           {estimates.map((e, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)',
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                 {String(e.product || e.fraccion || e.location || `Estimado ${i + 1}`)}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', color: '#E6EDF3', fontWeight: 600 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                 {e.estimated_qty ? `${Number(e.estimated_qty).toLocaleString('es-MX')} uds` :
                  e.aging_days ? `${e.aging_days} días` : '—'}
               </span>
@@ -119,7 +119,7 @@ export function InventoryEstimateCard() {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', margin: 0 }}>
           Los estimados de inventario se calculan con datos de entradas y salidas.
         </p>
       )}
@@ -140,14 +140,14 @@ export function CostInsightsCard() {
           {insights.map((c, i) => (
             <div key={i} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
+              fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)',
             }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                 {String(c.insight_type || c.category || c.description || `Insight ${i + 1}`)}
               </span>
               <span style={{
                 fontFamily: 'var(--font-mono)', fontWeight: 600,
-                color: Number(c.savings_usd || c.impact_usd || 0) > 0 ? '#22C55E' : '#E6EDF3',
+                color: Number(c.savings_usd || c.impact_usd || 0) > 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-1)',
               }}>
                 {c.savings_usd ? `+$${Number(c.savings_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD` :
                  c.impact_usd ? `$${Number(c.impact_usd).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD` : '—'}
@@ -156,7 +156,7 @@ export function CostInsightsCard() {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', margin: 0 }}>
           PORTAL monitorea oportunidades de ahorro en cada operación.
         </p>
       )}
@@ -171,9 +171,9 @@ export function SupplierScoresCard() {
   const hasData = suppliers.length > 0
 
   function reliabilityLabel(score: number): { text: string; color: string } {
-    if (score >= 80) return { text: 'Alta', color: '#22C55E' }
-    if (score >= 50) return { text: 'Media', color: '#FBBF24' }
-    return { text: 'Baja', color: '#EF4444' }
+    if (score >= 80) return { text: 'Alta', color: 'var(--portal-status-green-fg)' }
+    if (score >= 50) return { text: 'Media', color: 'var(--portal-status-amber-fg)' }
+    return { text: 'Baja', color: 'var(--portal-status-red-fg)' }
   }
 
   return (
@@ -186,7 +186,7 @@ export function SupplierScoresCard() {
             return (
               <div key={i} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                fontSize: 'var(--aguila-fs-body)', color: '#94a3b8',
+                fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)',
               }}>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                   {String(s.supplier_name || s.nombre || s.cve_proveedor || `Proveedor ${i + 1}`)}
@@ -202,7 +202,7 @@ export function SupplierScoresCard() {
           })}
         </div>
       ) : (
-        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', margin: 0 }}>
           Las calificaciones de proveedores se construyen con historial de operaciones.
         </p>
       )}

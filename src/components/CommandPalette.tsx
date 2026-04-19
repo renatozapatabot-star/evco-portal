@@ -171,7 +171,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
           boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
           overflow: 'hidden',
           fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
-          color: '#E6EDF3',
+          color: 'var(--portal-fg-1)',
         }}
       >
         <div style={{
@@ -189,7 +189,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             style={{
               flex: 1, minWidth: 0, minHeight: 32,
               background: 'transparent', border: 'none', outline: 'none',
-              color: '#E6EDF3', fontSize: 'var(--aguila-fs-body-lg)',
+              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body-lg)',
               fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
             }}
           />

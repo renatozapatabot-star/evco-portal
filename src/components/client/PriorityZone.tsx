@@ -18,14 +18,14 @@ export function PriorityZone({ atRiskShipments }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
       style={{
-        background: 'linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(251,191,36,0.04) 100%)',
+        background: 'linear-gradient(135deg, var(--portal-status-red-bg) 0%, rgba(251,191,36,0.04) 100%)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(239,68,68,0.15)',
         borderRadius: 20,
         padding: '20px 24px',
         marginBottom: 16,
-        boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px rgba(239,68,68,0.06)',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px var(--portal-status-red-bg)',
       }}
     >
       {/* Header */}
@@ -34,20 +34,20 @@ export function PriorityZone({ atRiskShipments }: Props) {
         marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <AlertTriangle size={16} color="#FBBF24" />
+          <AlertTriangle size={16} color="var(--portal-status-amber-fg)" />
           <span className="priority-pulse-dot" style={{
             width: 8, height: 8, borderRadius: '50%',
-            background: '#FBBF24',
+            background: 'var(--portal-status-amber-fg)',
           }} />
           <span style={{
-            fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#FBBF24',
+            fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: 'var(--portal-status-amber-fg)',
             textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             Requieren atención ({atRiskShipments.length})
           </span>
         </div>
         <Link href="/embarques" style={{
-          fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', textDecoration: 'none',
+          fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', textDecoration: 'none',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
           Ver todos <ArrowRight size={12} />
@@ -79,14 +79,14 @@ export function PriorityZone({ atRiskShipments }: Props) {
             >
               <span style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E6EDF3',
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-1)',
                 flexShrink: 0, minWidth: 110,
               }}>
                 {s.trafico}
               </span>
               <span style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--aguila-fs-compact)', color: '#FBBF24', flexShrink: 0,
+                fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-amber-fg)', flexShrink: 0,
                 fontWeight: 600,
               }}>
                 {s.daysActive}d
@@ -99,7 +99,7 @@ export function PriorityZone({ atRiskShipments }: Props) {
                 {s.description || s.status}
               </span>
               <span style={{
-                fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: '#E8EAED',
+                fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--portal-fg-1)',
                 flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 Revisar <ArrowRight size={12} />

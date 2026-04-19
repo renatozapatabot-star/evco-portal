@@ -43,7 +43,7 @@ const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: 12,
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 'var(--aguila-fs-section)',
   fontFamily: 'inherit',
   outline: 'none',
@@ -53,7 +53,7 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   fontSize: 'var(--aguila-fs-compact)',
   fontWeight: 600,
-  color: '#94a3b8',
+  color: 'var(--portal-fg-4)',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   marginBottom: 6,
@@ -156,16 +156,16 @@ export function ShipmentRequest() {
         }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
-            background: 'rgba(34,197,94,0.12)',
+            background: 'var(--portal-status-green-bg)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <CheckCircle size={32} color="#22C55E" />
+            <CheckCircle size={32} color="var(--portal-status-green-fg)" />
           </div>
           <div>
-            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
               Solicitud enviada
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.6, maxWidth: 400 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', lineHeight: 1.6, maxWidth: 400 }}>
               Embarque preliminar creado. Su agente aduanal ha sido notificado
               y se comunicará con usted para confirmar los detalles.
             </div>
@@ -179,7 +179,7 @@ export function ShipmentRequest() {
               borderRadius: 14,
               border: '1px solid rgba(255,255,255,0.12)',
               background: 'rgba(255,255,255,0.04)',
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               cursor: 'pointer',
@@ -201,9 +201,9 @@ export function ShipmentRequest() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Truck size={18} color="#C0C5CE" />
+        <Truck size={18} color="var(--portal-fg-3)" />
         <span style={{
-          fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#C0C5CE',
+          fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-3)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           Nueva Solicitud de Embarque
@@ -216,7 +216,7 @@ export function ShipmentRequest() {
           {/* Proveedor */}
           <div>
             <label style={labelStyle}>
-              <MapPin size={14} color="#94a3b8" />
+              <MapPin size={14} color="var(--portal-fg-4)" />
               Proveedor *
             </label>
             <input
@@ -232,7 +232,7 @@ export function ShipmentRequest() {
           {/* Descripcion */}
           <div>
             <label style={labelStyle}>
-              <Package size={14} color="#94a3b8" />
+              <Package size={14} color="var(--portal-fg-4)" />
               Descripción de mercancía *
             </label>
             <textarea
@@ -255,7 +255,7 @@ export function ShipmentRequest() {
             {/* Valor estimado */}
             <div>
               <label style={labelStyle}>
-                <DollarSign size={14} color="#94a3b8" />
+                <DollarSign size={14} color="var(--portal-fg-4)" />
                 Valor estimado USD
               </label>
               <input
@@ -275,7 +275,7 @@ export function ShipmentRequest() {
             {/* Metodo de envio */}
             <div>
               <label style={labelStyle}>
-                <Truck size={14} color="#94a3b8" />
+                <Truck size={14} color="var(--portal-fg-4)" />
                 Método de envío
               </label>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -293,7 +293,7 @@ export function ShipmentRequest() {
                         borderRadius: 12,
                         border: `1px solid ${isActive ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
                         background: isActive ? 'rgba(192,197,206,0.08)' : 'rgba(255,255,255,0.04)',
-                        color: isActive ? '#C0C5CE' : '#94a3b8',
+                        color: isActive ? 'var(--portal-fg-3)' : 'var(--portal-fg-4)',
                         fontSize: 'var(--aguila-fs-compact)',
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -316,7 +316,7 @@ export function ShipmentRequest() {
           {/* File upload */}
           <div>
             <label style={labelStyle}>
-              <FileUp size={14} color="#94a3b8" />
+              <FileUp size={14} color="var(--portal-fg-4)" />
               Documentos adjuntos
             </label>
             <div
@@ -329,7 +329,7 @@ export function ShipmentRequest() {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 borderStyle: 'dashed',
-                color: '#64748b',
+                color: 'var(--portal-fg-5)',
                 fontSize: 'var(--aguila-fs-body)',
                 gap: 8,
               }}
@@ -356,13 +356,13 @@ export function ShipmentRequest() {
                     background: 'rgba(255,255,255,0.03)',
                     borderRadius: 8,
                     fontSize: 'var(--aguila-fs-body)',
-                    color: '#94a3b8',
+                    color: 'var(--portal-fg-4)',
                   }}>
-                    <FileUp size={14} color="#C0C5CE" />
+                    <FileUp size={14} color="var(--portal-fg-3)" />
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {file.name}
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
                       {(file.size / 1024).toFixed(0)} KB
                     </span>
                     <button
@@ -370,7 +370,7 @@ export function ShipmentRequest() {
                       onClick={(e) => { e.stopPropagation(); removeFile(id) }}
                       style={{
                         background: 'none', border: 'none',
-                        color: '#64748b', cursor: 'pointer',
+                        color: 'var(--portal-fg-5)', cursor: 'pointer',
                         padding: 4, lineHeight: 0,
                       }}
                     >
@@ -385,7 +385,7 @@ export function ShipmentRequest() {
           {/* Notas */}
           <div>
             <label style={labelStyle}>
-              <StickyNote size={14} color="#94a3b8" />
+              <StickyNote size={14} color="var(--portal-fg-4)" />
               Notas adicionales
             </label>
             <textarea
@@ -406,8 +406,8 @@ export function ShipmentRequest() {
               borderRadius: 12,
               border: '1px solid rgba(239,68,68,0.2)',
             }}>
-              <XCircle size={16} color="#EF4444" />
-              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#EF4444' }}>{errorMsg}</span>
+              <XCircle size={16} color="var(--portal-status-red-fg)" />
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-red-fg)' }}>{errorMsg}</span>
             </div>
           )}
 
@@ -420,8 +420,8 @@ export function ShipmentRequest() {
               padding: '16px 32px',
               borderRadius: 14,
               border: 'none',
-              background: canSubmit && state !== 'loading' ? '#E8EAED' : 'rgba(255,255,255,0.06)',
-              color: canSubmit && state !== 'loading' ? '#000' : '#64748b',
+              background: canSubmit && state !== 'loading' ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.06)',
+              color: canSubmit && state !== 'loading' ? '#000' : 'var(--portal-fg-5)',
               fontSize: 15,
               fontWeight: 700,
               cursor: canSubmit && state !== 'loading' ? 'pointer' : 'not-allowed',

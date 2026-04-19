@@ -38,7 +38,7 @@ export function PerformanceStrip({
           <div>
             <span className="font-mono" style={{
               fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,
-              color: isRecord ? '#E8EAED' : todayCount > 0 ? '#E6EDF3' : '#6E7681',
+              color: isRecord ? 'var(--portal-fg-1)' : todayCount > 0 ? 'var(--portal-fg-1)' : '#6E7681',
             }}>
               {todayCount}
             </span>
@@ -51,7 +51,7 @@ export function PerformanceStrip({
           {yesterdayCount > 0 && (
             <span className="font-mono" style={{
               fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
-              color: delta >= 0 ? '#16A34A' : '#DC2626',
+              color: delta >= 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
             }}>
               {delta >= 0 ? '↑' : '↓'}{Math.abs(delta)} vs ayer
             </span>
@@ -60,7 +60,7 @@ export function PerformanceStrip({
           {/* Record badge */}
           {isRecord && (
             <span style={{
-              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#E8EAED',
+              fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-fg-1)',
               background: 'rgba(192,197,206,0.15)',
               padding: '2px 8px', borderRadius: 4,
             }}>
@@ -72,7 +72,7 @@ export function PerformanceStrip({
         {/* Right: streak + rank */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {currentStreak > 1 && (
-            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#E8EAED' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>
               🔥 {currentStreak}d racha
             </span>
           )}
@@ -88,7 +88,7 @@ export function PerformanceStrip({
           <div style={{
             width: `${Math.min(progress, 100)}%`,
             height: '100%', borderRadius: 2,
-            background: isRecord ? '#E8EAED' : '#16A34A',
+            background: isRecord ? 'var(--portal-fg-1)' : 'var(--portal-status-green-fg)',
             transition: 'width 500ms ease',
           }} />
         </div>

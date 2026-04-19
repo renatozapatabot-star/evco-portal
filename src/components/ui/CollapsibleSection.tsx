@@ -54,7 +54,7 @@ export function CollapsibleSection({ title, defaultOpen = false, children, badge
               marginLeft: 8,
               fontSize: 'var(--aguila-fs-meta)',
               fontFamily: 'var(--font-mono)',
-              color: '#94a3b8',
+              color: 'var(--portal-fg-4)',
             }}>
               {badge}
             </span>

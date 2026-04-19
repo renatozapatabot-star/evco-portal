@@ -224,7 +224,24 @@ Of 37 tenant-scoped or tenant-adjacent tables sampled with the public anon key, 
 
 Yes. `grep -rn "NEXT_PUBLIC_SUPABASE_ANON_KEY" src/` returns 10+ `'use client'` pages that instantiate Supabase with the key at module load time: `/calls`, `/calendario`, `/monitor`, `/simulador`, `/comunicaciones`, `/logros`, `/drafts`, `/admin/aprobaciones`, `/facturacion`. Next.js inlines `NEXT_PUBLIC_*` values into the client bundle at build time. Anyone who opens View Source or DevTools on portal.renatozapata.com finds the key plus `NEXT_PUBLIC_SUPABASE_URL` within seconds.
 
-## Appendix C — Earlier source-only audit (`644c171`) is preserved
+## Appendix C — Migration gap: 6 exposed tables not covered by `20260420_rls_sev1_deny_all.sql`
+
+Cross-checked the 25-table list in the staged migration (commit `6330a25`) against the 37-table anon-key sweep. **Six tables confirmed readable to anon are NOT in the migration table array** and will remain exposed after the migration is applied:
+
+| Table | Rows exposed | Notes |
+|---|---|---|
+| `pedimentos` | 4,107 | SAT-audit data. Patente 3596 regulatory record. Must be covered. |
+| `cruz_conversations` | 33 | Every tenant AI chat transcripts — user_message + cruz_response columns. |
+| `supplier_network` | 101 | Cross-tenant supplier intelligence. |
+| `regulatory_alerts` | 3 | Tenant-scoped compliance alerts. |
+| `anexo24_partidas` | 1,793 | **Migration header claims this was already RLS'd by `20260418_anexo24_parts.sql` — live probe contradicts that.** Either that earlier migration only ran `ENABLE ROW LEVEL SECURITY` without a deny-all policy (default is then permissive), or it was never applied. Verify before trusting the "already RLS'd" comment list. |
+| `system_config` | 7 | Lower sensitivity (FX rates, DTA rates). Recommend deny — default-allow silently leaks any future tenant-scoped config. |
+
+**Recommended amendment**: append these six to the `tables` array in `supabase/migrations/20260420_rls_sev1_deny_all.sql` before running in Supabase SQL editor. The migration is idempotent — re-running after amendment is safe.
+
+Also re-probe every table the migration header comment lists as already RLS-covered — the `anexo24_partidas` miss means that list cannot be trusted without verification. Candidates to re-verify with the anon key: `globalpc_productos`, `globalpc_partidas`, `classification_log`, `proveedor_rfc_cache`, `audit_log`, `mensajeria_*`, plus the 20260512_rls_b8 family.
+
+## Appendix D — Earlier source-only audit (`644c171`) is preserved
 
 The prior commit remains in the branch history intentionally. It documents what a source-only audit concluded and where that conclusion was too narrow. Future audits should treat "portal reads are safe" and "database reads are safe" as two separate questions — the portal's `session.companyId` filter is a UI convenience, not a tenant gate. Only RLS (or revoking the anon key entirely) is a tenant gate.
 

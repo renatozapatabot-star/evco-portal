@@ -346,7 +346,7 @@ export function EscanearClient() {
 
           {status === 'success' && resolved && (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#22C55E' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--portal-status-green-fg)' }}>
                 <CheckCircle2 size={20} aria-hidden />
                 <span style={{ fontSize: 15, fontWeight: 600 }}>Recepción registrada</span>
               </div>

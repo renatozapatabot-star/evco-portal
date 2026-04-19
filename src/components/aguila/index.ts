@@ -60,3 +60,9 @@ export { AguilaCheckbox } from './AguilaCheckbox'
 export type { AguilaCheckboxProps } from './AguilaCheckbox'
 export { AguilaModal } from './AguilaModal'
 export type { AguilaModalProps } from './AguilaModal'
+export { AguilaEmptyState } from './AguilaEmptyState'
+export type {
+  AguilaEmptyStateProps,
+  AguilaEmptyStateAction,
+  EmptyStateTone,
+} from './AguilaEmptyState'

@@ -20,7 +20,7 @@ interface Props {
 }
 
 function confidenceDot(confidence: number) {
-  const color = confidence >= 95 ? '#22C55E' : confidence >= 80 ? '#FBBF24' : '#EF4444'
+  const color = confidence >= 95 ? 'var(--portal-status-green-fg)' : confidence >= 80 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
       <span style={{
@@ -36,9 +36,9 @@ function confidenceDot(confidence: number) {
 
 function sourceBadge(source: string) {
   const config: Record<string, { bg: string; text: string; label: string }> = {
-    historica: { bg: 'rgba(34,197,94,0.1)', text: '#22C55E', label: 'Histórica' },
-    sugerida: { bg: 'rgba(192,197,206,0.1)', text: '#C0C5CE', label: 'IA' },
-    manual: { bg: 'rgba(148,163,184,0.1)', text: '#94a3b8', label: 'Manual' },
+    historica: { bg: 'var(--portal-status-green-bg)', text: 'var(--portal-status-green-fg)', label: 'Histórica' },
+    sugerida: { bg: 'var(--portal-status-gray-bg)', text: 'var(--portal-fg-3)', label: 'IA' },
+    manual: { bg: 'var(--portal-status-gray-bg)', text: 'var(--portal-fg-4)', label: 'Manual' },
   }
   const c = config[source] || config.manual
   return (

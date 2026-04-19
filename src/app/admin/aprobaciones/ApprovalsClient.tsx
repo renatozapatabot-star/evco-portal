@@ -28,7 +28,7 @@ interface Props {
 }
 
 function confidenceBadge(tier: string, avg: number) {
-  const color = tier === 'alta' ? '#22C55E' : tier === 'media' ? '#FBBF24' : '#EF4444'
+  const color = tier === 'alta' ? 'var(--portal-status-green-fg)' : tier === 'media' ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
   const label = tier === 'alta' ? 'Alta' : tier === 'media' ? 'Media' : 'Baja'
   return (
     <span style={{

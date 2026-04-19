@@ -16,8 +16,8 @@ export function ComplianceFlags({ flags }: Props) {
         border: '1px solid rgba(34,197,94,0.15)',
         borderRadius: 12,
       }}>
-        <CheckCircle size={16} color="#22C55E" />
-        <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#22C55E', fontWeight: 600 }}>
+        <CheckCircle size={16} color="var(--portal-status-green-fg)" />
+        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
           Sin alertas de cumplimiento
         </span>
       </div>
@@ -35,7 +35,7 @@ export function ComplianceFlags({ flags }: Props) {
           borderRadius: '0 8px 8px 0',
         }}>
           <AlertTriangle size={14} color="#FBBF24" style={{ flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3', lineHeight: 1.5 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', lineHeight: 1.5 }}>
             {flag}
           </span>
         </div>

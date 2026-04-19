@@ -356,8 +356,11 @@ async function classifySingle({ description, cveCliente, cveProveedor, cveProduc
   } catch {}
 
   // 6. Emit workflow event (CRUZ 2.0 orchestration)
-  if (top && TRIGGER_ID_ARG) {
-    const companyId = COMPANY_ID_ARG || cveCliente || 'unknown'
+  // Block EE: workflow_events is tenant-scoped. Require an explicit
+  // COMPANY_ID_ARG (or a pre-resolved company_id in cveCliente's place)
+  // — skip the emit rather than stamp a raw clave or 'unknown'.
+  if (top && TRIGGER_ID_ARG && COMPANY_ID_ARG) {
+    const companyId = COMPANY_ID_ARG
     if (top.confidence >= 0.95) {
       await emitEvent('classify', 'classification_complete', TRIGGER_ID_ARG, companyId, {
         fraccion: normalizeFraccion(top.fraccion) || top.fraccion,
@@ -527,7 +530,14 @@ async function runBatch() {
         // Emit workflow event (CRUZ 2.0 — batch mode)
         if (process.env.CRUZ_BATCH_EMIT_EVENTS !== 'false') {
           try {
-            const companyId = row.company_id || row.cve_cliente || 'unknown'
+            // Block EE: workflow_events is tenant-scoped. Skip the emit
+            // rather than stamp an 'unknown' or raw-cve_cliente company_id.
+            // Previous behavior was `row.company_id || row.cve_cliente || 'unknown'`
+            // which conflated clave (MySQL-native) with company_id (portal slug).
+            // Batch-mode events for unresolvable rows are silently skipped;
+            // the classification still logs above.
+            if (!row.company_id) continue
+            const companyId = row.company_id
             const triggerId = `batch-${Date.now()}-${companyId}-${row.cve_producto || 'N/A'}`.slice(0, 80)
 
             if (outcome.top.confidence >= 0.85) {

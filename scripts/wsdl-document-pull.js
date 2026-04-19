@@ -121,9 +121,16 @@ async function tg(msg) {
 
 
 async function notify(company_id, type, severity, title, description, trafico_id) {
+  // Block EE: notifications is tenant-scoped. Skip the write rather than
+  // stamp 'unknown' when the caller didn't supply a company_id — better
+  // to lose an operational notification than contaminate the table.
+  if (!company_id) {
+    console.warn(`[wsdl-document-pull] notify skipped (no company_id): ${title}`)
+    return
+  }
   try {
     await supabase.from('notifications').insert({
-      company_id: company_id || 'unknown',
+      company_id,
       type, severity, title, description,
       trafico_id: trafico_id || null,
       action_url: trafico_id ? `/traficos/${trafico_id}` : null,
@@ -196,6 +203,22 @@ async function run() {
   )
   await conn.end()
   console.log(`\u2705 Loaded ${allTraficos.length.toLocaleString()} tr\u00E1ficos from GlobalPC MySQL`)
+
+  // Block EE: build the cve_cliente → company_id allowlist. insertDocs
+  // requires this to stamp expediente_documents with a real company_id
+  // rather than the Block-EE-forbidden `|| 'unknown'` fallback.
+  const { data: activeCompanies } = await supabase
+    .from('companies').select('company_id, clave_cliente').eq('active', true)
+  const claveToCompany = new Map()
+  for (const c of (activeCompanies || [])) {
+    if (c.clave_cliente) claveToCompany.set(c.clave_cliente, c.company_id)
+  }
+  console.log(`Loaded company_id allowlist: ${claveToCompany.size} active clients`)
+  // Attach resolved company_id onto each trafico once, so insertDocs
+  // doesn't have to do the map lookup per row.
+  for (const t of allTraficos) {
+    t._companyId = claveToCompany.get(t.sCveCliente) || null
+  }
 
   // Step 2: Authenticate to WSDL
   let { client, key } = await getKey()
@@ -336,12 +359,24 @@ async function run() {
 }
 
 async function insertDocs(docs, trafico) {
+  // Block EE: expediente_documentos is tenant-scoped. _companyId was
+  // resolved at load time from the companies allowlist. If absent,
+  // this trafico's cve_cliente isn't in the active tenants table —
+  // skip the write rather than contaminate with the cve itself
+  // (the previous `|| 'unknown'` pattern).
+  if (!trafico._companyId) {
+    fs.appendFileSync(
+      ERROR_LOG,
+      `${new Date().toISOString()} | ${trafico.sCveTrafico} | SKIP: unknown cve_cliente=${trafico.sCveCliente}\n`,
+    )
+    return false
+  }
   const rows = docs.map(d => ({
     pedimento_id: trafico.sCveTrafico,
     doc_type: mapDocType(d.tipo_documento),
     file_name: d.descripcion || '',
     file_url: `globalpc://doc/${d.id}`,
-    company_id: trafico.sCveCliente || 'unknown',
+    company_id: trafico._companyId,
     uploaded_by: 'globalpc_wsdl',
     metadata: { globalpc_doc_id: d.id || null, id_tipo_documento: d.id_tipo_documento || null, wsdl_label: d.tipo_documento }
   }))

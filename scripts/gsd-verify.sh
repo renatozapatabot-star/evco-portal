@@ -610,6 +610,28 @@ else
   warn "FALLBACK_TENANT_ID references: $FALLBACK_HITS (at baseline — legacy tenant_id constant pending full removal)"
 fi
 
+# Invariant Block-EE — 'unknown' tenant fallback ratchet
+#
+# Block EE forbids `company_id: X || 'unknown'` patterns in scripts
+# that write to tenant-scoped tables (see .claude/rules/tenant-isolation.md
+# "Forbidden patterns"). Pre-launch sweep on 2026-04-20 eliminated every
+# occurrence in sync paths. bootcamp-client-fingerprint.js:52 and
+# tariff-monitor.js:65 use 'unknown' as an in-memory grouping key (not
+# a DB write) — legitimate, excluded from this count.
+header "Invariant Block-EE — tenant 'unknown' fallback ratchet"
+UNKNOWN_FALLBACK_BASELINE=2  # bootcamp + tariff-monitor — local grouping, not writes
+UNKNOWN_FALLBACK_COUNT=$(grep -rn "company_id.*'unknown'\|cid.*'unknown'" scripts/*.js 2>/dev/null \
+  | grep -v "^.*:[[:space:]]*//" \
+  | grep -v "scripts/lib/" \
+  | wc -l | tr -d ' ')
+if [ "$UNKNOWN_FALLBACK_COUNT" -gt "$UNKNOWN_FALLBACK_BASELINE" ]; then
+  fail "'unknown' tenant fallback: $UNKNOWN_FALLBACK_COUNT (baseline $UNKNOWN_FALLBACK_BASELINE). NEW script writes '|| \"unknown\"' into company_id. Block EE says skip-and-alert instead."
+elif [ "$UNKNOWN_FALLBACK_COUNT" -lt "$UNKNOWN_FALLBACK_BASELINE" ]; then
+  pass "'unknown' tenant fallback: $UNKNOWN_FALLBACK_COUNT (baseline $UNKNOWN_FALLBACK_BASELINE, improving ✓). Lower UNKNOWN_FALLBACK_BASELINE."
+else
+  pass "'unknown' tenant fallback: $UNKNOWN_FALLBACK_COUNT (at baseline — 2 legitimate local-grouping uses)"
+fi
+
 # Every `table: 'globalpc_*'` write in globalpc-sync.js must have a
 # `company_id:` line in its mapRow body. The count should be exactly 8
 # (one per globalpc_* table the sync writes).

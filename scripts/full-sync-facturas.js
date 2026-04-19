@@ -6,18 +6,11 @@ const mysql = require('mysql2/promise')
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 const { safeUpsert } = require('./lib/safe-write')
 const { withSyncLog } = require('./lib/sync-log')
-const TG = process.env.TELEGRAM_BOT_TOKEN
-const CHAT = '-5085543275'
-async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
-  if (process.env.TELEGRAM_SILENT === 'true') return
-// ⚠ SAME BUG-PAIR AS full-sync-productos.js (see its header for full
-// analysis). The line above is a stray top-level `return` that kills
-// the whole module when TELEGRAM_SILENT=true. Line ~57 has the
-// Block-EE-forbidden `|| 'unknown'` tenant fallback. DO NOT fix in
-// isolation — the return currently prevents contamination growth.
-// Full fix is a next-session task: replace the 'unknown' fallback
-// with skip-and-alert per tenant-isolation.md, THEN remove the return.
-// Scheduled in ecosystem.config.js as 'full-sync-facturas' (Sun 02:00).
+// Canonical Telegram helper — handles TELEGRAM_SILENT internally (skips
+// the fetch, does NOT exit the module). Previous local tg() + stray
+// top-level `return` made this script a silent no-op under
+// TELEGRAM_SILENT=true. Fixed in the combined-fix pass 2026-04-20.
+const { sendTelegram: tg } = require('./lib/telegram')
 
 async function run() {
   console.log('\n📄 FULL FACTURAS SYNC (upsert on folio)')
@@ -37,7 +30,8 @@ async function run() {
   await tg(`📄 <b>Facturas full upsert</b>\n${totalRows.toLocaleString()} registros\n— PORTAL 🦀`)
 
   const BATCH = 5000
-  let offset = 0, total = 0
+  let offset = 0, total = 0, skippedRows = 0
+  const skippedClaves = new Set()
 
   while (true) {
     const [rows] = await conn.execute(`
@@ -48,23 +42,35 @@ async function run() {
     `)
     if (!rows.length) break
 
-    const batch = rows.map(r => ({
-      folio: r.iFolio,
-      cve_trafico: r.sCveTrafico,
-      cve_cliente: r.sCveCliente,
-      cve_proveedor: r.sCveProveedor,
-      numero: r.sNumero,
-      valor_comercial: r.iValorComercial,
-      moneda: r.sCveMoneda,
-      fecha_facturacion: r.dFechaFacturacion,
-      cove_vucem: r.sCoveVucem,
-      incoterm: r.sCveIncoterm,
-      flete: r.iFlete,
-      seguros: r.iSeguros,
-      embalajes: r.iEmbalajes,
-      company_id: claveMap[r.sCveCliente] || r.sCveCliente || 'unknown',
-      updated_at: new Date().toISOString()
-    }))
+    // Block EE tenant-isolation contract (.claude/rules/tenant-isolation.md):
+    // rows whose sCveCliente isn't in the active companies allowlist are
+    // SKIPPED, not tagged 'unknown'. Collect the skipped claves for a
+    // single end-of-run Telegram alert instead of per-batch spam.
+    const batch = rows.map(r => {
+      const companyId = claveMap[r.sCveCliente]
+      if (!companyId) {
+        skippedClaves.add(r.sCveCliente ?? '(null)')
+        skippedRows++
+        return null
+      }
+      return {
+        folio: r.iFolio,
+        cve_trafico: r.sCveTrafico,
+        cve_cliente: r.sCveCliente,
+        cve_proveedor: r.sCveProveedor,
+        numero: r.sNumero,
+        valor_comercial: r.iValorComercial,
+        moneda: r.sCveMoneda,
+        fecha_facturacion: r.dFechaFacturacion,
+        cove_vucem: r.sCoveVucem,
+        incoterm: r.sCveIncoterm,
+        flete: r.iFlete,
+        seguros: r.iSeguros,
+        embalajes: r.iEmbalajes,
+        company_id: companyId,
+        updated_at: new Date().toISOString()
+      }
+    }).filter(Boolean)
 
     for (let i = 0; i < batch.length; i += 500) {
       await safeUpsert(supabase, 'globalpc_facturas', batch.slice(i, i + 500), {
@@ -81,8 +87,21 @@ async function run() {
   await conn.end()
   const { count } = await supabase.from('globalpc_facturas').select('*', { count: 'exact', head: true })
   console.log(`\n✅ Done. Supabase now: ${(count || 0).toLocaleString()} rows`)
-  await tg(`✅ <b>Facturas complete</b>\n${(count || 0).toLocaleString()} en Supabase\n— PORTAL 🦀`)
-  return { rows_synced: total }
+
+  // Block EE: alert on skipped rows (unknown cve_cliente). One summary
+  // per run, not per batch. Absence of alerts == clean mapping.
+  if (skippedRows > 0) {
+    const sample = Array.from(skippedClaves).slice(0, 10).join(', ')
+    console.warn(`⚠ Skipped ${skippedRows} rows · ${skippedClaves.size} unknown cve_cliente values: ${sample}`)
+    await tg(
+      `🟡 <b>Facturas full-sync · skipped rows</b>\n` +
+      `${skippedRows.toLocaleString()} rows · ${skippedClaves.size} unknown cve_cliente\n` +
+      `<code>${sample}${skippedClaves.size > 10 ? `, …${skippedClaves.size - 10} more` : ''}</code>\n\n` +
+      `Per tenant-isolation.md — add these claves to companies + re-run, OR confirm they're stale.`
+    )
+  }
+  await tg(`✅ <b>Facturas complete</b>\n${(count || 0).toLocaleString()} en Supabase · ${total.toLocaleString()} synced${skippedRows > 0 ? ` · ${skippedRows} skipped` : ''}\n— PORTAL 🦀`)
+  return { rows_synced: total, skipped: skippedRows }
 }
 
 withSyncLog(supabase, { sync_type: 'globalpc_facturas_full', company_id: null }, run).catch(e => { console.error(e); process.exit(1) })

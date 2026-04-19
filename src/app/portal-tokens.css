@@ -47,6 +47,36 @@
   --portal-amber:   oklch(0.82 0.15 78);
   --portal-red:     oklch(0.70 0.19 22);
 
+  /* —— Brand gold (identity only: mark, wordmark, primary CTAs, active nav) ——
+     Data/chrome surfaces stay silver (--portal-fg-*). Published here so every
+     consumer (design-system.ts, tailwind.config.ts, globals.css) resolves the
+     same hex. Canonical values match ZAPATA_GOLD_* in src/lib/design-system.ts.
+     NEVER add decorative gold — dual-accent rule (gold identity, silver data). */
+  --portal-gold-50:       rgba(201,167,74,0.08);
+  --portal-gold-100:      #FBF5E6;
+  --portal-gold-200:      #F0D88A;
+  --portal-gold-300:      #E8C468;
+  --portal-gold-400:      #F4D47A;                              /* bright */
+  --portal-gold-500:      #C9A74A;                              /* base — canonical */
+  --portal-gold-600:      #B8933B;
+  --portal-gold-700:      #8F7628;                              /* dim */
+  --portal-gold-800:      #7A5C1E;
+  --portal-gold-gradient: linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%);
+  --portal-gold-glow:         rgba(201,167,74,0.28);
+  --portal-gold-glow-subtle:  rgba(201,167,74,0.12);
+
+  /* —— Semáforo (customs inspection) ——————————————————
+     Consumed by SemaforoPill. Tokenized so recoloring the semáforo palette
+     cascades through every list and detail page without hunting inline rgba. */
+  --portal-semaforo-verde-bg:     rgba(34,197,94,0.14);
+  --portal-semaforo-verde-fg:     #22C55E;
+  --portal-semaforo-amarillo-bg:  rgba(251,191,36,0.14);
+  --portal-semaforo-amarillo-fg:  #FBBF24;
+  --portal-semaforo-rojo-bg:      rgba(239,68,68,0.14);
+  --portal-semaforo-rojo-fg:      #EF4444;
+  --portal-semaforo-none-bg:      rgba(148,163,184,0.10);
+  --portal-semaforo-none-fg:      var(--portal-fg-4);
+
   /* —— Typography —————————————————————————————— */
   --portal-font-display: 'Geist', 'Söhne', -apple-system, system-ui, sans-serif;
   --portal-font-serif:   'Instrument Serif', 'GT Sectra', 'Times New Roman', serif;

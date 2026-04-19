@@ -5,17 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand — Gold
+        // Brand — Gold (canonical: ZAPATA_GOLD_BASE #C9A74A — identity only)
+        // Mirrors --portal-gold-* in src/app/portal-tokens.css + ZAPATA_GOLD_*
+        // in src/lib/design-system.ts. Changing a value here must update both.
         gold: {
-          DEFAULT: '#C9A84C',
-          50: 'rgba(196,150,60,0.08)',
+          DEFAULT: '#C9A74A',
+          50: 'rgba(201,167,74,0.08)',
           100: '#FBF5E6',
           200: '#F0D88A',
           300: '#E8C468',
-          400: '#C9A84C',
-          500: '#C9A84C',
+          400: '#F4D47A',
+          500: '#C9A74A',
           600: '#B8933B',
-          700: '#8B6914',
+          700: '#8F7628',
           800: '#7A5C1E',
         },
         // Brand — Navy (sidebar)

@@ -16,9 +16,16 @@ export interface VizCatalogProps {
  *
  * Ported from screen-dashboard.jsx:234-288.
  */
+// Default preview shows a polymer fracción (3907.40.04 — policarbonato),
+// matching EVCO's IMMEX domain (plastics injection). Audit 2026-04-19
+// flagged the prior default (8471.30.01 = laptops, "Máquinas automáticas")
+// as tonally wrong for a plastics-shop dashboard — Ursula reads it as
+// either demo data or a leak from another tenant.
+//
+// Callers can override via props for tenant-specific samples.
 export function VizCatalog({
-  fraccion = '8471.30.01',
-  descripcion = 'Máquinas automáticas para procesamiento de datos portátiles',
+  fraccion = '3907.40.04',
+  descripcion = 'Policarbonato en formas primarias',
 }: VizCatalogProps) {
   const [phase, setPhase] = useState(0)
 

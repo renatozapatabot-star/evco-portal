@@ -22,6 +22,7 @@ import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { verifySession } from '@/lib/session'
 import { formatFraccion } from '@/lib/format/fraccion'
+import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -152,8 +153,30 @@ export async function GET(req: NextRequest) {
 
   const tmecFraccions = new Set<string>((tmecRows || []).map((t: any) => t.fraccion).filter(Boolean))
 
+  // Step 3.5: active-parts allowlist — only show SKUs this client has
+  // actually imported (has ≥ 1 globalpc_partida row for). Per
+  // src/lib/anexo24/active-parts.ts: "EVCO only wants parts that pertain
+  // to them — not every part Milacron ever sold to anybody." Legacy
+  // synced rows tagged with this company_id but never actually imported
+  // are hidden here — they're the 149K - 693 = ~148K noise rows that
+  // would otherwise flood Ursula's catalog on Monday morning.
+  const activeSet = await getActiveCveProductos(supabase, companyId)
+  const activeList = activeCvesArray(activeSet)
+  if (activeList.length === 0) {
+    // Fresh tenant — zero partidas, zero active catalog. Return empty
+    // calmly; callers render the onboarding empty state.
+    return NextResponse.json(
+      { data: { partes: [], total: 0 }, error: null },
+      { status: 200 },
+    )
+  }
+
   // Step 4: productos with filters
-  let q = supabase.from('globalpc_productos').select('*', { count: 'exact' }).eq('company_id', companyId)
+  // allowlist-ok:globalpc_productos — scoped by company_id + active-parts
+  // allowlist above; 404-on-cross-tenant contract preserved via session scope.
+  let q = supabase.from('globalpc_productos').select('*', { count: 'exact' })
+    .eq('company_id', companyId)
+    .in('cve_producto', activeList)
 
   if (search && search.trim()) {
     const s = search.trim().replace(/%/g, '\\%').replace(/_/g, '\\_')

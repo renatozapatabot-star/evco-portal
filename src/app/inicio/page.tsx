@@ -136,6 +136,19 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   //   - "Cruces este mes"    → fecha_cruce >= start-of-current-month
   // NEVER use updated_at for time-window KPIs — sync touches every row,
   // making "this month" mean "everything that was synced this month".
+  //
+  // Active-parts allowlist resolved ahead of the Promise.all so every
+  // catálogo count on the client cockpit shows ONLY parts Ursula has
+  // actually imported — not the 149K legacy synced mirror. Per
+  // src/lib/anexo24/active-parts.ts: "A part this client never imported
+  // shouldn't show up on the anexo 24, catalog, or search." Applied
+  // 2026-04-19 Sunday marathon Phase 9+ under Renato's "don't defer"
+  // directive. ~30ms extra round-trip; acceptable for correctness.
+  const activeCves = await getActiveCveProductos(supabase, companyId)
+  const activeCvesListInicio = Array.from(activeCves.cves)
+  const hasActiveCves = activeCvesListInicio.length > 0
+  const activeSkuCount = activeCves.cves.size
+
   const [
     activeTraficos,
     documentos,
@@ -184,9 +197,19 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     softCount(supabase.from('entradas').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fecha_llegada_mercancia', sevenDaysAgoIso), { label: 'entradas.semana', signals }),
     softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId), { label: 'expedientes.total', signals }),
     softCount(supabase.from('expediente_documentos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('uploaded_at', monthStartIso), { label: 'expedientes.mes', signals }),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId), { label: 'catalogo.total', signals }),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).gte('fraccion_classified_at', monthStartIso), { label: 'catalogo.mes', signals }),
-    softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).not('fraccion', 'is', null), { label: 'catalogo.clasificaciones', signals }),
+    // allowlist-ok:globalpc_productos — catálogo KPI counts filtered by
+    // activeCvesListInicio so Ursula's hero numbers reflect her real
+    // imported catalog (~693) not the legacy mirror (~149K). Short-circuit
+    // to 0 when the tenant has no partidas yet (fresh onboarding).
+    hasActiveCves
+      ? softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeCvesListInicio), { label: 'catalogo.total', signals })
+      : Promise.resolve(0),
+    hasActiveCves
+      ? softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeCvesListInicio).gte('fraccion_classified_at', monthStartIso), { label: 'catalogo.mes', signals })
+      : Promise.resolve(0),
+    hasActiveCves
+      ? softCount(supabase.from('globalpc_productos').select('id', { count: 'exact', head: true }).eq('company_id', companyId).in('cve_producto', activeCvesListInicio).not('fraccion', 'is', null), { label: 'catalogo.clasificaciones', signals })
+      : Promise.resolve(0),
     // Sparkline series — bucket by the SAME field the headline KPI uses.
     softData<{ fecha_llegada: string }>(
       supabase.from('traficos').select('fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000),
@@ -204,10 +227,14 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       supabase.from('entradas').select('fecha_llegada_mercancia').eq('company_id', companyId).gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000),
       { label: 'entradas.series', signals }
     ),
-    softData<{ fraccion_classified_at: string }>(
-      supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000),
-      { label: 'catalogo.series', signals }
-    ),
+    // allowlist-ok:globalpc_productos — classification-velocity series
+    // filtered to active parts; matches the headline KPIs above.
+    hasActiveCves
+      ? softData<{ fraccion_classified_at: string }>(
+          supabase.from('globalpc_productos').select('fraccion_classified_at').eq('company_id', companyId).in('cve_producto', activeCvesListInicio).not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000),
+          { label: 'catalogo.series', signals }
+        )
+      : Promise.resolve([] as { fraccion_classified_at: string }[]),
     softData<{ fecha_cruce: string }>(
       supabase.from('traficos').select('fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', fourteenDaysAgoIso).limit(2000),
       { label: 'traficos.cruces_series', signals }
@@ -285,15 +312,10 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ? `(+${compactK(expedientesCount)} en histórico)`
     : undefined
 
-  // Anexo 24 nav count — ACTIVE SKUs only (parts with at least one
-  // partida for this company). globalpc_productos carries 148K rows
-  // for EVCO but only ~693 have been actually imported; surfacing
-  // the full mirror on the home screen was exactly the noise Renato
-  // flagged 2026-04-19. Active count aligns with what the /anexo-24
-  // surface now shows post-filter, so the tile number and the
-  // destination page agree.
-  const activeCves = await getActiveCveProductos(supabase, companyId)
-  const activeSkuCount = activeCves.cves.size
+  // Anexo 24 nav count — ACTIVE SKUs only. activeCves + activeSkuCount
+  // are resolved once at the top of the render (right above the
+  // Promise.all) so the catálogo KPI counts can apply the same allowlist.
+  // Do not re-resolve here.
   const anexo24MicroStatus = activeSkuCount > 0
     ? `${activeSkuCount.toLocaleString('es-MX')} SKU${activeSkuCount === 1 ? '' : 's'} en tu Anexo 24`
     : 'Anexo 24 aparecerá cuando empieces a importar'

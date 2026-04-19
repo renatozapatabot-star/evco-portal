@@ -56,21 +56,61 @@
 .portal-badge--warn { color: var(--portal-amber); border-color: color-mix(in oklch, var(--portal-amber) 40%, transparent); background: color-mix(in oklch, var(--portal-amber) 6%, transparent); }
 .portal-badge--alert { color: var(--portal-red); border-color: color-mix(in oklch, var(--portal-red) 40%, transparent); background: color-mix(in oklch, var(--portal-red) 6%, transparent); }
 
-/* —— Cards ———————————————————————————————— */
+/* —— Cards ————————————————————————————————
+ * Chrome audit 2026-04-19 surfaced: .portal-card had no backdrop-filter,
+ * no rgba glass background, and no top-lit inset — it was visually a
+ * bordered opaque card, not a true glass panel. The Design System v6
+ * spec requires rgba(0,0,0,0.25) + blur(20px) + top-lit inset for the
+ * base card tier (secondary), and rgba(0,0,0,0.4) + halo for hero.
+ * This brings the primitive in line with /login's canon.
+ */
 .portal-card {
-  background: var(--portal-ink-1);
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
   border: 1px solid var(--portal-line-1);
   border-radius: var(--portal-r-4);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.07);
   position: relative;
   overflow: hidden;
-  transition: border-color var(--portal-dur-2) var(--portal-ease-out), transform var(--portal-dur-2) var(--portal-ease-out);
+  transition:
+    border-color var(--portal-dur-2) var(--portal-ease-out),
+    transform var(--portal-dur-2) var(--portal-ease-out),
+    box-shadow var(--portal-dur-2) var(--portal-ease-out);
 }
 .portal-card:hover { border-color: var(--portal-line-2); }
-.portal-card--raised { background: var(--portal-ink-2); box-shadow: var(--portal-shadow-2); }
+.portal-card--raised {
+  background: rgba(0,0,0,0.12);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
 .portal-card--interactive { cursor: pointer; }
-.portal-card--interactive:hover { border-color: var(--portal-line-3); transform: translateY(-1px); }
+.portal-card--interactive:hover {
+  border-color: var(--portal-line-3);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.5),
+    0 0 32px rgba(192,197,206,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
 .portal-card--hero {
-  background: radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--portal-green-2) 6%, var(--portal-ink-1)), var(--portal-ink-1) 60%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 40%),
+    rgba(0,0,0,0.4);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.6),
+    0 0 20px rgba(192,197,206,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.portal-card--hero:hover {
+  border-color: rgba(192,197,206,0.4);
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.75),
+    0 0 32px rgba(192,197,206,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.11);
 }
 
 /* Card grid indicator rail */

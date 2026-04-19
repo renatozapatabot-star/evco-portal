@@ -44,10 +44,10 @@ function formatDate(iso: string | null | undefined): string {
 
 function StatusPill({ status }: { status: Row['status'] }) {
   const cfg = status === 'approved'
-    ? { label: 'Aprobada', bg: 'rgba(34,197,94,0.12)', fg: '#4ade80', border: 'rgba(34,197,94,0.25)' }
+    ? { label: 'Aprobada',    bg: 'var(--portal-status-green-bg)', fg: 'var(--portal-status-green-fg)', border: 'var(--portal-status-green-ring)' }
     : status === 'draft'
-    ? { label: 'Borrador', bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', border: 'rgba(251,191,36,0.25)' }
-    : { label: 'Reemplazada', bg: 'rgba(148,163,184,0.10)', fg: TEXT_SECONDARY, border: 'rgba(148,163,184,0.25)' }
+    ? { label: 'Borrador',    bg: 'var(--portal-status-amber-bg)', fg: 'var(--portal-status-amber-fg)', border: 'var(--portal-status-amber-ring)' }
+    : { label: 'Reemplazada', bg: 'var(--portal-status-gray-bg)',  fg: TEXT_SECONDARY,                  border: 'var(--portal-status-gray-ring)'  }
   return (
     <span style={{
       fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
@@ -157,8 +157,8 @@ export default async function OcaListPage() {
                           fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8,
                           textTransform: 'uppercase',
                           padding: '2px 8px', borderRadius: 999,
-                          background: 'rgba(34,197,94,0.10)', color: '#4ade80',
-                          border: '1px solid rgba(34,197,94,0.25)',
+                          background: 'var(--portal-status-green-bg)', color: 'var(--portal-status-green-fg)',
+                          border: '1px solid var(--portal-status-green-ring)',
                         }}>T-MEC</span>
                       ) : null}
                     </div>

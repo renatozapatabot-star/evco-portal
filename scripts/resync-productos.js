@@ -16,6 +16,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
+const { safeUpsert } = require('./lib/safe-write')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 const TG = process.env.TELEGRAM_BOT_TOKEN
@@ -211,16 +212,17 @@ async function main() {
       tenant_id: TENANT_ID,
     }))
 
-    const { error } = await supabase.from('globalpc_productos').upsert(mapped, {
-      onConflict: 'cve_producto,cve_cliente,cve_proveedor',
-      ignoreDuplicates: false,
-    })
-
-    if (error) {
-      console.error(`  ❌ Batch error at ${offset}: ${error.message}`)
-      errors += rows.length
-    } else {
+    try {
+      await safeUpsert(supabase, 'globalpc_productos', mapped, {
+        onConflict: 'cve_producto,cve_cliente,cve_proveedor',
+        ignoreDuplicates: false,
+        scriptName: 'resync-productos',
+      })
       synced += rows.length
+    } catch (e) {
+      // safeUpsert throws + fires Telegram — here we track the local
+      // batch counter + keep the loop moving so partial progress survives.
+      errors += rows.length
     }
 
     offset += rows.length

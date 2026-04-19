@@ -9,6 +9,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.loc
 const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 const { withSyncLog } = require('./lib/sync-log')
+const { safeUpsert } = require('./lib/safe-write')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -172,8 +173,15 @@ async function run() {
             updated_at: new Date().toISOString()
           }
         })
-        const { error: upErr } = await supabase.from('traficos').upsert(batch, { onConflict: 'trafico', ignoreDuplicates: false })
-        if (upErr) throw new Error(`traficos upsert failed: ${upErr.message}`)
+        // safeUpsert: throws on error (same as before) + catches the
+        // zero-write-drift pattern that caused the 2026-04-16 incident
+        // (33h of "654 updated" while writing zero rows). Telegram-alerts
+        // both cases.
+        await safeUpsert(supabase, 'traficos', batch, {
+          onConflict: 'trafico',
+          ignoreDuplicates: false,
+          scriptName: 'globalpc-delta-sync',
+        })
       }
 
       totalFound = trafRows.length
@@ -232,8 +240,11 @@ async function run() {
           num_caja_trailer: r.num_caja_trailer || null,
           updated_at: new Date().toISOString()
         }))
-        const { error: entErr } = await supabase.from('entradas').upsert(batch, { onConflict: 'cve_entrada', ignoreDuplicates: false })
-        if (entErr) throw new Error(`entradas upsert failed: ${entErr.message}`)
+        await safeUpsert(supabase, 'entradas', batch, {
+          onConflict: 'cve_entrada',
+          ignoreDuplicates: false,
+          scriptName: 'globalpc-delta-sync',
+        })
       }
       totalFound += entRows.length
     }

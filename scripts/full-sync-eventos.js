@@ -9,6 +9,10 @@ const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
 async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
   if (process.env.TELEGRAM_SILENT === 'true') return
+// ⚠ SAME BUG-PAIR AS full-sync-productos.js (see its header). Stray
+// top-level return above kills the module under TELEGRAM_SILENT=true;
+// line ~52 has `|| 'unknown'` tenant fallback forbidden by Block EE.
+// Fix both together, not in isolation.
 
 async function run() {
   console.log('\n📋 FULL EVENTOS SYNC (upsert on consecutivo)')

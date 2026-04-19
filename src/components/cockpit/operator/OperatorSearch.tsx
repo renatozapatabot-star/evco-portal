@@ -77,8 +77,8 @@ export function OperatorSearch() {
 
   const typeColors: Record<string, string> = {
     trafico: 'var(--portal-fg-1)',
-    entrada: '#0D9488',
-    pedimento: '#8B949E',
+    entrada: 'var(--portal-ice-3)',
+    pedimento: 'var(--portal-fg-4)',
   }
 
   const typeLabels: Record<string, string> = {
@@ -97,7 +97,7 @@ export function OperatorSearch() {
         padding: '4px 4px 4px 14px',
         alignItems: 'center',
       }}>
-        <Search size={14} style={{ color: '#6E7681', flexShrink: 0 }} />
+        <Search size={14} style={{ color: 'var(--portal-fg-5)', flexShrink: 0 }} />
         <input
           type="text"
           value={query}
@@ -139,7 +139,7 @@ export function OperatorSearch() {
             }}>
               <span style={{
                 fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
-                color: typeColors[r.type] || '#8B949E',
+                color: typeColors[r.type] || 'var(--portal-fg-4)',
                 letterSpacing: '0.05em', flexShrink: 0, width: 60,
               }}>
                 {typeLabels[r.type]}
@@ -148,7 +148,7 @@ export function OperatorSearch() {
                 {r.id}
               </span>
               <span style={{
-                fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', flex: 1,
+                fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', flex: 1,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {r.subtitle}
@@ -162,7 +162,7 @@ export function OperatorSearch() {
         <div style={{
           marginTop: 8, padding: '12px 14px', borderRadius: 10,
           background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)',
-          fontSize: 'var(--aguila-fs-body)', color: '#6E7681', textAlign: 'center',
+          fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', textAlign: 'center',
         }}>
           Sin resultados para &quot;{query}&quot;
         </div>

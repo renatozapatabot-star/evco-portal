@@ -216,7 +216,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: 12,
         }}>
-          <FileText size={32} color="#475569" />
+          <FileText size={32} color="var(--portal-fg-5)" />
           <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
             Selecciona un pedimento para revisar
           </span>

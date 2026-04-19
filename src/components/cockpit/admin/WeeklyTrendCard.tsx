@@ -22,7 +22,7 @@ export function WeeklyTrendCard({ trend }: Props) {
       actionHref="/acciones"
       quietContent={
         trend.length === 0 ? (
-          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+          <div style={{ padding: '8px 0', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
             Sin actividad registrada
           </div>
         ) : (
@@ -42,7 +42,7 @@ export function WeeklyTrendCard({ trend }: Props) {
                     transition: 'height 300ms ease',
                   }} />
                   <span style={{
-                    fontSize: 9, color: isToday ? 'var(--portal-fg-1)' : '#6E7681',
+                    fontSize: 9, color: isToday ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
                     fontFamily: 'var(--font-jetbrains-mono)',
                     fontWeight: isToday ? 700 : 400,
                   }}>

@@ -146,7 +146,7 @@ export default function AlertasInternasPage() {
             return (
               <div key={a.id} style={{
                 padding: '12px 16px', borderRadius: 8,
-                background: isResolved ? '#F5F4F0' : sev.bg,
+                background: isResolved ? 'var(--portal-ink-2)' : sev.bg,
                 border: `1px solid ${isResolved ? 'var(--border)' : sev.color}20`,
                 borderLeft: `4px solid ${isResolved ? 'var(--text-muted)' : sev.color}`,
                 opacity: isResolved ? 0.6 : 1,

@@ -217,7 +217,7 @@ export function RecibirEntradaClient() {
             style={{
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               fontSize: 'var(--aguila-fs-compact)',
-              color: '#7A7E86',
+              color: 'var(--portal-fg-5)',
               margin: 0,
               wordBreak: 'break-all',
             }}
@@ -379,7 +379,7 @@ export function RecibirEntradaClient() {
           }}
           aria-label="Buscar embarque"
         />
-        {searchingTrafico && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86' }}>Buscando…</span>}
+        {searchingTrafico && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)' }}>Buscando…</span>}
         {traficoResults.length > 0 && !traficoId && (
           <ul
             style={{

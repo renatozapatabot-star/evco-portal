@@ -39,7 +39,7 @@ export function NextUpHero({ data, operatorName }: Props) {
             <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: 'var(--portal-fg-1)', marginBottom: 4 }}>
               Todo al corriente
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
               No hay pendientes para ti, {operatorName.split(' ')[0]}. Buen trabajo.
             </div>
           </div>
@@ -52,7 +52,7 @@ export function NextUpHero({ data, operatorName }: Props) {
     ? nextUp.suggestion.confidence >= 85 ? 'var(--portal-status-green-fg)'
     : nextUp.suggestion.confidence >= 70 ? 'var(--portal-status-amber-fg)'
     : 'var(--portal-status-red-fg)'
-    : '#6E7681'
+    : 'var(--portal-fg-5)'
 
   const confidenceBg = nextUp?.suggestion
     ? nextUp.suggestion.confidence >= 85 ? 'rgba(22,163,74,0.1)'
@@ -79,10 +79,10 @@ export function NextUpHero({ data, operatorName }: Props) {
                 <span className="font-mono" style={{ fontSize: 22, fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                   {nextUp.trafico}
                 </span>
-                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>· {nextUp.company}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>· {nextUp.company}</span>
               </div>
               <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)', marginBottom: 4 }}>{nextUp.description}</div>
-              <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+              <div style={{ display: 'flex', gap: 16, fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                 <span className="font-mono">{fmtUSDCompact(nextUp.valor_usd)}</span>
                 <span>llegó hace {nextUp.arrived_ago}</span>
               </div>
@@ -96,7 +96,7 @@ export function NextUpHero({ data, operatorName }: Props) {
                 marginBottom: 8,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>Documentos:</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)' }}>Documentos:</span>
                   <span className="font-mono" style={{
                     fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
                     color: nextUp.docs.present === nextUp.docs.total ? 'var(--portal-status-green-fg)' : nextUp.docs.missing.length > 2 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-amber-fg)',

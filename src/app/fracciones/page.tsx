@@ -74,7 +74,7 @@ export default function FraccionesPage() {
           disabled={loading || !query.trim()}
           style={{
             padding: '0 24px', height: 52, borderRadius: 14,
-            background: 'var(--portal-fg-1)', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
+            background: 'var(--portal-fg-1)', color: 'var(--portal-ink-0)', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
             border: 'none', cursor: 'pointer',
             opacity: loading || !query.trim() ? 0.5 : 1,
             transition: 'opacity 150ms, box-shadow 150ms',

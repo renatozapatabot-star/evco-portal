@@ -89,35 +89,35 @@ function buildXml(input: AvcInput): string {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 28, paddingBottom: 56, fontSize: 9, fontFamily: 'Helvetica', color: '#111827' },
+  page: { padding: 28, paddingBottom: 56, fontSize: 9, fontFamily: 'Helvetica', color: 'var(--portal-ink-1)' },
   section: {
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'var(--portal-fg-2)',
     padding: 8,
     borderRadius: 3,
   },
   sectionTitle: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    color: 'var(--portal-ink-1)',
     marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   row: { flexDirection: 'row', flexWrap: 'wrap' },
   item: { width: '50%', marginBottom: 4 },
-  label: { fontSize: 7, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.4 },
-  value: { fontSize: 10, color: '#111827', marginTop: 2 },
+  label: { fontSize: 7, color: 'var(--portal-fg-5)', textTransform: 'uppercase', letterSpacing: 0.4 },
+  value: { fontSize: 10, color: 'var(--portal-ink-1)', marginTop: 2 },
   banner: {
     marginBottom: 10,
     padding: 6,
     borderWidth: 0.5,
     borderColor: 'var(--portal-status-amber-fg)',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'var(--portal-status-amber-bg)',
     borderRadius: 2,
   },
-  bannerText: { fontSize: 8, color: '#92400E' },
+  bannerText: { fontSize: 8, color: 'var(--portal-status-amber-fg)' },
 })
 
 function Section({ title, items }: { title: string; items: Array<[string, string]> }) {

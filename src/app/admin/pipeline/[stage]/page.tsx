@@ -37,7 +37,7 @@ function pillStyle(kind: StatusPillKind): React.CSSProperties {
     success: { bg: 'var(--portal-status-green-bg)', fg: 'var(--portal-status-green-fg)', border: 'var(--portal-status-green-ring)' },
     pending: { bg: 'rgba(192,197,206,0.12)', fg: 'var(--portal-fg-1)', border: 'rgba(192,197,206,0.3)' },
     failed:  { bg: 'var(--portal-status-red-bg)', fg: 'var(--portal-status-red-fg)', border: 'var(--portal-status-red-ring)' },
-    neutral: { bg: 'rgba(255,255,255,0.04)', fg: '#8B949E', border: 'rgba(255,255,255,0.08)' },
+    neutral: { bg: 'rgba(255,255,255,0.04)', fg: 'var(--portal-fg-4)', border: 'rgba(255,255,255,0.08)' },
   }
   const c = map[kind]
   return {
@@ -115,7 +115,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
             alignItems: 'center',
             gap: 6,
             fontSize: 'var(--aguila-fs-compact)',
-            color: '#8B949E',
+            color: 'var(--portal-fg-4)',
             textDecoration: 'none',
             marginBottom: 12,
             minHeight: 44,
@@ -148,7 +148,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
           >
             Pipeline · {title}
           </h1>
-          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', margin: '4px 0 0' }}>
             Últimos {rows.length} evento{rows.length === 1 ? '' : 's'} — ordenados por fecha descendente.
           </p>
         </div>
@@ -165,7 +165,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
           }}
         >
           {rows.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: '#8B949E', fontSize: 'var(--aguila-fs-section)' }}>
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-section)' }}>
               Sin eventos recientes en este paso.
             </div>
           ) : (
@@ -204,7 +204,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
                         style={{
                           ...tdStyle,
                           fontFamily: 'var(--font-jetbrains-mono), monospace',
-                          color: '#8B949E',
+                          color: 'var(--portal-fg-4)',
                         }}
                       >
                         {(r.trigger_id as string) || '—'}
@@ -212,7 +212,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
                       <td style={tdStyle}>
                         <span style={pillStyle(kind)}>{(r.status as string) || 'n/a'}</span>
                       </td>
-                      <td style={{ ...tdStyle, color: '#8B949E', fontSize: 'var(--aguila-fs-compact)' }}>
+                      <td style={{ ...tdStyle, color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-compact)' }}>
                         {summarizePayload(r.payload) || '—'}
                       </td>
                     </tr>
@@ -234,7 +234,7 @@ const thStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color: '#8B949E',
+  color: 'var(--portal-fg-4)',
 }
 
 const tdStyle: React.CSSProperties = {

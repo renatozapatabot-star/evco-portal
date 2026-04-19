@@ -50,7 +50,7 @@ function ActionBadge({ action }: { action: AuditLogRow['action'] }) {
       ? { bg: 'rgba(192,197,206,0.12)', fg: 'var(--portal-fg-1)' }
       : action === 'UPDATE'
       ? { bg: 'rgba(192,197,206,0.08)', fg: 'var(--portal-fg-3)' }
-      : { bg: 'rgba(192,197,206,0.04)', fg: '#7A7E86' }
+      : { bg: 'rgba(192,197,206,0.04)', fg: 'var(--portal-fg-5)' }
   return (
     <span
       style={{
@@ -285,8 +285,8 @@ export function AuditoriaClient() {
                           ? <span style={{ color: 'var(--portal-fg-5)' }}>— sin cambios —</span>
                           : diffs.slice(0, 2).map((d) => (
                               <span key={d.field} style={{ marginRight: 12 }}>
-                                <span style={{ color: '#7A7E86' }}>{d.field}:</span>{' '}
-                                <span style={{ color: '#7A7E86', textDecoration: 'line-through', ...MONO }}>
+                                <span style={{ color: 'var(--portal-fg-5)' }}>{d.field}:</span>{' '}
+                                <span style={{ color: 'var(--portal-fg-5)', textDecoration: 'line-through', ...MONO }}>
                                   {truncate(d.before)}
                                 </span>{' '}
                                 <span style={{ color: 'var(--portal-fg-4)' }}>→</span>{' '}
@@ -297,7 +297,7 @@ export function AuditoriaClient() {
                             ))
                         }
                         {diffs.length > 2 && (
-                          <span style={{ color: '#7A7E86', fontSize: 'var(--aguila-fs-meta)' }}>
+                          <span style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-meta)' }}>
                             {' '}+{diffs.length - 2} más
                           </span>
                         )}
@@ -316,7 +316,7 @@ export function AuditoriaClient() {
                             }}
                           >
                             <div>
-                              <div style={{ color: '#7A7E86', fontSize: 'var(--aguila-fs-meta)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-meta)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 Antes
                               </div>
                               <pre style={preStyle}>

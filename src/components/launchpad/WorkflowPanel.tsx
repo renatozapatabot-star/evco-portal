@@ -42,14 +42,14 @@ export function WorkflowPanel({ open, onClose, title, children }: WorkflowPanelP
           marginBottom: 16,
         }}
       >
-        <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#1A1A1A' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--portal-ink-2)' }}>
           {title}
         </span>
         <button
           onClick={onClose}
           aria-label="Cerrar"
           style={{
-            background: '#F5F4F0',
+            background: 'var(--portal-ink-2)',
             border: 'none',
             borderRadius: '50%',
             width: 32,
@@ -59,7 +59,7 @@ export function WorkflowPanel({ open, onClose, title, children }: WorkflowPanelP
             justifyContent: 'center',
             cursor: 'pointer',
             fontSize: 'var(--aguila-fs-body-lg)',
-            color: '#6B6B6B',
+            color: 'var(--portal-fg-5)',
           }}
         >
           &#10005;

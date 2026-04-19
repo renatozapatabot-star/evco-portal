@@ -319,7 +319,7 @@ export default function ProveedoresPage() {
             onClick={() => setSortBy(opt.key)}
             style={{
               background: sortBy === opt.key ? 'var(--gold, #E8EAED)' : T.surface,
-              color: sortBy === opt.key ? '#FFFFFF' : T.textSecondary,
+              color: sortBy === opt.key ? 'var(--portal-fg-1)' : T.textSecondary,
               border: `1px solid ${sortBy === opt.key ? 'var(--gold, #E8EAED)' : T.border}`,
               borderRadius: 8, padding: '0 14px', height: 36,
               fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',

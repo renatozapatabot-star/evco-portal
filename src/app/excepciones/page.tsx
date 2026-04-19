@@ -71,8 +71,8 @@ interface ExceptionData {
 const SEVERITY_CONFIG = {
   critical: { color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: '#FECACA', label: 'CRÍTICO' },
   high: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ALTO' },
-  medium: { color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MEDIO' },
-  low: { color: '#9CA3AF', bg: '#F9FAFB', border: '#F3F4F6', label: 'BAJO' },
+  medium: { color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)', border: 'var(--portal-fg-2)', label: 'MEDIO' },
+  low: { color: 'var(--portal-fg-4)', bg: 'var(--portal-fg-1)', border: '#F3F4F6', label: 'BAJO' },
 } as const
 
 const TYPE_LABELS: Record<string, string> = {
@@ -139,7 +139,7 @@ export default function ExcepcionesPage() {
           }}>
             <KPICard label="Abiertas" value={data.summary.total_open} color={data.summary.total_open > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-green-fg)'} />
             <KPICard label="Críticas" value={data.summary.critical} color={data.summary.critical > 0 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)'} />
-            <KPICard label="Altas" value={data.summary.high} color={data.summary.high > 0 ? 'var(--portal-status-amber-fg)' : '#6B7280'} />
+            <KPICard label="Altas" value={data.summary.high} color={data.summary.high > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-5)'} />
             <KPICard label="Resueltas" value={data.summary.total_resolved} color="var(--portal-status-green-fg)" />
             <KPICard label="Precisión" value={data.summary.accuracy != null ? `${data.summary.accuracy}%` : '—'} color="var(--gold-dark)" />
           </div>

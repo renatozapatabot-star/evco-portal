@@ -50,7 +50,7 @@ function deriveCurrentStep(estatus: string | null, pedimento: string | null): nu
 }
 
 const TONES = {
-  done:    { dot: '#0D9488', text: '#0D9488', line: 'rgba(13,148,136,0.5)' }, // teal
+  done:    { dot: 'var(--portal-ice-3)', text: 'var(--portal-ice-3)', line: 'rgba(13,148,136,0.5)' }, // teal
   active:  { dot: '#C9A84C', text: '#C9A84C', line: 'rgba(201,168,76,0.45)' }, // gold
   pending: { dot: 'rgba(148,163,184,0.4)', text: 'rgba(148,163,184,0.6)', line: 'rgba(148,163,184,0.2)' },
 } as const
@@ -96,7 +96,7 @@ export function ActiveShipmentTimeline({ shipment }: { shipment: ActiveShipment 
         <span style={{
           padding: '4px 10px', borderRadius: 20,
           fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
-          background: 'rgba(13,148,136,0.12)', color: '#0D9488',
+          background: 'rgba(13,148,136,0.12)', color: 'var(--portal-ice-3)',
         }}>
           {estatusDisplay.label}
         </span>
@@ -168,7 +168,7 @@ export function ActiveShipmentTimeline({ shipment }: { shipment: ActiveShipment 
                 {step.label}
               </span>
               {i < current && (
-                <span aria-hidden style={{ fontSize: 14, color: '#0D9488', marginTop: -4 }}>✓</span>
+                <span aria-hidden style={{ fontSize: 14, color: 'var(--portal-ice-3)', marginTop: -4 }}>✓</span>
               )}
             </li>
           )

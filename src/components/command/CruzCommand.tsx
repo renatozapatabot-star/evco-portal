@@ -276,7 +276,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
         <Search
           size={isHero ? 22 : 18}
           strokeWidth={1.8}
-          color={focused ? '#F4D47A' : 'rgba(192,197,206,0.72)'}
+          color={focused ? 'var(--portal-gold-400)' : 'rgba(192,197,206,0.72)'}
           style={{ transition: 'color var(--dur-fast, 150ms) ease', flexShrink: 0 }}
           aria-hidden
         />
@@ -411,7 +411,7 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
                     background: 'rgba(201,167,74,0.16)',
                     border: '1px solid rgba(201,167,74,0.42)',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#F4D47A',
+                    color: 'var(--portal-gold-400)',
                     flexShrink: 0,
                   }}>
                     <Sparkles size={16} strokeWidth={2} />

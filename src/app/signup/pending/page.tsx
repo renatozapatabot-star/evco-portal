@@ -4,7 +4,7 @@ import Link from 'next/link'
 export default function SignupPendingPage() {
   return (
     <div style={{
-      minHeight: '100vh', background: '#05070B',
+      minHeight: '100vh', background: 'var(--portal-ink-0)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
@@ -24,7 +24,7 @@ export default function SignupPendingPage() {
           ✓
         </div>
 
-        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 12 }}>
           Solicitud recibida
         </h1>
         <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 24 }}>

@@ -31,10 +31,10 @@ export function FinancialPanel({ financial }: Props) {
             <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)', lineHeight: 1 }}>
               {fmtMXNCompact(financial.facturadoThisMonth) || '$0 MXN'}
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginTop: 4 }}>facturado este mes</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 4 }}>facturado este mes</div>
             <div className="font-mono" style={{
               fontSize: 'var(--aguila-fs-body)', marginTop: 2,
-              color: facturadoDelta.startsWith('▲') ? 'var(--portal-status-green-fg)' : facturadoDelta.startsWith('▼') ? 'var(--portal-status-red-fg)' : '#8B949E',
+              color: facturadoDelta.startsWith('▲') ? 'var(--portal-status-green-fg)' : facturadoDelta.startsWith('▼') ? 'var(--portal-status-red-fg)' : 'var(--portal-fg-4)',
             }}>
               {facturadoDelta} vs mes anterior
             </div>
@@ -43,10 +43,10 @@ export function FinancialPanel({ financial }: Props) {
             <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)', lineHeight: 1 }}>
               {fmtMXNCompact(financial.arancelesThisMonth) || '$0 MXN'}
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginTop: 4 }}>aranceles pagados</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 4 }}>aranceles pagados</div>
             <div className="font-mono" style={{
               fontSize: 'var(--aguila-fs-body)', marginTop: 2,
-              color: arancelesDelta.startsWith('▲') ? 'var(--portal-status-red-fg)' : arancelesDelta.startsWith('▼') ? 'var(--portal-status-green-fg)' : '#8B949E',
+              color: arancelesDelta.startsWith('▲') ? 'var(--portal-status-red-fg)' : arancelesDelta.startsWith('▼') ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-4)',
             }}>
               {arancelesDelta} vs mes anterior
             </div>

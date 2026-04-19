@@ -37,7 +37,7 @@ export function CorridorMap({ landmarks, pulses, onPulseClick, onLandmarkHover }
         scrollWheelZoom={true}
         zoomControl={true}
         attributionControl={true}
-        style={{ width: '100%', height: '100%', background: '#05070B' }}
+        style={{ width: '100%', height: '100%', background: 'var(--portal-ink-0)' }}
       >
         <CorridorTileLayer />
         {landmarks.map(lm => (

@@ -53,7 +53,7 @@ interface InventoryData {
 const RISK_CONFIG = {
   critical: { icon: AlertTriangle, color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: '#FECACA', label: 'CRÍTICO' },
   warning: { icon: AlertTriangle, color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ATENCIÓN' },
-  watch: { icon: Eye, color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MONITOREO' },
+  watch: { icon: Eye, color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)', border: 'var(--portal-fg-2)', label: 'MONITOREO' },
   ok: { icon: ShieldCheck, color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)', border: 'rgba(34,197,94,0.2)', label: 'OK' },
 } as const
 
@@ -159,7 +159,7 @@ export default function InventarioPage() {
                     borderRadius: 20,
                     border: `1px solid ${filter === f ? 'var(--gold)' : 'var(--border)'}`,
                     background: filter === f ? 'var(--gold)' : 'var(--bg-card)',
-                    color: filter === f ? '#FFFFFF' : 'var(--text-secondary)',
+                    color: filter === f ? 'var(--portal-fg-1)' : 'var(--text-secondary)',
                     fontSize: 'var(--aguila-fs-compact)',
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -178,7 +178,7 @@ export default function InventarioPage() {
               padding: '12px 16px', borderRadius: 8, marginBottom: 16,
               background: 'rgba(192,197,206,0.08)', border: '1px solid #FDE68A',
             }}>
-              <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: '#92400E', marginBottom: 4 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: 'var(--portal-status-amber-fg)', marginBottom: 4 }}>
                 {data.alerts.length} alerta(s) de reorden pendiente(s)
               </div>
               {data.alerts.slice(0, 2).map(a => (
@@ -243,7 +243,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
   const coverPct = Math.min(100, ((e.days_of_cover || 0) / 90) * 100)
   const barColor = e.risk_level === 'critical' ? 'var(--portal-status-red-fg)'
     : e.risk_level === 'warning' ? 'var(--portal-status-amber-fg)'
-    : e.risk_level === 'watch' ? '#6B7280'
+    : e.risk_level === 'watch' ? 'var(--portal-fg-5)'
     : 'var(--portal-status-green-fg)'
 
   return (
@@ -262,7 +262,7 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
             </span>
             <span style={{
               fontSize: 9, padding: '1px 6px', borderRadius: 4,
-              background: risk.color, color: '#FFFFFF', fontWeight: 700,
+              background: risk.color, color: 'var(--portal-fg-1)', fontWeight: 700,
             }}>
               {risk.label}
             </span>

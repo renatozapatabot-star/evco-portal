@@ -600,7 +600,7 @@ export function SolicitarDocsModal({
                 minWidth: 140,
                 padding: '0 20px',
                 background: sending || totalSelected === 0 ? 'rgba(192,197,206,0.35)' : GOLD,
-                color: '#0B1220',
+                color: 'var(--portal-ink-1)',
                 border: 'none',
                 borderRadius: 12,
                 fontSize: 'var(--aguila-fs-body)',
@@ -755,7 +755,7 @@ function CategorySection({
                         style={{
                           fontSize: 'var(--aguila-fs-label)',
                           fontWeight: 800,
-                          color: '#0B1220',
+                          color: 'var(--portal-ink-1)',
                           background: GOLD,
                           borderRadius: 999,
                           padding: '2px 8px',

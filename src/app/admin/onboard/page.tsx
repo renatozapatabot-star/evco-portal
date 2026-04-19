@@ -124,7 +124,7 @@ export default function OnboardPage() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', height: 44, border: `1px solid ${T.border}`, borderRadius: 8,
-    padding: '0 12px', fontSize: 'var(--aguila-fs-section)', background: '#05070B', color: T.text,
+    padding: '0 12px', fontSize: 'var(--aguila-fs-section)', background: 'var(--portal-ink-0)', color: T.text,
     outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
   }
   const labelStyle: React.CSSProperties = {
@@ -213,7 +213,7 @@ export default function OnboardPage() {
                     onChange={e => set('portal_password', e.target.value)} />
                   <button onClick={() => set('portal_password', generatePassword())}
                     style={{
-                      padding: '0 14px', background: '#05070B', border: `1px solid ${T.border}`,
+                      padding: '0 14px', background: 'var(--portal-ink-0)', border: `1px solid ${T.border}`,
                       borderRadius: 8, color: T.sub, fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer',
                       whiteSpace: 'nowrap', minHeight: 44,
                     }}>
@@ -251,7 +251,7 @@ export default function OnboardPage() {
               Al activar se creará la empresa, plantillas de documentos, preferencias de notificación, y se enviará email de bienvenida.
             </p>
 
-            <div style={{ background: '#05070B', borderRadius: 8, padding: 16, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2 }}>
+            <div style={{ background: 'var(--portal-ink-0)', borderRadius: 8, padding: 16, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2 }}>
               <div><span style={{ color: T.muted }}>Empresa:</span> <strong>{form.company_name}</strong></div>
               <div><span style={{ color: T.muted }}>Company ID:</span> <code style={{ background: T.border, padding: '2px 8px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)' }}>{form.company_id}</code></div>
               <div><span style={{ color: T.muted }}>Clave:</span> <span style={{ fontFamily: 'var(--font-mono)' }}>{form.clave_cliente}</span></div>
@@ -276,7 +276,7 @@ export default function OnboardPage() {
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={() => setStep(1)}
                 style={{
-                  padding: '12px 20px', background: '#05070B', border: `1px solid ${T.border}`,
+                  padding: '12px 20px', background: 'var(--portal-ink-0)', border: `1px solid ${T.border}`,
                   borderRadius: 8, color: T.text, fontWeight: 600, fontSize: 'var(--aguila-fs-body)',
                   cursor: 'pointer', minHeight: 48,
                 }}>
@@ -315,7 +315,7 @@ export default function OnboardPage() {
 
             {/* Credentials block */}
             <div style={{
-              background: '#05070B', borderRadius: 8, padding: 20, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2,
+              background: 'var(--portal-ink-0)', borderRadius: 8, padding: 20, fontSize: 'var(--aguila-fs-body)', lineHeight: 2.2,
             }}>
               <CopyRow label="Portal URL" value={result.portal_url} copied={copied} onCopy={copyToClipboard} />
               <CopyRow label="Company ID" value={result.company_id} copied={copied} onCopy={copyToClipboard} />
@@ -328,7 +328,7 @@ export default function OnboardPage() {
               <button onClick={handleSync} disabled={syncing || syncDone}
                 style={{
                   padding: '12px 20px',
-                  background: syncDone ? 'rgba(22,163,74,0.15)' : syncing ? '#333' : '#05070B',
+                  background: syncDone ? 'rgba(22,163,74,0.15)' : syncing ? '#333' : 'var(--portal-ink-0)',
                   border: `1px solid ${syncDone ? T.green + '40' : T.border}`,
                   borderRadius: 8,
                   color: syncDone ? T.green : T.text,
@@ -347,7 +347,7 @@ export default function OnboardPage() {
                 copyToClipboard(text, 'all')
               }}
                 style={{
-                  padding: '12px 20px', background: '#05070B',
+                  padding: '12px 20px', background: 'var(--portal-ink-0)',
                   border: `1px solid ${T.border}`, borderRadius: 8,
                   color: T.text, fontWeight: 600, fontSize: 'var(--aguila-fs-body)', cursor: 'pointer',
                   minHeight: 48,

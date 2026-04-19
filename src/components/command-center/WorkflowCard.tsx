@@ -66,7 +66,7 @@ function AnimatedKpi({ value, size = 32, isUSD = false, decimals = 0 }: { value:
       fontSize: size,
       fontWeight: 800,
       fontFamily: 'var(--font-mono)',
-      color: '#FFFFFF',
+      color: 'var(--portal-fg-1)',
       lineHeight: 1,
       textShadow: '0 0 16px rgba(192,197,206,0.2)',
     }}>
@@ -109,7 +109,7 @@ export function WorkflowCard({
         {/* Status badge */}
         {isGood && (
           <div className="cc-check-badge">
-            <CheckCircle2 size={14} style={{ color: '#FFFFFF' }} />
+            <CheckCircle2 size={14} style={{ color: 'var(--portal-fg-1)' }} />
           </div>
         )}
 
@@ -118,7 +118,7 @@ export function WorkflowCard({
           <div style={{ flex: '0 0 auto', minWidth: 180 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <Icon size={24} strokeWidth={1.5} style={{ color: U_ICON[u] }} />
-              <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{label}</span>
             </div>
 
             <div style={{ marginBottom: 8 }}>
@@ -143,7 +143,7 @@ export function WorkflowCard({
                 color: trendDelta > 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
               }}>
                 {trendDelta > 0 ? '↑' : '↓'}{Math.abs(Math.round(trendDelta))}%
-                <span style={{ color: '#6E7681', fontWeight: 400, marginLeft: 4, fontFamily: 'var(--font-geist-sans)' }}>vs semana pasada</span>
+                <span style={{ color: 'var(--portal-fg-5)', fontWeight: 400, marginLeft: 4, fontFamily: 'var(--font-geist-sans)' }}>vs semana pasada</span>
               </span>
             )}
 
@@ -154,8 +154,8 @@ export function WorkflowCard({
                   padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                   textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
                   ...(action.primary
-                    ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A' }
-                    : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.2)' }),
+                    ? { background: 'var(--gold, #E8EAED)', color: 'var(--portal-ink-2)' }
+                    : { background: 'transparent', color: 'var(--portal-fg-1)', border: '1px solid rgba(255,255,255,0.2)' }),
                 }}>
                   {action.label}
                 </Link>
@@ -165,7 +165,7 @@ export function WorkflowCard({
 
           {/* Right: Mini table of active embarques */}
           <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid rgba(255,255,255,0.06)', paddingLeft: 24 }}>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)', marginBottom: 8 }}>
               {hasActive ? 'En tránsito ahora' : 'Último cruce'}
             </div>
             {hasActive ? (
@@ -181,11 +181,11 @@ export function WorkflowCard({
                       {item.pedimento || item.trafico}
                     </span>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E' }}>{item.estatus}</span>
+                      <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)' }}>{item.estatus}</span>
                       <span style={{
                         fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 6px', borderRadius: 4,
                         background: item.daysOld > 5 ? 'rgba(220,38,38,0.15)' : item.daysOld > 2 ? 'rgba(217,119,6,0.12)' : 'rgba(255,255,255,0.06)',
-                        color: item.daysOld > 5 ? 'var(--portal-status-red-fg)' : item.daysOld > 2 ? 'var(--portal-status-amber-fg)' : '#8B949E',
+                        color: item.daysOld > 5 ? 'var(--portal-status-red-fg)' : item.daysOld > 2 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-4)',
                       }}>
                         {item.daysOld}d
                       </span>
@@ -196,24 +196,24 @@ export function WorkflowCard({
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <CheckCircle2 size={16} style={{ color: '#0D9488' }} />
-                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#0D9488' }}>Todo al corriente</span>
+                  <CheckCircle2 size={16} style={{ color: 'var(--portal-ice-3)' }} />
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--portal-ice-3)' }}>Todo al corriente</span>
                 </div>
                 {(totalTraficos ?? 0) > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>
                       <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{totalTraficos?.toLocaleString()}</span> operaciones desde 2024
                     </span>
                     {(totalCruzados ?? 0) > 0 && (
-                      <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{totalCruzados?.toLocaleString()}</span> cruces completados
                       </span>
                     )}
                   </div>
                 )}
                 {lastCrossingInfo && (
-                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', marginTop: 4 }}>
-                    Último: <span style={{ fontFamily: 'var(--font-mono)', color: '#8B949E' }}>{lastCrossingInfo.trafico}</span>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', marginTop: 4 }}>
+                    Último: <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-4)' }}>{lastCrossingInfo.trafico}</span>
                   </div>
                 )}
               </div>
@@ -272,7 +272,7 @@ export function WorkflowCard({
           }}
         >
           <div>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6E7681', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)', marginBottom: 4 }}>
               {label}
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
@@ -290,7 +290,7 @@ export function WorkflowCard({
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', marginTop: 2 }}>{subtitle}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', marginTop: 2 }}>{subtitle}</div>
           </div>
           {/* Blue gradient progress bar at bottom */}
           <div style={{
@@ -338,7 +338,7 @@ export function WorkflowCard({
           <Icon size={18} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>{label}</div>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</div>
           </div>
         </motion.div>
       </Link>
@@ -376,7 +376,7 @@ export function WorkflowCard({
         {/* Status indicator */}
         {isGood && (
           <div className="cc-check-badge">
-            <CheckCircle2 size={14} style={{ color: '#FFFFFF' }} />
+            <CheckCircle2 size={14} style={{ color: 'var(--portal-fg-1)' }} />
           </div>
         )}
 
@@ -405,7 +405,7 @@ export function WorkflowCard({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <Icon size={22} strokeWidth={1.5} style={{ color: U_ICON[u] }} />
-          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{label}</span>
         </div>
 
         <div style={{ marginBottom: criticalItem ? 4 : 16, minHeight: 40 }}>
@@ -430,7 +430,7 @@ export function WorkflowCard({
         {/* Critical item — info scent */}
         {criticalItem && (
           <div style={{
-            fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontFamily: 'var(--font-mono)',
             marginBottom: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {criticalItem}
@@ -443,8 +443,8 @@ export function WorkflowCard({
               padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
               textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
               ...(action.primary
-                ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A', border: 'none' }
-                : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.2)' }),
+                ? { background: 'var(--gold, #E8EAED)', color: 'var(--portal-ink-2)', border: 'none' }
+                : { background: 'transparent', color: 'var(--portal-fg-1)', border: '1px solid rgba(255,255,255,0.2)' }),
             }}>
               {action.label}
             </Link>
@@ -467,10 +467,10 @@ export function WorkflowCard({
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <Icon size={24} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.6)' }} />
-          <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF' }}>{label}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{label}</span>
         </div>
         <div style={{ marginBottom: 20 }}>
-          <span style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#FFFFFF', lineHeight: 1 }}>{kpi ?? 0}</span>
+          <span style={{ fontSize: 40, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-1)', lineHeight: 1 }}>{kpi ?? 0}</span>
           <span style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 500, color: 'rgba(255,255,255,0.6)', marginLeft: 10 }}>{subtitle}</span>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -478,7 +478,7 @@ export function WorkflowCard({
             <Link key={a.label} href={a.href} className="cc-card" style={{
               padding: '10px 20px', borderRadius: 8, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center',
-              ...(a.primary ? { background: 'var(--gold, #E8EAED)', color: '#1A1A1A' } : { background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.25)' }),
+              ...(a.primary ? { background: 'var(--gold, #E8EAED)', color: 'var(--portal-ink-2)' } : { background: 'transparent', color: 'var(--portal-fg-1)', border: '1px solid rgba(255,255,255,0.25)' }),
             }}>{a.label}</Link>
           ))}
         </div>
@@ -491,19 +491,19 @@ export function WorkflowCard({
     <Link href={href} style={{ textDecoration: 'none', display: 'block', animation: `ccCountUp 300ms ease both`, animationDelay: `${delay}ms`, ...(spanFull ? { gridColumn: '1 / -1' } : {}) }}>
       <div className="cc-card" style={{
         padding: '20px 16px', borderRadius: 20, background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: '#1A1A1A', display: 'flex', flexDirection: 'column', minHeight: 160, height: '100%', cursor: 'pointer', position: 'relative',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: 'var(--portal-ink-2)', display: 'flex', flexDirection: 'column', minHeight: 160, height: '100%', cursor: 'pointer', position: 'relative',
       }}>
-        {isGood && <div className="cc-check-badge"><CheckCircle2 size={14} style={{ color: '#FFFFFF' }} /></div>}
+        {isGood && <div className="cc-check-badge"><CheckCircle2 size={14} style={{ color: 'var(--portal-fg-1)' }} /></div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Icon size={24} strokeWidth={1.5} style={{ color: '#6B6B6B' }} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>{label}</span>
+          <Icon size={24} strokeWidth={1.5} style={{ color: 'var(--portal-fg-5)' }} />
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--portal-ink-2)' }}>{label}</span>
         </div>
-        <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
           {kpi !== null && kpi > 0 && <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{kpi} </span>}
           <span>{subtitle}</span>
         </div>
         {actions[0] && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 16px', borderRadius: 8, background: 'var(--gold, #E8EAED)', color: '#1A1A1A', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, marginTop: 'auto', alignSelf: 'flex-start' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 16px', borderRadius: 8, background: 'var(--gold, #E8EAED)', color: 'var(--portal-ink-2)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, marginTop: 'auto', alignSelf: 'flex-start' }}>
             {actions[0].label}
           </span>
         )}

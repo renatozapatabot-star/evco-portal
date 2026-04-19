@@ -49,7 +49,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <label style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#8B949E',
+          letterSpacing: '0.05em', color: 'var(--portal-fg-4)',
         }}>
           {label} {required && <span style={{ color: 'var(--portal-status-red-fg)' }}>*</span>}
         </label>
@@ -71,7 +71,7 @@ export function PrefillField({ label, name, prefill, type = 'text', placeholder,
       {/* Reasoning tooltip */}
       {showReasoning && prefill && (
         <div style={{
-          fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', padding: '6px 10px',
+          fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', padding: '6px 10px',
           background: 'rgba(192,197,206,0.06)', borderRadius: 6,
           border: '1px solid rgba(192,197,206,0.1)', marginBottom: 6,
           lineHeight: 1.5,
@@ -149,7 +149,7 @@ export function ConfirmAllButton({
         <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
           PORTAL pre-llenó {prefillCount} de {totalFields} campos ({pct}%)
         </div>
-        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', marginTop: 2 }}>
           Revisa los campos en dorado y confirma si todo es correcto
         </div>
       </div>

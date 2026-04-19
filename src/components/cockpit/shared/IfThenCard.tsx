@@ -38,7 +38,7 @@ const STATE_STYLES: Record<IfThenCardState | 'cleared', {
   quiet: {
     border: '1px solid rgba(255,255,255,0.08)',
     borderTop: '3px solid rgba(192,197,206,0.4)',
-    conditionColor: '#8B949E',
+    conditionColor: 'var(--portal-fg-4)',
     actionBg: 'rgba(255,255,255,0.06)',
   },
   active: {
@@ -106,11 +106,11 @@ export function IfThenCard({
             {title} — limpiada
           </span>
         </div>
-        <div style={{ color: '#6E7681', fontSize: 'var(--aguila-fs-compact)' }}>
+        <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-compact)' }}>
           {quietContent}
         </div>
         {(clearedBy || clearedAt) && (
-          <div style={{ marginTop: 6, fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
+          <div style={{ marginTop: 6, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
             {clearedBy && <span>{clearedBy}</span>}
             {clearedAt && <span> · {clearedAt}</span>}
           </div>
@@ -168,7 +168,7 @@ export function IfThenCard({
         <span style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.05em',
-          color: state === 'quiet' ? '#6E7681' : s.conditionColor,
+          color: state === 'quiet' ? 'var(--portal-fg-5)' : s.conditionColor,
         }}>
           {title}
         </span>
@@ -184,7 +184,7 @@ export function IfThenCard({
               ✓ Limpia
             </button>
           )}
-          {icon && <span style={{ color: '#6E7681' }}>{icon}</span>}
+          {icon && <span style={{ color: 'var(--portal-fg-5)' }}>{icon}</span>}
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export function IfThenCard({
 
       {/* Content */}
       <div style={{
-        color: state === 'quiet' ? 'var(--portal-fg-1)' : '#8B949E',
+        color: state === 'quiet' ? 'var(--portal-fg-1)' : 'var(--portal-fg-4)',
         fontSize: state === 'quiet' ? 14 : 12,
       }}>
         {quietContent}
@@ -211,7 +211,7 @@ export function IfThenCard({
 
       {/* Footer */}
       {footer && (
-        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
+        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
           {footer}
         </div>
       )}

@@ -151,7 +151,7 @@ export function CuentasView() {
                         background: i === finIntel.slice(-12).length - 1 ? GOLD : 'rgba(192,197,206,0.3)',
                         borderRadius: '3px 3px 0 0', transition: 'height 0.3s',
                       }} />
-                      <div style={{ fontSize: 8.5, color: '#9ca3af', fontFamily: 'var(--font-data)' }}>
+                      <div style={{ fontSize: 8.5, color: 'var(--portal-fg-4)', fontFamily: 'var(--font-data)' }}>
                         {m.period ? new Date(m.period).toLocaleDateString('es-MX', { month: 'short' }).slice(0, 3) : ''}
                       </div>
                     </div>

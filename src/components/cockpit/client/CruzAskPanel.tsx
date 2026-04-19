@@ -52,7 +52,7 @@ export function AduanaAskPanel() {
     }}>
       <div style={{
         fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-        letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
+        letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 12,
       }}>
         Pregúntale a PORTAL
       </div>
@@ -69,7 +69,7 @@ export function AduanaAskPanel() {
               borderRadius: 8,
               padding: '6px 12px',
               fontSize: 'var(--aguila-fs-compact)',
-              color: '#8B949E',
+              color: 'var(--portal-fg-4)',
               cursor: 'pointer',
             }}
           >
@@ -102,7 +102,7 @@ export function AduanaAskPanel() {
           disabled={loading || !question.trim()}
           style={{
             background: 'var(--portal-fg-1)',
-            color: '#05070B',
+            color: 'var(--portal-ink-0)',
             border: 'none',
             borderRadius: 10,
             padding: '0 20px',

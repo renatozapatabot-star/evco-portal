@@ -65,7 +65,7 @@ function getDocUrgency(deadline: string | null | undefined): { color: string; la
 
   if (daysUntil < 0) return { color: 'var(--danger)', label: `Venció hace ${Math.abs(daysUntil)} días` }
   if (daysUntil <= 7) return { color: 'var(--danger)', label: `Vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}` }
-  if (daysUntil <= 30) return { color: '#C47F17', label: `Vence en ${daysUntil} días` }
+  if (daysUntil <= 30) return { color: 'var(--portal-status-amber-fg)', label: `Vence en ${daysUntil} días` }
   if (daysUntil <= 90) return { color: 'var(--portal-status-amber-fg)', label: `Vence en ${daysUntil} días` }
   return { color: 'var(--text-muted)', label: '' }
 }
@@ -114,7 +114,7 @@ function SummaryCard({
                 style={{
                   width: `${globalPct}%`,
                   height: '100%',
-                  background: globalPct >= 80 ? '#2D8540' : globalPct >= 50 ? '#C47F17' : '#C23B22',
+                  background: globalPct >= 80 ? 'var(--portal-status-green-fg)' : globalPct >= 50 ? 'var(--portal-status-amber-fg)' : '#C23B22',
                   borderRadius: 9999,
                   transition: 'width 0.4s ease',
                 }}
@@ -199,7 +199,7 @@ function FilterTabs({
 // ── Progress Bar (inline) ───────────────────────────────
 
 function ProgressBar({ pct: p }: { pct: number }) {
-  const color = p >= 100 ? '#2D8540' : p >= 50 ? '#C47F17' : '#C23B22'
+  const color = p >= 100 ? 'var(--portal-status-green-fg)' : p >= 50 ? 'var(--portal-status-amber-fg)' : '#C23B22'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
       <div style={{ flex: 1, height: 5, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>

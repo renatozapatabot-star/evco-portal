@@ -25,9 +25,9 @@ interface Invoice {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  draft: { label: 'Borrador', color: 'var(--text-secondary)', bg: '#F5F4F0' },
+  draft: { label: 'Borrador', color: 'var(--text-secondary)', bg: 'var(--portal-ink-2)' },
   sent: { label: 'Enviada', color: 'var(--info)', bg: 'rgba(59,130,246,0.1)' },
-  viewed: { label: 'Vista', color: '#7E22CE', bg: '#F5F3FF' },
+  viewed: { label: 'Vista', color: 'var(--portal-ice-4)', bg: '#F5F3FF' },
   paid: { label: 'Pagada', color: 'var(--success)', bg: 'var(--portal-status-green-bg)' },
   overdue: { label: 'Vencida', color: 'var(--danger-500)', bg: 'var(--portal-status-red-bg)' },
 }

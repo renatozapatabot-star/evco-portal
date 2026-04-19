@@ -20,7 +20,7 @@ import { Anexo24DownloadCta } from './Anexo24DownloadCta'
 
 const PRIMARY_TEXT = 'var(--portal-fg-1)' // design-token
 const STATUS_GREEN = 'var(--portal-status-green-fg)' // design-token
-const STATUS_GOLD = '#F4D47A'  // design-token
+const STATUS_GOLD = 'var(--portal-gold-400)'  // design-token
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60

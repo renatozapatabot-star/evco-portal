@@ -261,7 +261,7 @@ export function AdvancedSearchModal({ open, onClose }: Props) {
               minHeight: 44, padding: '8px 20px',
               background: canSubmit ? 'var(--portal-fg-1)' : 'rgba(192,197,206,0.3)',
               border: 'none', borderRadius: 10,
-              color: canSubmit ? '#05070B' : 'var(--portal-fg-4)',
+              color: canSubmit ? 'var(--portal-ink-0)' : 'var(--portal-fg-4)',
               fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               cursor: canSubmit ? 'pointer' : 'not-allowed',
             }}

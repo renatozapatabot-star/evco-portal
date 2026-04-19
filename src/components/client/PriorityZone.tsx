@@ -92,7 +92,7 @@ export function PriorityZone({ atRiskShipments }: Props) {
                 {s.daysActive}d
               </span>
               <span style={{
-                fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5',
+                fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)',
                 flex: 1, minWidth: 0,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>

@@ -56,7 +56,7 @@ export function ProximasAccionesCard({ data }: Props) {
       actionHref={actions.length > 0 ? actions[0].href : undefined}
       quietContent={
         actions.length === 0 ? (
-          <div style={{ padding: '8px 0', color: '#6E7681', fontSize: 'var(--aguila-fs-body)', textAlign: 'center' }}>
+          <div style={{ padding: '8px 0', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)', textAlign: 'center' }}>
             Sin acciones pendientes — día al corriente
           </div>
         ) : (

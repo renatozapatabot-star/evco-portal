@@ -31,7 +31,7 @@ export function BridgeCard() {
       actionHref="/cruces"
       quietContent={
         bridges.length === 0 ? (
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681' }}>Cargando puentes...</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)' }}>Cargando puentes...</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {bridges.slice(0, 4).map(b => (
@@ -43,7 +43,7 @@ export function BridgeCard() {
                   }} />
                   <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)' }}>{b.nameEs || b.name}</span>
                 </div>
-                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{b.commercial}m</span>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>{b.commercial}m</span>
               </div>
             ))}
             {best && (

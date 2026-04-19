@@ -75,7 +75,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
           <Icon size={18} color={accent} strokeWidth={1.8} />
         </div>
         <span style={{
-          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#8b9ab5',
+          fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-fg-4)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
           {label}
@@ -313,7 +313,7 @@ export default function KPIsPage() {
           label="Tasa de Éxito" value={`${kpis.successRate}%`}
           sub={`${kpis.cruzados} de ${kpis.total} operaciones completadas`} />
 
-        <KPICard icon={TrendingUp} accent="#0D9488"
+        <KPICard icon={TrendingUp} accent="var(--portal-ice-3)"
           label="Cumplimiento T-MEC" value={`${kpis.tmecPct}%`}
           sub={`${kpis.tmecOps} operaciones con régimen T-MEC`} />
 
@@ -380,7 +380,7 @@ export default function KPIsPage() {
                 }} />
               </div>
               <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5',
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)',
                 minWidth: 70, textAlign: 'right',
               }}>
                 {count} ({pct}%)
@@ -405,7 +405,7 @@ export default function KPIsPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#475569',
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)',
                     minWidth: 20, textAlign: 'right',
                   }}>
                     {i + 1}
@@ -414,7 +414,7 @@ export default function KPIsPage() {
                     {frac}
                   </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: '#8b9ab5' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                   {count} operaciones
                 </span>
               </div>

@@ -9,7 +9,7 @@ import type { SupplierAgg } from './SupplierDetail'
 
 const T = {
   surface: 'var(--bg-card)',
-  surfaceHover: '#F5F4F0',
+  surfaceHover: 'var(--portal-ink-2)',
   surfaceActive: '#EEEDE8',
   border: 'var(--border)',
   text: 'var(--text-primary)',

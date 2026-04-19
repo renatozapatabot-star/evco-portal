@@ -212,7 +212,7 @@ export default function UploadPage() {
                 return (
                   <div key={doc} style={{
                     padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
-                    fontSize: 'var(--aguila-fs-section)', color: isDone ? 'var(--success)' : '#475569',
+                    fontSize: 'var(--aguila-fs-section)', color: isDone ? 'var(--success)' : 'var(--portal-fg-5)',
                     borderBottom: '1px solid #E2E8F0',
                   }}>
                     <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>{isDone ? '✅' : '☐'}</span>
@@ -270,7 +270,7 @@ export default function UploadPage() {
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 16, fontSize: 'var(--aguila-fs-meta)', color: '#475569' }}>
+        <div style={{ textAlign: 'center', marginTop: 16, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
           Enlace válido por 48 horas · Renato Zapata &amp; Company
         </div>
       </div>
@@ -302,7 +302,7 @@ function ReferralForm() {
       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email de contacto (opcional)"
         style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: '#E2E8F0', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
       <button onClick={submit} disabled={!name.trim()}
-        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : '#6B7280', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
+        style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
         Recomendar
       </button>
     </div>

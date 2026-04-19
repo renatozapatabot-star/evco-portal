@@ -40,7 +40,7 @@ function LiveIndicator({ lastFetchTime }: { lastFetchTime: number | null }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
       padding: '6px 0', marginBottom: 8,
-      fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: '#6E7681',
+      fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, color: 'var(--portal-fg-5)',
     }}>
       <span style={{
         width: 6, height: 6, borderRadius: '50%', background: color,
@@ -164,7 +164,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
         {criticalCount > 0 && (
           <Link href={criticalHref} onClick={e => e.stopPropagation()} style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
-            background: bc.btn, color: '#FFFFFF', textDecoration: 'none',
+            background: bc.btn, color: 'var(--portal-fg-1)', textDecoration: 'none',
           }}>
             {bannerLevel === 'red' ? 'Resolver ahora' : 'Ver pendientes'}
           </Link>
@@ -189,7 +189,7 @@ function CommandStrip({ urgentes, criticalCount, mood, isMobile, criticosOpen, s
               </div>
               <span style={{
                 fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '4px 10px', borderRadius: 4,
-                background: 'var(--gold, #E8EAED)', color: '#FFFFFF', flexShrink: 0,
+                background: 'var(--gold, #E8EAED)', color: 'var(--portal-fg-1)', flexShrink: 0,
               }}>
                 Resolver
               </span>
@@ -252,7 +252,7 @@ function PasswordResetBanner() {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <Link href="/cambiar-contrasena" style={{
           padding: '6px 14px', borderRadius: 6, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
-          background: 'var(--gold, #E8EAED)', color: '#FFFFFF', textDecoration: 'none',
+          background: 'var(--gold, #E8EAED)', color: 'var(--portal-fg-1)', textDecoration: 'none',
           minHeight: 44, display: 'inline-flex', alignItems: 'center',
         }}>
           Cambiar ahora
@@ -336,7 +336,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       background: 'var(--bg-card)', border: '1px solid var(--border)',
       borderLeft: '3px solid #0D9488', marginBottom: 12,
     }}>
-      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0D9488', marginBottom: 4 }}>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-ice-3)', marginBottom: 4 }}>
         Mientras estuvo fuera
       </div>
       <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
@@ -417,7 +417,7 @@ export function CommandCenterView({ viewMode = 'client' }: { viewMode?: 'client'
       {realtimeToast && (
         <div className="cc-toast-fixed" style={{
           padding: '10px 16px', borderRadius: 10,
-          background: '#0D9488', color: '#FFFFFF', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
+          background: 'var(--portal-ice-3)', color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
           animation: 'fadeInUp 200ms ease',
         }}>
           {realtimeToast}

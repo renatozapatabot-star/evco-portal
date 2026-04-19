@@ -7,7 +7,7 @@ interface Props {
   facturas: Array<{ valor_usd: number | null; dta: number | null; igi: number | null; iva: number | null; fecha_pago: string | null }>
 }
 
-const COLORS = ['var(--gold)', 'var(--info)', 'var(--success)', '#7E22CE']
+const COLORS = ['var(--gold)', 'var(--info)', 'var(--success)', 'var(--portal-ice-4)']
 
 /**
  * Financial breakdown chart — monthly DTA, IGI, IVA contributions.
@@ -47,8 +47,8 @@ export function FinancialBreakdown({ facturas }: Props) {
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-          <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 'var(--aguila-fs-label)', fill: '#9B9B9B' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+          <XAxis dataKey="month" tick={{ fontSize: 'var(--aguila-fs-label)', fill: 'var(--portal-fg-4)' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 'var(--aguila-fs-label)', fill: 'var(--portal-fg-4)' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
           <Tooltip
             contentStyle={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E8E5E0', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)' }}
             formatter={(value) => [`$${Math.round(Number(value)).toLocaleString()}`]}

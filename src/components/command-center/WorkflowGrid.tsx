@@ -308,7 +308,7 @@ export function WorkflowGrid(props: WorkflowGridProps) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '12px 16px', borderRadius: 10,
             background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-            color: '#6E7681', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
+            color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
             minHeight: 44,
           }}
         >

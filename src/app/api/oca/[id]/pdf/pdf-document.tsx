@@ -3,7 +3,7 @@ import { AguilaPdfHeader, AguilaPdfFooter, PDF_BORDER, PDF_TEXT_MUTED, PDF_TEXT_
 import type { OcaRow } from '@/lib/oca/types'
 
 const s = StyleSheet.create({
-  page: { backgroundColor: '#FFFFFF', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 'var(--aguila-fs-label)' },
+  page: { backgroundColor: 'var(--portal-fg-1)', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 'var(--aguila-fs-label)' },
   h2: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_SILVER_DIM, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 6 },
   label: { width: 120, fontSize: 9, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -16,7 +16,7 @@ const s = StyleSheet.create({
   sig: { marginTop: 28, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },
   sigName: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY, marginTop: 6 },
   sigTitle: { fontSize: 9, color: PDF_TEXT_MUTED, marginTop: 2 },
-  draftBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, backgroundColor: '#FEF3C7', color: '#92400E', fontSize: 9, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, marginTop: 6 },
+  draftBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, backgroundColor: 'var(--portal-status-amber-bg)', color: 'var(--portal-status-amber-fg)', fontSize: 9, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, marginTop: 6 },
 })
 
 const fmtDate = (d: string | null | undefined) => {

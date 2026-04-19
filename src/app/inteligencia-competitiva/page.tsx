@@ -28,9 +28,9 @@ interface IntelData {
 
 const TYPE_CONFIG: Record<string, { icon: typeof Eye; label: string; color: string }> = {
   competitor_move: { icon: Eye, label: 'Competencia', color: '#6366F1' },
-  regulatory_change: { icon: Shield, label: 'Regulatorio', color: '#7E22CE' },
+  regulatory_change: { icon: Shield, label: 'Regulatorio', color: 'var(--portal-ice-4)' },
   market_opportunity: { icon: Zap, label: 'Oportunidad', color: 'var(--portal-status-green-fg)' },
-  industry_trend: { icon: TrendingUp, label: 'Tendencia', color: '#0D9488' },
+  industry_trend: { icon: TrendingUp, label: 'Tendencia', color: 'var(--portal-ice-3)' },
   tariff_change: { icon: DollarSign, label: 'Arancelario', color: 'var(--portal-status-amber-fg)' },
 }
 
@@ -89,8 +89,8 @@ export default function IntelCompetitivaPage() {
             gap: 12, marginBottom: 20,
           }}>
             <KPI label="Total" value={data.summary.total} color="var(--text-primary)" />
-            <KPI label="Nuevos" value={data.summary.new} color={data.summary.new > 0 ? 'var(--portal-status-amber-fg)' : '#6B7280'} />
-            <KPI label="Accionables" value={data.summary.actionable} color={data.summary.actionable > 0 ? 'var(--portal-status-green-fg)' : '#6B7280'} />
+            <KPI label="Nuevos" value={data.summary.new} color={data.summary.new > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-5)'} />
+            <KPI label="Accionables" value={data.summary.actionable} color={data.summary.actionable > 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-5)'} />
           </div>
 
           {/* Filter */}
@@ -106,7 +106,7 @@ export default function IntelCompetitivaPage() {
           {/* Intel cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {filtered.map(item => {
-              const config = TYPE_CONFIG[item.intel_type] || { icon: Eye, label: item.intel_type, color: '#6B7280' }
+              const config = TYPE_CONFIG[item.intel_type] || { icon: Eye, label: item.intel_type, color: 'var(--portal-fg-5)' }
               const Icon = config.icon
               return (
                 <div key={item.id} style={{

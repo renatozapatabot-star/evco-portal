@@ -40,15 +40,15 @@ export function StatusHero({ statusLevel, statusSentence, entradasThisMonth, act
               {statusLevel === 'green' ? 'Todo en orden' : statusLevel === 'amber' ? 'Atención' : 'Acción requerida'}
             </span>
           </div>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', marginBottom: 10 }}>{statusSentence}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginBottom: 10 }}>{statusSentence}</div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <div>
               <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{entradasThisMonth}</span>
-              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>entrada{entradasThisMonth !== 1 ? 's' : ''} este mes</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginLeft: 6 }}>entrada{entradasThisMonth !== 1 ? 's' : ''} este mes</span>
             </div>
             <div>
               <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>{activeShipments}</span>
-              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 6 }}>envío{activeShipments !== 1 ? 's' : ''} en tránsito</span>
+              <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginLeft: 6 }}>envío{activeShipments !== 1 ? 's' : ''} en tránsito</span>
             </div>
           </div>
         </>

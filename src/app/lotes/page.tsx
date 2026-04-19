@@ -101,7 +101,7 @@ export default function LotesPage() {
         <h1 style={{ margin: '0 0 4px', fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
           Lotes
         </h1>
-        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
+        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
           {totalTraficos} embarques activos agrupados para procesamiento rápido
         </p>
       </div>
@@ -123,19 +123,19 @@ export default function LotesPage() {
             <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
               {batches.length}
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>lotes</p>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>lotes</p>
           </div>
           <div>
             <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
               {totalTraficos}
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>embarques</p>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>embarques</p>
           </div>
           <div>
             <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--gold)' }}>
               ~{totalTime} min
             </span>
-            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>tiempo estimado</p>
+            <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>tiempo estimado</p>
           </div>
         </div>
       )}
@@ -165,10 +165,10 @@ export default function LotesPage() {
                   <h3 style={{ margin: 0, fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'rgba(255,255,255,0.03)' }}>
                     {batch.title}
                   </h3>
-                  <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
+                  <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
                     {batch.description}
                   </p>
-                  <p className="font-mono" style={{ margin: '6px 0 0', fontSize: 'var(--aguila-fs-body)', color: '#9B9B9B' }}>
+                  <p className="font-mono" style={{ margin: '6px 0 0', fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                     ~{batch.estimated_minutes} min estimados
                   </p>
                 </div>
@@ -186,14 +186,14 @@ export default function LotesPage() {
                       fontSize: 'var(--aguila-fs-compact)',
                       background: 'rgba(255,255,255,0.06)',
                       border: '1px solid #E8E5E0',
-                      color: '#6B6B6B',
+                      color: 'var(--portal-fg-5)',
                     }}
                   >
                     {t}
                   </span>
                 ))}
                 {batch.traficos.length > 5 && (
-                  <span style={{ padding: '2px 8px', fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B' }}>
+                  <span style={{ padding: '2px 8px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>
                     +{batch.traficos.length - 5} más
                   </span>
                 )}
@@ -207,7 +207,7 @@ export default function LotesPage() {
                   minHeight: 48,
                   borderRadius: 12,
                   background: 'var(--gold)',
-                  color: '#FFFFFF',
+                  color: 'var(--portal-fg-1)',
                   border: 'none',
                   fontSize: 15,
                   fontWeight: 600,

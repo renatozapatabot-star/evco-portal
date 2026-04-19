@@ -46,8 +46,8 @@ interface ProfitData {
 const TIER_COLORS: Record<string, { color: string; bg: string }> = {
   platinum: { color: '#6366F1', bg: '#EEF2FF' },
   gold: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)' },
-  silver: { color: '#6B7280', bg: '#F9FAFB' },
-  bronze: { color: '#92400E', bg: '#FEF3C7' },
+  silver: { color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)' },
+  bronze: { color: 'var(--portal-status-amber-fg)', bg: 'var(--portal-status-amber-bg)' },
 }
 
 export default function RentabilidadPage() {
@@ -149,7 +149,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
   const tier = TIER_COLORS[c.insights?.tier || 'bronze'] || TIER_COLORS.bronze
   const growthSignal = c.insights?.growth_signal || 'stable'
   const GrowthIcon = growthSignal === 'growing' ? TrendingUp : growthSignal === 'declining' ? TrendingDown : Minus
-  const growthColor = growthSignal === 'growing' ? 'var(--portal-status-green-fg)' : growthSignal === 'declining' ? 'var(--portal-status-red-fg)' : '#6B7280'
+  const growthColor = growthSignal === 'growing' ? 'var(--portal-status-green-fg)' : growthSignal === 'declining' ? 'var(--portal-status-red-fg)' : 'var(--portal-fg-5)'
 
   return (
     <div style={{

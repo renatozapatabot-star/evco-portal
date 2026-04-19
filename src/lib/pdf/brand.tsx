@@ -20,11 +20,11 @@ import {
 
 export const PDF_SILVER = 'var(--portal-fg-3)'
 export const PDF_SILVER_BRIGHT = 'var(--portal-fg-1)'
-export const PDF_SILVER_DIM = '#7A7E86'
-export const PDF_TEXT_MUTED = '#6B7280'
-export const PDF_TEXT_PRIMARY = '#111827'
-export const PDF_BORDER = '#E5E7EB'
-export const PDF_ZEBRA = '#F9FAFB'
+export const PDF_SILVER_DIM = 'var(--portal-fg-5)'
+export const PDF_TEXT_MUTED = 'var(--portal-fg-5)'
+export const PDF_TEXT_PRIMARY = 'var(--portal-ink-1)'
+export const PDF_BORDER = 'var(--portal-fg-2)'
+export const PDF_ZEBRA = 'var(--portal-fg-1)'
 
 // Silhouette path kept deliberately simple so @react-pdf renders reliably.
 export const EAGLE_PATH =

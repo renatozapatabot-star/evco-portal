@@ -38,11 +38,11 @@ export function PerformanceStrip({
           <div>
             <span className="font-mono" style={{
               fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800,
-              color: isRecord ? 'var(--portal-fg-1)' : todayCount > 0 ? 'var(--portal-fg-1)' : '#6E7681',
+              color: isRecord ? 'var(--portal-fg-1)' : todayCount > 0 ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
             }}>
               {todayCount}
             </span>
-            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginLeft: 6 }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', marginLeft: 6 }}>
               acción{todayCount !== 1 ? 'es' : ''} hoy
             </span>
           </div>
@@ -76,7 +76,7 @@ export function PerformanceStrip({
               🔥 {currentStreak}d racha
             </span>
           )}
-          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
             {teamRank}º de {teamSize}
           </span>
         </div>
@@ -92,18 +92,18 @@ export function PerformanceStrip({
             transition: 'width 500ms ease',
           }} />
         </div>
-        <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', flexShrink: 0 }}>
           meta: {nextMilestone}
         </span>
       </div>
 
       {/* Bottom: week + month */}
       <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
-          Semana: <span className="font-mono" style={{ color: '#8B949E', fontWeight: 600 }}>{weekCount}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
+          Semana: <span className="font-mono" style={{ color: 'var(--portal-fg-4)', fontWeight: 600 }}>{weekCount}</span>
         </span>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
-          Mes: <span className="font-mono" style={{ color: '#8B949E', fontWeight: 600 }}>{monthCount}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
+          Mes: <span className="font-mono" style={{ color: 'var(--portal-fg-4)', fontWeight: 600 }}>{monthCount}</span>
         </span>
       </div>
     </div>

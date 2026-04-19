@@ -151,7 +151,7 @@ export function AuditoriaGenerator({ clients }: Props) {
                 <option value="">Sin clientes activos</option>
               ) : (
                 clients.map((c) => (
-                  <option key={c.companyId} value={c.companyId} style={{ background: '#0B1220', color: TEXT_PRIMARY }}>
+                  <option key={c.companyId} value={c.companyId} style={{ background: 'var(--portal-ink-1)', color: TEXT_PRIMARY }}>
                     {c.name}{c.clave ? ` · clave ${c.clave}` : ''}
                   </option>
                 ))

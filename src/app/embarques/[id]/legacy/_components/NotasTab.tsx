@@ -129,7 +129,7 @@ export function NotasTab({ traficoId, notes }: { traficoId: string; notes: NoteR
               minWidth: 120,
               padding: '0 20px',
               background: pending || !draft.trim() ? 'rgba(192,197,206,0.35)' : GOLD,
-              color: '#0B1220',
+              color: 'var(--portal-ink-1)',
               border: 'none',
               borderRadius: 12,
               fontSize: 'var(--aguila-fs-body)',

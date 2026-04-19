@@ -169,7 +169,7 @@ export function ExportarClient({ pedimentoId }: ExportarClientProps) {
           background: validation.can_submit && !generating
             ? 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)'
             : 'rgba(192,197,206,0.25)',
-          color: validation.can_submit && !generating ? 'var(--portal-ink-0)' : '#7A7E86',
+          color: validation.can_submit && !generating ? 'var(--portal-ink-0)' : 'var(--portal-fg-5)',
         }}
       >
         {generating ? 'Generando…' : 'Generar archivo'}

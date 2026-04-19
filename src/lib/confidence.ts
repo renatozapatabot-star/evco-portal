@@ -56,8 +56,8 @@ export function calculateConfidence(trafico: Record<string, unknown>): Confidenc
   let label: string
   let color: string
 
-  if (score >= 90) { level = 'alta'; label = 'Alta certeza'; color = '#0D9488' }
-  else if (score >= 70) { level = 'encamino'; label = 'En camino'; color = '#475569' }
+  if (score >= 90) { level = 'alta'; label = 'Alta certeza'; color = 'var(--portal-ice-3)' }
+  else if (score >= 70) { level = 'encamino'; label = 'En camino'; color = 'var(--portal-fg-5)' }
   else if (score >= 50) { level = 'atencion'; label = 'Atención necesaria'; color = 'var(--portal-status-amber-fg)' }
   else { level = 'accion'; label = 'Requiere acción'; color = 'var(--portal-status-red-fg)' }
 

@@ -25,10 +25,10 @@ import type {
 
 const SILVER = 'var(--portal-fg-3)'
 const SILVER_BRIGHT = 'var(--portal-fg-1)'
-const TEXT_MUTED = '#6B7280'
-const TEXT_PRIMARY = '#111827'
-const BORDER = '#E5E7EB'
-const ZEBRA = '#F9FAFB'
+const TEXT_MUTED = 'var(--portal-fg-5)'
+const TEXT_PRIMARY = 'var(--portal-ink-1)'
+const BORDER = 'var(--portal-fg-2)'
+const ZEBRA = 'var(--portal-fg-1)'
 
 const styles = StyleSheet.create({
   page: {
@@ -100,16 +100,16 @@ const styles = StyleSheet.create({
     padding: 6,
     borderWidth: 0.5,
     borderColor: 'var(--portal-status-amber-fg)',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'var(--portal-status-amber-bg)',
     borderRadius: 2,
   },
   warningTitle: {
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
-    color: '#92400E',
+    color: 'var(--portal-status-amber-fg)',
     marginBottom: 3,
   },
-  warningItem: { fontSize: 7, color: '#92400E', marginBottom: 1 },
+  warningItem: { fontSize: 7, color: 'var(--portal-status-amber-fg)', marginBottom: 1 },
 })
 
 function MetaBlock({ meta }: { meta: GeneratedSheetMeta }) {

@@ -362,11 +362,11 @@ export function ClientHome({ companyName, data }: { companyName?: string; data: 
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 justifyContent: 'center', padding: '24px 16px', gap: 8,
               }}>
-                <Clock size={24} color="#475569" />
+                <Clock size={24} color="var(--portal-fg-5)" />
                 <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', textAlign: 'center' }}>
                   Sin actividad reciente
                 </span>
-                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#475569', textAlign: 'center' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', textAlign: 'center' }}>
                   Las actualizaciones de sus operaciones aparecerán aquí
                 </span>
               </div>

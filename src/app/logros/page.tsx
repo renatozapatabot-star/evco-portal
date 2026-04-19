@@ -180,7 +180,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
           <div style={{
             height: 4,
             borderRadius: 2,
-            background: '#F5F4F0',
+            background: 'var(--portal-ink-2)',
             overflow: 'hidden',
             marginBottom: 4,
           }}>

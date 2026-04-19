@@ -8,7 +8,7 @@ import Link from 'next/link'
 
 const T = {
   surface: 'var(--bg-card)',
-  surfaceHover: '#F5F4F0',
+  surfaceHover: 'var(--portal-ink-2)',
   surfaceActive: '#EEEDE8',
   border: 'var(--border)',
   text: 'var(--text-primary)',
@@ -152,7 +152,7 @@ export function SupplierDetail({ supplier: s }: { supplier: SupplierAgg }) {
                 <span style={{
                   fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, padding: '2px 8px', borderRadius: 9999,
                   background: isCruzado ? 'rgba(45,133,64,0.15)' : 'rgba(196,127,23,0.15)',
-                  color: isCruzado ? T.green : '#C47F17',
+                  color: isCruzado ? T.green : 'var(--portal-status-amber-fg)',
                   border: `1px solid ${isCruzado ? 'rgba(45,133,64,0.25)' : 'rgba(196,127,23,0.25)'}`,
                   textAlign: 'center',
                 }}>

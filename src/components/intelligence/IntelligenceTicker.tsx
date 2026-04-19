@@ -62,7 +62,7 @@ function TickerRow({ items }: { items: TickerItem[] }) {
             }}
           >
             {it.icon ? <span style={{ opacity: 0.7 }}>{it.icon}</span> : null}
-            <span style={{ color: '#7A7E86', fontSize: 'inherit' }}>{it.label}</span>
+            <span style={{ color: 'var(--portal-fg-5)', fontSize: 'inherit' }}>{it.label}</span>
             <span
               style={{
                 fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',

@@ -188,7 +188,7 @@ export default function ActividadPage() {
                 background: item.isNew ? 'rgba(196,150,60,0.04)' : 'transparent',
                 transition: 'background 100ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#F5F4F0' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--portal-ink-2)' }}
               onMouseLeave={e => { e.currentTarget.style.background = item.isNew ? 'rgba(196,150,60,0.04)' : 'transparent' }}
             >
               {/* New indicator */}

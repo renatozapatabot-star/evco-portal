@@ -108,6 +108,62 @@ const HEX_MAP = {
   '#0a0a0c': 'var(--portal-ink-0)',
   '#0D0D0C': 'var(--portal-ink-0)',
   '#0d0d0c': 'var(--portal-ink-0)',
+  '#05070B': 'var(--portal-ink-0)',
+  '#0B1220': 'var(--portal-ink-1)',
+
+  // Extended mute / gray family → fg-3/4/5
+  '#8B949E': 'var(--portal-fg-4)',
+  '#8b949e': 'var(--portal-fg-4)',
+  '#6E7681': 'var(--portal-fg-5)',
+  '#6e7681': 'var(--portal-fg-5)',
+  '#9B9B9B': 'var(--portal-fg-4)',
+  '#9b9b9b': 'var(--portal-fg-4)',
+  '#6B7280': 'var(--portal-fg-5)',
+  '#6b7280': 'var(--portal-fg-5)',
+  '#6B6B6B': 'var(--portal-fg-5)',
+  '#6b6b6b': 'var(--portal-fg-5)',
+  '#7A7E86': 'var(--portal-fg-5)',
+  '#7a7e86': 'var(--portal-fg-5)',
+  '#9C9890': 'var(--portal-fg-4)',
+  '#9c9890': 'var(--portal-fg-4)',
+  '#9CA3AF': 'var(--portal-fg-4)',
+  '#9ca3af': 'var(--portal-fg-4)',
+  '#475569': 'var(--portal-fg-5)',
+  '#1A1A1A': 'var(--portal-ink-2)',
+  '#1a1a1a': 'var(--portal-ink-2)',
+  '#111827': 'var(--portal-ink-1)',
+  '#8b9ab5': 'var(--portal-fg-4)',
+  '#8B9AB5': 'var(--portal-fg-4)',
+  '#E5E7EB': 'var(--portal-fg-2)',
+  '#e5e7eb': 'var(--portal-fg-2)',
+  '#F9FAFB': 'var(--portal-fg-1)',
+  '#f9fafb': 'var(--portal-fg-1)',
+  '#F5F4F0': 'var(--portal-ink-2)',
+  '#f5f4f0': 'var(--portal-ink-2)',
+
+  // Amber text on white → token
+  '#92400E': 'var(--portal-status-amber-fg)',
+  '#C47F17': 'var(--portal-status-amber-fg)',
+  '#FEF3C7': 'var(--portal-status-amber-bg)',
+  '#fef3c7': 'var(--portal-status-amber-bg)',
+
+  // Semantic green deep variants
+  '#2D8540': 'var(--portal-status-green-fg)',
+  '#166534': 'var(--portal-status-green-fg)',
+
+  // Brand — gold bright
+  '#F4D47A': 'var(--portal-gold-400)',
+  '#f4d47a': 'var(--portal-gold-400)',
+
+  // Teal / plum — emotional accents
+  '#0D9488': 'var(--portal-ice-3)',
+  '#0d9488': 'var(--portal-ice-3)',
+  '#7E22CE': 'var(--portal-ice-4)',
+  '#7e22ce': 'var(--portal-ice-4)',
+
+  // Pure white — rare, route to fg-1
+  '#FFFFFF': 'var(--portal-fg-1)',
+  '#ffffff': 'var(--portal-fg-1)',
 }
 
 function transformHex(source) {

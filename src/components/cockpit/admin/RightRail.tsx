@@ -60,14 +60,14 @@ export function RightRail() {
 
   const statusDot = (s: string) => {
     const colors: Record<string, string> = {
-      green: 'var(--portal-status-green-fg)', amber: 'var(--portal-status-amber-fg)', red: 'var(--portal-status-red-fg)', unknown: '#6E7681',
+      green: 'var(--portal-status-green-fg)', amber: 'var(--portal-status-amber-fg)', red: 'var(--portal-status-red-fg)', unknown: 'var(--portal-fg-5)',
     }
     return colors[s] || colors.unknown
   }
 
   const severityColor = (s: string) => {
     const colors: Record<string, string> = {
-      critical: 'var(--portal-status-red-fg)', warning: 'var(--portal-status-amber-fg)', info: '#8B949E',
+      critical: 'var(--portal-status-red-fg)', warning: 'var(--portal-status-amber-fg)', info: 'var(--portal-fg-4)',
     }
     return colors[s] || colors.info
   }
@@ -81,12 +81,12 @@ export function RightRail() {
       }}>
         <div style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
+          letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 12,
         }}>
           Frontera
         </div>
         {bridges.length === 0 ? (
-          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681' }}>Cargando puentes...</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)' }}>Cargando puentes...</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {bridges.filter(b => b.commercial !== null).map(b => (
@@ -100,7 +100,7 @@ export function RightRail() {
                   }} />
                   <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{b.nameEs}</span>
                 </div>
-                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                   {b.commercial}m
                 </span>
               </div>
@@ -116,12 +116,12 @@ export function RightRail() {
       }}>
         <div style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
+          letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 12,
         }}>
           Alertas
         </div>
         {intel.length === 0 ? (
-          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681' }}>Sin alertas</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)' }}>Sin alertas</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {intel.map(item => (
@@ -144,7 +144,7 @@ export function RightRail() {
       }}>
         <div style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
+          letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 12,
         }}>
           Sistema
         </div>
@@ -154,9 +154,9 @@ export function RightRail() {
               <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%',
-                  background: '#6E7681', display: 'inline-block',
+                  background: 'var(--portal-fg-5)', display: 'inline-block',
                 }} />
-                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{s}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>{s}</span>
               </div>
             ))}
           </div>
@@ -175,7 +175,7 @@ export function RightRail() {
                   <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)' }}>{s.source}</span>
                 </div>
                 {s.minutesAgo !== null && (
-                  <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
+                  <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
                     {s.minutesAgo}m
                   </span>
                 )}

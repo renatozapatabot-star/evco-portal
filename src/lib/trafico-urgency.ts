@@ -27,7 +27,7 @@ export function getTraficoUrgency(t: {
     return {
       class: hasActivity ? 'stalled' : 'zombie',
       label: hasActivity ? 'Estancado' : 'Abandonado',
-      color: hasActivity ? '#991B1B' : '#6B7280',
+      color: hasActivity ? '#991B1B' : 'var(--portal-fg-5)',
       bgColor: hasActivity ? '#FEF2F2' : '#F3F4F6',
       action: hasActivity ? 'Intervención inmediata' : 'Archivar — sin actividad 90+ días',
       days,

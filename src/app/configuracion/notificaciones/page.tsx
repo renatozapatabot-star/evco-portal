@@ -66,7 +66,7 @@ export default function NotificacionesPage() {
                   style={{
                     width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
                     background: prefs[event.key]?.[ch.key] ? 'rgba(192,197,206,0.15)' : 'rgba(255,255,255,0.04)',
-                    color: prefs[event.key]?.[ch.key] ? 'var(--portal-fg-3)' : '#475569',
+                    color: prefs[event.key]?.[ch.key] ? 'var(--portal-fg-3)' : 'var(--portal-fg-5)',
                     fontSize: 'var(--aguila-fs-body-lg)', transition: 'all 150ms',
                   }}
                 >
@@ -80,7 +80,7 @@ export default function NotificacionesPage() {
 
       <button style={{
         marginTop: 16, padding: '12px 24px', borderRadius: 12,
-        background: 'var(--portal-fg-1)', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
+        background: 'var(--portal-fg-1)', color: 'var(--portal-ink-0)', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
         border: 'none', cursor: 'pointer', minHeight: 48,
       }}>
         Guardar preferencias

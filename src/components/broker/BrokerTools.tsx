@@ -163,7 +163,7 @@ function HealthCheck({ icon: Icon, label, ok, detail }: {
       border: `1px solid ${ok ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
       borderRadius: 6,
     }}>
-      <Icon size={16} style={{ color: ok ? '#2D8540' : '#C23B22', flexShrink: 0 }} />
+      <Icon size={16} style={{ color: ok ? 'var(--portal-status-green-fg)' : '#C23B22', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
         {detail && (

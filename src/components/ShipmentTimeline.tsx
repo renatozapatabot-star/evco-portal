@@ -41,7 +41,7 @@ export function ShipmentTimeline({ estatus, pedimento, fechaCruce, compact }: Sh
 
         // Colors from design system
         const dotColor = isCompleted ? 'var(--success-500, #16A34A)'
-          : isCurrent ? '#0D9488' // teal = certainty
+          : isCurrent ? 'var(--portal-ice-3)' // teal = certainty
           : 'var(--border, #E8E5E0)'
         const textColor = isCompleted ? 'var(--text-secondary, #6B6B6B)'
           : isCurrent ? 'var(--text-primary, #1A1A1A)'

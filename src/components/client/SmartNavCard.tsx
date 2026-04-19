@@ -88,7 +88,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
             {label}
           </div>
           <div className="nav-card-desc" style={{
-            fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5', marginTop: 2, lineHeight: 1.4,
+            fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 2, lineHeight: 1.4,
           }}>
             {description}
           </div>
@@ -126,7 +126,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           <div className="nav-card-count" style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 'var(--aguila-fs-title)', fontWeight: 800,
-            color: count > 0 ? 'var(--portal-fg-1)' : '#475569',
+            color: count > 0 ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
             flexShrink: 0,
           }}>
             {count}{countSuffix ? <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-4)', marginLeft: 2 }}>{countSuffix}</span> : null}

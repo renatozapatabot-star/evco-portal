@@ -78,7 +78,7 @@ export function OperatorCockpit({ data, operatorName, operatorId }: Props) {
         }}>
           {greeting}, {operatorName || 'Operador'}
         </h1>
-        <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', margin: '4px 0 0' }}>
           Tu panel de trabajo — PORTAL
         </p>
       </div>

@@ -25,7 +25,7 @@ const urgencyStyles: Record<ClientSuggestedAction['urgency'], {
   low: {
     border: 'rgba(255,255,255,0.08)',
     bg: 'rgba(255,255,255,0.03)',
-    iconColor: '#8b9ab5',
+    iconColor: 'var(--portal-fg-4)',
   },
 }
 
@@ -64,7 +64,7 @@ export function SuggestedActions({ suggestedActions }: Props) {
                   {action.reason}
                 </div>
               </div>
-              <ArrowRight size={12} color="#8b9ab5" style={{ flexShrink: 0 }} />
+              <ArrowRight size={12} color="var(--portal-fg-4)" style={{ flexShrink: 0 }} />
             </motion.div>
           </Link>
         )

@@ -243,7 +243,7 @@ export default function BodegaPage() {
               <span
                 aria-label={`${t.badge} entradas en bodega`}
                 style={{
-                  background: 'var(--teal, #0D9488)', color: '#FFFFFF',
+                  background: 'var(--teal, #0D9488)', color: 'var(--portal-fg-1)',
                   fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 7px',
                   borderRadius: 9999, lineHeight: 1.2,
                 }}

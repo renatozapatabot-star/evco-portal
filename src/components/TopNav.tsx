@@ -129,7 +129,7 @@ export function TopNav() {
                 background: 'transparent',
                 border: '1px solid rgba(192,197,206,0.25)',
                 borderRadius: 8, padding: '4px 8px',
-                cursor: 'pointer', color: '#F4D47A',
+                cursor: 'pointer', color: 'var(--portal-gold-400)',
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
                 position: 'relative',
@@ -197,8 +197,8 @@ export function TopNav() {
           style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
           onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
         >
-          <Search size={14} style={{ color: '#9C9890', flexShrink: 0 }} />
-          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#9C9890' }}>Buscar embarque, pedimento... &#8984;K</span>
+          <Search size={14} style={{ color: 'var(--portal-fg-4)', flexShrink: 0 }} />
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>Buscar embarque, pedimento... &#8984;K</span>
         </div>
 
         {/* Right icons */}
@@ -208,10 +208,10 @@ export function TopNav() {
               <span
                 className="tn-sync-dot-v2"
                 style={{
-                  background: syncMins !== null && syncMins <= 30 ? '#2D8540' : syncMins !== null && syncMins > 120 ? '#C47F17' : '#9C9890',
+                  background: syncMins !== null && syncMins <= 30 ? 'var(--portal-status-green-fg)' : syncMins !== null && syncMins > 120 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-4)',
                 }}
               />
-              <span style={{ color: syncMins !== null && syncMins > 120 ? '#C47F17' : '#9C9890' }}>
+              <span style={{ color: syncMins !== null && syncMins > 120 ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-4)' }}>
                 {syncMins !== null && syncMins <= 30
                   ? `Datos de hoy, ${syncLabel}`
                   : `Última sincronización: ${syncLabel}`
@@ -246,7 +246,7 @@ export function TopNav() {
               padding: '4px 10px', borderRadius: 8,
               background: 'transparent',
               border: '1px solid rgba(192,197,206,0.22)',
-              color: '#F4D47A',
+              color: 'var(--portal-gold-400)',
               fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, cursor: 'pointer',
               lineHeight: 1.2,
               position: 'relative',

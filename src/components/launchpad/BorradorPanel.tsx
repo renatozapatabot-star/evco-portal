@@ -37,10 +37,10 @@ function ConfidenceBadge({ value }: { value: number }) {
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-      <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>{label}</span>
+      <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>{label}</span>
       <span
         className={mono ? 'font-mono' : undefined}
-        style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#1A1A1A' }}
+        style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--portal-ink-2)' }}
       >
         {value}
       </span>
@@ -130,7 +130,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
         >
           Cancelar
         </button>
-        <p style={{ margin: '12px 0 0', fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
+        <p style={{ margin: '12px 0 0', fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
           Se aprobará en {countdown} segundo{countdown !== 1 ? 's' : ''}
         </p>
       </div>
@@ -142,10 +142,10 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
     return (
       <div style={{ textAlign: 'center', padding: 32 }}>
         <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 12, color: 'var(--portal-fg-1)' }}>&#10003;</div>
-        <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--portal-ink-2)', margin: 0 }}>
           Patente 3596 honrada.
         </p>
-        <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)', margin: '4px 0 0' }}>
           Gracias, Tito.
         </p>
       </div>
@@ -157,7 +157,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
     return (
       <div style={{ textAlign: 'center', padding: 24 }}>
         <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', color: 'var(--portal-status-green-fg)', marginBottom: 8 }}>&#10003;</div>
-        <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: '#1A1A1A', margin: 0 }}>
+        <p style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600, color: 'var(--portal-ink-2)', margin: 0 }}>
           Borrador aprobado
         </p>
       </div>
@@ -175,8 +175,8 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             fontSize: 'var(--aguila-fs-compact)',
             padding: '2px 8px',
             borderRadius: 6,
-            background: '#F5F4F0',
-            color: '#6B6B6B',
+            background: 'var(--portal-ink-2)',
+            color: 'var(--portal-fg-5)',
             fontWeight: 600,
           }}
         >
@@ -211,7 +211,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             minHeight: 60,
             borderRadius: 12,
             background: 'var(--portal-fg-1)',
-            color: '#FFFFFF',
+            color: 'var(--portal-fg-1)',
             border: 'none',
             fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
@@ -228,7 +228,7 @@ export function BorradorPanel({ detail, onComplete, loading }: Props) {
             minHeight: 60,
             borderRadius: 12,
             background: 'rgba(255,255,255,0.045)',
-            color: '#1A1A1A',
+            color: 'var(--portal-ink-2)',
             border: '1px solid #E8E5E0',
             fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,

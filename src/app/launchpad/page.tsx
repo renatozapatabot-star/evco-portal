@@ -101,7 +101,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
         </span>
         <span
           className="font-mono"
-          style={{ fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}
+          style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}
         >
           {completed}/{total}
         </span>
@@ -166,7 +166,7 @@ function ActionCard({
             height: 36,
             borderRadius: '50%',
             background: 'var(--portal-fg-1)',
-            color: '#FFFFFF',
+            color: 'var(--portal-fg-1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -194,7 +194,7 @@ function ActionCard({
             style={{
               margin: '4px 0 0',
               fontSize: 'var(--aguila-fs-section)',
-              color: '#6B6B6B',
+              color: 'var(--portal-fg-5)',
               lineHeight: 1.4,
             }}
           >
@@ -206,7 +206,7 @@ function ActionCard({
               display: 'inline-block',
               marginTop: 8,
               fontSize: 'var(--aguila-fs-body)',
-              color: '#9B9B9B',
+              color: 'var(--portal-fg-4)',
             }}
           >
             ~{action.estimated_minutes} min
@@ -224,7 +224,7 @@ function ActionCard({
             minHeight: 60,
             borderRadius: 12,
             background: 'var(--portal-fg-1)',
-            color: '#FFFFFF',
+            color: 'var(--portal-fg-1)',
             border: 'none',
             fontSize: 'var(--aguila-fs-body-lg)',
             fontWeight: 600,
@@ -247,7 +247,7 @@ function ActionCard({
             background: 'none',
             border: 'none',
             fontSize: 'var(--aguila-fs-section)',
-            color: '#9B9B9B',
+            color: 'var(--portal-fg-4)',
             cursor: loading ? 'wait' : 'pointer',
             textDecoration: 'underline',
             textUnderlineOffset: 2,
@@ -286,7 +286,7 @@ function CompletionCard() {
       >
         Día completo
       </h2>
-      <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
+      <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
         Todas las acciones del día completadas.
       </p>
     </div>
@@ -352,7 +352,7 @@ function CruzAutoSection({
               </span>
               <span
                 className="font-mono"
-                style={{ fontSize: 'var(--aguila-fs-compact)', color: '#9B9B9B', marginLeft: 8 }}
+                style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginLeft: 8 }}
               >
                 ~{a.time_saved_minutes} min ahorrados
               </span>
@@ -367,7 +367,7 @@ function CruzAutoSection({
           borderTop: '1px solid #E8E5E0',
           fontSize: 'var(--aguila-fs-section)',
           fontWeight: 600,
-          color: '#7A7E86',
+          color: 'var(--portal-fg-5)',
         }}
       >
         <span className="font-mono">
@@ -508,7 +508,7 @@ export default function LaunchpadPage() {
         </h1>
         <p
           className="font-mono"
-          style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#9B9B9B' }}
+          style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)' }}
         >
           {today}
         </p>

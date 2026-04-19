@@ -18,8 +18,8 @@ interface Carrier {
   crossing_avg_days?: number
 }
 
-function scoreColor(s: number) { return s >= 90 ? '#166534' : s >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }
-function scoreBg(s: number) { return s >= 90 ? '#DCFCE7' : s >= 70 ? '#FEF3C7' : '#FEE2E2' }
+function scoreColor(s: number) { return s >= 90 ? 'var(--portal-status-green-fg)' : s >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }
+function scoreBg(s: number) { return s >= 90 ? '#DCFCE7' : s >= 70 ? 'var(--portal-status-amber-bg)' : '#FEE2E2' }
 
 export default function CarriersPage() {
   const isMobile = useIsMobile()
@@ -91,7 +91,7 @@ export default function CarriersPage() {
               <TrendingUp size={13} style={{ color: 'var(--text-muted)' }} />
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--text-muted)' }}>Mejor</span>
             </div>
-            <div className="text-[13px] font-semibold truncate" style={{ color: '#166534' }}>
+            <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--portal-status-green-fg)' }}>
               {bestPerformer?.name?.substring(0, 22) || ''}
             </div>
             <div className="mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{bestPerformer?.score}/100</div>
@@ -192,8 +192,8 @@ export default function CarriersPage() {
                   <div className="mt-2">
                     <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
                       style={{
-                        background: selected.score >= 90 ? '#DCFCE7' : selected.score >= 70 ? '#FEF3C7' : '#FEE2E2',
-                        color: selected.score >= 90 ? '#166534' : selected.score >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)',
+                        background: selected.score >= 90 ? '#DCFCE7' : selected.score >= 70 ? 'var(--portal-status-amber-bg)' : '#FEE2E2',
+                        color: selected.score >= 90 ? 'var(--portal-status-green-fg)' : selected.score >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)',
                       }}>
                       {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atención'}
                     </span>

@@ -8,7 +8,7 @@ const C = {
   surfaceLight: '#222120',
   border: '#333230',
   gold: 'var(--portal-fg-1)',
-  goldDark: '#7A7E86',
+  goldDark: 'var(--portal-fg-5)',
   goldMuted: '#6B5A2E',
   orange: '#E67E22',
   green: '#27AE60',
@@ -17,7 +17,7 @@ const C = {
   text: '#E8E5DF',
   textSub: '#A09C94',
   textMuted: '#6B6860',
-  white: '#FFFFFF',
+  white: 'var(--portal-fg-1)',
 }
 
 const s = StyleSheet.create({

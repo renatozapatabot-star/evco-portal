@@ -176,12 +176,12 @@ function DraftsContent() {
                       {confianza === 'alta' ? '✅ Alta' : confianza === 'media' ? '⚠️ Media' : '🔴 Baja'}
                     </span>
                     {isTMEC && (
-                      <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#F0FDFA', color: 'var(--portal-ice-3)', border: '1px solid #99F6E4' }}>
                         T-MEC
                       </span>
                     )}
                     {flagsCount > 0 && (
-                      <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>
+                      <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: 'var(--portal-status-amber-bg)', color: 'var(--portal-status-amber-fg)', border: '1px solid #FDE68A' }}>
                         🚩 {flagsCount}
                       </span>
                     )}

@@ -38,7 +38,7 @@ export function ShipmentLocationStrip({ estatus }: Props) {
       {STEPS.map((step, i) => {
         const isComplete = i < activeStep
         const isCurrent = i === activeStep
-        const color = isComplete ? 'var(--portal-status-green-fg)' : isCurrent ? 'var(--portal-fg-1)' : '#6E7681'
+        const color = isComplete ? 'var(--portal-status-green-fg)' : isCurrent ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)'
         const bgColor = isComplete ? 'rgba(22,163,74,0.1)' : isCurrent ? 'rgba(192,197,206,0.1)' : 'transparent'
 
         return (

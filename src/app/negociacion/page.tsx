@@ -129,7 +129,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--text-primary)' }}>{b.supplier}</span>
               {aboveMarket && (
-                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(192,197,206,0.08)', color: '#92400E', fontWeight: 600 }}>
+                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(192,197,206,0.08)', color: 'var(--portal-status-amber-fg)', fontWeight: 600 }}>
                   +{b.price_vs_market_pct}% vs mercado
                 </span>
               )}

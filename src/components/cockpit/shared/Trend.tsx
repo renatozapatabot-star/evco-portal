@@ -9,7 +9,7 @@ interface TrendProps {
 export function Trend({ delta, label, size = 'sm' }: TrendProps) {
   if (delta === 0 || !isFinite(delta)) {
     return (
-      <span style={{ color: '#6E7681', fontSize: size === 'sm' ? 11 : 13, fontWeight: 600 }}>
+      <span style={{ color: 'var(--portal-fg-5)', fontSize: size === 'sm' ? 11 : 13, fontWeight: 600 }}>
         → {label || 'sin cambio'}
       </span>
     )
@@ -25,7 +25,7 @@ export function Trend({ delta, label, size = 'sm' }: TrendProps) {
       fontWeight: 600,
     }}>
       {arrow}{Math.abs(Math.round(delta))}%
-      {label && <span style={{ color: '#6E7681', fontWeight: 400, marginLeft: 4, fontFamily: 'var(--font-geist-sans)' }}>{label}</span>}
+      {label && <span style={{ color: 'var(--portal-fg-5)', fontWeight: 400, marginLeft: 4, fontFamily: 'var(--font-geist-sans)' }}>{label}</span>}
     </span>
   )
 }

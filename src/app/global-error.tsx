@@ -9,7 +9,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     <html lang="es">
       <body style={{
         margin: 0,
-        background: '#05070B',
+        background: 'var(--portal-ink-0)',
         color: 'var(--portal-fg-1)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         minHeight: '100vh',

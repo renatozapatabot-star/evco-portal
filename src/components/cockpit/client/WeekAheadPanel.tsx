@@ -17,13 +17,13 @@ export function WeekAheadPanel({ weekAhead }: Props) {
     }}>
       <div style={{
         fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-        letterSpacing: '0.05em', color: '#6E7681', marginBottom: 12,
+        letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 12,
       }}>
         Esta semana — que esperar
       </div>
 
       {weekAhead.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
           Sin envios programados esta semana
         </div>
       ) : (
@@ -34,7 +34,7 @@ export function WeekAheadPanel({ weekAhead }: Props) {
                 {['', 'Embarque', 'Descripción', 'Valor', 'Estado'].map(h => (
                   <th key={h} style={{
                     fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-                    letterSpacing: '0.05em', color: '#6E7681',
+                    letterSpacing: '0.05em', color: 'var(--portal-fg-5)',
                     textAlign: 'left',
                     padding: '8px 10px',
                     borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -64,12 +64,12 @@ export function WeekAheadPanel({ weekAhead }: Props) {
                     {item.description}
                   </td>
                   <td className="font-mono" style={{
-                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E',
+                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)',
                   }}>
                     {fmtUSDCompact(item.valor_usd)}
                   </td>
                   <td style={{
-                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E',
+                    padding: '10px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)',
                   }}>
                     {item.status}
                   </td>

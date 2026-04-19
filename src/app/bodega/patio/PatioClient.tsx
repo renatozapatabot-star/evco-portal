@@ -311,7 +311,7 @@ export function PatioClient() {
         <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', margin: 0 }}>
           Patio
         </h1>
-        <span style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+        <span style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
           {entries.length} activas
         </span>
       </header>
@@ -377,7 +377,7 @@ export function PatioClient() {
             Cargando…
           </div>
         ) : entries.length === 0 ? (
-          <div style={{ color: '#7A7E86', fontSize: 'var(--aguila-fs-body)' }}>
+          <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
             Patio vacío. Registra la primera entrada abajo.
           </div>
         ) : (
@@ -502,7 +502,7 @@ export function PatioClient() {
             }}
             aria-label="Buscar embarque"
           />
-          {searchingTrafico && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86' }}>Buscando…</span>}
+          {searchingTrafico && <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)' }}>Buscando…</span>}
           {traficoResults.length > 0 && !traficoId && (
             <ul
               style={{
@@ -646,7 +646,7 @@ export function PatioClient() {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Snowflake size={18} color={refrigerated ? 'var(--portal-fg-3)' : '#7A7E86'} />
+            <Snowflake size={18} color={refrigerated ? 'var(--portal-fg-3)' : 'var(--portal-fg-5)'} />
             <span style={{ fontSize: 15, color: 'var(--portal-fg-1)' }}>Refrigerada</span>
           </span>
           <input
@@ -818,7 +818,7 @@ export function PatioClient() {
                 <X size={22} />
               </button>
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#7A7E86' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
               Flechas mueven · Enter selecciona · Esc cierra
             </div>
             <div
@@ -864,7 +864,7 @@ export function PatioClient() {
                         background: occupied
                           ? 'rgba(192,197,206,0.15)'
                           : 'rgba(255,255,255,0.03)',
-                        color: occupied ? '#7A7E86' : 'var(--portal-fg-1)',
+                        color: occupied ? 'var(--portal-fg-5)' : 'var(--portal-fg-1)',
                         cursor: occupied ? 'not-allowed' : 'pointer',
                         padding: 0,
                       }}

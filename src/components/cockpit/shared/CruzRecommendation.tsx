@@ -103,7 +103,7 @@ export function AduanaRecommendation({
       {reasoning && reasoning.length > 0 && (
         <div style={{ marginBottom: 8, paddingLeft: 8 }}>
           {reasoning.map((r, i) => (
-            <div key={i} style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', lineHeight: 1.5 }}>
+            <div key={i} style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', lineHeight: 1.5 }}>
               · {r}
             </div>
           ))}
@@ -135,7 +135,7 @@ export function AduanaRecommendation({
         {reviewHref && (
           <Link href={reviewHref} style={{
             padding: '10px 16px', borderRadius: 8, minHeight: 44,
-            background: 'rgba(255,255,255,0.06)', color: '#8B949E',
+            background: 'rgba(255,255,255,0.06)', color: 'var(--portal-fg-4)',
             fontSize: 'var(--aguila-fs-body)', fontWeight: 600, textDecoration: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: '1px solid rgba(255,255,255,0.08)',

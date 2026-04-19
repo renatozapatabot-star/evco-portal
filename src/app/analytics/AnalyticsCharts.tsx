@@ -4,8 +4,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { fmtUSDCompact } from '@/lib/format-utils'
 
 const GOLD = 'var(--gold)'
-const TEAL = '#0D9488'
-const COLORS = [GOLD, TEAL, '#7E22CE', 'var(--danger-500)', 'var(--info)', 'var(--success)', 'var(--warning-500, #D97706)', '#6B7280']
+const TEAL = 'var(--portal-ice-3)'
+const COLORS = [GOLD, TEAL, 'var(--portal-ice-4)', 'var(--danger-500)', 'var(--info)', 'var(--success)', 'var(--warning-500, #D97706)', 'var(--portal-fg-5)']
 
 type Report = 'volumen' | 'proveedores' | 'tmec' | 'despacho'
 

@@ -207,7 +207,7 @@ export function PdfPreviewRail() {
               width: '100%',
               height: '60vh',
               border: 'none',
-              background: '#ffffff',
+              background: 'var(--portal-fg-1)',
             }}
           />
         ) : null}

@@ -22,7 +22,7 @@ export function ActivityPulseSection({ pulse, loading, defaultCollapsed = false,
   const textColor = dark ? 'rgba(255,255,255,0.85)' : 'var(--text-primary)'
   const textMuted = dark ? 'rgba(255,255,255,0.5)' : 'var(--text-muted)'
   const textSub = dark ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)'
-  const hoverBg = dark ? 'rgba(255,255,255,0.06)' : '#F5F4F0'
+  const hoverBg = dark ? 'rgba(255,255,255,0.06)' : 'var(--portal-ink-2)'
   const linkColor = dark ? 'var(--gold, #E8EAED)' : 'var(--gold-dark, #7A7E86)'
 
   return (

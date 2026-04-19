@@ -222,7 +222,7 @@ export default function NotificationBell() {
             style={{
               position: 'absolute', top: 10, right: 10,
               minWidth: 18, height: 18, padding: '0 5px',
-              borderRadius: 9, background: 'var(--portal-fg-1)', color: '#0B1220',
+              borderRadius: 9, background: 'var(--portal-fg-1)', color: 'var(--portal-ink-1)',
               fontSize: 'var(--aguila-fs-label)', fontWeight: 800,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'var(--font-mono)',

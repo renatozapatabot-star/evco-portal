@@ -71,7 +71,7 @@ export default function CambiarContrasena() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#05070B', padding: 16,
+        background: 'var(--portal-ink-0)', padding: 16,
       }}>
         <div style={{
           maxWidth: 400, width: '100%', textAlign: 'center',
@@ -93,7 +93,7 @@ export default function CambiarContrasena() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#05070B', padding: 16,
+      background: 'var(--portal-ink-0)', padding: 16,
     }}>
       <form onSubmit={handleSubmit} style={{
         maxWidth: 400, width: '100%',
@@ -136,7 +136,7 @@ export default function CambiarContrasena() {
               style={{
                 width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                background: '#05070B', minHeight: 60,
+                background: 'var(--portal-ink-0)', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -146,7 +146,7 @@ export default function CambiarContrasena() {
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 8,
-                color: '#6E7681', minHeight: 44, minWidth: 44,
+                color: 'var(--portal-fg-5)', minHeight: 44, minWidth: 44,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
               aria-label={showCurrent ? 'Ocultar' : 'Mostrar'}
@@ -172,7 +172,7 @@ export default function CambiarContrasena() {
               style={{
                 width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                background: '#05070B', minHeight: 60,
+                background: 'var(--portal-ink-0)', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
@@ -182,7 +182,7 @@ export default function CambiarContrasena() {
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 8,
-                color: '#6E7681', minHeight: 44, minWidth: 44,
+                color: 'var(--portal-fg-5)', minHeight: 44, minWidth: 44,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
               aria-label={showNew ? 'Ocultar' : 'Mostrar'}
@@ -212,13 +212,13 @@ export default function CambiarContrasena() {
               style={{
                 width: '100%', padding: 12, paddingRight: 48, fontSize: 15,
                 border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'rgba(255,255,255,0.08)'}`,
-                borderRadius: 8, background: '#05070B', minHeight: 60,
+                borderRadius: 8, background: 'var(--portal-ink-0)', minHeight: 60,
                 boxSizing: 'border-box',
               }}
             />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{
               position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', color: '#8B949E', padding: 4,
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--portal-fg-4)', padding: 4,
             }}>
               {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -244,7 +244,7 @@ export default function CambiarContrasena() {
           style={{
             width: '100%', padding: 14, fontSize: 15, fontWeight: 600,
             background: isValid && !loading ? 'var(--gold, #E8EAED)' : 'rgba(255,255,255,0.08)',
-            color: isValid && !loading ? '#FFFFFF' : '#6E7681',
+            color: isValid && !loading ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
             border: 'none', borderRadius: 8, cursor: isValid && !loading ? 'pointer' : 'not-allowed',
             minHeight: 60, transition: 'background 150ms',
           }}

@@ -85,7 +85,7 @@ export default function NoticiasPage() {
                   )}
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{fmtDate(alert.published_at || alert.created_at)}</span>
-                    {alert.source && <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#F5F4F0', color: 'var(--text-secondary)' }}>{alert.source}</span>}
+                    {alert.source && <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: 'var(--portal-ink-2)', color: 'var(--text-secondary)' }}>{alert.source}</span>}
                     <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: alert.relevance === 'high' ? 'var(--portal-status-red-bg)' : 'rgba(192,197,206,0.08)', color: alert.relevance === 'high' ? 'var(--danger-500)' : 'var(--warning-500)' }}>
                       {alert.relevance === 'high' ? 'Alta' : 'Media'}
                     </span>
@@ -97,7 +97,7 @@ export default function NoticiasPage() {
                       Ver fuente →
                     </a>
                   )}
-                  <Link href={`/cruz?q=${encodeURIComponent('¿Cómo me afecta: ' + alert.title.substring(0, 40))}`} style={{ fontSize: 'var(--aguila-fs-meta)', color: '#0D9488', fontWeight: 600, textDecoration: 'none' }}>
+                  <Link href={`/cruz?q=${encodeURIComponent('¿Cómo me afecta: ' + alert.title.substring(0, 40))}`} style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-ice-3)', fontWeight: 600, textDecoration: 'none' }}>
                     ¿Cómo me afecta?
                   </Link>
                 </div>

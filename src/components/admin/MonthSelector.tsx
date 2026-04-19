@@ -91,7 +91,7 @@ export function MonthSelector({ ym, label, prev, next, options, basePath }: Mont
             }}
           >
             {options.map((opt) => (
-              <option key={opt.ym} value={opt.ym} style={{ background: '#0B1220', color: TEXT_PRIMARY }}>
+              <option key={opt.ym} value={opt.ym} style={{ background: 'var(--portal-ink-1)', color: TEXT_PRIMARY }}>
                 {opt.label}
               </option>
             ))}

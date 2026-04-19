@@ -147,14 +147,14 @@ export function SmartKPIStrip(props: Props) {
                     <Check size={24} color="var(--portal-fg-3)" strokeWidth={2.5} />
                   </div>
                   <div className="kpi-label-full" style={{
-                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-4)',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 4, marginBottom: 4,
                   }}>
                     {kpi.label}
                   </div>
                   <div className="kpi-label-short" style={{
-                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-4)',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 4, marginBottom: 2,
                     display: 'none',
@@ -179,14 +179,14 @@ export function SmartKPIStrip(props: Props) {
                     }}
                   />
                   <div className="kpi-label-full" style={{
-                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-4)',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 6, marginBottom: 4,
                   }}>
                     {kpi.label}
                   </div>
                   <div className="kpi-label-short" style={{
-                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#8b9ab5',
+                    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-4)',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginTop: 4, marginBottom: 2,
                     display: 'none',

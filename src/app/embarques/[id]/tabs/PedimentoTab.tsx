@@ -220,7 +220,7 @@ export function PedimentoTab({
           <Link
             href={`#docs-tab`}
             style={{
-              color: '#F4D47A',
+              color: 'var(--portal-gold-400)',
               textDecoration: 'underline',
               textUnderlineOffset: 3,
               fontWeight: 600,

@@ -62,7 +62,7 @@ export function DueloDelDia() {
         <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-1)' }}>
           Duelo del día
         </span>
-        <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681' }}>{stake}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)' }}>{stake}</span>
       </div>
 
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -78,7 +78,7 @@ export function DueloDelDia() {
             </div>
             <div className="font-mono" style={{
               fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800,
-              color: i === 0 ? 'var(--portal-fg-1)' : '#8B949E',
+              color: i === 0 ? 'var(--portal-fg-1)' : 'var(--portal-fg-4)',
             }}>
               {l.count}
             </div>

@@ -27,7 +27,7 @@ export function BridgeTimes() {
   const withData = allBridges.filter(b => b.commercial !== null)
   const fastest = withData.length > 0 ? withData.reduce((a, b) => (a.commercial! < b.commercial! ? a : b)) : null
 
-  function statusColor(s: string) { return s === 'green' ? 'var(--success)' : s === 'amber' ? 'var(--warning-500, #D97706)' : s === 'red' ? 'var(--danger-500)' : '#6B7280' }
+  function statusColor(s: string) { return s === 'green' ? 'var(--success)' : s === 'amber' ? 'var(--warning-500, #D97706)' : s === 'red' ? 'var(--danger-500)' : 'var(--portal-fg-5)' }
 
   if (withData.length === 0) return null
 
@@ -38,7 +38,7 @@ export function BridgeTimes() {
           Tiempos de Puentes — Laredo
         </div>
         {fastest && (
-          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#2D8540' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-status-green-fg)' }}>
             Más rápido: {fastest.nameEs} · {fastest.commercial} min
           </div>
         )}

@@ -8,7 +8,7 @@ import type { ModelType } from '@/lib/intelligence'
 export const D = {
   bg: 'var(--bg-main)',
   surface: 'var(--bg-card)',
-  surfaceHover: '#F5F4F0',
+  surfaceHover: 'var(--portal-ink-2)',
   border: 'var(--border)',
   gold: 'var(--gold)',
   goldSubtle: 'rgba(196,150,60,0.08)',
@@ -22,7 +22,7 @@ export const D = {
   amberBg: 'rgba(192,197,206,0.08)',
   red: 'var(--danger-500)',
   redBg: 'var(--portal-status-red-bg)',
-  teal: '#0D9488',
+  teal: 'var(--portal-ice-3)',
   tealBg: 'rgba(13,148,136,0.08)',
 } as const
 

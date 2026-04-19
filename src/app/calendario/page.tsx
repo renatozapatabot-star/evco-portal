@@ -509,7 +509,7 @@ function CalendarioContent() {
             Vencimiento
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-compact)', color: T.textSecondary }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7E22CE' }} />
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--portal-ice-4)' }} />
             Evento
           </div>
         </div>
@@ -591,7 +591,7 @@ function CalendarioContent() {
                         )}
                         {cell.eventCount > 0 && (
                           <span style={{
-                            width: 8, height: 8, borderRadius: '50%', background: '#7E22CE',
+                            width: 8, height: 8, borderRadius: '50%', background: 'var(--portal-ice-4)',
                           }} title={`${cell.eventCount} evento${cell.eventCount !== 1 ? 's' : ''}`} />
                         )}
                       </div>
@@ -656,7 +656,7 @@ function CalendarioContent() {
               fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: T.textPrimary,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <Calendar size={16} style={{ color: '#7E22CE' }} />
+              <Calendar size={16} style={{ color: 'var(--portal-ice-4)' }} />
               Eventos
             </div>
             {eventsByDate.get(selectedDate)!.map(e => (
@@ -668,7 +668,7 @@ function CalendarioContent() {
               }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                  background: '#7E22CE',
+                  background: 'var(--portal-ice-4)',
                 }} />
                 <span style={{ fontSize: 'var(--aguila-fs-body)', color: T.textPrimary, flex: 1 }}>{e.title}</span>
                 <span style={{ fontSize: 'var(--aguila-fs-label)', color: T.textMuted, textTransform: 'capitalize' }}>

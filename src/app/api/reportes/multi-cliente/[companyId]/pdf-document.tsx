@@ -6,7 +6,7 @@ import {
 import type { WeeklyAuditData } from '@/lib/reports/weekly-audit'
 
 const s = StyleSheet.create({
-  page: { backgroundColor: '#FFFFFF', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 'var(--aguila-fs-label)' },
+  page: { backgroundColor: 'var(--portal-fg-1)', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 'var(--aguila-fs-label)' },
   h2: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_SILVER_DIM, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 5 },
   label: { width: 120, fontSize: 9, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },

@@ -74,7 +74,7 @@ export function SlideOver({ open, onClose, title, children }: SlideOverProps) {
             onClick={onClose}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: '#8B949E', fontSize: 'var(--aguila-fs-kpi-small)', padding: 8,
+              color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-kpi-small)', padding: 8,
               minWidth: 44, minHeight: 44,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}

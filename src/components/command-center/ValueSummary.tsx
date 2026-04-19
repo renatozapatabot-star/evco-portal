@@ -28,14 +28,14 @@ export function ValueSummary({ pedimentosThisMonth, daysSinceRojo, totalClassifi
         {pedimentosThisMonth > 0 && (
           <span>
             <strong style={{ color: 'var(--portal-fg-1)', fontFamily: 'var(--font-mono)' }}>{pedimentosThisMonth}</strong> pedimentos este mes
-            <span style={{ margin: '0 8px', color: '#475569' }}>·</span>
+            <span style={{ margin: '0 8px', color: 'var(--portal-fg-5)' }}>·</span>
           </span>
         )}
         {daysSinceRojo > 0 && (
           <span>
             <Shield size={12} style={{ display: 'inline', verticalAlign: 'middle', color: 'var(--portal-fg-3)', marginRight: 3 }} />
             <strong style={{ color: 'var(--portal-fg-3)', fontFamily: 'var(--font-mono)' }}>{daysSinceRojo}</strong> días sin inspección
-            <span style={{ margin: '0 8px', color: '#475569' }}>·</span>
+            <span style={{ margin: '0 8px', color: 'var(--portal-fg-5)' }}>·</span>
           </span>
         )}
         {hoursSaved > 0 && (

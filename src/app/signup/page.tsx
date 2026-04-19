@@ -18,7 +18,7 @@ export default function SignupPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#05070B',
+      minHeight: '100vh', background: 'var(--portal-ink-0)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
@@ -34,7 +34,7 @@ export default function SignupPage() {
           </span>
         </div>
 
-        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#FFFFFF', textAlign: 'center', marginBottom: 8 }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', textAlign: 'center', marginBottom: 8 }}>
           Solicitar acceso
         </h1>
         <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28 }}>
@@ -63,7 +63,7 @@ export default function SignupPage() {
             <select name="aduana" required style={{
               width: '100%', padding: '10px 14px', borderRadius: 8,
               background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#FFFFFF', fontSize: 'var(--aguila-fs-section)',
+              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)',
             }}>
               <option value="">Seleccionar...</option>
               {ADUANAS.map(a => <option key={a} value={a}>{a}</option>)}
@@ -103,7 +103,7 @@ function Input({ name, label, type = 'text', placeholder, required, maxLength }:
       <input name={name} type={type} placeholder={placeholder} required={required} maxLength={maxLength} style={{
         width: '100%', padding: '10px 14px', borderRadius: 8,
         background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-        color: '#FFFFFF', fontSize: 'var(--aguila-fs-section)',
+        color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)',
       }} />
     </div>
   )

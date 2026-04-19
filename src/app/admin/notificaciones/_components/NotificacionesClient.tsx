@@ -132,7 +132,7 @@ export function NotificacionesClient({ role }: { role: string }) {
             fontSize: 'var(--aguila-fs-label)',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
-            color: '#7A7E86',
+            color: 'var(--portal-fg-5)',
             marginBottom: 8,
           }}
         >
@@ -163,7 +163,7 @@ export function NotificacionesClient({ role }: { role: string }) {
                   <div
                     style={{
                       fontSize: 'var(--aguila-fs-meta)',
-                      color: '#7A7E86',
+                      color: 'var(--portal-fg-5)',
                       fontFamily: 'var(--font-jetbrains-mono, monospace)',
                     }}
                   >

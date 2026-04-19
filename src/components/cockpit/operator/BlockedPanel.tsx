@@ -41,7 +41,7 @@ export function BlockedPanel({ blocked, operatorId, onClear }: Props) {
                 <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
                   {item.trafico}
                 </span>
-                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginTop: 2 }}>{item.reason}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 2 }}>{item.reason}</div>
               </div>
               <Link href={`/embarques/${encodeURIComponent(item.trafico)}`} style={{
                 background: item.type === 'waiting_doc' ? 'rgba(192,197,206,0.15)' : 'rgba(220,38,38,0.1)',

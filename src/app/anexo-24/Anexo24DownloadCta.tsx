@@ -174,7 +174,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
               fontWeight: preset === key ? 700 : 500,
               background: preset === key ? 'rgba(201,167,74,0.14)' : 'rgba(192,197,206,0.06)',
               border: `1px solid ${preset === key ? 'rgba(201,167,74,0.45)' : 'rgba(192,197,206,0.18)'}`,
-              color: preset === key ? '#F4D47A' : 'rgba(230,237,243,0.82)',
+              color: preset === key ? 'var(--portal-gold-400)' : 'rgba(230,237,243,0.82)',
               cursor: 'pointer',
               transition: 'all var(--dur-fast, 150ms) ease',
             }}

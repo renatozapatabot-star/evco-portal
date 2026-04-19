@@ -382,7 +382,7 @@ export default function ProveedorPage() {
         <div style={{ textAlign: 'center', marginBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
           <AguilaMark size={72} tone="silver" />
           <AguilaWordmark size={28} tone="silver" />
-          <div style={{ fontSize: 9, letterSpacing: '0.3em', color: '#7A7E86', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 9, letterSpacing: '0.3em', color: 'var(--portal-fg-5)', textTransform: 'uppercase' }}>
             TOTAL VISIBILIDAD. SIN FRONTERAS.
           </div>
           <div style={styles.chromeSubtitle}>Portal de proveedores</div>
@@ -620,7 +620,7 @@ export default function ProveedorPage() {
                                     padding: '10px 16px',
                                     borderRadius: 12,
                                     background: isUploading ? 'rgba(192,197,206,0.4)' : 'var(--portal-fg-1)',
-                                    color: '#0B1220',
+                                    color: 'var(--portal-ink-1)',
                                     border: 'none',
                                     fontSize: 'var(--aguila-fs-section)',
                                     fontWeight: 700,
@@ -689,7 +689,7 @@ export default function ProveedorPage() {
                 padding: '18px 24px',
                 borderRadius: 16,
                 background: uploading ? 'rgba(192,197,206,0.4)' : 'var(--portal-fg-1)',
-                color: '#0B1220',
+                color: 'var(--portal-ink-1)',
                 border: 'none',
                 fontSize: 'var(--aguila-fs-body-lg)',
                 fontWeight: 800,
@@ -867,7 +867,7 @@ export default function ProveedorPage() {
                     padding: '18px 24px',
                     borderRadius: 16,
                     background: confirming ? 'rgba(34,197,94,0.4)' : 'var(--portal-status-green-fg)',
-                    color: '#0B1220',
+                    color: 'var(--portal-ink-1)',
                     border: 'none',
                     fontSize: 'var(--aguila-fs-body-lg)',
                     fontWeight: 800,
@@ -935,7 +935,7 @@ export default function ProveedorPage() {
                 <img
                   src={qrLabel.dataUrl}
                   alt={`Código QR ${qrLabel.code}`}
-                  style={{ width: 180, height: 180, background: '#FFFFFF', padding: 8, borderRadius: 8 }}
+                  style={{ width: 180, height: 180, background: 'var(--portal-fg-1)', padding: 8, borderRadius: 8 }}
                 />
                 <div
                   style={{
@@ -973,7 +973,7 @@ export default function ProveedorPage() {
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 28, padding: '0 8px' }}>
           <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>Renato Zapata & Co.</div>
-          <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#475569', marginTop: 2 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', marginTop: 2 }}>
             Patente 3596 · Aduana 240 · Est. 1941
           </div>
         </div>
@@ -1073,7 +1073,7 @@ function ActionCard({
         <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--portal-fg-1)', lineHeight: 1.3 }}>
           {label}
         </div>
-        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5', marginTop: 2, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 2, lineHeight: 1.4 }}>
           {description}
         </div>
       </div>
@@ -1085,7 +1085,7 @@ function ActionCard({
             fontWeight: 800,
             color:
               count === 0
-                ? '#475569'
+                ? 'var(--portal-fg-5)'
                 : countTone === 'warn'
                   ? 'var(--portal-status-amber-fg)'
                   : countTone === 'ok'

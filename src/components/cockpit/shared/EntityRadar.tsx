@@ -21,12 +21,12 @@ interface Props {
 
 const TYPE_COLORS: Record<string, string> = {
   trafico: 'var(--portal-fg-1)',
-  entrada: '#0D9488',
+  entrada: 'var(--portal-ice-3)',
   pedimento: '#8B5CF6',
   expediente: '#3B82F6',
   proveedor: 'var(--portal-status-amber-fg)',
   cliente: 'var(--portal-status-green-fg)',
-  documento: '#8B949E',
+  documento: 'var(--portal-fg-4)',
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -43,7 +43,7 @@ const STATUS_DOTS: Record<string, string> = {
   green: 'var(--portal-status-green-fg)',
   amber: 'var(--portal-status-amber-fg)',
   red: 'var(--portal-status-red-fg)',
-  neutral: '#6E7681',
+  neutral: 'var(--portal-fg-5)',
 }
 
 /**
@@ -97,7 +97,7 @@ export function EntityRadar({ center, nodes }: Props) {
           <div key={type}>
             <div style={{
               fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase',
-              letterSpacing: '0.05em', color: TYPE_COLORS[type] || '#8B949E',
+              letterSpacing: '0.05em', color: TYPE_COLORS[type] || 'var(--portal-fg-4)',
               marginBottom: 4,
             }}>
               {TYPE_LABELS[type] || type} ({items.length})
@@ -115,7 +115,7 @@ export function EntityRadar({ center, nodes }: Props) {
 }
 
 function NodeChip({ node }: { node: EntityNode }) {
-  const color = TYPE_COLORS[node.type] || '#8B949E'
+  const color = TYPE_COLORS[node.type] || 'var(--portal-fg-4)'
   const content = (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -127,7 +127,7 @@ function NodeChip({ node }: { node: EntityNode }) {
       {node.status && (
         <span style={{
           width: 6, height: 6, borderRadius: '50%',
-          background: STATUS_DOTS[node.status] || '#6E7681',
+          background: STATUS_DOTS[node.status] || 'var(--portal-fg-5)',
           flexShrink: 0,
         }} />
       )}
@@ -135,10 +135,10 @@ function NodeChip({ node }: { node: EntityNode }) {
         {node.label}
       </span>
       {node.sublabel && (
-        <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681' }}>{node.sublabel}</span>
+        <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)' }}>{node.sublabel}</span>
       )}
       {node.count !== undefined && (
-        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-label)', color: '#6E7681' }}>
+        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)' }}>
           ×{node.count}
         </span>
       )}

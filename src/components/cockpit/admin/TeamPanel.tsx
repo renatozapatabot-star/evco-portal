@@ -19,14 +19,14 @@ export function TeamPanel({ team, unassigned }: Props) {
       <div style={{ marginBottom: 12 }}>
         <span style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.05em', color: '#6E7681',
+          letterSpacing: '0.05em', color: 'var(--portal-fg-5)',
         }}>
           Equipo
         </span>
       </div>
 
       {team.length === 0 ? (
-        <div style={{ padding: '16px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+        <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
           Sin operadores activos
         </div>
       ) : (
@@ -39,7 +39,7 @@ export function TeamPanel({ team, unassigned }: Props) {
               borderRadius: 8,
             }}>
               <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{op.name}</span>
-              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                 {op.assigned} asignados
               </span>
             </div>

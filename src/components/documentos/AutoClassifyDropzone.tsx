@@ -376,11 +376,11 @@ export function AutoClassifyDropzone() {
               cursor: 'pointer',
             }}
           >
-            <option value="" style={{ background: '#0B1220', color: TEXT_PRIMARY }}>
+            <option value="" style={{ background: 'var(--portal-ink-1)', color: TEXT_PRIMARY }}>
               Auto-detectar desde el documento
             </option>
             {traficoOptions.map((t) => (
-              <option key={t.trafico} value={t.trafico} style={{ background: '#0B1220', color: TEXT_PRIMARY }}>
+              <option key={t.trafico} value={t.trafico} style={{ background: 'var(--portal-ink-1)', color: TEXT_PRIMARY }}>
                 {t.trafico}{t.descripcion_mercancia ? ` · ${t.descripcion_mercancia.slice(0, 40)}` : ''}{t.estatus ? ` · ${t.estatus}` : ''}
               </option>
             ))}

@@ -52,7 +52,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
           <div style={{
             fontSize: isMobile ? 16 : 20,
             fontWeight: 700,
-            color: '#FFFFFF',
+            color: 'var(--portal-fg-1)',
             lineHeight: 1.3,
           }}>
             {isAllGreen ? 'Todo en orden — Excelente trabajo' : sentence}
@@ -70,7 +70,7 @@ export function MissionHeader({ mood, sentence, quickAction, onAvatarClick, load
             padding: isMobile ? '8px 16px' : '10px 20px',
             borderRadius: 24,
             background: 'var(--gold, #E8EAED)',
-            color: '#1A1A1A',
+            color: 'var(--portal-ink-2)',
             fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             textDecoration: 'none',

@@ -53,7 +53,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
             alignItems: 'center',
             gap: 8,
             fontSize: 'var(--aguila-fs-section)',
-            color: '#6B6B6B',
+            color: 'var(--portal-fg-5)',
           }}
         >
           <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>&#128196;</span>
@@ -72,16 +72,16 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
           border: '1px solid #E8E5E0',
         }}
       >
-        <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: '#9B9B9B', marginBottom: 8, textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--portal-fg-4)', marginBottom: 8, textTransform: 'uppercase' }}>
           PORTAL sugiere
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#1A1A1A' }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-ink-2)' }}>
             {detail.suggested_classification}
           </span>
           <ConfidenceBadge value={detail.confidence} />
         </div>
-        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: '#6B6B6B' }}>
+        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
           {detail.product_description}
         </p>
       </div>
@@ -89,7 +89,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
       {/* Alternatives (shown when correcting) */}
       {correcting && detail.alternatives.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#6B6B6B' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-5)' }}>
             Alternativas:
           </div>
           {detail.alternatives.map((alt) => (
@@ -118,7 +118,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
               <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
                 {alt.fraccion}
               </span>
-              <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#6B6B6B', flex: 1 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', flex: 1 }}>
                 {alt.description}
               </span>
               <ConfidenceBadge value={alt.confidence} />
@@ -128,7 +128,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
       )}
 
       {correcting && detail.alternatives.length === 0 && (
-        <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#9B9B9B', fontStyle: 'italic' }}>
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', fontStyle: 'italic' }}>
           Sin alternativas disponibles. Ingrese la fracción correcta manualmente en la página de clasificación.
         </p>
       )}
@@ -162,7 +162,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
                 minHeight: 60,
                 borderRadius: 12,
                 background: 'rgba(255,255,255,0.045)',
-                color: '#1A1A1A',
+                color: 'var(--portal-ink-2)',
                 border: '1px solid #E8E5E0',
                 fontSize: 'var(--aguila-fs-body-lg)',
                 fontWeight: 600,
@@ -181,7 +181,7 @@ export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
               minHeight: 60,
               borderRadius: 12,
               background: selected ? 'var(--portal-fg-1)' : '#E8E5E0',
-              color: selected ? '#FFFFFF' : '#9B9B9B',
+              color: selected ? 'var(--portal-fg-1)' : 'var(--portal-fg-4)',
               border: 'none',
               fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 600,

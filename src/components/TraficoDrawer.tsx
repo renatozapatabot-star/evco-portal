@@ -77,12 +77,12 @@ const DetailItem = ({ label, value, mono }: DetailItemProps) => (
     className="rounded-[7px] p-3"
     style={{ background: '#f7f8fa' }}
   >
-    <div className="text-[10.5px] mb-1" style={{ color: '#6b7280' }}>
+    <div className="text-[10.5px] mb-1" style={{ color: 'var(--portal-fg-5)' }}>
       {label}
     </div>
     <div
       className={`text-[13px] font-medium ${mono ? 'mono' : ''}`}
-      style={{ color: typeof value === 'string' && value === '—' ? '#d1d5db' : '#111827' }}
+      style={{ color: typeof value === 'string' && value === '—' ? '#d1d5db' : 'var(--portal-ink-1)' }}
     >
       {value}
     </div>
@@ -140,12 +140,12 @@ function Timeline({ traficoId }: { traficoId: string }) {
       .finally(() => setLoading(false))
   }, [traficoId])
 
-  if (loading) return <div className="text-[12px] py-4 text-center" style={{ color: '#9ca3af' }}>Cargando eventos...</div>
+  if (loading) return <div className="text-[12px] py-4 text-center" style={{ color: 'var(--portal-fg-4)' }}>Cargando eventos...</div>
   if (events.length === 0) return null
 
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: '#9ca3af' }}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: 'var(--portal-fg-4)' }}>
         Historial ({events.length})
       </div>
       <div className="relative pl-5" style={{ borderLeft: '2px solid #e5e7eb' }}>
@@ -156,14 +156,14 @@ function Timeline({ traficoId }: { traficoId: string }) {
               style={{
                 left: -23, top: 3, width: 8, height: 8,
                 background: i === 0 ? GOLD : '#d1d5db',
-                border: `2px solid ${i === 0 ? GOLD : '#e5e7eb'}`,
+                border: `2px solid ${i === 0 ? GOLD : 'var(--portal-fg-2)'}`,
               }}
             />
-            <div className="text-[11px] font-medium" style={{ color: '#111827' }}>
+            <div className="text-[11px] font-medium" style={{ color: 'var(--portal-ink-1)' }}>
               {e.comentarios || 'Evento registrado'}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px]" style={{ color: '#9ca3af' }}>
+              <span className="text-[10px]" style={{ color: 'var(--portal-fg-4)' }}>
                 {fmtDate(e.fecha)}
               </span>
               {e.registrado_por && (
@@ -210,15 +210,15 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
     load()
   }, [traficoId])
 
-  if (loading) return <div style={{ color: '#6b7280', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Cargando documentos...</div>
+  if (loading) return <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Cargando documentos...</div>
 
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: '#9ca3af' }}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: 'var(--portal-fg-4)' }}>
         Documentos ({docs.length})
       </div>
       {docs.length === 0 ? (
-        <div style={{ color: '#6b7280', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Sin documentos — sync en progreso</div>
+        <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Sin documentos — sync en progreso</div>
       ) : (
         <div className="flex flex-col gap-1">
           {docs.map((d, i) => (
@@ -266,13 +266,13 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
           style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}
         >
           <div>
-            <div className="mono font-semibold text-[15px]" style={{ color: '#111827' }}>
+            <div className="mono font-semibold text-[15px]" style={{ color: 'var(--portal-ink-1)' }}>
               {fmtId(trafico.trafico)}
             </div>
             <div className="flex items-center gap-2 mt-1.5">
               <StatusBadge status={trafico.estatus} />
               {trafico.peso_bruto && (
-                <span className="text-[11.5px]" style={{ color: '#9ca3af' }}>
+                <span className="text-[11.5px]" style={{ color: 'var(--portal-fg-4)' }}>
                   {fmtPeso(trafico.peso_bruto)}
                 </span>
               )}
@@ -282,8 +282,8 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             onClick={onClose}
             className="w-7 h-7 rounded-[6px] flex items-center justify-center
                        transition-colors duration-100 flex-shrink-0 mt-0.5"
-            style={{ background: '#f0f2f5', color: '#6b7280' }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
+            style={{ background: '#f0f2f5', color: 'var(--portal-fg-5)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--portal-fg-2)')}
             onMouseLeave={e => (e.currentTarget.style.background = '#f0f2f5')}
           >
             <X size={14} strokeWidth={2} />
@@ -319,7 +319,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
           <div>
             <div
               className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5"
-              style={{ color: '#9ca3af' }}
+              style={{ color: 'var(--portal-fg-4)' }}
             >
               Información del Embarque
             </div>
@@ -338,7 +338,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             <div>
               <div
                 className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5"
-                style={{ color: '#9ca3af' }}
+                style={{ color: 'var(--portal-fg-4)' }}
               >
                 Transportistas
               </div>
@@ -360,7 +360,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             <div>
               <div
                 className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5"
-                style={{ color: '#9ca3af' }}
+                style={{ color: 'var(--portal-fg-4)' }}
               >
                 Mercancía
               </div>

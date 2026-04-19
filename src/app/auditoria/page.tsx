@@ -42,10 +42,10 @@ const ACTION_LABELS: Record<string, string> = {
 const ACTION_COLORS: Record<string, string> = {
   draft_approved: 'var(--success)',
   draft_approved_telegram: 'var(--success)',
-  draft_filed: '#0D9488',
+  draft_filed: 'var(--portal-ice-3)',
   draft_rejected_telegram: 'var(--danger-500)',
   draft_corrected_telegram: 'var(--warning-500, #D97706)',
-  oca_generated: '#7E22CE',
+  oca_generated: 'var(--portal-ice-4)',
   client_onboarded: 'var(--gold)',
   anomaly_resolved: 'var(--info)',
 }
@@ -131,7 +131,7 @@ export default function AuditoriaPage() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
             background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.2)',
-            borderRadius: 8, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#0D9488',
+            borderRadius: 8, fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-ice-3)',
           }}>
             <Shield size={12} /> SAT Compliant · Patente 3596 · Aduana 240
           </div>
@@ -203,7 +203,7 @@ export default function AuditoriaPage() {
               <tbody>
                 {filtered.slice(0, 100).map(r => {
                   const actor = r.actor || r.user_id || 'system'
-                  const color = ACTION_COLORS[r.action] || '#475569'
+                  const color = ACTION_COLORS[r.action] || 'var(--portal-fg-5)'
                   const details = r.diff || r.details
                   const detailStr = details ? Object.entries(details).filter(([, v]) => v != null).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).slice(0, 3).join(' · ') : ''
                   return (

@@ -39,7 +39,7 @@ export default function ProposalEnginePage() {
     })
   }, [])
 
-  if (loading) return <div className="page-shell"><div style={{ padding: 32, color: '#8B949E' }}>Cargando...</div></div>
+  if (loading) return <div className="page-shell"><div style={{ padding: 32, color: 'var(--portal-fg-4)' }}>Cargando...</div></div>
 
   if (!tableExists) {
     return (
@@ -79,12 +79,12 @@ export default function ProposalEnginePage() {
       {/* Run history */}
       <div style={{ background: 'rgba(255,255,255,0.045)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-5)' }}>
             Últimas ejecuciones
           </span>
         </div>
         {logs.length === 0 ? (
-          <div style={{ padding: '24px 16px', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+          <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
             Sin ejecuciones — el cron aún no ha corrido
           </div>
         ) : (
@@ -92,7 +92,7 @@ export default function ProposalEnginePage() {
             <thead>
               <tr>
                 {['Hora', 'Duración', 'Generadas', 'Reglas', 'LLM', 'Costo', 'P50', 'P90', 'Errores'].map(h => (
-                  <th key={h} style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.045)' }}>
+                  <th key={h} style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-5)', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.045)' }}>
                     {h}
                   </th>
                 ))}
@@ -104,13 +104,13 @@ export default function ProposalEnginePage() {
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)' }}>
                     {new Date(l.run_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Chicago' })}
                   </td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{l.duration_ms}ms</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>{l.duration_ms}ms</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>{l.proposals_generated}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-green-fg)' }}>{l.rule_based_count}</td>
                   <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-amber-fg)' }}>{l.llm_based_count}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>${(l.llm_cost_usd || 0).toFixed(4)}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{l.confidence_p50?.toFixed(2) ?? '—'}</td>
-                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: '#8B949E' }}>{l.confidence_p90?.toFixed(2) ?? '—'}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>${(l.llm_cost_usd || 0).toFixed(4)}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>{l.confidence_p50?.toFixed(2) ?? '—'}</td>
+                  <td className="font-mono" style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>{l.confidence_p90?.toFixed(2) ?? '—'}</td>
                   <td style={{ padding: '8px 12px', fontSize: 'var(--aguila-fs-compact)', color: (l.errors?.length || 0) > 0 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)' }}>
                     {(l.errors?.length || 0) > 0 ? `${l.errors.length} error${l.errors.length !== 1 ? 'es' : ''}` : '✓'}
                   </td>
@@ -127,7 +127,7 @@ export default function ProposalEnginePage() {
 function KPI({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div style={{ background: 'rgba(255,255,255,0.045)', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 4 }}>{label}</div>
       <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: color || 'var(--portal-fg-1)' }}>{value}</div>
     </div>
   )

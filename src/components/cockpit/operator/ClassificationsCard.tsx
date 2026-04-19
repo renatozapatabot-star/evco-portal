@@ -31,7 +31,7 @@ export function ClassificationsCard() {
       urgentAction={data.lowConfidence > 0 ? 'Revisar ahora' : undefined}
       actionHref="/clasificar"
       quietContent={
-        <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
           {data.pending === 0 ? 'Todas las clasificaciones al corriente' : `${data.pending} pendiente${data.pending !== 1 ? 's' : ''}`}
         </div>
       }

@@ -40,14 +40,14 @@ interface Assessment {
 
 const RISK_COLORS = {
   low: { color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)', border: 'rgba(34,197,94,0.2)', label: 'BAJO' },
-  moderate: { color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MODERADO' },
+  moderate: { color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)', border: 'var(--portal-fg-2)', label: 'MODERADO' },
   elevated: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ELEVADO' },
   high: { color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: '#FECACA', label: 'ALTO' },
 } as const
 
 const TREND_ICONS = {
   improving: { Icon: TrendingDown, color: 'var(--portal-status-green-fg)', label: 'Mejorando' },
-  stable: { Icon: Minus, color: '#6B7280', label: 'Estable' },
+  stable: { Icon: Minus, color: 'var(--portal-fg-5)', label: 'Estable' },
   worsening: { Icon: TrendingUp, color: 'var(--portal-status-red-fg)', label: 'Empeorando' },
 } as const
 
@@ -240,7 +240,7 @@ function RiskGauge({ assessment: a, isMobile }: { assessment: Assessment; isMobi
 function FactorBar({ label, factor }: { label: string; factor: FactorScore | null }) {
   if (!factor) return null
   const pct = (factor.score / 20) * 100
-  const color = factor.score >= 14 ? 'var(--portal-status-red-fg)' : factor.score >= 8 ? 'var(--portal-status-amber-fg)' : factor.score >= 4 ? '#6B7280' : 'var(--portal-status-green-fg)'
+  const color = factor.score >= 14 ? 'var(--portal-status-red-fg)' : factor.score >= 8 ? 'var(--portal-status-amber-fg)' : factor.score >= 4 ? 'var(--portal-fg-5)' : 'var(--portal-status-green-fg)'
 
   return (
     <div style={{

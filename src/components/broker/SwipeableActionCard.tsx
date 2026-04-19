@@ -90,7 +90,7 @@ export function SwipeableActionCard({ item, onResolve }: SwipeableActionCardProp
             opacity: checkOpacity,
           }}
         >
-          <Check size={18} color="#FFFFFF" strokeWidth={3} />
+          <Check size={18} color="var(--portal-fg-1)" strokeWidth={3} />
         </motion.div>
         <motion.span
           style={{

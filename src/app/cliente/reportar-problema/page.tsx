@@ -62,7 +62,7 @@ export default function ReportarProblemaPage() {
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
             Reporte recibido
           </h1>
-          <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', lineHeight: 1.6, marginBottom: 24 }}>
             Tu despacho fue notificado. Te contactamos en menos de 2 horas.
           </p>
           <button onClick={() => router.push('/')} style={{
@@ -87,7 +87,7 @@ export default function ReportarProblemaPage() {
 
         {/* Category */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-4)', display: 'block', marginBottom: 4 }}>
             Categoría
           </label>
           <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} style={{
@@ -100,7 +100,7 @@ export default function ReportarProblemaPage() {
 
         {/* Severity */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 8 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-4)', display: 'block', marginBottom: 8 }}>
             Gravedad
           </label>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -109,7 +109,7 @@ export default function ReportarProblemaPage() {
                 flex: 1, padding: '10px', borderRadius: 8, textAlign: 'center',
                 background: form.severity === s.value ? `${s.color}15` : '#222',
                 border: `1px solid ${form.severity === s.value ? `${s.color}40` : 'rgba(255,255,255,0.08)'}`,
-                color: form.severity === s.value ? s.color : '#8B949E',
+                color: form.severity === s.value ? s.color : 'var(--portal-fg-4)',
                 fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer', minHeight: 48,
               }}>
                 {s.label}
@@ -120,7 +120,7 @@ export default function ReportarProblemaPage() {
 
         {/* Title */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-4)', display: 'block', marginBottom: 4 }}>
             Título del problema *
           </label>
           <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Ej: Falta factura del embarque de marzo" style={{
@@ -132,7 +132,7 @@ export default function ReportarProblemaPage() {
 
         {/* Description */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#8B949E', display: 'block', marginBottom: 4 }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-4)', display: 'block', marginBottom: 4 }}>
             Descripción *
           </label>
           <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe el problema con detalle..." rows={4} style={{

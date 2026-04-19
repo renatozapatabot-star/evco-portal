@@ -94,7 +94,7 @@ export function AduanaRecommendationRow({ proposal, onApprove, onReview }: Props
         <button
           onClick={onReview}
           style={{
-            fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: '#8B949E',
+            fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: 'var(--portal-fg-4)',
             background: 'none', border: '1px solid rgba(255,255,255,0.08)',
             padding: '4px 10px', borderRadius: 4,
             cursor: 'pointer', flexShrink: 0, minHeight: 24,

@@ -42,20 +42,20 @@ interface CostData {
 }
 
 const TYPE_CONFIG: Record<string, { icon: typeof DollarSign; label: string; color: string }> = {
-  bridge_optimization: { icon: Truck, label: 'Cruce', color: '#0D9488' },
+  bridge_optimization: { icon: Truck, label: 'Cruce', color: 'var(--portal-ice-3)' },
   filing_timing: { icon: Clock, label: 'Timing', color: '#6366F1' },
   supplier_pricing: { icon: Users2, label: 'Proveedor', color: 'var(--portal-status-amber-fg)' },
   consolidation: { icon: Zap, label: 'Consolidar', color: 'var(--portal-status-green-fg)' },
-  regime_optimization: { icon: Award, label: 'Régimen', color: '#7E22CE' },
+  regime_optimization: { icon: Award, label: 'Régimen', color: 'var(--portal-ice-4)' },
   fraccion_review: { icon: DollarSign, label: 'Fracción', color: 'var(--portal-status-red-fg)' },
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   new: { label: 'NUEVO', color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)' },
-  reviewed: { label: 'REVISADO', color: '#6B7280', bg: '#F9FAFB' },
+  reviewed: { label: 'REVISADO', color: 'var(--portal-fg-5)', bg: 'var(--portal-fg-1)' },
   accepted: { label: 'ACEPTADO', color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)' },
   implemented: { label: 'IMPLEMENTADO', color: 'var(--portal-status-green-fg)', bg: '#DCFCE7' },
-  rejected: { label: 'DESCARTADO', color: '#9CA3AF', bg: '#F3F4F6' },
+  rejected: { label: 'DESCARTADO', color: 'var(--portal-fg-4)', bg: '#F3F4F6' },
 }
 
 export default function AhorroPage() {
@@ -178,7 +178,7 @@ function KPICard({ label, value, color }: { label: string; value: string | numbe
 }
 
 function InsightCard({ insight: ins, isMobile }: { insight: CostInsight; isMobile: boolean }) {
-  const typeConfig = TYPE_CONFIG[ins.insight_type] || { icon: DollarSign, label: ins.insight_type, color: '#6B7280' }
+  const typeConfig = TYPE_CONFIG[ins.insight_type] || { icon: DollarSign, label: ins.insight_type, color: 'var(--portal-fg-5)' }
   const TypeIcon = typeConfig.icon
   const statusConfig = STATUS_LABELS[ins.status] || STATUS_LABELS.new
 

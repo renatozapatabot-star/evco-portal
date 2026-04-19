@@ -167,7 +167,7 @@ export function AccionesRapidasPanel({
           minHeight: 60,
           padding: '0 16px',
           background: GOLD,
-          color: '#0B1220',
+          color: 'var(--portal-ink-1)',
           border: 'none',
           borderRadius: 12,
           fontSize: 'var(--aguila-fs-body)',

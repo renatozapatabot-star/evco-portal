@@ -5,7 +5,7 @@ import { AguilaMark } from '@/components/brand/AguilaMark'
 export default function NotFound() {
   return (
     <div style={{
-      minHeight: '100vh', background: '#05070B',
+      minHeight: '100vh', background: 'var(--portal-ink-0)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 24,
     }}>

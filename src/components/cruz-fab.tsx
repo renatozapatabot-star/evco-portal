@@ -17,7 +17,7 @@ export function CruzFAB() {
   const actions = [
     {
       icon: Upload, label: isTraficoDetail ? 'Subir doc' : 'Subir documento',
-      color: '#0D9488',
+      color: 'var(--portal-ice-3)',
       action: () => router.push(isTraficoDetail ? `/documentos/subir?trafico=${traficoId}` : '/documentos/subir'),
     },
     {

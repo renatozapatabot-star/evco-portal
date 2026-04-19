@@ -122,7 +122,7 @@ export function PipelineFunnel() {
                 <div style={{
                   fontSize: 8, fontWeight: 700, textTransform: 'uppercase',
                   letterSpacing: '0.06em',
-                  color: hasItems ? 'var(--portal-fg-4)' : '#475569',
+                  color: hasItems ? 'var(--portal-fg-4)' : 'var(--portal-fg-5)',
                   marginTop: 2,
                   lineHeight: 1.2,
                 }}>
@@ -133,7 +133,7 @@ export function PipelineFunnel() {
                 {i < stages.length - 1 && (
                   <div style={{
                     position: 'absolute', right: -6, top: '50%', transform: 'translateY(-50%)',
-                    fontSize: 'var(--aguila-fs-label)', color: '#475569', zIndex: 1,
+                    fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-fg-5)', zIndex: 1,
                   }}>
                     →
                   </div>

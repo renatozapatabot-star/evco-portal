@@ -174,7 +174,7 @@ function FraccionCard({
                 borderRadius: 999,
                 background: 'rgba(201,167,74,0.12)',
                 border: '1px solid rgba(201,167,74,0.32)',
-                color: '#F4D47A',
+                color: 'var(--portal-gold-400)',
                 fontSize: 'var(--aguila-fs-body, 13px)',
                 fontWeight: 700,
                 letterSpacing: '0.02em',

@@ -20,9 +20,9 @@ import type { ColumnSpec } from '@/types/reports'
 
 const ACCENT_SILVER = 'var(--portal-fg-3)'
 const TEXT_MUTED = 'var(--portal-fg-5)'
-const TEXT_PRIMARY = '#111827'
-const BORDER = '#e5e7eb'
-const ZEBRA = '#f9fafb'
+const TEXT_PRIMARY = 'var(--portal-ink-1)'
+const BORDER = 'var(--portal-fg-2)'
+const ZEBRA = 'var(--portal-fg-1)'
 
 const styles = StyleSheet.create({
   page: {

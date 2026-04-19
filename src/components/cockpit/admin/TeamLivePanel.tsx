@@ -58,11 +58,11 @@ export function TeamLivePanel() {
       actionHref="/acciones"
       quietContent={
         loading ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
             Cargando equipo...
           </div>
         ) : operators.length === 0 ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
             Sin operadores registrados
           </div>
         ) : (
@@ -82,7 +82,7 @@ export function TeamLivePanel() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
                       width: 8, height: 8, borderRadius: '50%',
-                      background: isActive ? 'var(--portal-status-green-fg)' : '#6E7681',
+                      background: isActive ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-5)',
                       display: 'inline-block',
                     }} />
                     <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: isActive ? 600 : 400 }}>
@@ -96,7 +96,7 @@ export function TeamLivePanel() {
                       </span>
                     )}
                     {lastTime && (
-                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
+                      <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
                         {lastTime}
                       </span>
                     )}

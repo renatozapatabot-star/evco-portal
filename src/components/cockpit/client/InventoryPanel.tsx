@@ -24,7 +24,7 @@ export function InventoryPanel({ inventory }: Props) {
       actionHref="/bodega"
       quietContent={
         !hasData ? (
-          <div style={{ padding: '12px 0', textAlign: 'center', color: '#6E7681', fontSize: 'var(--aguila-fs-body)' }}>
+          <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
             Sin datos de inventario disponibles
           </div>
         ) : (
@@ -48,7 +48,7 @@ function Stat({ value, label, color }: { value: number | string; label: string; 
       <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: color || 'var(--portal-fg-1)', lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#8B949E', marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', marginTop: 2 }}>{label}</div>
     </div>
   )
 }

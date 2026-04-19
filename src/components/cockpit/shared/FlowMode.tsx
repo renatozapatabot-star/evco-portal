@@ -75,7 +75,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
   if (completed) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 300, background: '#05070B',
+        position: 'fixed', inset: 0, zIndex: 300, background: 'var(--portal-ink-0)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: 24,
       }}>
@@ -83,7 +83,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
           ¡{approved.size} aprobaciones completadas!
         </div>
-        <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', marginBottom: 24 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', marginBottom: 24 }}>
           Buen trabajo, {operatorName.split(' ')[0]}. Cola despejada.
         </div>
         <button onClick={onClose} style={{
@@ -104,7 +104,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 300, background: '#05070B',
+      position: 'fixed', inset: 0, zIndex: 300, background: 'var(--portal-ink-0)',
       display: 'flex', flexDirection: 'column',
       padding: '24px 24px 100px',
     }}>
@@ -117,13 +117,13 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
           <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-1)' }}>
             Modo flujo
           </span>
-          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', marginLeft: 12 }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginLeft: 12 }}>
             {currentIndex + 1} de {items.length}
           </span>
         </div>
         <button onClick={onClose} style={{
           background: 'none', border: '1px solid rgba(255,255,255,0.1)',
-          color: '#8B949E', borderRadius: 6, padding: '6px 14px',
+          color: 'var(--portal-fg-4)', borderRadius: 6, padding: '6px 14px',
           fontSize: 'var(--aguila-fs-compact)', cursor: 'pointer', minHeight: 36,
         }}>
           Salir (Esc)
@@ -142,7 +142,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
       {/* Current proposal — centered */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 500, width: '100%' }}>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681', marginBottom: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', marginBottom: 8 }}>
             {current.label}
           </div>
           <AduanaRecommendation
@@ -152,7 +152,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
             onApprove={handleApprove}
             reasoning={current.reasoning}
           />
-          <div style={{ marginTop: 16, textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
+          <div style={{ marginTop: 16, textAlign: 'center', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
             Espacio para aprobar · J/K para navegar · Esc para salir
           </div>
         </div>
@@ -167,7 +167,7 @@ export function FlowMode({ items, onClose, operatorName }: Props) {
         <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: 'var(--portal-fg-1)' }}>
           {approved.size}
         </span>
-        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8B949E', marginLeft: 8 }}>
+        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginLeft: 8 }}>
           aprobada{approved.size !== 1 ? 's' : ''}
         </span>
       </div>

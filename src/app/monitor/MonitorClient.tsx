@@ -178,7 +178,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
             }}
           >
             {clientOptions.map((c) => (
-              <option key={c} value={c} style={{ background: '#0B1220' }}>
+              <option key={c} value={c} style={{ background: 'var(--portal-ink-1)' }}>
                 {c === 'all' ? 'Todos los clientes' : c}
               </option>
             ))}

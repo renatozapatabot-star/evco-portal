@@ -34,7 +34,7 @@ export function AguilaWordmark({
 
   const goldStops = (
     <>
-      <stop offset="0%" stopColor="#F4D47A" />
+      <stop offset="0%" stopColor="var(--portal-gold-400)" />
       <stop offset="50%" stopColor="#C9A74A" />
       <stop offset="100%" stopColor="#8F7628" />
     </>
@@ -43,7 +43,7 @@ export function AguilaWordmark({
     <>
       <stop offset="0%" stopColor="var(--portal-fg-1)" />
       <stop offset="50%" stopColor="var(--portal-fg-3)" />
-      <stop offset="100%" stopColor="#7A7E86" />
+      <stop offset="100%" stopColor="var(--portal-fg-5)" />
     </>
   )
 

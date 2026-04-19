@@ -18,7 +18,7 @@ import type { ReactNode } from 'react'
  * it's defined ONCE across the whole timeline surface.
  */
 export const STATUS_GREEN = 'var(--portal-status-green-fg)' // design-token
-export const STATUS_GOLD = '#F4D47A'  // design-token
+export const STATUS_GOLD = 'var(--portal-gold-400)'  // design-token
 export const STATUS_RED = 'var(--portal-status-red-fg)'   // design-token
 export const PRIMARY_TEXT = 'var(--portal-fg-1)' // design-token
 export const CANVAS_BLACK = 'var(--portal-ink-0)' // design-token

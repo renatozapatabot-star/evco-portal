@@ -38,7 +38,7 @@ export default function MisReglasPage() {
       </div>
 
       {loading && (
-        <div style={{ padding: 32, textAlign: 'center', color: '#8B949E' }}>Cargando reglas...</div>
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--portal-fg-4)' }}>Cargando reglas...</div>
       )}
 
       {!loading && memories.length === 0 && (
@@ -74,7 +74,7 @@ export default function MisReglasPage() {
               <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)', lineHeight: 1.5, marginBottom: 8 }}>
                 {m.natural_language_description}
               </div>
-              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
                 Creada: {new Date(m.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' })}
                 {m.last_applied_at && ` · Última aplicación: ${new Date(m.last_applied_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', timeZone: 'America/Chicago' })}`}
               </div>

@@ -30,8 +30,8 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#6E7681', flexShrink: 0 }} />
-        <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#6E7681' }}>
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--portal-fg-5)', flexShrink: 0 }} />
+        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)' }}>
           ADUANA está analizando {subjectLabel}...
         </span>
       </div>
@@ -125,7 +125,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
           <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: confidenceColor, flexShrink: 0 }}>
             {confidencePct}%
           </span>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#6E7681', flexShrink: 0 }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', flexShrink: 0 }}>
             {proposal.confidence_source === 'rule' ? 'basado en reglas' : proposal.confidence_source === 'llm' ? 'basado en IA' : 'híbrido'}
           </span>
         </div>
@@ -134,7 +134,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         {proposal.reasoning_bullets && proposal.reasoning_bullets.length > 0 && (
           <div style={{ marginBottom: 16, paddingLeft: 12, borderLeft: '2px solid rgba(192,197,206,0.2)' }}>
             {proposal.reasoning_bullets.map((b: { text: string }, i: number) => (
-              <div key={i} style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E', lineHeight: 1.6, marginBottom: 4 }}>
+              <div key={i} style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', lineHeight: 1.6, marginBottom: 4 }}>
                 {b.text}
               </div>
             ))}
@@ -144,11 +144,11 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
         {/* Alternatives */}
         {proposal.alternatives && proposal.alternatives.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6E7681', marginBottom: 6 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-5)', marginBottom: 6 }}>
               Alternativas consideradas
             </div>
             {proposal.alternatives.map((alt: { action: string; label_es: string; confidence: number }, i: number) => (
-              <div key={i} style={{ fontSize: 'var(--aguila-fs-compact)', color: '#6E7681', marginBottom: 2 }}>
+              <div key={i} style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', marginBottom: 2 }}>
                 · {alt.label_es} ({Math.round(alt.confidence * 100)}%)
               </div>
             ))}
@@ -173,7 +173,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             onClick={() => setShowRejectModal(true)}
             style={{
               padding: '14px 20px', borderRadius: 10,
-              background: 'transparent', color: '#8B949E', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
+              background: 'transparent', color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
               border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', minHeight: 60,
             }}
           >
@@ -223,7 +223,7 @@ export function AduanaProposalSection({ proposal, subjectLabel, onApprove, onRej
             />
             <button onClick={() => setShowRejectModal(false)} style={{
               display: 'block', width: '100%', padding: '10px', marginTop: 8,
-              background: 'none', border: 'none', color: '#6E7681', fontSize: 'var(--aguila-fs-body)',
+              background: 'none', border: 'none', color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)',
               cursor: 'pointer',
             }}>
               Cancelar

@@ -25,19 +25,19 @@ export const BORDER_EVENTS: BorderEvent[] = [
   {
     type: 'doc_received',
     label: 'Documentos recibidos',
-    icon: '📥', color: '#0D9488', bg: 'rgba(13,148,136,0.12)',
+    icon: '📥', color: 'var(--portal-ice-3)', bg: 'rgba(13,148,136,0.12)',
     sequence: 1, clientVisible: true, publicVisible: true,
   },
   {
     type: 'customs_filed',
     label: 'Pedimento transmitido',
-    icon: '📄', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)',
+    icon: '📄', color: 'var(--portal-ice-4)', bg: 'rgba(126,34,206,0.12)',
     sequence: 2, clientVisible: true, publicVisible: true,
   },
   {
     type: 'customs_paid',
     label: 'Pedimento pagado',
-    icon: '💳', color: '#7E22CE', bg: 'rgba(126,34,206,0.12)',
+    icon: '💳', color: 'var(--portal-ice-4)', bg: 'rgba(126,34,206,0.12)',
     sequence: 3, clientVisible: true, publicVisible: true,
   },
   {

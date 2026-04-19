@@ -168,7 +168,7 @@ function TraficosPanel({ rows }: { rows: ClienteTraficoCard[] }) {
   if (rows.length === 0) {
     return (
       <EmptyCard
-        icon={<Truck size={24} color="#475569" />}
+        icon={<Truck size={24} color="var(--portal-fg-5)" />}
         title="Sin embarques activos"
         subtitle="Tus operaciones en curso aparecerán aquí."
       />
@@ -268,7 +268,7 @@ function DocumentosPanel({ rows }: { rows: ClienteDocumento[] }) {
   if (rows.length === 0) {
     return (
       <EmptyCard
-        icon={<FolderOpen size={24} color="#475569" />}
+        icon={<FolderOpen size={24} color="var(--portal-fg-5)" />}
         title="Sin documentos"
         subtitle="Los expedientes de tus embarques aparecerán aquí a medida que se carguen."
       />
@@ -370,7 +370,7 @@ function NotificacionesPanel({ rows }: { rows: ClienteNotificacion[] }) {
   if (rows.length === 0) {
     return (
       <EmptyCard
-        icon={<Bell size={24} color="#475569" />}
+        icon={<Bell size={24} color="var(--portal-fg-5)" />}
         title="Sin notificaciones"
         subtitle="Aquí verás las actualizaciones recientes de tus embarques."
       />

@@ -62,7 +62,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0',
               }}>
                 <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{op.name}</span>
-                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>{op.assigned}</span>
+                <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>{op.assigned}</span>
               </div>
             ))}
             {unassignedCount > 0 && (
@@ -71,7 +71,7 @@ export function MyDayPanel({ myDay, teamStats, unassignedCount }: Props) {
                 padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
                 marginTop: 4, paddingTop: 10,
               }}>
-                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#8B949E' }}>
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                   Listos para asignar: {unassignedCount}
                 </span>
                 <Link href="/embarques" style={{

@@ -222,7 +222,7 @@ export default function DraftReviewPage() {
 
   // ═══ BLESSING ANIMATION ═══
   if (approvalState === 'blessing') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#05070B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--portal-ink-0)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         filter: 'drop-shadow(0 0 40px rgba(201,167,74,0.4))',
@@ -315,7 +315,7 @@ export default function DraftReviewPage() {
               {draft.confianza === 'alta' ? '✅ Alta' : draft.confianza === 'media' ? '⚠️ Media' : '🔴 Baja'}
             </span>
             {draft.isTMEC && (
-              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: '#F0FDFA', color: '#0D9488', border: '1px solid #99F6E4' }}>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 800, padding: '3px 10px', borderRadius: 4, background: '#F0FDFA', color: 'var(--portal-ice-3)', border: '1px solid #99F6E4' }}>
                 T-MEC
               </span>
             )}
@@ -339,14 +339,14 @@ export default function DraftReviewPage() {
 
       {/* Flags — items requiring human review */}
       {draft.flags.length > 0 && (
-        <div style={{ marginBottom: 20, padding: '12px 16px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 8 }}>
+        <div style={{ marginBottom: 20, padding: '12px 16px', background: 'var(--portal-status-amber-bg)', border: '1px solid #FDE68A', borderRadius: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <AlertTriangle size={16} style={{ color: '#92400E' }} />
-            <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#92400E' }}>Requiere revisión ({draft.flags.length})</span>
+            <AlertTriangle size={16} style={{ color: 'var(--portal-status-amber-fg)' }} />
+            <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>Requiere revisión ({draft.flags.length})</span>
           </div>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {draft.flags.map((flag, i) => (
-              <li key={i} style={{ fontSize: 'var(--aguila-fs-body)', color: '#92400E', marginBottom: 2 }}>{flag}</li>
+              <li key={i} style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-amber-fg)', marginBottom: 2 }}>{flag}</li>
             ))}
           </ul>
         </div>

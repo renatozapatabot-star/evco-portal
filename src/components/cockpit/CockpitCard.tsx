@@ -87,14 +87,14 @@ export function CockpitCard({
       {/* Green check badge — top right */}
       {isGood && (
         <div className="cc-check-badge" style={{ width: 18, height: 18 }}>
-          <CheckCircle2 size={12} style={{ color: '#FFFFFF' }} />
+          <CheckCircle2 size={12} style={{ color: 'var(--portal-fg-1)' }} />
         </div>
       )}
 
       {/* Header: Icon + Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: children ? 12 : 12 }}>
         {Icon && <Icon size={20} strokeWidth={1.5} style={{ color: U_ICON[u] }} />}
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF' }}>{title}</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--portal-fg-1)' }}>{title}</span>
       </div>
 
       {/* KPI + Subtitle */}
@@ -106,7 +106,7 @@ export function CockpitCard({
                 fontSize: isUSD ? 24 : 28,
                 fontWeight: 800,
                 fontFamily: 'var(--font-mono)',
-                color: '#FFFFFF',
+                color: 'var(--portal-fg-1)',
                 lineHeight: 1.1,
                 textShadow: '0 0 16px rgba(192,197,206,0.2)',
                 display: 'inline-block',
@@ -159,11 +159,11 @@ export function CockpitCard({
                 alignItems: 'center',
                 ...(action.primary ? {
                   background: 'var(--gold, #E8EAED)',
-                  color: '#1A1A1A',
+                  color: 'var(--portal-ink-2)',
                   border: 'none',
                 } : {
                   background: 'transparent',
-                  color: '#FFFFFF',
+                  color: 'var(--portal-fg-1)',
                   border: '1px solid rgba(255,255,255,0.2)',
                 }),
               }}

@@ -64,6 +64,6 @@ export function getOrchestrationLabel(status: OrchestrationStatus): string {
 export function getOrchestrationColor(status: OrchestrationStatus): string {
   if (status.zero_touch_score >= 90 && status.missing_docs.length === 0) return 'var(--portal-status-green-fg)' // green
   if (status.missing_docs.length > 0) return 'var(--portal-status-amber-fg)' // amber
-  if (status.pre_staged_at) return '#0D9488' // teal
-  return '#9B9B9B' // gray
+  if (status.pre_staged_at) return 'var(--portal-ice-3)' // teal
+  return 'var(--portal-fg-4)' // gray
 }

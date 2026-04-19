@@ -22,7 +22,7 @@ function OnboardingContent() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#05070B',
+      minHeight: '100vh', background: 'var(--portal-ink-0)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
@@ -52,11 +52,11 @@ function OnboardingContent() {
         {/* Step 1: Confirm */}
         {step === 1 && (
           <div>
-            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
               Confirma los datos de tu agencia
             </h2>
             <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
-              Agencia: <strong style={{ color: '#FFFFFF' }}>{slug}</strong>
+              Agencia: <strong style={{ color: 'var(--portal-fg-1)' }}>{slug}</strong>
             </p>
             <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>
               Tu cuenta ha sido creada. En el siguiente paso puedes cargar datos de ejemplo para explorar la plataforma.
@@ -68,7 +68,7 @@ function OnboardingContent() {
         {/* Step 2: Sample data */}
         {step === 2 && (
           <div>
-            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
               Datos de ejemplo
             </h2>
             <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
@@ -76,7 +76,7 @@ function OnboardingContent() {
             </p>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', marginBottom: 20 }}>
               <input type="checkbox" checked={seedSample} onChange={e => setSeedSample(e.target.checked)} style={{ width: 18, height: 18 }} />
-              <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#FFFFFF' }}>Cargar 10 embarques de ejemplo (MUESTRA)</span>
+              <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)' }}>Cargar 10 embarques de ejemplo (MUESTRA)</span>
             </label>
             <button
               onClick={async () => {
@@ -104,7 +104,7 @@ function OnboardingContent() {
         {/* Step 3: Classification demo */}
         {step === 3 && (
           <div>
-            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
               Clasificación inteligente
             </h2>
             <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
@@ -116,7 +116,7 @@ function OnboardingContent() {
               marginBottom: 20,
             }}>
               <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>Producto</div>
-              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: '#FFFFFF', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--portal-fg-1)', marginBottom: 12 }}>
                 RESINA DE POLIETILENO DE ALTA DENSIDAD EN PELLETS
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -130,7 +130,7 @@ function OnboardingContent() {
                 </div>
                 <div style={demoField}>
                   <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>DTA</span>
-                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#FFFFFF' }}>$462 MXN</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>$462 MXN</span>
                 </div>
                 <div style={demoField}>
                   <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Confianza</span>
@@ -148,7 +148,7 @@ function OnboardingContent() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 'var(--aguila-fs-kpi-mid)' }}>
               🚀
             </div>
-            <h2 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#FFFFFF', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
               ¡Listo!
             </h2>
             <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
@@ -178,7 +178,7 @@ const demoField: React.CSSProperties = {
 
 export default function OnboardingPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#05070B' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--portal-ink-0)' }} />}>
       <OnboardingContent />
     </Suspense>
   )

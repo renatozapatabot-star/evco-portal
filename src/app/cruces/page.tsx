@@ -30,7 +30,7 @@ function waitColor(min: number | null): string {
 }
 
 function waitBg(min: number | null): string {
-  if (min == null) return '#F5F4F0'
+  if (min == null) return 'var(--portal-ink-2)'
   if (min < 30) return 'rgba(22,163,74,0.08)'
   if (min < 60) return 'rgba(217,119,6,0.08)'
   return 'rgba(220,38,38,0.08)'

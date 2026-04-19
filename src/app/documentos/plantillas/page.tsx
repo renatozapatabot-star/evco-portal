@@ -8,7 +8,7 @@ import { REQUIRED_DOC_TYPES } from '@/lib/documents'
 import { fmtDate } from '@/lib/format-utils'
 
 const T = {
-  bg: '#05070B',
+  bg: 'var(--portal-ink-0)',
   card: '#1A1814',
   border: '#302C23',
   gold: 'var(--gold)',
@@ -16,9 +16,9 @@ const T = {
   text: '#F5F0E8',
   textSec: '#A09882',
   textMuted: '#6B6560',
-  green: '#2D8540',
+  green: 'var(--portal-status-green-fg)',
   greenBg: 'rgba(45,133,64,0.12)',
-  amber: '#C47F17',
+  amber: 'var(--portal-status-amber-fg)',
   amberBg: 'rgba(196,127,23,0.12)',
   red: '#C23B22',
   redBg: 'rgba(194,59,34,0.12)',

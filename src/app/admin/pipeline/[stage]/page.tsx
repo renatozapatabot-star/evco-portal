@@ -34,9 +34,9 @@ function statusKind(status: string | null | undefined): StatusPillKind {
 
 function pillStyle(kind: StatusPillKind): React.CSSProperties {
   const map: Record<StatusPillKind, { bg: string; fg: string; border: string }> = {
-    success: { bg: 'rgba(34,197,94,0.12)', fg: '#22C55E', border: 'rgba(34,197,94,0.3)' },
-    pending: { bg: 'rgba(192,197,206,0.12)', fg: '#E8EAED', border: 'rgba(192,197,206,0.3)' },
-    failed:  { bg: 'rgba(239,68,68,0.12)', fg: '#EF4444', border: 'rgba(239,68,68,0.3)' },
+    success: { bg: 'var(--portal-status-green-bg)', fg: 'var(--portal-status-green-fg)', border: 'var(--portal-status-green-ring)' },
+    pending: { bg: 'rgba(192,197,206,0.12)', fg: 'var(--portal-fg-1)', border: 'rgba(192,197,206,0.3)' },
+    failed:  { bg: 'var(--portal-status-red-bg)', fg: 'var(--portal-status-red-fg)', border: 'var(--portal-status-red-ring)' },
     neutral: { bg: 'rgba(255,255,255,0.04)', fg: '#8B949E', border: 'rgba(255,255,255,0.08)' },
   }
   const c = map[kind]
@@ -104,7 +104,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #05070B 0%, #0B1220 100%)',
         padding: '24px 16px',
-        color: '#E6EDF3',
+        color: 'var(--portal-fg-1)',
       }}
     >
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -131,7 +131,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
               fontWeight: 700,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               marginBottom: 4,
             }}
           >
@@ -141,7 +141,7 @@ export default async function PipelineStagePage({ params }: PageProps) {
             style={{
               fontSize: 'var(--aguila-fs-kpi-mid)',
               fontWeight: 800,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               margin: 0,
               letterSpacing: '-0.02em',
             }}
@@ -191,13 +191,13 @@ export default async function PipelineStagePage({ params }: PageProps) {
                         style={{
                           ...tdStyle,
                           fontFamily: 'var(--font-jetbrains-mono), monospace',
-                          color: '#E6EDF3',
+                          color: 'var(--portal-fg-1)',
                           whiteSpace: 'nowrap',
                         }}
                       >
                         {fmtDateTime(r.created_at as string)}
                       </td>
-                      <td style={{ ...tdStyle, color: '#E6EDF3' }}>
+                      <td style={{ ...tdStyle, color: 'var(--portal-fg-1)' }}>
                         {(r.event_type as string) || '—'}
                       </td>
                       <td

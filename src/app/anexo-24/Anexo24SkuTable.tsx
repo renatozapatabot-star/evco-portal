@@ -69,7 +69,7 @@ export function Anexo24SkuTable({ skus, initialQuery = '' }: Props) {
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 'var(--aguila-fs-section, 15px)',
             fontFamily: 'var(--font-sans)',
           }}
@@ -138,7 +138,7 @@ function MobileList({ skus }: { skus: AnexoSku[] }) {
               style={{
                 fontSize: 'var(--aguila-fs-section, 15px)',
                 fontWeight: 700,
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontFamily: 'var(--font-mono)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -229,7 +229,7 @@ function DesktopTable({ skus }: { skus: AnexoSku[] }) {
               }}
               style={{ cursor: sku.cve_producto ? 'pointer' : 'default' }}
             >
-              <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#E6EDF3' }}>
+              <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
                 {sku.cve_producto ?? renderNull()}
               </td>
               <td
@@ -254,7 +254,7 @@ function DesktopTable({ skus }: { skus: AnexoSku[] }) {
               <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'rgba(205,214,224,0.85)' }}>
                 {sku.veces_importado > 0 ? sku.veces_importado.toLocaleString('es-MX') : <span style={{ color: 'rgba(148,163,184,0.5)' }}>—</span>}
               </td>
-              <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#E6EDF3', fontWeight: 600 }}>
+              <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                 {sku.valor_ytd_usd != null && sku.valor_ytd_usd > 0 ? fmtUSDCompact(sku.valor_ytd_usd) : <span style={{ color: 'rgba(148,163,184,0.5)' }}>—</span>}
               </td>
               <td style={{ textAlign: 'center' }}>
@@ -264,8 +264,8 @@ function DesktopTable({ skus }: { skus: AnexoSku[] }) {
                       display: 'inline-block',
                       padding: '2px 8px',
                       borderRadius: 999,
-                      background: 'rgba(34,197,94,0.12)',
-                      border: '1px solid rgba(34,197,94,0.3)',
+                      background: 'var(--portal-status-green-bg)',
+                      border: '1px solid var(--portal-status-green-ring)',
                       fontSize: 'var(--aguila-fs-meta, 11px)',
                       color: 'rgba(134,239,172,0.95)',
                       fontWeight: 600,

@@ -29,9 +29,9 @@ interface IntelData {
 const TYPE_CONFIG: Record<string, { icon: typeof Eye; label: string; color: string }> = {
   competitor_move: { icon: Eye, label: 'Competencia', color: '#6366F1' },
   regulatory_change: { icon: Shield, label: 'Regulatorio', color: '#7E22CE' },
-  market_opportunity: { icon: Zap, label: 'Oportunidad', color: '#16A34A' },
+  market_opportunity: { icon: Zap, label: 'Oportunidad', color: 'var(--portal-status-green-fg)' },
   industry_trend: { icon: TrendingUp, label: 'Tendencia', color: '#0D9488' },
-  tariff_change: { icon: DollarSign, label: 'Arancelario', color: '#D97706' },
+  tariff_change: { icon: DollarSign, label: 'Arancelario', color: 'var(--portal-status-amber-fg)' },
 }
 
 export default function IntelCompetitivaPage() {
@@ -89,8 +89,8 @@ export default function IntelCompetitivaPage() {
             gap: 12, marginBottom: 20,
           }}>
             <KPI label="Total" value={data.summary.total} color="var(--text-primary)" />
-            <KPI label="Nuevos" value={data.summary.new} color={data.summary.new > 0 ? '#D97706' : '#6B7280'} />
-            <KPI label="Accionables" value={data.summary.actionable} color={data.summary.actionable > 0 ? '#16A34A' : '#6B7280'} />
+            <KPI label="Nuevos" value={data.summary.new} color={data.summary.new > 0 ? 'var(--portal-status-amber-fg)' : '#6B7280'} />
+            <KPI label="Accionables" value={data.summary.actionable} color={data.summary.actionable > 0 ? 'var(--portal-status-green-fg)' : '#6B7280'} />
           </div>
 
           {/* Filter */}
@@ -111,7 +111,7 @@ export default function IntelCompetitivaPage() {
               return (
                 <div key={item.id} style={{
                   padding: '14px 18px', borderRadius: 10,
-                  background: item.actionable ? 'rgba(34,197,94,0.1)' : 'var(--bg-card)',
+                  background: item.actionable ? 'var(--portal-status-green-bg)' : 'var(--bg-card)',
                   border: `1px solid ${item.actionable ? 'rgba(34,197,94,0.2)' : 'var(--border)'}`,
                   borderLeft: `3px solid ${config.color}`,
                 }}>
@@ -123,7 +123,7 @@ export default function IntelCompetitivaPage() {
                           {config.label.toUpperCase()}
                         </span>
                         {item.actionable && (
-                          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: '#15803D', fontWeight: 600 }}>
+                          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
                             ACCIONABLE
                           </span>
                         )}
@@ -137,7 +137,7 @@ export default function IntelCompetitivaPage() {
                       {item.suggested_action && (
                         <div style={{
                           marginTop: 8, padding: '6px 10px', borderRadius: 6,
-                          background: 'rgba(255,255,255,0.6)', fontSize: 'var(--aguila-fs-meta)', color: '#15803D',
+                          background: 'rgba(255,255,255,0.6)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-green-fg)',
                         }}>
                           <AlertTriangle size={10} style={{ display: 'inline', marginRight: 4 }} />
                           {item.suggested_action}

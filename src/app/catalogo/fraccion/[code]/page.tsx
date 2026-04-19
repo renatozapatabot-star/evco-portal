@@ -69,7 +69,7 @@ export default async function FraccionDetailPage({ params }: Props) {
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
-        <h1 className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, letterSpacing: '-0.02em', color: '#E6EDF3' }}>
+        <h1 className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--portal-fg-1)' }}>
           {group.fraccion}
         </h1>
         <span style={{ fontSize: 'var(--aguila-fs-compact)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>
@@ -130,7 +130,7 @@ function Stat({ label, value, mono }: { label: string; value: string; mono?: boo
         <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
           {label}
         </span>
-        <span className={mono ? 'font-mono' : undefined} style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#E8EAED' }}>
+        <span className={mono ? 'font-mono' : undefined} style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
           {value}
         </span>
       </div>
@@ -175,7 +175,7 @@ function VariantRow({ row }: { row: CatalogoRow }) {
           </span>
         )}
         {hasDetail && (
-          <span className="font-mono" aria-hidden style={{ fontSize: 'var(--aguila-fs-compact)', color: '#C0C5CE' }}>→</span>
+          <span className="font-mono" aria-hidden style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-3)' }}>→</span>
         )}
       </div>
     </div>

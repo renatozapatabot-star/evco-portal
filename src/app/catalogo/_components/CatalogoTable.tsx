@@ -148,7 +148,7 @@ export function CatalogoTable({ rows, groups, summary, query, mode, coveragePct,
           disabled={pending}
           style={{
             minHeight: 60, padding: '0 20px', borderRadius: 12,
-            background: 'rgba(192,197,206,0.12)', color: '#E8EAED',
+            background: 'rgba(192,197,206,0.12)', color: 'var(--portal-fg-1)',
             border: '1px solid rgba(192,197,206,0.25)',
             fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
             cursor: pending ? 'wait' : 'pointer',
@@ -215,7 +215,7 @@ function ModeTab({ label, active, onClick, disabled }: { label: string; active: 
         // padding kept proportional so the label doesn't feel cramped.
         minHeight: 60, minWidth: 88, padding: '0 20px', border: 'none', borderRadius: 10,
         background: active ? 'rgba(192,197,206,0.14)' : 'transparent',
-        color: active ? '#E8EAED' : 'rgba(255,255,255,0.5)',
+        color: active ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.5)',
         fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, letterSpacing: '0.04em',
         cursor: disabled ? 'wait' : 'pointer', textTransform: 'uppercase',
       }}
@@ -273,7 +273,7 @@ function FraccionGroupCard({ group }: { group: CatalogoFraccionGroup }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>Fracción</p>
-          <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, letterSpacing: '-0.01em', color: '#E6EDF3', textAlign: 'right' }}>{group.fraccion}</p>
+          <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--portal-fg-1)', textAlign: 'right' }}>{group.fraccion}</p>
           {group.variant_count >= 5 && (
             <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--portal-status-amber-fg)', textTransform: 'uppercase' }}>Consolidar</span>
           )}
@@ -383,7 +383,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
                 background: 'rgba(234,179,8,0.1)',
                 border: '1px solid rgba(234,179,8,0.3)',
                 borderRadius: 999,
-                color: '#FACC15',
+                color: 'var(--portal-status-amber-fg)',
                 fontSize: 'var(--aguila-fs-compact)',
                 fontWeight: 600,
                 textDecoration: 'none',
@@ -412,7 +412,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
                 fontSize: 'var(--aguila-fs-headline)',
                 fontWeight: 800,
                 letterSpacing: '-0.01em',
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 textAlign: 'right',
               }}
             >
@@ -459,7 +459,7 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
                 borderRadius: 12,
                 background: 'rgba(192,197,206,0.08)',
                 border: '1px solid rgba(192,197,206,0.22)',
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontSize: 'var(--aguila-fs-compact)',
                 fontWeight: 600,
                 textDecoration: 'none',

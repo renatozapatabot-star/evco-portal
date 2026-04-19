@@ -290,8 +290,8 @@ export function ActionButton({
       border: BORDER_SILVER,
     },
     danger: {
-      bg: 'rgba(239,68,68,0.12)',
-      color: '#fca5a5',
+      bg: 'var(--portal-status-red-bg)',
+      color: 'var(--portal-status-red-fg)',
       border: 'rgba(239,68,68,0.35)',
     },
     ghost: {

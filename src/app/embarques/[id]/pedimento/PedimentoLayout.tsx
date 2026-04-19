@@ -291,7 +291,7 @@ export function PedimentoLayout({
                         ? '1px solid rgba(192,197,206,0.45)'
                         : '1px solid transparent',
                       background: active ? 'rgba(192,197,206,0.12)' : 'transparent',
-                      color: active ? '#E8EAED' : 'var(--text-secondary)',
+                      color: active ? 'var(--portal-fg-1)' : 'var(--text-secondary)',
                       fontSize: 'var(--aguila-fs-compact)',
                       fontWeight: 600,
                       letterSpacing: '0.04em',

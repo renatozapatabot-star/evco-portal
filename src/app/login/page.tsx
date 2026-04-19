@@ -12,7 +12,7 @@ import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0A0A0C' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--portal-ink-0)' }} />}>
       <LoginContent />
     </Suspense>
   )
@@ -165,7 +165,7 @@ function LoginContent() {
           {error && (
             <div className="login-error shake-error">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="login-error-icon">
-                <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 5a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V5zM8 11.5A.75.75 0 118 10a.75.75 0 010 1.5z" fill="#DC2626"/>
+                <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 5a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V5zM8 11.5A.75.75 0 118 10a.75.75 0 010 1.5z" fill="var(--portal-status-red-fg)"/>
               </svg>
               <div>
                 <p className="login-error-text">{error}</p>
@@ -405,7 +405,7 @@ function LoginContent() {
           padding: 5px 12px;
           margin: 0 auto 28px;
           border-radius: 999px;
-          background: rgba(34,197,94,0.08);
+          background: var(--portal-status-green-bg);
           border: 1px solid rgba(34,197,94,0.22);
           font-size: 10px;
           letter-spacing: 0.14em;
@@ -470,7 +470,7 @@ function LoginContent() {
 
         .login-error {
           display: flex; gap: 10px; padding: 12px 14px;
-          background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+          background: var(--portal-status-red-bg); border: 1px solid var(--portal-status-red-ring);
           border-radius: 10px; margin-bottom: 20px; align-items: flex-start;
         }
         .login-error-icon { flex-shrink: 0; margin-top: 1px; }

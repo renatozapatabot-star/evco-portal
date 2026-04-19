@@ -134,7 +134,7 @@ export function ExportarClient({ pedimentoId }: ExportarClientProps) {
         {validation.loading ? (
           <p className="text-sm text-slate-300">Validando pedimento…</p>
         ) : validation.can_submit ? (
-          <p className="text-sm" style={{ color: '#22C55E' }}>
+          <p className="text-sm" style={{ color: 'var(--portal-status-green-fg)' }}>
             Sin errores bloqueantes
             {validation.warnings_count > 0
               ? ` · ${validation.warnings_count} advertencia(s)`
@@ -142,7 +142,7 @@ export function ExportarClient({ pedimentoId }: ExportarClientProps) {
           </p>
         ) : (
           <div>
-            <p className="text-sm" style={{ color: '#EF4444' }}>
+            <p className="text-sm" style={{ color: 'var(--portal-status-red-fg)' }}>
               {validation.errors_count} error(es) bloqueantes — corrige antes de exportar
             </p>
             {validation.errors.length > 0 && (
@@ -169,14 +169,14 @@ export function ExportarClient({ pedimentoId }: ExportarClientProps) {
           background: validation.can_submit && !generating
             ? 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)'
             : 'rgba(192,197,206,0.25)',
-          color: validation.can_submit && !generating ? '#0A0A0C' : '#7A7E86',
+          color: validation.can_submit && !generating ? 'var(--portal-ink-0)' : '#7A7E86',
         }}
       >
         {generating ? 'Generando…' : 'Generar archivo'}
       </button>
 
       {error && (
-        <p className="mt-4 text-sm" style={{ color: '#EF4444' }}>
+        <p className="mt-4 text-sm" style={{ color: 'var(--portal-status-red-fg)' }}>
           {error}
         </p>
       )}
@@ -201,7 +201,7 @@ export function ExportarClient({ pedimentoId }: ExportarClientProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 inline-block text-sm underline"
-            style={{ color: '#C0C5CE' }}
+            style={{ color: 'var(--portal-fg-3)' }}
           >
             Descargar archivo
           </a>

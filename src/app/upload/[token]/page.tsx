@@ -108,10 +108,10 @@ export default function UploadPage() {
           <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#CBD5E1', marginTop: 24, marginBottom: 8 }}>
             {error === 'expired' ? 'Enlace expirado' : error === 'not_found' ? 'Enlace no válido' : 'Ocurrió un error'}
           </div>
-          <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)', marginBottom: 8 }}>
+          <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-section)', marginBottom: 8 }}>
             Contacta a Renato Zapata &amp; Company para un nuevo enlace.
           </div>
-          <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)' }}>
+          <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-section)' }}>
             Contacto: ai@renatozapata.com
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function UploadPage() {
           <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#CBD5E1', marginBottom: 8 }}>
             Expediente completo
           </div>
-          <div style={{ color: '#64748B', fontSize: 'var(--aguila-fs-section)', marginBottom: 24 }}>
+          <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-section)', marginBottom: 24 }}>
             Todos los documentos solicitados han sido recibidos. Gracias.
           </div>
 
@@ -159,7 +159,7 @@ export default function UploadPage() {
             <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>
               ¿Trabaja con otros importadores en México?
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#94A3B8', marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginBottom: 12 }}>
               PORTAL puede simplificar su proceso con todos ellos.
             </div>
             <ReferralForm />
@@ -191,7 +191,7 @@ export default function UploadPage() {
           background: 'var(--card-bg)', borderRadius: 16, padding: '28px 24px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
         }}>
-          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
             Documentos solicitados para
           </div>
           <div style={{
@@ -200,7 +200,7 @@ export default function UploadPage() {
           }}>
             Embarque {info.trafico_id}
           </div>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748B', marginBottom: 20 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', marginBottom: 20 }}>
             {info.company_id}
           </div>
 
@@ -217,7 +217,7 @@ export default function UploadPage() {
                   }}>
                     <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>{isDone ? '✅' : '☐'}</span>
                     <span style={{ fontWeight: isDone ? 600 : 400 }}>{doc}</span>
-                    {isDone && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8', marginLeft: 'auto' }}>Recibido</span>}
+                    {isDone && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', marginLeft: 'auto' }}>Recibido</span>}
                   </div>
                 )
               })}
@@ -238,7 +238,7 @@ export default function UploadPage() {
           {/* Upload counts */}
           {uploaded.length > 0 && (
             <div style={{
-              background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)',
+              background: 'var(--portal-status-green-bg)', border: '1px solid rgba(34, 197, 94, 0.2)',
               borderRadius: 8, padding: '10px 14px', marginBottom: 16,
               fontSize: 'var(--aguila-fs-body)', color: 'var(--success)', fontWeight: 600,
             }}>
@@ -251,7 +251,7 @@ export default function UploadPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '14px 20px', background: uploading ? '#E2E8F0' : 'var(--gold)',
             borderRadius: 10, cursor: uploading ? 'wait' : 'pointer',
-            fontSize: 15, fontWeight: 700, color: uploading ? '#94A3B8' : 'var(--navy-900)',
+            fontSize: 15, fontWeight: 700, color: uploading ? 'var(--portal-fg-4)' : 'var(--navy-900)',
             transition: 'background 150ms',
           }}>
             {uploading ? 'Subiendo...' : 'Subir documentos'}
@@ -265,7 +265,7 @@ export default function UploadPage() {
             />
           </label>
 
-          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 'var(--aguila-fs-meta)', color: '#94A3B8' }}>
+          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)' }}>
             PDF, JPG, PNG, XLSX · Máx 25MB por archivo
           </div>
         </div>

@@ -13,7 +13,7 @@ import { useAutosaveField } from '@/lib/hooks/useAutosaveField'
 import { ACCENT_SILVER, ACCENT_SILVER_DIM } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
 
-const RED = '#EF4444'
+const RED = 'var(--portal-status-red-fg)'
 
 export interface ClienteObservacionesTabProps {
   pedimento: PedimentoRow

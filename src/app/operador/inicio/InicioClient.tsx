@@ -307,7 +307,7 @@ function ColaCard({ colaCount }: { colaCount: number }) {
             padding: '10px 16px',
             borderRadius: 12,
             background: GOLD,
-            color: '#0D0D0C',
+            color: 'var(--portal-ink-0)',
             fontWeight: 700,
             fontSize: 'var(--aguila-fs-body)',
             textDecoration: 'none',
@@ -368,7 +368,7 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
             fontWeight: 800,
-            color: asignadasHoy > 0 ? '#22C55E' : TEXT_MUTED,
+            color: asignadasHoy > 0 ? 'var(--portal-status-green-fg)' : TEXT_MUTED,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}>
@@ -386,8 +386,8 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
           minHeight: 40,
           padding: '8px 16px',
           borderRadius: 12,
-          background: enBanco > 0 ? GOLD : 'rgba(148,163,184,0.12)',
-          color: enBanco > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          background: enBanco > 0 ? GOLD : 'var(--portal-status-gray-bg)',
+          color: enBanco > 0 ? 'var(--portal-ink-0)' : TEXT_SECONDARY,
           fontWeight: 700,
           fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
@@ -451,7 +451,7 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
             fontWeight: 800,
-            color: rojo > 0 ? '#FCA5A5' : TEXT_MUTED,
+            color: rojo > 0 ? 'var(--portal-status-red-fg)' : TEXT_MUTED,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}>
@@ -469,8 +469,8 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
           minHeight: 40,
           padding: '8px 16px',
           borderRadius: 12,
-          background: rojo > 0 ? '#DC2626' : (activos > 0 ? GOLD : 'rgba(148,163,184,0.12)'),
-          color: rojo > 0 || activos > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          background: rojo > 0 ? 'var(--portal-status-red-fg)' : (activos > 0 ? GOLD : 'var(--portal-status-gray-bg)'),
+          color: rojo > 0 || activos > 0 ? 'var(--portal-ink-0)' : TEXT_SECONDARY,
           fontWeight: 700,
           fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
@@ -532,7 +532,7 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
             fontWeight: 800,
-            color: aprobadasMes > 0 ? '#86EFAC' : TEXT_MUTED,
+            color: aprobadasMes > 0 ? 'var(--portal-status-green-fg)' : TEXT_MUTED,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}>
@@ -550,8 +550,8 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
           minHeight: 40,
           padding: '8px 16px',
           borderRadius: 12,
-          background: pendientes > 0 ? GOLD : 'rgba(148,163,184,0.12)',
-          color: pendientes > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          background: pendientes > 0 ? GOLD : 'var(--portal-status-gray-bg)',
+          color: pendientes > 0 ? 'var(--portal-ink-0)' : TEXT_SECONDARY,
           fontWeight: 700,
           fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
@@ -614,7 +614,7 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
             fontWeight: 800,
-            color: vencimientosPronto > 0 ? '#FCA5A5' : TEXT_MUTED,
+            color: vencimientosPronto > 0 ? 'var(--portal-status-red-fg)' : TEXT_MUTED,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}>
@@ -632,8 +632,8 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
           minHeight: 40,
           padding: '8px 16px',
           borderRadius: 12,
-          background: vencimientosPronto > 0 ? '#DC2626' : (total > 0 ? GOLD : 'rgba(148,163,184,0.12)'),
-          color: vencimientosPronto > 0 || total > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          background: vencimientosPronto > 0 ? 'var(--portal-status-red-fg)' : (total > 0 ? GOLD : 'var(--portal-status-gray-bg)'),
+          color: vencimientosPronto > 0 || total > 0 ? 'var(--portal-ink-0)' : TEXT_SECONDARY,
           fontWeight: 700,
           fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
@@ -695,7 +695,7 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
             fontWeight: 800,
-            color: top > 0 ? '#FDE68A' : TEXT_MUTED,
+            color: top > 0 ? 'var(--portal-status-amber-fg)' : TEXT_MUTED,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}>
@@ -713,8 +713,8 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
           minHeight: 40,
           padding: '8px 16px',
           borderRadius: 12,
-          background: activos > 0 ? GOLD : 'rgba(148,163,184,0.12)',
-          color: activos > 0 ? '#0D0D0C' : TEXT_SECONDARY,
+          background: activos > 0 ? GOLD : 'var(--portal-status-gray-bg)',
+          color: activos > 0 ? 'var(--portal-ink-0)' : TEXT_SECONDARY,
           fontWeight: 700,
           fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
@@ -776,7 +776,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
             fontFamily: 'var(--font-jetbrains-mono), monospace',
             fontSize: 'var(--aguila-fs-kpi-mid, 28px)',
             fontWeight: 800,
-            color: exportadasHoy > 0 ? '#86EFAC' : TEXT_MUTED,
+            color: exportadasHoy > 0 ? 'var(--portal-status-green-fg)' : TEXT_MUTED,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
           }}>
@@ -795,7 +795,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
           padding: '8px 16px',
           borderRadius: 12,
           background: GOLD,
-          color: '#0D0D0C',
+          color: 'var(--portal-ink-0)',
           fontWeight: 700,
           fontSize: 'var(--aguila-fs-body)',
           textDecoration: 'none',
@@ -816,14 +816,14 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
 
 const DECISION_PILL: Record<string, { bg: string; fg: string; label: string }> = {
   'En Proceso':       { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER,   label: 'En proceso' },
-  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,       label: 'Documentación' },
-  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,       label: 'En aduana' },
-  'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   fg: '#22C55E',       label: 'Pagado' },
-  'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   fg: '#22C55E',       label: 'Cruzado' },
+  'Documentacion':    { bg: 'var(--portal-status-gray-bg)', fg: TEXT_SECONDARY,       label: 'Documentación' },
+  'En Aduana':        { bg: 'var(--portal-status-gray-bg)', fg: TEXT_SECONDARY,       label: 'En aduana' },
+  'Pedimento Pagado': { bg: 'var(--portal-status-green-bg)',   fg: 'var(--portal-status-green-fg)',       label: 'Pagado' },
+  'Cruzado':          { bg: 'var(--portal-status-green-bg)',   fg: 'var(--portal-status-green-fg)',       label: 'Cruzado' },
 }
 
 function DecisionPill({ label }: { label: string | null }) {
-  const c = (label && DECISION_PILL[label]) || { bg: 'rgba(148,163,184,0.1)', fg: TEXT_MUTED, label: label || '—' }
+  const c = (label && DECISION_PILL[label]) || { bg: 'var(--portal-status-gray-bg)', fg: TEXT_MUTED, label: label || '—' }
   return (
     <span style={{
       fontSize: 'var(--aguila-fs-label)', fontWeight: 600,

@@ -22,8 +22,8 @@ const PERMIT_LABEL: Record<PermitKind, string> = {
 }
 
 const SEVERITY_STYLE: Record<ExpirySeverity, { bg: string; fg: string; label: string }> = {
-  red: { bg: 'rgba(239,68,68,0.14)', fg: '#FCA5A5', label: '≤30 días' },
-  amber: { bg: 'rgba(251,191,36,0.14)', fg: '#FDE68A', label: '31–60 días' },
+  red: { bg: 'var(--portal-status-red-bg)', fg: 'var(--portal-status-red-fg)', label: '≤30 días' },
+  amber: { bg: 'var(--portal-status-amber-bg)', fg: 'var(--portal-status-amber-fg)', label: '31–60 días' },
   plum: { bg: 'rgba(126,34,206,0.14)', fg: '#C4B5FD', label: '61–90 días' },
 }
 
@@ -112,7 +112,7 @@ export function VencimientosClient({ rows }: Props) {
             style={{
               padding: '6px 12px',
               borderRadius: 10,
-              border: `1px solid ${kindFilter === k ? '#C0C5CE' : BORDER}`,
+              border: `1px solid ${kindFilter === k ? 'var(--portal-fg-3)' : BORDER}`,
               background: kindFilter === k ? 'rgba(192,197,206,0.14)' : 'transparent',
               color: kindFilter === k ? TEXT_PRIMARY : TEXT_SECONDARY,
               fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',

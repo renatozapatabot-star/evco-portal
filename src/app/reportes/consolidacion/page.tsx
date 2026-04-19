@@ -144,7 +144,7 @@ function ReportRow({ row }: { row: Row }) {
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            color: '#E8EAED',
+            color: 'var(--portal-fg-1)',
             background: 'rgba(192,197,206,0.08)',
             border: '1px solid rgba(192,197,206,0.2)',
             borderRadius: 8,
@@ -166,7 +166,7 @@ function Td({
   mono?: boolean
   tone?: 'amber' | 'red' | 'muted'
 }) {
-  const color = tone === 'red' ? '#EF4444' : tone === 'amber' ? '#FBBF24' : tone === 'muted' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.85)'
+  const color = tone === 'red' ? 'var(--portal-status-red-fg)' : tone === 'amber' ? 'var(--portal-status-amber-fg)' : tone === 'muted' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.85)'
   return (
     <td style={{
       padding: '12px 16px',
@@ -186,7 +186,7 @@ function TotalStat({ label, value, tone }: { label: string; value: string; tone?
       <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
         {label}
       </span>
-      <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tone === 'amber' ? '#FBBF24' : '#E8EAED' }}>
+      <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)' }}>
         {value}
       </span>
     </div>

@@ -10,7 +10,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
       <body style={{
         margin: 0,
         background: '#05070B',
-        color: '#E6EDF3',
+        color: 'var(--portal-fg-1)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         minHeight: '100vh',
         display: 'flex',
@@ -32,14 +32,14 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, letterSpacing: '-0.03em' }}>
             PORTAL no se cargó
           </div>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', lineHeight: 1.5 }}>
             Detectamos un problema inesperado. Tu sesión sigue activa.
           </div>
           {error?.message ? (
             <div style={{
               fontFamily: 'ui-monospace, monospace',
               fontSize: 'var(--aguila-fs-meta)',
-              color: '#64748b',
+              color: 'var(--portal-fg-5)',
               padding: '8px 10px',
               background: 'rgba(255,255,255,0.03)',
               borderRadius: 8,
@@ -57,8 +57,8 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                 minHeight: 44,
                 padding: '10px 20px',
                 borderRadius: 12,
-                background: '#E8EAED',
-                color: '#0D0D0C',
+                background: 'var(--portal-fg-1)',
+                color: 'var(--portal-ink-0)',
                 fontWeight: 700,
                 fontSize: 'var(--aguila-fs-body)',
                 border: 'none',
@@ -74,7 +74,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                 padding: '10px 20px',
                 borderRadius: 12,
                 background: 'rgba(255,255,255,0.06)',
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontWeight: 600,
                 fontSize: 'var(--aguila-fs-body)',
                 textDecoration: 'none',

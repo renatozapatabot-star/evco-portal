@@ -22,11 +22,11 @@ function KpiCard({ label, value, icon: Icon, sub }: { label: string; value: stri
       display: 'flex', flexDirection: 'column', gap: 8,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Icon size={18} style={{ color: '#C0C5CE', opacity: 0.7 }} />
-        <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>{label}</span>
+        <Icon size={18} style={{ color: 'var(--portal-fg-3)', opacity: 0.7 }} />
+        <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)' }}>{label}</span>
       </div>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#E6EDF3' }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
-      {sub && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>{sub}</div>}
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: 'var(--portal-fg-1)' }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
+      {sub && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>{sub}</div>}
     </div>
   )
 }
@@ -98,8 +98,8 @@ export default function InteligenciaPage() {
   if (loading) {
     return (
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-        <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 24 }}>Inteligencia del Corredor</div>
-        <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-section)' }}>Cargando datos...</div>
+        <div style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 24 }}>Inteligencia del Corredor</div>
+        <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-section)' }}>Cargando datos...</div>
       </div>
     )
   }
@@ -108,8 +108,8 @@ export default function InteligenciaPage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>Inteligencia del Corredor</h1>
-      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>Laredo–Nuevo Laredo · Análisis agregado desde 2024</p>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 4 }}>Inteligencia del Corredor</h1>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', marginBottom: 24 }}>Laredo–Nuevo Laredo · Análisis agregado desde 2024</p>
 
       {/* KPI Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
@@ -121,7 +121,7 @@ export default function InteligenciaPage() {
 
       {/* Top Fracciones */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
-        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)', marginBottom: 16 }}>
           Top 10 fracciones por volumen
         </div>
         {s.topFracciones.length > 0 ? (
@@ -132,8 +132,8 @@ export default function InteligenciaPage() {
                 padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.03)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: '#64748b', width: 20 }}>{i + 1}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E6EDF3' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: 'var(--portal-fg-5)', width: 20 }}>{i + 1}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                     {f.fraccion.includes('.') ? f.fraccion : f.fraccion.replace(/^(\d{4})(\d{2})(\d{2})(\d*)$/, '$1.$2.$3')}
                   </span>
                 </div>
@@ -149,19 +149,19 @@ export default function InteligenciaPage() {
                       opacity: 0.6,
                     }} />
                   </div>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', minWidth: 40, textAlign: 'right' }}>{f.count}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', minWidth: 40, textAlign: 'right' }}>{f.count}</span>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-body)' }}>Sin datos de clasificación disponibles.</div>
+          <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>Sin datos de clasificación disponibles.</div>
         )}
       </div>
 
       {/* Monthly Volume */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
-        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)', marginBottom: 16 }}>
           Volumen mensual de operaciones
         </div>
         {s.monthlyVolume.length > 0 ? (
@@ -177,28 +177,28 @@ export default function InteligenciaPage() {
                     background: 'linear-gradient(180deg, #C0C5CE, #0044cc)',
                     opacity: 0.6,
                   }} />
-                  <span style={{ fontSize: 9, color: '#64748b', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>{m.month.slice(5)}</span>
+                  <span style={{ fontSize: 9, color: 'var(--portal-fg-5)', transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>{m.month.slice(5)}</span>
                 </div>
               )
             })}
           </div>
         ) : (
-          <div style={{ color: '#64748b', fontSize: 'var(--aguila-fs-body)' }}>Sin datos históricos disponibles.</div>
+          <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>Sin datos históricos disponibles.</div>
         )}
       </div>
 
       {/* Performance Summary */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <AlertTriangle size={16} style={{ color: '#C0C5CE', opacity: 0.7 }} />
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Rendimiento PORTAL</span>
+          <AlertTriangle size={16} style={{ color: 'var(--portal-fg-3)', opacity: 0.7 }} />
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)' }}>Rendimiento PORTAL</span>
         </div>
-        <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', lineHeight: 1.6 }}>
           {s.totalClassified > 0 ? (
             <>
-              PORTAL ha clasificado <strong style={{ color: '#E6EDF3' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
-              <strong style={{ color: '#C0C5CE' }}>{s.avgConfidence}%</strong>.
-              {s.totalClassified > 100 && <> Esto representa un ahorro estimado de <strong style={{ color: '#E8EAED' }}>{Math.round(s.totalClassified * 3 / 60)} horas</strong> de trabajo manual.</>}
+              PORTAL ha clasificado <strong style={{ color: 'var(--portal-fg-1)' }}>{s.totalClassified.toLocaleString()}</strong> productos con una confianza promedio de{' '}
+              <strong style={{ color: 'var(--portal-fg-3)' }}>{s.avgConfidence}%</strong>.
+              {s.totalClassified > 100 && <> Esto representa un ahorro estimado de <strong style={{ color: 'var(--portal-fg-1)' }}>{Math.round(s.totalClassified * 3 / 60)} horas</strong> de trabajo manual.</>}
             </>
           ) : (
             'La clasificación automática se activará cuando se procesen productos.'
@@ -208,21 +208,21 @@ export default function InteligenciaPage() {
 
       {/* Supplier Performance */}
       <div className="cc-card" style={{ padding: 24, borderRadius: 20 }}>
-        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', marginBottom: 16 }}>
-          <Users2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: '#C0C5CE', opacity: 0.7 }} />
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-5)', marginBottom: 16 }}>
+          <Users2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: 'var(--portal-fg-3)', opacity: 0.7 }} />
           Rendimiento de proveedores
         </div>
         {s.topFracciones.length > 0 ? (
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.6 }}>
-            <strong style={{ color: '#E6EDF3' }}>{s.topFracciones.length}</strong> fracciones activas de{' '}
-            <strong style={{ color: '#E6EDF3' }}>{s.totalTraficos.toLocaleString()}</strong> operaciones.
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', lineHeight: 1.6 }}>
+            <strong style={{ color: 'var(--portal-fg-1)' }}>{s.topFracciones.length}</strong> fracciones activas de{' '}
+            <strong style={{ color: 'var(--portal-fg-1)' }}>{s.totalTraficos.toLocaleString()}</strong> operaciones.
             {s.totalCruzados > 0 && (
-              <> Tasa de cruce: <strong style={{ color: '#C0C5CE' }}>{Math.round(s.totalCruzados / s.totalTraficos * 100)}%</strong>.</>
+              <> Tasa de cruce: <strong style={{ color: 'var(--portal-fg-3)' }}>{Math.round(s.totalCruzados / s.totalTraficos * 100)}%</strong>.</>
             )}
             {' '}Los datos de proveedores se enriquecerán automáticamente conforme se procesen más operaciones.
           </div>
         ) : (
-          <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b' }}>Los perfiles de proveedores aparecerán cuando haya suficientes operaciones procesadas.</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)' }}>Los perfiles de proveedores aparecerán cuando haya suficientes operaciones procesadas.</div>
         )}
       </div>
     </div>

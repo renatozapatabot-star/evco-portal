@@ -93,7 +93,7 @@ export function ApproveActions({ opinionId, canApprove, status }: Props) {
             onClick={startCountdown}
             style={{
               minHeight: 60, padding: '0 28px',
-              background: SILVER_GRADIENT, color: '#0A0A0C',
+              background: SILVER_GRADIENT, color: 'var(--portal-ink-0)',
               border: 'none', borderRadius: 10,
               fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 0.5,

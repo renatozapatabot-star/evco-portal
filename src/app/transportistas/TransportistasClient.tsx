@@ -45,7 +45,7 @@ const TYPE_TABS = [
 function StarRating({ value }: { value: number | null }) {
   const v = value ?? 0
   return (
-    <span style={{ color: v > 0 ? '#FDE68A' : 'rgba(255,255,255,0.2)', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+    <span style={{ color: v > 0 ? 'var(--portal-status-amber-fg)' : 'rgba(255,255,255,0.2)', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
       {'★'.repeat(v)}{'☆'.repeat(5 - v)}
     </span>
   )
@@ -125,7 +125,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
               padding: '8px 16px',
               minHeight: 40,
               borderRadius: 10,
-              border: `1px solid ${tab === t.key ? '#C0C5CE' : BORDER}`,
+              border: `1px solid ${tab === t.key ? 'var(--portal-fg-3)' : BORDER}`,
               background: tab === t.key ? 'rgba(192,197,206,0.14)' : 'transparent',
               color: tab === t.key ? TEXT_PRIMARY : TEXT_SECONDARY,
               fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer',
@@ -217,7 +217,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
                 <div>
                   <StarRating value={c.calificacion} />
                 </div>
-                <div style={{ textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', color: c.active ? '#86EFAC' : TEXT_MUTED }}>
+                <div style={{ textAlign: 'right', fontSize: 'var(--aguila-fs-meta)', color: c.active ? 'var(--portal-status-green-fg)' : TEXT_MUTED }}>
                   {c.active ? '●' : '○'}
                 </div>
               </button>

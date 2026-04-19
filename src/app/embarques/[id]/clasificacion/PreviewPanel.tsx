@@ -49,7 +49,7 @@ export function PreviewPanel({ sheet, isRefreshing, config }: Props) {
         <div
           style={{
             padding: 10,
-            background: 'rgba(251,191,36,0.12)',
+            background: 'var(--portal-status-amber-bg)',
             border: `1px solid ${AMBER}44`,
             borderRadius: 8,
             fontSize: 'var(--aguila-fs-compact)',

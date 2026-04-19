@@ -19,14 +19,14 @@ interface Props {
 
 const STATUS_PILL: Record<string, { bg: string; fg: string; label: string }> = {
   'En Proceso':       { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER,   label: 'En proceso' },
-  'Documentacion':    { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,  label: 'Documentación' },
-  'En Aduana':        { bg: 'rgba(148,163,184,0.12)', fg: TEXT_SECONDARY,  label: 'En aduana' },
-  'Pedimento Pagado': { bg: 'rgba(34,197,94,0.12)',   fg: GREEN,           label: 'Pagado' },
-  'Cruzado':          { bg: 'rgba(34,197,94,0.12)',   fg: GREEN,           label: 'Cruzado' },
+  'Documentacion':    { bg: 'var(--portal-status-gray-bg)', fg: TEXT_SECONDARY,  label: 'Documentación' },
+  'En Aduana':        { bg: 'var(--portal-status-gray-bg)', fg: TEXT_SECONDARY,  label: 'En aduana' },
+  'Pedimento Pagado': { bg: 'var(--portal-status-green-bg)',   fg: GREEN,           label: 'Pagado' },
+  'Cruzado':          { bg: 'var(--portal-status-green-bg)',   fg: GREEN,           label: 'Cruzado' },
 }
 
 function StatusPill({ label }: { label: string | null }) {
-  const c = (label && STATUS_PILL[label]) || { bg: 'rgba(148,163,184,0.1)', fg: TEXT_MUTED, label: label || '—' }
+  const c = (label && STATUS_PILL[label]) || { bg: 'var(--portal-status-gray-bg)', fg: TEXT_MUTED, label: label || '—' }
   return (
     <span style={{
       fontSize: 'var(--aguila-fs-label)', fontWeight: 600,
@@ -94,7 +94,7 @@ export function RightRail({ colaCount, feed }: Props) {
               padding: '10px 16px',
               borderRadius: 12,
               background: GOLD,
-              color: '#0D0D0C',
+              color: 'var(--portal-ink-0)',
               fontWeight: 700,
               fontSize: 'var(--aguila-fs-body)',
               textDecoration: 'none',

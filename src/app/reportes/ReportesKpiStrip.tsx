@@ -35,9 +35,9 @@ export function ReportesKpiStrip() {
   if (error) {
     return (
       <div style={{
-        background: 'rgba(239,68,68,0.06)',
+        background: 'var(--portal-status-red-bg)',
         border: '1px solid rgba(239,68,68,0.2)',
-        color: '#FCA5A5',
+        color: 'var(--portal-status-red-fg)',
         borderRadius: 12,
         padding: '12px 16px',
         marginBottom: 16,

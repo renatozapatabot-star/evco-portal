@@ -90,7 +90,7 @@ export default function NegociacionPage() {
           }}>
             <KPI label="Proveedores" value={data.summary.total_suppliers} color="var(--text-primary)" />
             <KPI label="Ahorro potencial/mes" value={`${fmtUSDCompact(data.summary.total_potential_savings)} USD`} color="var(--gold-dark)" />
-            <KPI label="Arriba del mercado" value={data.summary.above_market} color={data.summary.above_market > 0 ? '#D97706' : '#16A34A'} />
+            <KPI label="Arriba del mercado" value={data.summary.above_market} color={data.summary.above_market > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-green-fg)'} />
           </div>
 
           {/* Briefs */}
@@ -115,7 +115,7 @@ function KPI({ label, value, color }: { label: string; value: string | number; c
 function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) {
   const [expanded, setExpanded] = useState(false)
   const aboveMarket = b.price_vs_market_pct > 10
-  const borderColor = aboveMarket ? '#D97706' : 'var(--gold)'
+  const borderColor = aboveMarket ? 'var(--portal-status-amber-fg)' : 'var(--gold)'
 
   return (
     <div style={{
@@ -198,7 +198,7 @@ function BriefCard({ brief: b, isMobile }: { brief: Brief; isMobile: boolean }) 
 
           {/* Risk */}
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--aguila-fs-meta)' }}>
-            <Shield size={12} style={{ color: '#16A34A' }} />
+            <Shield size={12} style={{ color: 'var(--portal-status-green-fg)' }} />
             <span style={{ color: 'var(--text-secondary)' }}>Riesgo: {b.risk_assessment}</span>
           </div>
 

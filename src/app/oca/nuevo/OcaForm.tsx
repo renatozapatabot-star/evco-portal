@@ -126,7 +126,7 @@ export function OcaForm() {
 
       {err && (
         <GlassCard>
-          <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
+          <p style={{ color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
         </GlassCard>
       )}
 
@@ -138,7 +138,7 @@ export function OcaForm() {
             minHeight: 60,
             padding: '0 28px',
             background: SILVER_GRADIENT,
-            color: '#0A0A0C',
+            color: 'var(--portal-ink-0)',
             border: 'none',
             borderRadius: 10,
             fontSize: 'var(--aguila-fs-section)',

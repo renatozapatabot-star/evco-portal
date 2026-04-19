@@ -80,7 +80,7 @@ export function Anexo24FraccionGrid({ groups, initialQuery = '' }: Props) {
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 'var(--aguila-fs-section, 15px)',
             fontFamily: 'var(--font-sans)',
           }}
@@ -191,9 +191,9 @@ function FraccionCard({
                 style={{
                   padding: '3px 10px',
                   borderRadius: 999,
-                  background: 'rgba(34,197,94,0.12)',
-                  border: '1px solid rgba(34,197,94,0.3)',
-                  color: '#86EFAC',
+                  background: 'var(--portal-status-green-bg)',
+                  border: '1px solid var(--portal-status-green-ring)',
+                  color: 'var(--portal-status-green-fg)',
                   fontSize: 'var(--aguila-fs-meta, 11px)',
                   fontWeight: 700,
                   letterSpacing: '0.06em',
@@ -313,7 +313,7 @@ function FraccionCard({
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(192,197,206,0.18)',
               borderRadius: 10,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-meta, 11px)',
               fontWeight: 600,
               letterSpacing: '0.06em',
@@ -432,7 +432,7 @@ function FraccionCard({
                 <span
                   style={{
                     fontSize: 'var(--aguila-fs-meta, 11px)',
-                    color: '#E6EDF3',
+                    color: 'var(--portal-fg-1)',
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 600,
                     flexShrink: 0,

@@ -339,10 +339,10 @@ export default function ProveedorPage() {
       <div style={styles.page}>
         <div style={{ ...styles.cockpitCard, maxWidth: 420, padding: 28 }}>
           <AguilaMark size={36} />
-          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#EF4444', margin: '12px 0 8px' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--portal-status-red-fg)', margin: '12px 0 8px' }}>
             Enlace no válido
           </div>
-          <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.6 }}>{msg}</p>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', lineHeight: 1.6 }}>{msg}</p>
         </div>
       </div>
     )
@@ -394,7 +394,7 @@ export default function ProveedorPage() {
             style={{
               fontSize: 'var(--aguila-fs-meta)',
               fontWeight: 700,
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
               marginBottom: 8,
@@ -406,7 +406,7 @@ export default function ProveedorPage() {
             style={{
               fontSize: 22,
               fontWeight: 800,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               lineHeight: 1.2,
               marginBottom: 8,
               fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
@@ -414,13 +414,13 @@ export default function ProveedorPage() {
           >
             Embarque {info.trafico_id}
           </div>
-          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', lineHeight: 1.5 }}>
-            Cliente: <strong style={{ color: '#E6EDF3' }}>{clientName}</strong>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', lineHeight: 1.5 }}>
+            Cliente: <strong style={{ color: 'var(--portal-fg-1)' }}>{clientName}</strong>
             {' · '}
             Vencimiento:{' '}
             <strong
               style={{
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
               }}
             >
@@ -431,7 +431,7 @@ export default function ProveedorPage() {
             <div
               style={{
                 fontSize: 'var(--aguila-fs-meta)',
-                color: '#64748b',
+                color: 'var(--portal-fg-5)',
                 marginTop: 8,
                 fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
               }}
@@ -446,10 +446,10 @@ export default function ProveedorPage() {
           <div
             role="status"
             style={{
-              background: 'rgba(34,197,94,0.08)',
+              background: 'var(--portal-status-green-bg)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(34,197,94,0.25)',
+              border: '1px solid var(--portal-status-green-ring)',
               borderRadius: 20,
               padding: '16px 20px',
               marginBottom: 16,
@@ -459,13 +459,13 @@ export default function ProveedorPage() {
               boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
-            <CheckCircle2 size={28} color="#22C55E" strokeWidth={2} />
+            <CheckCircle2 size={28} color="var(--portal-status-green-fg)" strokeWidth={2} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
                   fontSize: 'var(--aguila-fs-label)',
                   fontWeight: 700,
-                  color: '#22C55E',
+                  color: 'var(--portal-status-green-fg)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   marginBottom: 2,
@@ -473,7 +473,7 @@ export default function ProveedorPage() {
               >
                 Expediente completo
               </div>
-              <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 500, lineHeight: 1.35 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)', fontWeight: 500, lineHeight: 1.35 }}>
                 ¡Listo! Los {info.required_docs.length} documentos fueron recibidos. Gracias.
               </div>
             </div>
@@ -554,7 +554,7 @@ export default function ProveedorPage() {
                           style={{
                             fontSize: 'var(--aguila-fs-label)',
                             fontWeight: 800,
-                            color: '#94a3b8',
+                            color: 'var(--portal-fg-4)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.08em',
                           }}
@@ -577,30 +577,30 @@ export default function ProveedorPage() {
                                 padding: '12px 14px',
                                 borderRadius: 12,
                                 background: justSucceeded
-                                  ? 'rgba(34,197,94,0.14)'
+                                  ? 'var(--portal-status-green-bg)'
                                   : received
-                                    ? 'rgba(34,197,94,0.08)'
+                                    ? 'var(--portal-status-green-bg)'
                                     : 'rgba(255,255,255,0.03)',
                                 border: received
-                                  ? '1px solid rgba(34,197,94,0.25)'
+                                  ? '1px solid var(--portal-status-green-ring)'
                                   : '1px solid rgba(255,255,255,0.08)',
                                 animation: justSucceeded ? 'pulseGreen 1s ease-out' : undefined,
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 {received ? (
-                                  <CheckCircle2 size={18} color="#22C55E" />
+                                  <CheckCircle2 size={18} color="var(--portal-status-green-fg)" />
                                 ) : (
-                                  <FileText size={18} color="#94a3b8" />
+                                  <FileText size={18} color="var(--portal-fg-4)" />
                                 )}
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 600 }}>
+                                  <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                                     {labelForDoc(doc)}
                                   </div>
                                   <div
                                     style={{
                                       fontSize: 'var(--aguila-fs-meta)',
-                                      color: received ? '#22C55E' : '#64748b',
+                                      color: received ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-5)',
                                       marginTop: 2,
                                     }}
                                   >
@@ -619,7 +619,7 @@ export default function ProveedorPage() {
                                     minHeight: 44,
                                     padding: '10px 16px',
                                     borderRadius: 12,
-                                    background: isUploading ? 'rgba(192,197,206,0.4)' : '#E8EAED',
+                                    background: isUploading ? 'rgba(192,197,206,0.4)' : 'var(--portal-fg-1)',
                                     color: '#0B1220',
                                     border: 'none',
                                     fontSize: 'var(--aguila-fs-section)',
@@ -648,7 +648,7 @@ export default function ProveedorPage() {
                                   role="alert"
                                   style={{
                                     fontSize: 'var(--aguila-fs-compact)',
-                                    color: '#EF4444',
+                                    color: 'var(--portal-status-red-fg)',
                                     padding: 6,
                                   }}
                                 >
@@ -688,7 +688,7 @@ export default function ProveedorPage() {
                 minHeight: 60,
                 padding: '18px 24px',
                 borderRadius: 16,
-                background: uploading ? 'rgba(192,197,206,0.4)' : '#E8EAED',
+                background: uploading ? 'rgba(192,197,206,0.4)' : 'var(--portal-fg-1)',
                 color: '#0B1220',
                 border: 'none',
                 fontSize: 'var(--aguila-fs-body-lg)',
@@ -713,7 +713,7 @@ export default function ProveedorPage() {
               )}
             </button>
             <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
-            <p style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b', textAlign: 'center', marginTop: 10 }}>
+            <p style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)', textAlign: 'center', marginTop: 10 }}>
               PDF, JPG, PNG o XLSX · máximo 25 MB
             </p>
             {uploaded.length > 0 && (
@@ -723,7 +723,7 @@ export default function ProveedorPage() {
                     key={f}
                     style={{
                       fontSize: 'var(--aguila-fs-body)',
-                      color: '#22C55E',
+                      color: 'var(--portal-status-green-fg)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
@@ -740,11 +740,11 @@ export default function ProveedorPage() {
                 style={{
                   marginTop: 12,
                   fontSize: 'var(--aguila-fs-body)',
-                  color: '#EF4444',
+                  color: 'var(--portal-status-red-fg)',
                   padding: '10px 12px',
                   borderRadius: 10,
                   background: 'rgba(239,68,68,0.08)',
-                  border: '1px solid rgba(239,68,68,0.25)',
+                  border: '1px solid var(--portal-status-red-ring)',
                 }}
               >
                 {error}
@@ -774,7 +774,7 @@ export default function ProveedorPage() {
             <p
               style={{
                 fontSize: 'var(--aguila-fs-compact)',
-                color: '#64748b',
+                color: 'var(--portal-fg-5)',
                 marginTop: 14,
                 lineHeight: 1.5,
               }}
@@ -792,23 +792,23 @@ export default function ProveedorPage() {
                 style={{
                   padding: 16,
                   borderRadius: 12,
-                  background: 'rgba(34,197,94,0.08)',
-                  border: '1px solid rgba(34,197,94,0.25)',
+                  background: 'var(--portal-status-green-bg)',
+                  border: '1px solid var(--portal-status-green-ring)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
                 }}
               >
-                <CheckCircle2 size={24} color="#22C55E" />
+                <CheckCircle2 size={24} color="var(--portal-status-green-fg)" />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E6EDF3' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                     Embarque ya confirmado
                   </div>
                   {info.shipment_confirmed_at && (
                     <div
                       style={{
                         fontSize: 'var(--aguila-fs-compact)',
-                        color: '#94a3b8',
+                        color: 'var(--portal-fg-4)',
                         marginTop: 2,
                         fontFamily: 'var(--font-jetbrains-mono), var(--font-mono), monospace',
                       }}
@@ -820,7 +820,7 @@ export default function ProveedorPage() {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', lineHeight: 1.5, marginBottom: 12 }}>
+                <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', lineHeight: 1.5, marginBottom: 12 }}>
                   Al confirmar, el agente aduanal recibe aviso de que la mercancía está
                   lista para recoger.
                 </p>
@@ -829,7 +829,7 @@ export default function ProveedorPage() {
                     display: 'block',
                     fontSize: 'var(--aguila-fs-meta)',
                     fontWeight: 700,
-                    color: '#94a3b8',
+                    color: 'var(--portal-fg-4)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
                     marginBottom: 6,
@@ -850,7 +850,7 @@ export default function ProveedorPage() {
                     borderRadius: 12,
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.08)',
-                    color: '#E6EDF3',
+                    color: 'var(--portal-fg-1)',
                     fontSize: 'var(--aguila-fs-section)',
                     fontFamily: 'inherit',
                     resize: 'vertical',
@@ -866,7 +866,7 @@ export default function ProveedorPage() {
                     minHeight: 60,
                     padding: '18px 24px',
                     borderRadius: 16,
-                    background: confirming ? 'rgba(34,197,94,0.4)' : '#22C55E',
+                    background: confirming ? 'rgba(34,197,94,0.4)' : 'var(--portal-status-green-fg)',
                     color: '#0B1220',
                     border: 'none',
                     fontSize: 'var(--aguila-fs-body-lg)',
@@ -902,7 +902,7 @@ export default function ProveedorPage() {
                   borderRadius: 10,
                   background: 'rgba(192,197,206,0.06)',
                   border: '1px solid rgba(192,197,206,0.25)',
-                  color: '#E6EDF3',
+                  color: 'var(--portal-fg-1)',
                 }}
               >
                 {confirmResult}
@@ -925,7 +925,7 @@ export default function ProveedorPage() {
                     fontSize: 'var(--aguila-fs-meta)',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    color: '#94a3b8',
+                    color: 'var(--portal-fg-4)',
                     marginBottom: 8,
                   }}
                 >
@@ -942,7 +942,7 @@ export default function ProveedorPage() {
                     fontFamily: 'var(--font-jetbrains-mono), ui-monospace, monospace',
                     fontSize: 'var(--aguila-fs-section)',
                     letterSpacing: '0.12em',
-                    color: '#E6EDF3',
+                    color: 'var(--portal-fg-1)',
                     marginTop: 8,
                   }}
                 >
@@ -958,7 +958,7 @@ export default function ProveedorPage() {
                     borderRadius: 10,
                     border: '1px solid rgba(192,197,206,0.35)',
                     background: 'transparent',
-                    color: '#E6EDF3',
+                    color: 'var(--portal-fg-1)',
                     fontSize: 'var(--aguila-fs-body)',
                     cursor: 'pointer',
                   }}
@@ -972,7 +972,7 @@ export default function ProveedorPage() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 28, padding: '0 8px' }}>
-          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b' }}>Renato Zapata & Co.</div>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>Renato Zapata & Co.</div>
           <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#475569', marginTop: 2 }}>
             Patente 3596 · Aduana 240 · Est. 1941
           </div>
@@ -1020,15 +1020,15 @@ function ActionCard({
   const border = active
     ? '1px solid rgba(192,197,206,0.45)'
     : confirmed
-      ? '1px solid rgba(34,197,94,0.3)'
+      ? '1px solid var(--portal-status-green-ring)'
       : '1px solid rgba(255,255,255,0.08)'
 
   const iconBg = confirmed
-    ? 'rgba(34,197,94,0.1)'
+    ? 'var(--portal-status-green-bg)'
     : active
       ? 'rgba(192,197,206,0.15)'
       : 'rgba(192,197,206,0.08)'
-  const iconColor = confirmed ? '#22C55E' : '#C0C5CE'
+  const iconColor = confirmed ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-3)'
 
   return (
     <button
@@ -1060,7 +1060,7 @@ function ActionCard({
           height: 44,
           borderRadius: 12,
           background: iconBg,
-          border: `1px solid ${confirmed ? 'rgba(34,197,94,0.25)' : 'rgba(192,197,206,0.15)'}`,
+          border: `1px solid ${confirmed ? 'var(--portal-status-green-ring)' : 'rgba(192,197,206,0.15)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1070,7 +1070,7 @@ function ActionCard({
         <Icon size={20} color={iconColor} strokeWidth={1.8} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#E6EDF3', lineHeight: 1.3 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--portal-fg-1)', lineHeight: 1.3 }}>
           {label}
         </div>
         <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#8b9ab5', marginTop: 2, lineHeight: 1.4 }}>
@@ -1087,10 +1087,10 @@ function ActionCard({
               count === 0
                 ? '#475569'
                 : countTone === 'warn'
-                  ? '#FBBF24'
+                  ? 'var(--portal-status-amber-fg)'
                   : countTone === 'ok'
-                    ? '#22C55E'
-                    : '#E6EDF3',
+                    ? 'var(--portal-status-green-fg)'
+                    : 'var(--portal-fg-1)',
             flexShrink: 0,
           }}
         >
@@ -1130,7 +1130,7 @@ function Panel({
           style={{
             fontSize: 'var(--aguila-fs-meta)',
             fontWeight: 700,
-            color: '#C0C5CE',
+            color: 'var(--portal-fg-3)',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
           }}
@@ -1151,7 +1151,7 @@ function Panel({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#94a3b8',
+            color: 'var(--portal-fg-4)',
           }}
         >
           <X size={18} />
@@ -1174,11 +1174,11 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
         gap: 12,
       }}
     >
-      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8' }}>{label}</div>
+      <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>{label}</div>
       <div
         style={{
           fontSize: 'var(--aguila-fs-section)',
-          color: '#E6EDF3',
+          color: 'var(--portal-fg-1)',
           fontWeight: 600,
           textAlign: 'right',
           fontFamily: mono
@@ -1200,7 +1200,7 @@ function EmptyLine({ children }: { children: React.ReactNode }) {
         borderRadius: 12,
         background: 'rgba(255,255,255,0.02)',
         border: '1px dashed rgba(255,255,255,0.08)',
-        color: '#94a3b8',
+        color: 'var(--portal-fg-4)',
         fontSize: 'var(--aguila-fs-body)',
         textAlign: 'center',
       }}
@@ -1234,12 +1234,12 @@ const styles = {
   logo: {
     fontSize: 'var(--aguila-fs-title)',
     fontWeight: 800,
-    color: '#E8EAED',
+    color: 'var(--portal-fg-1)',
     letterSpacing: '0.1em',
   } as React.CSSProperties,
   chromeSubtitle: {
     fontSize: 'var(--aguila-fs-meta)',
-    color: '#64748b',
+    color: 'var(--portal-fg-5)',
     letterSpacing: '0.08em',
     textTransform: 'uppercase' as const,
     marginTop: 4,

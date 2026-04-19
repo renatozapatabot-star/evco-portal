@@ -25,7 +25,7 @@ import { usePedimento } from '@/components/pedimento/PedimentoContext'
 import type { CarrierSearchResult } from '@/lib/carriers'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
-const RED = '#EF4444'
+const RED = 'var(--portal-status-red-fg)'
 
 const TYPE_OPTIONS: readonly { code: CarrierType; label: string }[] = [
   { code: 'mx', label: 'MX · Transportista mexicano' },

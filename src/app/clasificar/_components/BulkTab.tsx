@@ -235,7 +235,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
             borderRadius: 10,
             border: 'none',
             background: selectedCount === 0 || classifying ? 'rgba(148,163,184,0.2)' : '#eab308',
-            color: selectedCount === 0 || classifying ? 'rgba(255,255,255,0.5)' : '#0D0D0C',
+            color: selectedCount === 0 || classifying ? 'rgba(255,255,255,0.5)' : 'var(--portal-ink-0)',
             fontSize: 'var(--aguila-fs-body)',
             fontWeight: 700,
             cursor: selectedCount === 0 || classifying ? 'not-allowed' : 'pointer',
@@ -256,7 +256,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
       {error && (
         <div style={{
           padding: 12, marginBottom: 12, borderRadius: 10,
-          background: 'rgba(239,68,68,0.12)', color: 'var(--portal-status-red-fg)',
+          background: 'var(--portal-status-red-bg)', color: 'var(--portal-status-red-fg)',
           border: '1px solid rgba(239,68,68,0.24)', fontSize: 'var(--aguila-fs-body)',
         }}>
           {error}
@@ -370,7 +370,7 @@ export function BulkTab({ canInsert }: { canInsert: boolean }) {
                     <span style={{
                       display: 'inline-block', marginLeft: 6,
                       padding: '1px 6px', borderRadius: 6,
-                      background: 'rgba(251,191,36,0.12)', color: 'var(--portal-status-amber-fg)',
+                      background: 'var(--portal-status-amber-bg)', color: 'var(--portal-status-amber-fg)',
                       fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
                     }}>
                       NOM ({r.nom_required.length})

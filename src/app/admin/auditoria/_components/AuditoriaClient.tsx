@@ -47,9 +47,9 @@ function truncate(value: unknown, max = 40): string {
 function ActionBadge({ action }: { action: AuditLogRow['action'] }) {
   const tone =
     action === 'INSERT'
-      ? { bg: 'rgba(192,197,206,0.12)', fg: '#E8EAED' }
+      ? { bg: 'rgba(192,197,206,0.12)', fg: 'var(--portal-fg-1)' }
       : action === 'UPDATE'
-      ? { bg: 'rgba(192,197,206,0.08)', fg: '#C0C5CE' }
+      ? { bg: 'rgba(192,197,206,0.08)', fg: 'var(--portal-fg-3)' }
       : { bg: 'rgba(192,197,206,0.04)', fg: '#7A7E86' }
   return (
     <span
@@ -127,7 +127,7 @@ export function AuditoriaClient() {
             gap: 12,
           }}
         >
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Tabla
             <select
               value={table}
@@ -135,13 +135,13 @@ export function AuditoriaClient() {
               style={inputStyle}
             >
               {TABLES.map((t) => (
-                <option key={t.value} value={t.value} style={{ background: '#0A0A0C' }}>
+                <option key={t.value} value={t.value} style={{ background: 'var(--portal-ink-0)' }}>
                   {t.label}
                 </option>
               ))}
             </select>
           </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             ID de registro
             <input
               type="text"
@@ -151,22 +151,22 @@ export function AuditoriaClient() {
               style={{ ...inputStyle, ...MONO }}
             />
           </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Usuario
             <select
               value={changedBy}
               onChange={(e) => setChangedBy(e.target.value)}
               style={inputStyle}
             >
-              <option value="" style={{ background: '#0A0A0C' }}>Todos</option>
+              <option value="" style={{ background: 'var(--portal-ink-0)' }}>Todos</option>
               {users.map((u) => (
-                <option key={u} value={u} style={{ background: '#0A0A0C' }}>
+                <option key={u} value={u} style={{ background: 'var(--portal-ink-0)' }}>
                   {u.slice(0, 8)}…
                 </option>
               ))}
             </select>
           </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Desde
             <input
               type="date"
@@ -175,7 +175,7 @@ export function AuditoriaClient() {
               style={inputStyle}
             />
           </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Hasta
             <input
               type="date"
@@ -196,7 +196,7 @@ export function AuditoriaClient() {
               border: '1px solid rgba(192,197,206,0.3)',
               background:
                 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
-              color: '#0A0A0C',
+              color: 'var(--portal-ink-0)',
               fontWeight: 600,
               cursor: loading ? 'wait' : 'pointer',
             }}
@@ -218,7 +218,7 @@ export function AuditoriaClient() {
               borderRadius: 10,
               border: '1px solid rgba(192,197,206,0.18)',
               background: 'transparent',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               cursor: 'pointer',
             }}
           >
@@ -231,7 +231,7 @@ export function AuditoriaClient() {
         <div
           style={{
             ...GLASS,
-            borderColor: 'rgba(239,68,68,0.3)',
+            borderColor: 'var(--portal-status-red-ring)',
             color: '#fecaca',
             fontSize: 'var(--aguila-fs-body)',
           }}
@@ -243,14 +243,14 @@ export function AuditoriaClient() {
       {/* Results */}
       <div style={GLASS}>
         {rows.length === 0 && !loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+          <div style={{ textAlign: 'center', padding: 40, color: 'var(--portal-fg-5)' }}>
             <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', marginBottom: 8 }}>∅</div>
             <div style={{ fontSize: 'var(--aguila-fs-section)' }}>Sin resultados para esos filtros.</div>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
             <thead>
-              <tr style={{ textAlign: 'left', color: '#94a3b8', fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <tr style={{ textAlign: 'left', color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 <th style={thStyle}>Cuándo</th>
                 <th style={thStyle}>Usuario</th>
                 <th style={thStyle}>Acción</th>
@@ -273,24 +273,24 @@ export function AuditoriaClient() {
                         cursor: 'pointer',
                       }}
                     >
-                      <td style={{ ...tdStyle, ...MONO, color: '#C0C5CE' }}>{fmt(row.changed_at)}</td>
-                      <td style={{ ...tdStyle, ...MONO, color: '#94a3b8' }}>
+                      <td style={{ ...tdStyle, ...MONO, color: 'var(--portal-fg-3)' }}>{fmt(row.changed_at)}</td>
+                      <td style={{ ...tdStyle, ...MONO, color: 'var(--portal-fg-4)' }}>
                         {row.changed_by ? row.changed_by.slice(0, 8) + '…' : 'sistema'}
                       </td>
                       <td style={tdStyle}><ActionBadge action={row.action} /></td>
                       <td style={tdStyle}>{row.table_name}</td>
                       <td style={{ ...tdStyle, ...MONO }}>{row.record_id || '—'}</td>
-                      <td style={{ ...tdStyle, color: '#C0C5CE' }}>
+                      <td style={{ ...tdStyle, color: 'var(--portal-fg-3)' }}>
                         {diffs.length === 0
-                          ? <span style={{ color: '#64748b' }}>— sin cambios —</span>
+                          ? <span style={{ color: 'var(--portal-fg-5)' }}>— sin cambios —</span>
                           : diffs.slice(0, 2).map((d) => (
                               <span key={d.field} style={{ marginRight: 12 }}>
                                 <span style={{ color: '#7A7E86' }}>{d.field}:</span>{' '}
                                 <span style={{ color: '#7A7E86', textDecoration: 'line-through', ...MONO }}>
                                   {truncate(d.before)}
                                 </span>{' '}
-                                <span style={{ color: '#94a3b8' }}>→</span>{' '}
-                                <span style={{ color: '#E8EAED', ...MONO }}>
+                                <span style={{ color: 'var(--portal-fg-4)' }}>→</span>{' '}
+                                <span style={{ color: 'var(--portal-fg-1)', ...MONO }}>
                                   {truncate(d.after)}
                                 </span>
                               </span>
@@ -324,7 +324,7 @@ export function AuditoriaClient() {
                               </pre>
                             </div>
                             <div>
-                              <div style={{ color: '#E8EAED', fontSize: 'var(--aguila-fs-meta)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <div style={{ color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-meta)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 Después
                               </div>
                               <pre style={preStyle}>
@@ -355,7 +355,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 10,
   border: '1px solid rgba(192,197,206,0.18)',
   background: 'rgba(255,255,255,0.045)',
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   fontSize: 'var(--aguila-fs-body)',
 }
 
@@ -375,7 +375,7 @@ const preStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.045)',
   border: '1px solid rgba(192,197,206,0.08)',
   borderRadius: 8,
-  color: '#C0C5CE',
+  color: 'var(--portal-fg-3)',
   overflow: 'auto',
   maxHeight: 300,
   whiteSpace: 'pre-wrap',

@@ -50,8 +50,8 @@ import { ActionButton } from './FieldPrimitives'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
 const AMBER = '#f59e0b'
-const RED = '#ef4444'
-const GREEN = '#22c55e'
+const RED = 'var(--portal-status-red-fg)'
+const GREEN = 'var(--portal-status-green-fg)'
 
 interface ValidateResponse {
   errors: ValidationError[]
@@ -512,7 +512,7 @@ function CompletenessRail({
                   </span>
                 </div>
                 {missing.length > 0 && (
-                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-red-fg)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <AlertTriangle size={12} /> Faltan {missing.length} campo(s)
                   </div>
                 )}

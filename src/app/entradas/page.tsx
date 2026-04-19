@@ -203,10 +203,10 @@ function EntradasContent() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Package size={20} color="#C0C5CE" strokeWidth={1.8} />
+          <Package size={20} color="var(--portal-fg-3)" strokeWidth={1.8} />
         </div>
         <h1 style={{
-          fontSize: 22, fontWeight: 800, color: '#E6EDF3',
+          fontSize: 22, fontWeight: 800, color: 'var(--portal-fg-1)',
           letterSpacing: '-0.02em', margin: 0,
         }}>
           Entradas
@@ -309,7 +309,7 @@ function EntradasContent() {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                     {r.trafico ? (
-                      <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: '#C0C5CE', textDecoration: 'none' }}>{r.trafico}</Link>
+                      <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: 'var(--portal-fg-3)', textDecoration: 'none' }}>{r.trafico}</Link>
                     ) : (
                       renderPending()
                     )}
@@ -362,7 +362,7 @@ function EntradasContent() {
                     </td>
                     <td>
                       {r.trafico ? (
-                        <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#C0C5CE', textDecoration: 'none' }}>
+                        <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-3)', textDecoration: 'none' }}>
                           {r.trafico}
                         </Link>
                       ) : (

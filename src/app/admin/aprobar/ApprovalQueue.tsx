@@ -67,9 +67,9 @@ function resolveStatus(draft: DraftRow): string {
 }
 
 function confidenceColor(conf: number): string {
-  if (conf >= 85) return '#22C55E'
-  if (conf >= 70) return '#FBBF24'
-  return '#EF4444'
+  if (conf >= 85) return 'var(--portal-status-green-fg)'
+  if (conf >= 70) return 'var(--portal-status-amber-fg)'
+  return 'var(--portal-status-red-fg)'
 }
 
 function confidenceLabel(conf: number): string {
@@ -205,12 +205,12 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>🦀</div>
             <div style={{
-              fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#E8EAED',
+              fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: 'var(--portal-fg-1)',
               letterSpacing: '-0.02em',
             }}>
               Patente 3596 honrada.
             </div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginTop: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', marginTop: 8 }}>
               Gracias, Tito.
             </div>
           </div>
@@ -225,13 +225,13 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
           border: '1px solid rgba(192,197,206,0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Shield size={20} color="#E8EAED" strokeWidth={1.8} />
+          <Shield size={20} color="var(--portal-fg-1)" strokeWidth={1.8} />
         </div>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#E6EDF3', margin: 0 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--portal-fg-1)', margin: 0 }}>
             Aprobaciones
           </h1>
-          <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', margin: '2px 0 0' }}>
             {pendingCount > 0 ? `${pendingCount} pendiente${pendingCount !== 1 ? 's' : ''}` : 'Todo aprobado'}
           </p>
         </div>
@@ -252,7 +252,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
               fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer',
               minHeight: 44,
               background: activeTab === tab.key ? 'rgba(192,197,206,0.12)' : 'rgba(255,255,255,0.04)',
-              color: activeTab === tab.key ? '#C0C5CE' : '#94a3b8',
+              color: activeTab === tab.key ? 'var(--portal-fg-3)' : 'var(--portal-fg-4)',
               transition: 'all 150ms',
             }}
           >
@@ -309,7 +309,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                       <span style={{
                         fontSize: 'var(--aguila-fs-label)', fontWeight: 700, textTransform: 'uppercase',
                         padding: '2px 8px', borderRadius: 10,
-                        background: 'rgba(192,197,206,0.08)', color: '#C0C5CE',
+                        background: 'rgba(192,197,206,0.08)', color: 'var(--portal-fg-3)',
                       }}>
                         {draft.company_id || 'SIN CLAVE'}
                       </span>
@@ -318,7 +318,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                           href={`/embarques/${encodeURIComponent(draft.trafico_id)}`}
                           style={{
                             fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', fontWeight: 600,
-                            color: '#C0C5CE', textDecoration: 'none',
+                            color: 'var(--portal-fg-3)', textDecoration: 'none',
                           }}
                         >
                           {draft.trafico_id.substring(0, 12)}
@@ -338,10 +338,10 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
 
                   {/* Supplier + value */}
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#E6EDF3' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                       {supplier}
                     </div>
-                    <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 'var(--aguila-fs-body)', color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
                       {valor > 0 && (
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                           {fmtUSD(valor)} USD
@@ -362,7 +362,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                       {flags.map(f => (
                         <span key={f} style={{
                           fontSize: 'var(--aguila-fs-label)', fontWeight: 600, padding: '2px 8px', borderRadius: 10,
-                          background: 'rgba(239,68,68,0.1)', color: '#EF4444',
+                          background: 'var(--portal-status-red-bg)', color: 'var(--portal-status-red-fg)',
                         }}>
                           🚩 {f.replace(/_/g, ' ')}
                         </span>
@@ -372,7 +372,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
 
                   {/* Timestamp */}
                   <div style={{
-                    fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b',
+                    fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-5)',
                     marginBottom: 16,
                   }}>
                     {fmtDateTime(draft.created_at)}
@@ -388,8 +388,8 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                       border: '1px solid rgba(192,197,206,0.2)',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Clock size={16} color="#E8EAED" />
-                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E8EAED', fontWeight: 600 }}>
+                        <Clock size={16} color="var(--portal-fg-1)" />
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
                           Aprobando... {countdown !== undefined ? `${countdown}s` : ''}
                         </span>
                       </div>
@@ -397,8 +397,8 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                         onClick={() => handleCancel(draft)}
                         disabled={isLoading}
                         style={{
-                          padding: '8px 16px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)',
-                          background: 'rgba(239,68,68,0.1)', color: '#EF4444',
+                          padding: '8px 16px', borderRadius: 10, border: '1px solid var(--portal-status-red-ring)',
+                          background: 'var(--portal-status-red-bg)', color: 'var(--portal-status-red-fg)',
                           fontSize: 'var(--aguila-fs-body)', fontWeight: 600, cursor: 'pointer', minHeight: 44,
                         }}
                       >
@@ -416,7 +416,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                         style={{
                           flex: 1, minWidth: 140, padding: '12px 20px', borderRadius: 12,
                           border: 'none', cursor: 'pointer', minHeight: 60,
-                          background: isLoading ? 'rgba(192,197,206,0.3)' : '#E8EAED',
+                          background: isLoading ? 'rgba(192,197,206,0.3)' : 'var(--portal-fg-1)',
                           color: '#000', fontSize: 15, fontWeight: 800,
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                           transition: 'all 150ms',
@@ -431,7 +431,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                           padding: '12px 16px', borderRadius: 12, minHeight: 60,
                           border: '1px solid rgba(255,255,255,0.1)',
                           background: 'rgba(255,255,255,0.04)',
-                          color: '#94a3b8', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
+                          color: 'var(--portal-fg-4)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                         }}
                       >
@@ -442,8 +442,8 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                         style={{
                           padding: '12px 16px', borderRadius: 12, minHeight: 60,
                           border: '1px solid rgba(239,68,68,0.15)',
-                          background: 'rgba(239,68,68,0.06)',
-                          color: '#EF4444', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
+                          background: 'var(--portal-status-red-bg)',
+                          color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
                           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                         }}
                       >
@@ -469,11 +469,11 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
               const supplier = dd.supplier || 'Proveedor'
               const resolved = resolveStatus(draft)
               const statusConfig: Record<string, { icon: string; color: string; label: string }> = {
-                approved: { icon: '✅', color: '#22C55E', label: 'Aprobado' },
-                approved_corrected: { icon: '✏️', color: '#FBBF24', label: 'Corregido' },
-                rejected: { icon: '❌', color: '#EF4444', label: 'Rechazado' },
+                approved: { icon: '✅', color: 'var(--portal-status-green-fg)', label: 'Aprobado' },
+                approved_corrected: { icon: '✏️', color: 'var(--portal-status-amber-fg)', label: 'Corregido' },
+                rejected: { icon: '❌', color: 'var(--portal-status-red-fg)', label: 'Rechazado' },
               }
-              const sc = statusConfig[resolved] || { icon: '⏳', color: '#64748b', label: resolved }
+              const sc = statusConfig[resolved] || { icon: '⏳', color: 'var(--portal-fg-5)', label: resolved }
 
               return (
                 <div key={draft.id} style={{
@@ -484,10 +484,10 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 }}>
                   <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>{sc.icon}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {supplier}
                     </div>
-                    <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-5)' }}>
                       {fmtDateTime(draft.updated_at)}
                     </div>
                   </div>
@@ -514,23 +514,23 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
               <div key={String(esc.id)} style={{
                 padding: '14px 16px', borderRadius: 14,
                 background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(239,68,68,0.1)',
+                border: '1px solid var(--portal-status-red-bg)',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <AlertTriangle size={14} color="#EF4444" />
-                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: '#E6EDF3' }}>
+                    <AlertTriangle size={14} color="var(--portal-status-red-fg)" />
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-1)' }}>
                       {String(esc.event_type || '').replace(/\./g, ' → ')}
                     </span>
                   </div>
-                  <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(192,197,206,0.08)', color: '#C0C5CE' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(192,197,206,0.08)', color: 'var(--portal-fg-3)' }}>
                     {esc.company_id}
                   </span>
                 </div>
-                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#EF4444', marginBottom: 4, fontFamily: 'var(--font-mono)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-red-fg)', marginBottom: 4, fontFamily: 'var(--font-mono)' }}>
                   {esc.error_message || 'Sin detalle'}
                 </div>
-                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-5)' }}>
                   {fmtDateTime(String(esc.created_at))}
                 </div>
               </div>
@@ -547,7 +547,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
       >
         {actionModal && (
           <div>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginBottom: 16 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginBottom: 16 }}>
               {actionModal.type === 'reject'
                 ? `Rechazar borrador de ${((actionModal.draft.draft_data || {}) as DraftData).supplier || 'proveedor'}. Escribe el motivo:`
                 : `Aprobar con corrección para ${((actionModal.draft.draft_data || {}) as DraftData).supplier || 'proveedor'}. Escribe la nota:`
@@ -562,7 +562,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 width: '100%', padding: '12px 14px', borderRadius: 12,
                 border: '1px solid rgba(255,255,255,0.1)',
                 background: 'rgba(255,255,255,0.04)',
-                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'none',
+                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'none',
                 fontFamily: 'inherit',
               }}
             />
@@ -572,7 +572,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 disabled={!modalText.trim() || actionLoading === actionModal.draft.id}
                 style={{
                   flex: 1, padding: '14px 20px', borderRadius: 12, border: 'none',
-                  background: actionModal.type === 'reject' ? '#EF4444' : '#E8EAED',
+                  background: actionModal.type === 'reject' ? 'var(--portal-status-red-fg)' : 'var(--portal-fg-1)',
                   color: actionModal.type === 'reject' ? '#FFF' : '#000',
                   fontSize: 15, fontWeight: 800, cursor: 'pointer', minHeight: 60,
                   opacity: !modalText.trim() ? 0.4 : 1,
@@ -585,7 +585,7 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 style={{
                   padding: '14px 20px', borderRadius: 12,
                   border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: 'var(--portal-fg-4)',
                   fontSize: 'var(--aguila-fs-section)', fontWeight: 600, cursor: 'pointer', minHeight: 60,
                 }}
               >

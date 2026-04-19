@@ -25,7 +25,7 @@ const CARD: React.CSSProperties = {
 const INPUT: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   borderRadius: 10,
   padding: '0 12px',
   height: 44,
@@ -36,7 +36,7 @@ const INPUT: React.CSSProperties = {
 
 const BTN: React.CSSProperties = {
   background: 'linear-gradient(135deg,#E8EAED 0%,#C0C5CE 50%,#7A7E86 100%)',
-  color: '#0A0A0C',
+  color: 'var(--portal-ink-0)',
   border: 'none',
   borderRadius: 12,
   height: 44,
@@ -121,7 +121,7 @@ export function NotificacionesClient({ role }: { role: string }) {
   }
 
   if (loading) {
-    return <div style={{ ...CARD, color: '#94a3b8' }}>Cargando…</div>
+    return <div style={{ ...CARD, color: 'var(--portal-fg-4)' }}>Cargando…</div>
   }
 
   return (
@@ -186,7 +186,7 @@ export function NotificacionesClient({ role }: { role: string }) {
                     alignItems: 'center',
                     gap: 6,
                     fontSize: 'var(--aguila-fs-compact)',
-                    color: '#94a3b8',
+                    color: 'var(--portal-fg-4)',
                     minHeight: 44,
                   }}
                 >
@@ -220,7 +220,7 @@ export function NotificacionesClient({ role }: { role: string }) {
                 <div
                   style={{
                     fontSize: 'var(--aguila-fs-meta)',
-                    color: savingKind === kind ? '#C0C5CE' : 'transparent',
+                    color: savingKind === kind ? 'var(--portal-fg-3)' : 'transparent',
                     minWidth: 60,
                   }}
                 >
@@ -232,7 +232,7 @@ export function NotificacionesClient({ role }: { role: string }) {
         </div>
       </div>
       {isAdmin && (
-        <div style={{ ...CARD, fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8' }}>
+        <div style={{ ...CARD, fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>
           Como admin puedes editar tus propias reglas aquí. Para configurar las de
           otros miembros del equipo, usa <code>POST /api/telegram/routing</code> con{' '}
           <code>user_id</code> objetivo.

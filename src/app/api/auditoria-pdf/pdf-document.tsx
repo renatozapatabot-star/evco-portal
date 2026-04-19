@@ -7,7 +7,7 @@ const C = {
   surface: '#1A1918',
   surfaceLight: '#222120',
   border: '#333230',
-  gold: '#E8EAED',
+  gold: 'var(--portal-fg-1)',
   goldDark: '#7A7E86',
   goldMuted: '#6B5A2E',
   orange: '#E67E22',

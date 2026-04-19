@@ -126,7 +126,7 @@ function OnboardingContent() {
                 </div>
                 <div style={demoField}>
                   <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>IGI</span>
-                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#16A34A' }}>0% (T-MEC)</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--portal-status-green-fg)' }}>0% (T-MEC)</span>
                 </div>
                 <div style={demoField}>
                   <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>DTA</span>

@@ -95,7 +95,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
         <button
           onClick={() => setSelectedId(null)}
           style={{
-            background: 'none', border: 'none', color: '#C0C5CE',
+            background: 'none', border: 'none', color: 'var(--portal-fg-3)',
             fontSize: 'var(--aguila-fs-section)', fontWeight: 600, cursor: 'pointer',
             padding: '8px 0', marginBottom: 12,
             display: 'flex', alignItems: 'center', gap: 4,
@@ -156,7 +156,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
               >
                 {/* Row 1: company + badge */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#64748b', fontWeight: 600 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)', fontWeight: 600 }}>
                     {d.company_name || d.company_id}
                   </span>
                   {confidenceBadge(confTier, confAvg)}
@@ -165,7 +165,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
                 {/* Row 2: embarque ID */}
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: 15, fontWeight: 800,
-                  color: '#E6EDF3', marginBottom: 6,
+                  color: 'var(--portal-fg-1)', marginBottom: 6,
                 }}>
                   {d.trafico_id || '—'}
                 </div>
@@ -173,7 +173,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
                 {/* Row 3: value + line count + timestamp */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8', flexWrap: 'wrap',
+                  fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', flexWrap: 'wrap',
                 }}>
                   {valorUSD > 0 && (
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
@@ -181,7 +181,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
                     </span>
                   )}
                   {valorMXN > 0 && (
-                    <span style={{ fontFamily: 'var(--font-mono)', color: '#64748b' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-5)' }}>
                       {fmtMXN(valorMXN)}
                     </span>
                   )}
@@ -190,7 +190,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
                   </span>
                   <span style={{
                     display: 'flex', alignItems: 'center', gap: 3,
-                    fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b',
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)',
                   }}>
                     <Clock size={11} /> {fmtDateTime(d.created_at)}
                   </span>
@@ -217,7 +217,7 @@ export function ApprovalsClient({ initialDrafts }: Props) {
           alignItems: 'center', justifyContent: 'center', gap: 12,
         }}>
           <FileText size={32} color="#475569" />
-          <span style={{ fontSize: 'var(--aguila-fs-section)', color: '#64748b' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
             Selecciona un pedimento para revisar
           </span>
         </div>

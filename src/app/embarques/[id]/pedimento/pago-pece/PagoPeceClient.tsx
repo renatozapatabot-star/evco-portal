@@ -12,8 +12,8 @@ import {
 } from '@/lib/design-system'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
-const RED = '#EF4444'
-const GREEN = '#22C55E'
+const RED = 'var(--portal-status-red-fg)'
+const GREEN = 'var(--portal-status-green-fg)'
 
 type Status = 'intent' | 'submitted' | 'confirmed' | 'rejected'
 
@@ -386,7 +386,7 @@ function primaryBtn(disabled: boolean): React.CSSProperties {
     padding: '0 20px',
     fontSize: 'var(--aguila-fs-section)',
     fontWeight: 600,
-    color: '#0A0A0C',
+    color: 'var(--portal-ink-0)',
     background: ACCENT_SILVER,
     border: 'none',
     borderRadius: 10,
@@ -447,7 +447,7 @@ function PaymentSuccessHero({
             width: 64,
             height: 64,
             borderRadius: '50%',
-            background: 'rgba(34,197,94,0.14)',
+            background: 'var(--portal-status-green-bg)',
             border: `1px solid ${GREEN}66`,
             flexShrink: 0,
           }}
@@ -529,7 +529,7 @@ function PaymentSuccessHero({
             padding: '0 24px',
             fontSize: 'var(--aguila-fs-section)',
             fontWeight: 600,
-            color: '#0A0A0C',
+            color: 'var(--portal-ink-0)',
             background: ACCENT_SILVER,
             border: 'none',
             borderRadius: 10,

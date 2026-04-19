@@ -14,9 +14,9 @@ import type { DraftRow, DraftProduct, DraftData } from '@/types/database'
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const TIER_CONFIG = {
-  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: 'rgba(34,197,94,0.1)' },
+  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: 'var(--portal-status-green-bg)' },
   2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(192,197,206,0.08)' },
-  3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: 'rgba(239,68,68,0.1)' },
+  3: { label: 'Revisión completa', time: 'Sin límite · precisión sobre velocidad', color: 'var(--danger-500)', bg: 'var(--portal-status-red-bg)' },
 }
 
 function mapDraftRow(row: DraftRow) {
@@ -64,7 +64,7 @@ function mapDraftRow(row: DraftRow) {
 /** Verification badge — shows if a field was AI-extracted and needs human review */
 function VerifyBadge({ present, label }: { present: boolean; label?: string }) {
   if (present) return <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 600, color: 'var(--success)', marginLeft: 6 }}>✓ AI</span>
-  return <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--danger-500)', background: 'rgba(239,68,68,0.1)', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
+  return <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--danger-500)', background: 'var(--portal-status-red-bg)', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>{label || '⚠ Verificar'}</span>
 }
 
 export default function DraftReviewPage() {

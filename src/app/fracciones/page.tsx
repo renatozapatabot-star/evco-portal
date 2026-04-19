@@ -40,10 +40,10 @@ export default function FraccionesPage() {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', marginBottom: 4 }}>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 4 }}>
         Búsqueda de Fracciones
       </h1>
-      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginBottom: 24 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', marginBottom: 24 }}>
         Describe un producto y PORTAL sugerirá la fracción arancelaria más probable.
       </p>
 
@@ -56,7 +56,7 @@ export default function FraccionesPage() {
           border: '1px solid rgba(192,197,206,0.1)',
           backdropFilter: 'blur(20px)',
         }}>
-          <Search size={18} style={{ color: '#64748b', flexShrink: 0 }} />
+          <Search size={18} style={{ color: 'var(--portal-fg-5)', flexShrink: 0 }} />
           <input
             type="text"
             value={query}
@@ -65,7 +65,7 @@ export default function FraccionesPage() {
             placeholder="Ej: vacuum loader hose, plastic container, steel bolt..."
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', fontFamily: 'inherit',
+              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', fontFamily: 'inherit',
             }}
           />
         </div>
@@ -74,7 +74,7 @@ export default function FraccionesPage() {
           disabled={loading || !query.trim()}
           style={{
             padding: '0 24px', height: 52, borderRadius: 14,
-            background: '#E8EAED', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
+            background: 'var(--portal-fg-1)', color: '#05070B', fontWeight: 700, fontSize: 'var(--aguila-fs-section)',
             border: 'none', cursor: 'pointer',
             opacity: loading || !query.trim() ? 0.5 : 1,
             transition: 'opacity 150ms, box-shadow 150ms',
@@ -88,7 +88,7 @@ export default function FraccionesPage() {
 
       {/* Results */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--portal-fg-5)' }}>
           <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto 12px' }} />
           <div>Clasificando con PORTAL...</div>
         </div>
@@ -100,9 +100,9 @@ export default function FraccionesPage() {
           background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(192,197,206,0.1)',
           backdropFilter: 'blur(20px)',
         }}>
-          <Tag size={32} style={{ color: '#64748b', margin: '0 auto 12px' }} />
-          <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginBottom: 4 }}>Sin sugerencias</div>
-          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: '#64748b' }}>Intenta con una descripción más detallada del producto.</div>
+          <Tag size={32} style={{ color: 'var(--portal-fg-5)', margin: '0 auto 12px' }} />
+          <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', marginBottom: 4 }}>Sin sugerencias</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)' }}>Intenta con una descripción más detallada del producto.</div>
         </div>
       )}
 
@@ -117,16 +117,16 @@ export default function FraccionesPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: '#E6EDF3' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                   {r.fraccion}
                 </span>
-                <div style={{ fontSize: 'var(--aguila-fs-body)', color: '#94a3b8', marginTop: 4 }}>{r.description}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginTop: 4 }}>{r.description}</div>
               </div>
               <div style={{
                 padding: '6px 14px', borderRadius: 10,
                 background: 'rgba(192,197,206,0.08)',
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
-                color: '#C0C5CE',
+                color: 'var(--portal-fg-3)',
               }}>
                 {Math.round(r.confidence * 100)}%
               </div>
@@ -137,7 +137,7 @@ export default function FraccionesPage() {
 
       {/* Hint when not yet searched */}
       {!searched && (
-        <div style={{ textAlign: 'center', padding: 40, color: '#64748b', fontSize: 'var(--aguila-fs-body)' }}>
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)' }}>
           Escribe la descripción de un producto para obtener sugerencias de fracción arancelaria.
         </div>
       )}

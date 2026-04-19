@@ -84,7 +84,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
 
       <div style={{
         fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 800,
-        color: '#E6EDF3', lineHeight: 1.1, position: 'relative',
+        color: 'var(--portal-fg-1)', lineHeight: 1.1, position: 'relative',
         letterSpacing: '-0.02em',
       }}>
         {value}
@@ -92,7 +92,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
 
       {sub && (
         <div style={{
-          fontSize: 'var(--aguila-fs-body)', color: '#64748b', marginTop: 8, lineHeight: 1.4,
+          fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', marginTop: 8, lineHeight: 1.4,
           position: 'relative',
         }}>
           {sub}
@@ -105,7 +105,7 @@ function KPICard({ icon: Icon, label, value, sub, accent }: {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 style={{
-      fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: '#94a3b8',
+      fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--portal-fg-4)',
       textTransform: 'uppercase', letterSpacing: '0.1em',
       marginBottom: 12, marginTop: 32,
     }}>
@@ -284,7 +284,7 @@ export default function KPIsPage() {
         <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           Análisis completo de operaciones aduanales
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#64748b',
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)',
             background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: 6,
           }}>
             Datos desde ene 2024
@@ -294,11 +294,11 @@ export default function KPIsPage() {
 
       {/* ── KPI Grid ─────────────────────────────────── */}
       <div className="kpi-page-grid" style={{ display: 'grid', gap: 14, marginBottom: 8 }}>
-        <KPICard icon={Package} accent="#C0C5CE"
+        <KPICard icon={Package} accent="var(--portal-fg-3)"
           label="Operaciones Totales" value={String(kpis.total)}
           sub={`${kpis.cruzados} cruzados · ${kpis.enProceso} en proceso`} />
 
-        <KPICard icon={DollarSign} accent="#E8EAED"
+        <KPICard icon={DollarSign} accent="var(--portal-fg-1)"
           label="Valor Importado USD" value={fmtUSD(kpis.totalValueUSD)}
           sub={`DTA ${fmtUSD(kpis.totalDTA)} · IGI ${fmtUSD(kpis.totalIGI)} · IVA ${fmtUSD(kpis.totalIVA)}`} />
 
@@ -332,7 +332,7 @@ export default function KPIsPage() {
             const label = new Date(Number(y), Number(m) - 1).toLocaleDateString('es-MX', { month: 'short' })
             return (
               <div key={month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: '#E6EDF3', fontWeight: 700 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-1)', fontWeight: 700 }}>
                   {count}
                 </span>
                 <div style={{
@@ -343,7 +343,7 @@ export default function KPIsPage() {
                   minHeight: 6,
                   boxShadow: count > 0 ? '0 0 8px #C0C5CE22' : 'none',
                 }} />
-                <span style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ fontSize: 9, color: 'var(--portal-fg-5)', textTransform: 'uppercase', fontWeight: 600 }}>
                   {label}
                 </span>
               </div>
@@ -410,7 +410,7 @@ export default function KPIsPage() {
                   }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E8EAED' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                     {frac}
                   </span>
                 </div>

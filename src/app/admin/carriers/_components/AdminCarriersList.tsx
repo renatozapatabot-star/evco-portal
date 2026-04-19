@@ -17,7 +17,7 @@ import {
 
 const BORDER = 'rgba(192,197,206,0.22)'
 const CARD = 'rgba(255,255,255,0.045)'
-const SILVER = '#C0C5CE'
+const SILVER = 'var(--portal-fg-3)'
 
 interface Props {
   initialCarriers: CarrierFull[]
@@ -63,7 +63,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
             minHeight: 60,
             padding: '10px 14px',
             background: 'rgba(255,255,255,0.045)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
             fontSize: 'var(--aguila-fs-section)',
@@ -77,7 +77,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
             minHeight: 60,
             padding: '10px 14px',
             background: 'rgba(255,255,255,0.045)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             border: `1px solid ${BORDER}`,
             borderRadius: 10,
             fontSize: 'var(--aguila-fs-section)',
@@ -136,7 +136,7 @@ export function AdminCarriersList({ initialCarriers }: Props) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ padding: 32, textAlign: 'center', color: '#94a3b8' }}>
+                <td colSpan={8} style={{ padding: 32, textAlign: 'center', color: 'var(--portal-fg-4)' }}>
                   Sin resultados.
                 </td>
               </tr>
@@ -198,13 +198,13 @@ const th: React.CSSProperties = {
   textAlign: 'left',
   fontSize: 'var(--aguila-fs-meta)',
   fontWeight: 600,
-  color: '#94a3b8',
+  color: 'var(--portal-fg-4)',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
 }
 const td: React.CSSProperties = {
   padding: '12px',
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   verticalAlign: 'middle',
 }
 
@@ -284,7 +284,7 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
           border: `1px solid ${BORDER}`,
           borderRadius: 20,
           padding: 24,
-          color: '#E6EDF3',
+          color: 'var(--portal-fg-1)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -381,8 +381,8 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
               marginTop: 12,
               padding: '8px 12px',
               borderRadius: 10,
-              background: 'rgba(239,68,68,0.12)',
-              color: '#EF4444',
+              background: 'var(--portal-status-red-bg)',
+              color: 'var(--portal-status-red-fg)',
               fontSize: 'var(--aguila-fs-body)',
             }}
           >
@@ -394,7 +394,7 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            style={{ ...btn, background: 'transparent', color: '#94a3b8' }}
+            style={{ ...btn, background: 'transparent', color: 'var(--portal-fg-4)' }}
           >
             Cancelar
           </button>
@@ -423,7 +423,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span
         style={{
           fontSize: 'var(--aguila-fs-meta)',
-          color: '#94a3b8',
+          color: 'var(--portal-fg-4)',
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
         }}
@@ -439,7 +439,7 @@ const input: React.CSSProperties = {
   minHeight: 44,
   padding: '8px 12px',
   background: 'rgba(255,255,255,0.045)',
-  color: '#E6EDF3',
+  color: 'var(--portal-fg-1)',
   border: `1px solid ${BORDER}`,
   borderRadius: 8,
   fontSize: 'var(--aguila-fs-section)',

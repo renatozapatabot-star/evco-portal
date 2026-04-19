@@ -146,7 +146,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
       : daysActive > 14
         ? RED
         : daysActive > 7
-          ? '#FBBF24'
+          ? 'var(--portal-status-amber-fg)'
           : TEXT_PRIMARY
 
   const estadoEvent = props.events[0] ?? null

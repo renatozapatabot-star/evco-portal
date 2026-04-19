@@ -12,7 +12,7 @@ export function ComplianceFlags({ flags }: Props) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '12px 16px',
-        background: 'rgba(34,197,94,0.06)',
+        background: 'var(--portal-status-green-bg)',
         border: '1px solid rgba(34,197,94,0.15)',
         borderRadius: 12,
       }}>
@@ -34,7 +34,7 @@ export function ComplianceFlags({ flags }: Props) {
           background: 'rgba(251,191,36,0.04)',
           borderRadius: '0 8px 8px 0',
         }}>
-          <AlertTriangle size={14} color="#FBBF24" style={{ flexShrink: 0, marginTop: 1 }} />
+          <AlertTriangle size={14} color="var(--portal-status-amber-fg)" style={{ flexShrink: 0, marginTop: 1 }} />
           <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', lineHeight: 1.5 }}>
             {flag}
           </span>

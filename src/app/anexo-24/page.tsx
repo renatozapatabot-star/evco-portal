@@ -18,8 +18,8 @@ import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { PageShell, GlassCard, CockpitSkeleton, CockpitErrorCard } from '@/components/aguila'
 import { Anexo24DownloadCta } from './Anexo24DownloadCta'
 
-const PRIMARY_TEXT = '#E6EDF3' // design-token
-const STATUS_GREEN = '#86EFAC' // design-token
+const PRIMARY_TEXT = 'var(--portal-fg-1)' // design-token
+const STATUS_GREEN = 'var(--portal-status-green-fg)' // design-token
 const STATUS_GOLD = '#F4D47A'  // design-token
 
 export const dynamic = 'force-dynamic'

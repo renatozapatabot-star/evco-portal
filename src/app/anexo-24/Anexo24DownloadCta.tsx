@@ -197,7 +197,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
                 borderRadius: 8,
                 background: 'rgba(0,0,0,0.25)',
                 border: '1px solid rgba(192,197,206,0.18)',
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 12, // WHY: date input label — mid-tier, matches button set above.
                 minHeight: 40,
@@ -215,7 +215,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
                 borderRadius: 8,
                 background: 'rgba(0,0,0,0.25)',
                 border: '1px solid rgba(192,197,206,0.18)',
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 12, // WHY: date input label — mid-tier, matches button set above.
                 minHeight: 40,
@@ -246,7 +246,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
           background: generating
             ? 'rgba(201,167,74,0.28)'
             : 'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)', // design-token — canonical silver/gold CTA gradient
-          color: generating ? 'rgba(230,237,243,0.55)' : '#0A0A0C',
+          color: generating ? 'rgba(230,237,243,0.55)' : 'var(--portal-ink-0)',
           fontSize: 'var(--aguila-fs-section, 15px)',
           fontWeight: 700,
           letterSpacing: '0.02em',
@@ -294,7 +294,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
           style={{
             marginTop: 12,
             fontSize: 'var(--aguila-fs-body, 13px)',
-            color: '#FCA5A5',
+            color: 'var(--portal-status-red-fg)',
           }}
         >
           {error}
@@ -308,7 +308,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
             marginTop: 14,
             padding: '10px 14px',
             borderRadius: 10,
-            background: 'rgba(34,197,94,0.08)',
+            background: 'var(--portal-status-green-bg)',
             border: '1px solid rgba(34,197,94,0.18)',
             fontSize: 'var(--aguila-fs-body, 13px)',
             color: 'rgba(230,237,243,0.88)',

@@ -139,14 +139,14 @@ export function Anexo24Client({ isInternal, companyId }: Anexo24ClientProps) {
           background: !generating
             ? 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)'
             : 'rgba(192,197,206,0.25)',
-          color: !generating ? '#0A0A0C' : '#7A7E86',
+          color: !generating ? 'var(--portal-ink-0)' : '#7A7E86',
         }}
       >
         {generating ? 'Generando…' : 'Generar Anexo 24'}
       </button>
 
       {error && (
-        <p className="mt-4 text-sm" style={{ color: '#EF4444' }}>
+        <p className="mt-4 text-sm" style={{ color: 'var(--portal-status-red-fg)' }}>
           {error}
         </p>
       )}
@@ -174,7 +174,7 @@ export function Anexo24Client({ isInternal, companyId }: Anexo24ClientProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm underline"
-              style={{ color: '#C0C5CE' }}
+              style={{ color: 'var(--portal-fg-3)' }}
             >
               Descargar PDF
             </a>
@@ -183,7 +183,7 @@ export function Anexo24Client({ isInternal, companyId }: Anexo24ClientProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm underline"
-              style={{ color: '#C0C5CE' }}
+              style={{ color: 'var(--portal-fg-3)' }}
             >
               Descargar Excel
             </a>

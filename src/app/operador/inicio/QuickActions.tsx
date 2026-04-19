@@ -203,7 +203,7 @@ function QAButton({ href, icon, label, primary }: { href: string; icon: React.Re
         backdropFilter: primary ? undefined : `blur(${GLASS_BLUR})`,
         WebkitBackdropFilter: primary ? undefined : `blur(${GLASS_BLUR})`,
         border: `1px solid ${primary ? GOLD : BORDER}`,
-        color: primary ? '#0D0D0C' : TEXT_PRIMARY,
+        color: primary ? 'var(--portal-ink-0)' : TEXT_PRIMARY,
         fontWeight: 700,
         fontSize: 'var(--aguila-fs-body)',
         textDecoration: 'none',

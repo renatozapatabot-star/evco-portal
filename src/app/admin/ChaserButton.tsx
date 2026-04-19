@@ -20,7 +20,7 @@ export function ChaserButton({ traficoId, traficoNum, operatorEmail, operatorNam
   }
 
   if (status === 'sent') {
-    return <span style={{ fontSize: 'var(--aguila-fs-label)', color: '#16A34A', fontWeight: 600 }}>Enviado</span>
+    return <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>Enviado</span>
   }
 
   async function handleClick() {
@@ -54,7 +54,7 @@ export function ChaserButton({ traficoId, traficoNum, operatorEmail, operatorNam
         padding: '3px 8px',
         background: 'transparent',
         border: '1px solid rgba(196, 150, 60, 0.35)',
-        color: status === 'error' ? '#DC2626' : 'rgba(196, 150, 60, 0.9)',
+        color: status === 'error' ? 'var(--portal-status-red-fg)' : 'rgba(196, 150, 60, 0.9)',
         borderRadius: 4,
         cursor: status === 'sending' ? 'wait' : 'pointer',
         whiteSpace: 'nowrap',

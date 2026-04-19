@@ -168,8 +168,8 @@ export default function PrediccionesPage() {
           {matchedPO.length > 0 && (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <CheckCircle2 size={14} style={{ color: '#16A34A' }} />
-                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#16A34A' }}>
+                <CheckCircle2 size={14} style={{ color: 'var(--portal-status-green-fg)' }} />
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--portal-status-green-fg)' }}>
                   PO Confirmados ({matchedPO.length})
                 </div>
               </div>
@@ -221,13 +221,13 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
   const daysUntil = Math.round((new Date(p.predicted_date).getTime() - Date.now()) / 86400000)
   const topProduct = p.predicted_products?.[0]?.description || '—'
 
-  const statusColor = isMatched ? '#16A34A' : p.confidence >= 85 ? 'var(--gold)' : 'var(--text-muted)'
+  const statusColor = isMatched ? 'var(--portal-status-green-fg)' : p.confidence >= 85 ? 'var(--gold)' : 'var(--text-muted)'
   const StatusIcon = isMatched ? CheckCircle2 : p.confidence >= 85 ? Zap : Clock
 
   return (
     <div style={{
       padding: '14px 18px', borderRadius: 12,
-      background: isMatched ? 'rgba(34,197,94,0.1)' : 'var(--bg-card)',
+      background: isMatched ? 'var(--portal-status-green-bg)' : 'var(--bg-card)',
       border: `1px solid ${isMatched ? 'rgba(34,197,94,0.2)' : p.confidence >= 85 ? 'var(--gold)' : 'var(--border)'}`,
       borderLeft: `3px solid ${statusColor}`,
       opacity: isMatched ? 0.85 : 1,
@@ -241,7 +241,7 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
               {p.supplier}
             </span>
             {isMatched && (
-              <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: '#15803D', fontWeight: 600 }}>
+              <span style={{ fontSize: 'var(--aguila-fs-label)', padding: '1px 6px', borderRadius: 4, background: '#DCFCE7', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
                 CONFIRMADO
               </span>
             )}
@@ -251,11 +251,11 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: isMatched ? '#15803D' : 'var(--gold-dark)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: isMatched ? 'var(--portal-status-green-fg)' : 'var(--gold-dark)' }}>
             {fmtDate(p.predicted_date)}
           </div>
           {!isMatched && daysUntil >= 0 && (
-            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: daysUntil <= 3 ? '#D97706' : 'var(--text-muted)' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: daysUntil <= 3 ? 'var(--portal-status-amber-fg)' : 'var(--text-muted)' }}>
               {daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `en ${daysUntil} días`}
             </div>
           )}
@@ -281,7 +281,7 @@ function POPredictionCard({ prediction: p }: { prediction: POPrediction }) {
         <span>cada {p.avg_frequency_days}d ±{p.std_deviation_days}d</span>
         <span>{p.sample_size} muestras</span>
         {isMatched && p.match_score && (
-          <span style={{ color: '#15803D' }}>match: {Math.round(p.match_score * 100)}%</span>
+          <span style={{ color: 'var(--portal-status-green-fg)' }}>match: {Math.round(p.match_score * 100)}%</span>
         )}
       </div>
 

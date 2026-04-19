@@ -45,7 +45,7 @@ interface ProfitData {
 
 const TIER_COLORS: Record<string, { color: string; bg: string }> = {
   platinum: { color: '#6366F1', bg: '#EEF2FF' },
-  gold: { color: '#D97706', bg: 'rgba(192,197,206,0.08)' },
+  gold: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)' },
   silver: { color: '#6B7280', bg: '#F9FAFB' },
   bronze: { color: '#92400E', bg: '#FEF3C7' },
 }
@@ -101,7 +101,7 @@ export default function RentabilidadPage() {
             gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
             gap: 12, marginBottom: 24,
           }}>
-            <KPICard label="Ganancia total" value={`${fmtUSDCompact(data.summary.total_profit_usd)} USD`} color={data.summary.total_profit_usd >= 0 ? '#16A34A' : '#DC2626'} />
+            <KPICard label="Ganancia total" value={`${fmtUSDCompact(data.summary.total_profit_usd)} USD`} color={data.summary.total_profit_usd >= 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)'} />
             <KPICard label="Ingresos" value={`${fmtUSDCompact(data.summary.total_revenue_usd)} USD`} color="var(--gold-dark)" />
             <KPICard label="Margen promedio" value={`${data.summary.avg_margin_pct}%`} color="var(--text-primary)" />
             <KPICard label="Operaciones" value={data.summary.total_operations} color="var(--text-primary)" />
@@ -114,11 +114,11 @@ export default function RentabilidadPage() {
             background: 'var(--bg-card)', border: '1px solid var(--border)',
             fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)',
           }}>
-            <span style={{ color: '#16A34A' }}>
+            <span style={{ color: 'var(--portal-status-green-fg)' }}>
               {data.summary.profitable} rentable{data.summary.profitable !== 1 ? 's' : ''}
             </span>
             <span style={{ color: 'var(--text-muted)' }}>·</span>
-            <span style={{ color: data.summary.unprofitable > 0 ? '#DC2626' : 'var(--text-muted)' }}>
+            <span style={{ color: data.summary.unprofitable > 0 ? 'var(--portal-status-red-fg)' : 'var(--text-muted)' }}>
               {data.summary.unprofitable} no rentable{data.summary.unprofitable !== 1 ? 's' : ''}
             </span>
           </div>
@@ -149,14 +149,14 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
   const tier = TIER_COLORS[c.insights?.tier || 'bronze'] || TIER_COLORS.bronze
   const growthSignal = c.insights?.growth_signal || 'stable'
   const GrowthIcon = growthSignal === 'growing' ? TrendingUp : growthSignal === 'declining' ? TrendingDown : Minus
-  const growthColor = growthSignal === 'growing' ? '#16A34A' : growthSignal === 'declining' ? '#DC2626' : '#6B7280'
+  const growthColor = growthSignal === 'growing' ? 'var(--portal-status-green-fg)' : growthSignal === 'declining' ? 'var(--portal-status-red-fg)' : '#6B7280'
 
   return (
     <div style={{
       padding: '16px 20px', borderRadius: 10,
-      background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+      background: isProfitable ? 'var(--portal-status-green-bg)' : 'var(--portal-status-red-bg)',
       border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : '#FECACA'}`,
-      borderLeft: `4px solid ${isProfitable ? '#16A34A' : '#DC2626'}`,
+      borderLeft: `4px solid ${isProfitable ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)'}`,
     }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -180,7 +180,7 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
         <div style={{ textAlign: 'right' }}>
           <div style={{
             fontSize: 'var(--aguila-fs-title)', fontWeight: 800, fontFamily: 'var(--font-mono)',
-            color: isProfitable ? '#16A34A' : '#DC2626',
+            color: isProfitable ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
           }}>
             {fmtUSDCompact(c.net_profit_usd)}
           </div>
@@ -198,11 +198,11 @@ function ClientCard({ client: c, isMobile }: { client: ClientProfit; isMobile: b
       }}>
         <div>
           <div style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600 }}>INGRESO</div>
-          <div style={{ color: '#16A34A', fontWeight: 600 }}>{fmtUSDCompact(c.total_revenue_usd)}</div>
+          <div style={{ color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>{fmtUSDCompact(c.total_revenue_usd)}</div>
         </div>
         <div>
           <div style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600 }}>COSTO</div>
-          <div style={{ color: '#DC2626', fontWeight: 600 }}>{fmtUSDCompact(c.total_cost_usd)}</div>
+          <div style={{ color: 'var(--portal-status-red-fg)', fontWeight: 600 }}>{fmtUSDCompact(c.total_cost_usd)}</div>
         </div>
         <div>
           <div style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600 }}>$/OP</div>

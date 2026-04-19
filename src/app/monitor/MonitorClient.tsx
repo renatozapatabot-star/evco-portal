@@ -48,10 +48,10 @@ const STATUS_OPTIONS: { key: StatusFilter; label: string }[] = [
 ]
 
 function semaforoColor(s: number | null | undefined): { label: string; bg: string; fg: string } {
-  if (s === 2) return { label: 'Rojo', bg: 'rgba(239,68,68,0.14)', fg: '#FCA5A5' }
-  if (s === 1) return { label: 'Amarillo', bg: 'rgba(251,191,36,0.14)', fg: '#FDE68A' }
-  if (s === 0) return { label: 'Verde', bg: 'rgba(34,197,94,0.14)', fg: '#86EFAC' }
-  return { label: '—', bg: 'rgba(148,163,184,0.1)', fg: TEXT_MUTED }
+  if (s === 2) return { label: 'Rojo', bg: 'var(--portal-status-red-bg)', fg: 'var(--portal-status-red-fg)' }
+  if (s === 1) return { label: 'Amarillo', bg: 'var(--portal-status-amber-bg)', fg: 'var(--portal-status-amber-fg)' }
+  if (s === 0) return { label: 'Verde', bg: 'var(--portal-status-green-bg)', fg: 'var(--portal-status-green-fg)' }
+  return { label: '—', bg: 'var(--portal-status-gray-bg)', fg: TEXT_MUTED }
 }
 
 function elapsedSince(iso: string | null): string {
@@ -186,7 +186,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
         )}
         <div style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
           {redCount > 0 ? (
-            <span style={{ color: '#FCA5A5', fontWeight: 600 }}>
+            <span style={{ color: 'var(--portal-status-red-fg)', fontWeight: 600 }}>
               {redCount} semáforo{redCount === 1 ? '' : 's'} rojo{redCount === 1 ? '' : 's'}
             </span>
           ) : (

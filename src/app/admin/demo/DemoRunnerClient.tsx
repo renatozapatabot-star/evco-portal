@@ -222,7 +222,7 @@ export function DemoRunnerClient() {
               borderRadius: 16,
               border: `1px solid ${ACCENT_SILVER}`,
               background: SILVER_GRADIENT,
-              color: '#0A0A0C',
+              color: 'var(--portal-ink-0)',
               fontFamily: 'var(--font-geist-sans)',
               fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 700,
@@ -383,7 +383,7 @@ export function DemoRunnerClient() {
                           : step.status === 'running'
                           ? ACCENT_SILVER
                           : step.status === 'failed'
-                          ? '#EF4444'
+                          ? 'var(--portal-status-red-fg)'
                           : ACCENT_SILVER_DIM,
                       boxShadow:
                         step.status === 'running'

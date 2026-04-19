@@ -17,11 +17,11 @@ import type { ReactNode } from 'react'
  * --green / --amber / --red tokens. Keeping the literal here means
  * it's defined ONCE across the whole timeline surface.
  */
-export const STATUS_GREEN = '#86EFAC' // design-token
+export const STATUS_GREEN = 'var(--portal-status-green-fg)' // design-token
 export const STATUS_GOLD = '#F4D47A'  // design-token
-export const STATUS_RED = '#FCA5A5'   // design-token
-export const PRIMARY_TEXT = '#E6EDF3' // design-token
-export const CANVAS_BLACK = '#0A0A0C' // design-token
+export const STATUS_RED = 'var(--portal-status-red-fg)'   // design-token
+export const PRIMARY_TEXT = 'var(--portal-fg-1)' // design-token
+export const CANVAS_BLACK = 'var(--portal-ink-0)' // design-token
 
 export type MilestoneStatus = 'completed' | 'active' | 'pending' | 'blocked'
 

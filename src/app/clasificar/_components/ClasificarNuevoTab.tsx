@@ -310,7 +310,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               minHeight: 60,
               borderRadius: 12,
               background: pending || description.trim().length < 3 ? 'rgba(234,179,8,0.3)' : '#eab308',
-              color: '#0a0a0c',
+              color: 'var(--portal-ink-0)',
               border: 'none',
               fontSize: 'var(--aguila-fs-body-lg)',
               fontWeight: 700,
@@ -327,8 +327,8 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
               style={{
                 padding: 12,
                 borderRadius: 12,
-                background: 'rgba(239,68,68,0.1)',
-                border: '1px solid rgba(239,68,68,0.3)',
+                background: 'var(--portal-status-red-bg)',
+                border: '1px solid var(--portal-status-red-ring)',
                 color: 'var(--portal-status-red-fg)',
                 fontSize: 'var(--aguila-fs-body)',
               }}
@@ -354,7 +354,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                     fontSize: 36,
                     fontWeight: 800,
                     letterSpacing: '-0.02em',
-                    color: result.fraccion ? '#E6EDF3' : 'rgba(255,255,255,0.4)',
+                    color: result.fraccion ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.4)',
                   }}
                 >
                   {result.fraccion ?? 'Sin clasificar'}
@@ -377,7 +377,7 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       borderRadius: 999,
                       background: 'rgba(234,179,8,0.15)',
                       border: '1px solid rgba(234,179,8,0.4)',
-                      color: '#FACC15',
+                      color: 'var(--portal-status-amber-fg)',
                       fontSize: 'var(--aguila-fs-compact)',
                       fontWeight: 600,
                     }}
@@ -517,8 +517,8 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                       minHeight: 60,
                       padding: '0 24px',
                       borderRadius: 12,
-                      background: insertState === 'inserting' || !traficoId.trim() ? 'rgba(34,197,94,0.3)' : 'var(--portal-status-green-fg)',
-                      color: '#0a0a0c',
+                      background: insertState === 'inserting' || !traficoId.trim() ? 'var(--portal-status-green-ring)' : 'var(--portal-status-green-fg)',
+                      color: 'var(--portal-ink-0)',
                       border: 'none',
                       fontSize: 'var(--aguila-fs-section)',
                       fontWeight: 700,
@@ -539,12 +539,12 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
                   borderRadius: 10,
                   background:
                     insertState === 'inserted'
-                      ? 'rgba(34,197,94,0.1)'
-                      : 'rgba(239,68,68,0.1)',
+                      ? 'var(--portal-status-green-bg)'
+                      : 'var(--portal-status-red-bg)',
                   border:
                     insertState === 'inserted'
-                      ? '1px solid rgba(34,197,94,0.3)'
-                      : '1px solid rgba(239,68,68,0.3)',
+                      ? '1px solid var(--portal-status-green-ring)'
+                      : '1px solid var(--portal-status-red-ring)',
                   color: insertState === 'inserted' ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
                   fontSize: 'var(--aguila-fs-body)',
                 }}

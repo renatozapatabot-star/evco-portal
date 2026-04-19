@@ -143,7 +143,7 @@ export default async function AdminSignupsPage() {
                 </select>
                 <button type="submit" style={{
                   padding: '8px 16px', borderRadius: 8, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700,
-                  background: 'var(--gold, #E8EAED)', color: '#0a0a0c', border: 'none', cursor: 'pointer',
+                  background: 'var(--gold, #E8EAED)', color: 'var(--portal-ink-0)', border: 'none', cursor: 'pointer',
                   minHeight: 32,
                 }}>
                   Aprobar
@@ -176,7 +176,7 @@ export default async function AdminSignupsPage() {
               <span style={{
                 fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '2px 8px', borderRadius: 4,
                 background: s.status === 'approved' ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)',
-                color: s.status === 'approved' ? '#16A34A' : '#DC2626',
+                color: s.status === 'approved' ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
               }}>
                 {s.status === 'approved' ? 'Aprobado' : 'Rechazado'}
               </span>

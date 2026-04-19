@@ -17,9 +17,9 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; border: string }> 
   borrador:  { bg: 'rgba(120,113,108,0.12)', fg: '#D6D3D1', border: 'rgba(120,113,108,0.35)' },
   validado:  { bg: 'rgba(13,148,136,0.12)',  fg: '#2DD4BF', border: 'rgba(13,148,136,0.35)' },
   firmado:   { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER, border: 'rgba(192,197,206,0.35)' },
-  pagado:    { bg: 'rgba(192,197,206,0.12)',   fg: '#FACC15', border: 'rgba(192,197,206,0.35)' },
-  cruzado:   { bg: 'rgba(34,197,94,0.12)',   fg: '#4ADE80', border: 'rgba(34,197,94,0.35)' },
-  cancelado: { bg: 'rgba(239,68,68,0.12)',   fg: '#F87171', border: 'rgba(239,68,68,0.35)' },
+  pagado:    { bg: 'rgba(192,197,206,0.12)',   fg: 'var(--portal-status-amber-fg)', border: 'rgba(192,197,206,0.35)' },
+  cruzado:   { bg: 'var(--portal-status-green-bg)',   fg: 'var(--portal-status-green-fg)', border: 'rgba(34,197,94,0.35)' },
+  cancelado: { bg: 'var(--portal-status-red-bg)',   fg: '#F87171', border: 'rgba(239,68,68,0.35)' },
 }
 
 export interface InicioTabProps {
@@ -169,8 +169,8 @@ export function InicioTab({
                   padding: '10px 12px',
                   borderRadius: 10,
                   border: `1px solid ${has ? 'rgba(34,197,94,0.28)' : 'rgba(192,197,206,0.18)'}`,
-                  background: has ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.045)',
-                  color: has ? '#86EFAC' : ACCENT_SILVER_DIM,
+                  background: has ? 'var(--portal-status-green-bg)' : 'rgba(255,255,255,0.045)',
+                  color: has ? 'var(--portal-status-green-fg)' : ACCENT_SILVER_DIM,
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',

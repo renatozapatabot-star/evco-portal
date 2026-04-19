@@ -26,7 +26,7 @@ export function SectionAutosaveBadge({ status, lastSaved, errorMessage }: Sectio
     color = ACCENT_SILVER
   } else if (status === 'error') {
     label = errorMessage ? `Error: ${errorMessage}` : 'Error al guardar'
-    color = '#fca5a5'
+    color = 'var(--portal-status-red-fg)'
   } else if (lastSaved) {
     label = `Actualizado ${fmtDateTime(lastSaved.toISOString())}`
   }

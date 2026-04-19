@@ -17,15 +17,15 @@ const supabase = createClient(
 const ALERT_CONFIG: Record<AlertKind, { label: string; fg: string; bg: string; border: string }> = {
   NEW: {
     label: 'Nuevo',
-    fg: '#4ade80',
-    bg: 'rgba(34,197,94,0.10)',
-    border: 'rgba(34,197,94,0.25)',
+    fg: 'var(--portal-status-green-fg)',
+    bg: 'var(--portal-status-green-bg)',
+    border: 'var(--portal-status-green-ring)',
   },
   VALUE_SPIKE: {
     label: 'Pico de valor',
-    fg: '#FBBF24',
-    bg: 'rgba(251,191,36,0.12)',
-    border: 'rgba(251,191,36,0.25)',
+    fg: 'var(--portal-status-amber-fg)',
+    bg: 'var(--portal-status-amber-bg)',
+    border: 'var(--portal-status-amber-ring)',
   },
   DORMANT_RETURN: {
     label: 'Regreso',
@@ -35,9 +35,9 @@ const ALERT_CONFIG: Record<AlertKind, { label: string; fg: string; bg: string; b
   },
   COUNTRY_CHANGE: {
     label: 'Cambio de país',
-    fg: '#ef4444',
-    bg: 'rgba(239,68,68,0.10)',
-    border: 'rgba(239,68,68,0.25)',
+    fg: 'var(--portal-status-red-fg)',
+    bg: 'var(--portal-status-red-bg)',
+    border: 'var(--portal-status-red-ring)',
   },
 }
 

@@ -11,9 +11,9 @@ import { getCurrentState, getSuggestedActions } from '@/lib/events-catalog'
 import { ACCENT_SILVER, ACCENT_SILVER_DIM } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
 
-const RED = '#EF4444'
-const AMBER = '#F59E0B'
-const GREEN = '#22C55E'
+const RED = 'var(--portal-status-red-fg)'
+const AMBER = 'var(--portal-status-amber-fg)'
+const GREEN = 'var(--portal-status-green-fg)'
 
 export interface RightRailProps {
   workflowEvents: Array<{ event_type: string; created_at: string }>
@@ -65,8 +65,8 @@ export function RightRail({ workflowEvents }: RightRailProps) {
             style={{
               padding: 12,
               borderRadius: 10,
-              background: 'rgba(34,197,94,0.08)',
-              border: '1px solid rgba(34,197,94,0.3)',
+              background: 'var(--portal-status-green-bg)',
+              border: '1px solid var(--portal-status-green-ring)',
               color: GREEN,
               fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
@@ -119,7 +119,7 @@ export function RightRail({ workflowEvents }: RightRailProps) {
                         padding: '8px 10px',
                         borderRadius: 8,
                         border: `1px solid ${err.severity === 'error' ? 'rgba(239,68,68,0.35)' : 'rgba(245,158,11,0.35)'}`,
-                        background: err.severity === 'error' ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)',
+                        background: err.severity === 'error' ? 'var(--portal-status-red-bg)' : 'rgba(245,158,11,0.06)',
                         color: 'var(--text-primary)',
                         cursor: 'pointer',
                         fontSize: 'var(--aguila-fs-compact)',

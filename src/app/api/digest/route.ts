@@ -186,7 +186,7 @@ export async function GET(req: NextRequest) {
       </td>
       <td style="width:8px;"></td>
       <td style="text-align:center;padding:16px 8px;background:#FAFAF8;border-radius:8px;width:25%;">
-        <div style="font-size:24px;font-weight:800;color:${incidencias === 0 ? '#16A34A' : '#DC2626'};font-family:monospace;">${incidencias}</div>
+        <div style="font-size:24px;font-weight:800;color:${incidencias === 0 ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)'};font-family:monospace;">${incidencias}</div>
         <div style="font-size:11px;color:#6B6B6B;margin-top:4px;">Incidencias</div>
       </td>
     </tr>

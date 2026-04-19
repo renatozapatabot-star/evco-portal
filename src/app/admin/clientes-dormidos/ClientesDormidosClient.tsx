@@ -185,10 +185,10 @@ export function ClientesDormidosClient({
           role="alert"
           style={{
             background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.32)',
+            border: '1px solid var(--portal-status-red-ring)',
             borderRadius: 12,
             padding: 12,
-            color: '#FCA5A5',
+            color: 'var(--portal-status-red-fg)',
             fontSize: 'var(--aguila-fs-body)',
           }}
         >

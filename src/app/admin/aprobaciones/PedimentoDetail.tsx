@@ -50,7 +50,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
   const confTier = (approvalMeta.confidence_tier || dd.confianza || 'media') as string
   const lineCount = (approvalMeta.line_item_count || products.length) as number
 
-  const tierColor = confTier === 'alta' ? '#22C55E' : confTier === 'media' ? '#FBBF24' : '#EF4444'
+  const tierColor = confTier === 'alta' ? 'var(--portal-status-green-fg)' : confTier === 'media' ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
   const tierLabel = confTier === 'alta' ? 'Alta confianza' : confTier === 'media' ? 'Confianza media' : 'Baja confianza'
 
   async function handleApprove() {
@@ -105,7 +105,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
   } as const
 
   const labelStyle = {
-    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#64748b',
+    fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-5)',
     textTransform: 'uppercase' as const, letterSpacing: '0.08em',
     marginBottom: 4,
   }
@@ -117,7 +117,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
       <div style={sectionStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: '#E6EDF3',
+            fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, color: 'var(--portal-fg-1)',
           }}>
             {draft.trafico_id || '—'}
           </span>
@@ -132,19 +132,19 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
           <div>
             <div style={labelStyle}>Cliente</div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3', fontWeight: 600 }}>{draft.company_name || draft.company_id}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>{draft.company_name || draft.company_id}</div>
           </div>
           <div>
             <div style={labelStyle}>Proveedor</div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{supplier}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)' }}>{supplier}</div>
           </div>
           <div>
             <div style={labelStyle}>Régimen</div>
-            <div style={{ fontSize: 'var(--aguila-fs-section)', color: '#E6EDF3' }}>{regimen}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-1)' }}>{regimen}</div>
           </div>
           <div>
             <div style={labelStyle}>Recibido</div>
-            <div style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: '#94a3b8' }}>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-4)' }}>
               {fmtDateTime(draft.created_at)}
             </div>
           </div>
@@ -164,7 +164,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
           ].map(item => (
             <div key={item.label}>
               <div style={labelStyle}>{item.label}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: '#E6EDF3' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                 {item.value}
               </div>
             </div>
@@ -187,8 +187,8 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {missingDocs.map((doc, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
-                <FileText size={14} color="#FBBF24" />
-                <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3' }}>{doc}</span>
+                <FileText size={14} color="var(--portal-status-amber-fg)" />
+                <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)' }}>{doc}</span>
               </div>
             ))}
           </div>
@@ -219,7 +219,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               onClick={handleApprove}
               style={{
                 flex: 2, minHeight: 60, borderRadius: 14,
-                background: '#E8EAED', color: '#111',
+                background: 'var(--portal-fg-1)', color: '#111',
                 fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 8,
@@ -231,7 +231,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               onClick={() => setActionState('changes')}
               style={{
                 flex: 1, minHeight: 60, borderRadius: 14,
-                background: 'transparent', color: '#C0C5CE',
+                background: 'transparent', color: 'var(--portal-fg-3)',
                 fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
                 border: '1px solid rgba(192,197,206,0.3)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
@@ -244,7 +244,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               onClick={() => setActionState('rejecting')}
               style={{
                 minHeight: 60, minWidth: 60, borderRadius: 14,
-                background: 'transparent', color: '#EF4444',
+                background: 'transparent', color: 'var(--portal-status-red-fg)',
                 fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
                 border: '1px solid rgba(239,68,68,0.2)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center',
@@ -265,7 +265,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 width: '100%', minHeight: 80, padding: 12, borderRadius: 12,
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
+                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
               }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
@@ -274,7 +274,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 disabled={!note.trim()}
                 style={{
                   flex: 1, minHeight: 48, borderRadius: 10,
-                  background: note.trim() ? '#C0C5CE' : 'rgba(192,197,206,0.2)',
+                  background: note.trim() ? 'var(--portal-fg-3)' : 'rgba(192,197,206,0.2)',
                   color: '#111', fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
                   border: 'none', cursor: note.trim() ? 'pointer' : 'not-allowed',
                 }}
@@ -285,7 +285,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 onClick={() => { setActionState('idle'); setNote('') }}
                 style={{
                   minHeight: 48, padding: '0 20px', borderRadius: 10,
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: 'var(--portal-fg-4)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   fontSize: 'var(--aguila-fs-section)', cursor: 'pointer',
                 }}
@@ -305,7 +305,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
               style={{
                 width: '100%', minHeight: 80, padding: 12, borderRadius: 12,
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(239,68,68,0.15)',
-                color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
+                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
               }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
@@ -314,7 +314,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 disabled={!reason.trim()}
                 style={{
                   flex: 1, minHeight: 48, borderRadius: 10,
-                  background: reason.trim() ? '#EF4444' : 'rgba(239,68,68,0.2)',
+                  background: reason.trim() ? 'var(--portal-status-red-fg)' : 'rgba(239,68,68,0.2)',
                   color: '#FFF', fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
                   border: 'none', cursor: reason.trim() ? 'pointer' : 'not-allowed',
                 }}
@@ -325,7 +325,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
                 onClick={() => { setActionState('idle'); setReason('') }}
                 style={{
                   minHeight: 48, padding: '0 20px', borderRadius: 10,
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: 'var(--portal-fg-4)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   fontSize: 'var(--aguila-fs-section)', cursor: 'pointer',
                 }}
@@ -339,7 +339,7 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
         {actionState === 'approving' && (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            minHeight: 60, color: '#E8EAED', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
+            minHeight: 60, color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           }}>
             Aprobando...
           </div>

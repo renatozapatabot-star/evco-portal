@@ -377,7 +377,7 @@ function ExpedientesContent() {
                             borderRadius: 8,
                             background: 'rgba(192,197,206,0.08)',
                             border: '1px solid rgba(192,197,206,0.2)',
-                            color: '#E8EAED',
+                            color: 'var(--portal-fg-1)',
                             fontSize: 'var(--aguila-fs-meta)',
                             fontWeight: 700,
                             letterSpacing: '0.08em',

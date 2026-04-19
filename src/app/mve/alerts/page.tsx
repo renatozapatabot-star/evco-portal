@@ -30,8 +30,8 @@ interface MveAlert {
 }
 
 const SEVERITY_COLOR: Record<Severity, { text: string; bg: string; border: string }> = {
-  critical: { text: '#FCA5A5', bg: 'rgba(239,68,68,0.10)', border: 'rgba(239,68,68,0.35)' },
-  warning:  { text: '#FCD34D', bg: 'rgba(251,191,36,0.10)', border: 'rgba(251,191,36,0.35)' },
+  critical: { text: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: 'rgba(239,68,68,0.35)' },
+  warning:  { text: '#FCD34D', bg: 'var(--portal-status-amber-bg)', border: 'rgba(251,191,36,0.35)' },
   info:     { text: ACCENT_SILVER, bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.25)' },
 }
 
@@ -143,7 +143,7 @@ export default function MveAlertsPage() {
     <div className="p-6">
       <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
         <div>
-          <h1 className="text-[20px] font-semibold" style={{ color: '#E6EDF3' }}>
+          <h1 className="text-[20px] font-semibold" style={{ color: 'var(--portal-fg-1)' }}>
             Monitor MVE
           </h1>
           <p className="text-[12.5px] mt-0.5" style={{ color: ACCENT_SILVER_DIM }}>
@@ -160,7 +160,7 @@ export default function MveAlertsPage() {
               minHeight: 44,
               background: BG_ELEVATED,
               border: `1px solid ${ACCENT_SILVER_DIM}`,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               boxShadow: `0 0 0 1px ${GLOW_SILVER}`,
               cursor: scanning ? 'wait' : 'pointer',
               opacity: scanning ? 0.6 : 1,
@@ -203,7 +203,7 @@ export default function MveAlertsPage() {
           style={{
             background: BG_ELEVATED,
             border: '1px solid rgba(255,255,255,0.08)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             minHeight: 36,
             width: 220,
           }}
@@ -225,7 +225,7 @@ export default function MveAlertsPage() {
           }}
         >
           <div className="text-[28px] mb-2">✅</div>
-          <div className="text-[14px] font-semibold mb-1" style={{ color: '#E6EDF3' }}>
+          <div className="text-[14px] font-semibold mb-1" style={{ color: 'var(--portal-fg-1)' }}>
             Sin alertas activas
           </div>
           <div className="text-[12.5px]" style={{ color: ACCENT_SILVER_DIM }}>
@@ -270,7 +270,7 @@ export default function MveAlertsPage() {
                 >
                   Cliente
                 </div>
-                <div className="text-[13px]" style={{ color: '#E6EDF3' }}>
+                <div className="text-[13px]" style={{ color: 'var(--portal-fg-1)' }}>
                   {a.company_id}
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function MveAlertsPage() {
                 >
                   Embarque
                 </div>
-                <div className="text-[12.5px]" style={{ fontFamily: 'var(--font-mono)', color: '#E6EDF3' }}>
+                <div className="text-[12.5px]" style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-1)' }}>
                   {a.trafico_id}
                 </div>
               </div>
@@ -294,7 +294,7 @@ export default function MveAlertsPage() {
                 >
                   Vencimiento
                 </div>
-                <div className="text-[12px]" style={{ fontFamily: 'var(--font-mono)', color: '#E6EDF3' }}>
+                <div className="text-[12px]" style={{ fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-1)' }}>
                   {fmtDateTime(a.deadline_at)}
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function MveAlertsPage() {
                       minHeight: 44,
                       background: 'rgba(192,197,206,0.08)',
                       border: `1px solid ${ACCENT_SILVER_DIM}`,
-                      color: '#E6EDF3',
+                      color: 'var(--portal-fg-1)',
                       cursor: 'pointer',
                     }}
                   >

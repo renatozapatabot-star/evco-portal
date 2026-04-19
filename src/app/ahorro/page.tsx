@@ -44,17 +44,17 @@ interface CostData {
 const TYPE_CONFIG: Record<string, { icon: typeof DollarSign; label: string; color: string }> = {
   bridge_optimization: { icon: Truck, label: 'Cruce', color: '#0D9488' },
   filing_timing: { icon: Clock, label: 'Timing', color: '#6366F1' },
-  supplier_pricing: { icon: Users2, label: 'Proveedor', color: '#D97706' },
-  consolidation: { icon: Zap, label: 'Consolidar', color: '#16A34A' },
+  supplier_pricing: { icon: Users2, label: 'Proveedor', color: 'var(--portal-status-amber-fg)' },
+  consolidation: { icon: Zap, label: 'Consolidar', color: 'var(--portal-status-green-fg)' },
   regime_optimization: { icon: Award, label: 'Régimen', color: '#7E22CE' },
-  fraccion_review: { icon: DollarSign, label: 'Fracción', color: '#DC2626' },
+  fraccion_review: { icon: DollarSign, label: 'Fracción', color: 'var(--portal-status-red-fg)' },
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  new: { label: 'NUEVO', color: '#D97706', bg: 'rgba(192,197,206,0.08)' },
+  new: { label: 'NUEVO', color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)' },
   reviewed: { label: 'REVISADO', color: '#6B7280', bg: '#F9FAFB' },
-  accepted: { label: 'ACEPTADO', color: '#16A34A', bg: 'rgba(34,197,94,0.1)' },
-  implemented: { label: 'IMPLEMENTADO', color: '#16A34A', bg: '#DCFCE7' },
+  accepted: { label: 'ACEPTADO', color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)' },
+  implemented: { label: 'IMPLEMENTADO', color: 'var(--portal-status-green-fg)', bg: '#DCFCE7' },
   rejected: { label: 'DESCARTADO', color: '#9CA3AF', bg: '#F3F4F6' },
 }
 
@@ -112,12 +112,12 @@ export default function AhorroPage() {
             <KPICard
               label="Nuevas"
               value={data.summary.new_insights}
-              color={data.summary.new_insights > 0 ? '#D97706' : '#16A34A'}
+              color={data.summary.new_insights > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-green-fg)'}
             />
             <KPICard
               label="Implementadas"
               value={`${fmtUSDCompact(data.summary.total_implemented_usd)} USD`}
-              color="#16A34A"
+              color="var(--portal-status-green-fg)"
             />
           </div>
 

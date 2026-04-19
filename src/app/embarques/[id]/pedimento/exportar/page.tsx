@@ -86,7 +86,7 @@ export default async function ExportarPedimentoPage({
             borderColor: 'rgba(212,149,42,0.35)',
           }}
         >
-          <p className="text-sm" style={{ color: '#FBBF24' }}>
+          <p className="text-sm" style={{ color: 'var(--portal-status-amber-fg)' }}>
             Formato AduanaNet M3 pendiente — usando estructura placeholder.
             Reemplazar cuando tengamos archivo de referencia.
           </p>

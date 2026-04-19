@@ -253,7 +253,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
           style={{
             minHeight: 44, minWidth: 44,
             padding: '10px 16px', borderRadius: 12,
-            background: ACCENT_SILVER_BRIGHT, color: '#0A0A0C',
+            background: ACCENT_SILVER_BRIGHT, color: 'var(--portal-ink-0)',
             border: 'none', cursor: 'pointer',
             fontSize: 'var(--aguila-fs-body)', fontWeight: 700, letterSpacing: '0.02em',
           }}
@@ -265,7 +265,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
       {errorMsg ? (
         <div style={{
           padding: '10px 14px', marginBottom: 16, borderRadius: 12,
-          background: 'rgba(239,68,68,0.1)', border: `1px solid ${RED}`,
+          background: 'var(--portal-status-red-bg)', border: `1px solid ${RED}`,
           color: RED, fontSize: 'var(--aguila-fs-body)',
         }}>
           {errorMsg}
@@ -318,7 +318,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                 disabled={sending}
                 style={{
                   minHeight: 44, padding: '10px 20px', borderRadius: 12,
-                  background: ACCENT_SILVER_BRIGHT, color: '#0A0A0C',
+                  background: ACCENT_SILVER_BRIGHT, color: 'var(--portal-ink-0)',
                   border: 'none', cursor: sending ? 'wait' : 'pointer',
                   fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 }}
@@ -414,7 +414,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                       <span style={{
                         fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: AMBER,
                         padding: '1px 6px', borderRadius: 4,
-                        background: 'rgba(251,191,36,0.1)', border: `1px solid ${AMBER}`,
+                        background: 'var(--portal-status-amber-bg)', border: `1px solid ${AMBER}`,
                       }}>
                         ESCALADO
                       </span>
@@ -422,7 +422,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                     {t.unread_count > 0 ? (
                       <span style={{
                         marginLeft: 'auto',
-                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#0A0A0C',
+                        fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-ink-0)',
                         background: GREEN, padding: '1px 7px', borderRadius: 10,
                         minWidth: 18, textAlign: 'center',
                       }}>
@@ -465,7 +465,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                     disabled={sending}
                     style={{
                       minHeight: 44, padding: '8px 14px', borderRadius: 10,
-                      border: `1px solid ${AMBER}`, background: 'rgba(251,191,36,0.08)',
+                      border: `1px solid ${AMBER}`, background: 'var(--portal-status-amber-bg)',
                       color: AMBER, fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, cursor: 'pointer',
                     }}
                   >
@@ -540,7 +540,7 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
                       minHeight: 44, minWidth: 80,
                       padding: '10px 18px', borderRadius: 12,
                       background: replyBody.trim() ? ACCENT_SILVER_BRIGHT : 'rgba(255,255,255,0.1)',
-                      color: replyBody.trim() ? '#0A0A0C' : TEXT_MUTED,
+                      color: replyBody.trim() ? 'var(--portal-ink-0)' : TEXT_MUTED,
                       border: 'none', cursor: replyBody.trim() && !sending ? 'pointer' : 'default',
                       fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                     }}

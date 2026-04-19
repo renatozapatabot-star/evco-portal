@@ -34,11 +34,11 @@ export default function DemoPage() {
         {/* Before/After strip */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, textAlign: 'center' }}>
           <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.15)' }}>
-            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#DC2626', fontFamily: 'var(--font-mono)' }}>22 min</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: 'var(--portal-status-red-fg)', fontFamily: 'var(--font-mono)' }}>22 min</div>
             <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Proceso manual</div>
           </div>
           <div style={{ flex: 1, padding: '16px 12px', borderRadius: 10, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
-            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: '#16A34A', fontFamily: 'var(--font-mono)' }}>2 min</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, color: 'var(--portal-status-green-fg)', fontFamily: 'var(--font-mono)' }}>2 min</div>
             <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Con PORTAL</div>
           </div>
         </div>

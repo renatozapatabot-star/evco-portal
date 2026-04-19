@@ -19,9 +19,9 @@ const supabase = createClient(
 )
 
 const TIER_CONFIG: Record<number, { label: string; time: string; color: string; bg: string; border: string }> = {
-  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
+  1: { label: 'Alta confianza', time: '~2 min', color: 'var(--success)', bg: 'var(--portal-status-green-bg)', border: 'rgba(34,197,94,0.2)' },
   2: { label: 'Confianza media', time: '~5 min', color: 'var(--warning)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)' },
-  3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: 'rgba(239,68,68,0.1)', border: '#FECACA' },
+  3: { label: 'Revisión completa', time: 'Sin límite', color: 'var(--danger-500)', bg: 'var(--portal-status-red-bg)', border: '#FECACA' },
 }
 
 // Resolve approved_pending → approved after 5-second cancellation window
@@ -130,7 +130,7 @@ function DraftsContent() {
         {(['pending', 'approved', 'all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '10px 16px', borderRadius: 6, fontSize: 'var(--aguila-fs-body)', fontWeight: 600, border: 'none', cursor: 'pointer', minHeight: 60,
-            background: filter === f ? 'rgba(192,197,206,0.15)' : 'transparent', color: filter === f ? '#E6EDF3' : 'var(--slate-400)',
+            background: filter === f ? 'rgba(192,197,206,0.15)' : 'transparent', color: filter === f ? 'var(--portal-fg-1)' : 'var(--slate-400)',
             boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
           }}>
             {f === 'pending' ? 'Pendientes' : f === 'approved' ? 'Aprobados' : 'Todos'}

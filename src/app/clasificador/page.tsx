@@ -56,7 +56,7 @@ export default async function ClasificadorPage() {
         <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
           <Link href="/clasificar" style={{
             minHeight: 44, padding: '10px 20px', borderRadius: 12,
-            background: GOLD, color: '#0D0D0C',
+            background: GOLD, color: 'var(--portal-ink-0)',
             fontWeight: 700, fontSize: 'var(--aguila-fs-body)', textDecoration: 'none',
             display: 'inline-flex', alignItems: 'center',
           }}>

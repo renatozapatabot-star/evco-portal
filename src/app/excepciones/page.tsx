@@ -69,8 +69,8 @@ interface ExceptionData {
 }
 
 const SEVERITY_CONFIG = {
-  critical: { color: '#DC2626', bg: 'rgba(239,68,68,0.1)', border: '#FECACA', label: 'CRÍTICO' },
-  high: { color: '#D97706', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ALTO' },
+  critical: { color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: '#FECACA', label: 'CRÍTICO' },
+  high: { color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ALTO' },
   medium: { color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MEDIO' },
   low: { color: '#9CA3AF', bg: '#F9FAFB', border: '#F3F4F6', label: 'BAJO' },
 } as const
@@ -137,10 +137,10 @@ export default function ExcepcionesPage() {
             gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(5, 1fr)',
             gap: 12, marginBottom: 24,
           }}>
-            <KPICard label="Abiertas" value={data.summary.total_open} color={data.summary.total_open > 0 ? '#D97706' : '#16A34A'} />
-            <KPICard label="Críticas" value={data.summary.critical} color={data.summary.critical > 0 ? '#DC2626' : '#16A34A'} />
-            <KPICard label="Altas" value={data.summary.high} color={data.summary.high > 0 ? '#D97706' : '#6B7280'} />
-            <KPICard label="Resueltas" value={data.summary.total_resolved} color="#16A34A" />
+            <KPICard label="Abiertas" value={data.summary.total_open} color={data.summary.total_open > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-green-fg)'} />
+            <KPICard label="Críticas" value={data.summary.critical} color={data.summary.critical > 0 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)'} />
+            <KPICard label="Altas" value={data.summary.high} color={data.summary.high > 0 ? 'var(--portal-status-amber-fg)' : '#6B7280'} />
+            <KPICard label="Resueltas" value={data.summary.total_resolved} color="var(--portal-status-green-fg)" />
             <KPICard label="Precisión" value={data.summary.accuracy != null ? `${data.summary.accuracy}%` : '—'} color="var(--gold-dark)" />
           </div>
 
@@ -170,13 +170,13 @@ export default function ExcepcionesPage() {
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
-                        <CheckCircle2 size={12} style={{ color: '#16A34A', display: 'inline', marginRight: 4 }} />
+                        <CheckCircle2 size={12} style={{ color: 'var(--portal-status-green-fg)', display: 'inline', marginRight: 4 }} />
                         {r.trafico || '—'} · {TYPE_LABELS[r.exception_type] || r.exception_type}
                       </div>
                       <div style={{ fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                         {r.resolved_at ? fmtDate(r.resolved_at) : '—'}
                         {r.hypothesis_correct !== null && (
-                          <span style={{ marginLeft: 8, color: r.hypothesis_correct ? '#16A34A' : '#DC2626' }}>
+                          <span style={{ marginLeft: 8, color: r.hypothesis_correct ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)' }}>
                             {r.hypothesis_correct ? '✓ correcta' : '✗ incorrecta'}
                           </span>
                         )}

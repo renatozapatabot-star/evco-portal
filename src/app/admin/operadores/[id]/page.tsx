@@ -146,7 +146,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
           {operator.email && (
             <span style={{ fontFamily: MONO, color: TEXT_SECONDARY }}>{operator.email}</span>
           )}
-          <span style={{ color: operator.active ? '#22C55E' : '#EF4444' }}>
+          <span style={{ color: operator.active ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)' }}>
             {operator.active ? '● Activo' : '○ Inactivo'}
           </span>
         </div>

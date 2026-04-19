@@ -207,7 +207,7 @@ export function OperatorsMetricsClient() {
               borderRadius: 14,
               border: `1px solid ${ACCENT_SILVER}`,
               background: SILVER_GRADIENT,
-              color: '#0A0A0C',
+              color: 'var(--portal-ink-0)',
               fontFamily: SANS,
               fontSize: 'var(--aguila-fs-section)',
               fontWeight: 700,
@@ -222,7 +222,7 @@ export function OperatorsMetricsClient() {
           </div>
         </div>
         {error && (
-          <p style={{ marginTop: 12, fontSize: 'var(--aguila-fs-body)', color: '#EF4444' }}>{error}</p>
+          <p style={{ marginTop: 12, fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-red-fg)' }}>{error}</p>
         )}
       </header>
 

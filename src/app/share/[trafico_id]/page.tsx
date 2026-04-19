@@ -128,7 +128,7 @@ export default async function SharePage(
           </div>
           <div style={{
             fontSize: 'var(--aguila-fs-compact)',
-            color: '#94A3B8',
+            color: 'var(--portal-fg-4)',
             fontWeight: 500,
           }}>
             Renato Zapata &amp; Company

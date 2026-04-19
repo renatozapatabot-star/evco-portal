@@ -51,10 +51,10 @@ interface InventoryData {
 }
 
 const RISK_CONFIG = {
-  critical: { icon: AlertTriangle, color: '#DC2626', bg: 'rgba(239,68,68,0.1)', border: '#FECACA', label: 'CRÍTICO' },
-  warning: { icon: AlertTriangle, color: '#D97706', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ATENCIÓN' },
+  critical: { icon: AlertTriangle, color: 'var(--portal-status-red-fg)', bg: 'var(--portal-status-red-bg)', border: '#FECACA', label: 'CRÍTICO' },
+  warning: { icon: AlertTriangle, color: 'var(--portal-status-amber-fg)', bg: 'rgba(192,197,206,0.08)', border: 'rgba(192,197,206,0.2)', label: 'ATENCIÓN' },
   watch: { icon: Eye, color: '#6B7280', bg: '#F9FAFB', border: '#E5E7EB', label: 'MONITOREO' },
-  ok: { icon: ShieldCheck, color: '#16A34A', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)', label: 'OK' },
+  ok: { icon: ShieldCheck, color: 'var(--portal-status-green-fg)', bg: 'var(--portal-status-green-bg)', border: 'rgba(34,197,94,0.2)', label: 'OK' },
 } as const
 
 function fmtKg(v: number | null): string {
@@ -128,13 +128,13 @@ export default function InventarioPage() {
               label="Críticos"
               value={data.summary.critical}
               icon={<AlertTriangle size={16} />}
-              color={data.summary.critical > 0 ? '#DC2626' : '#16A34A'}
+              color={data.summary.critical > 0 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)'}
             />
             <KPICard
               label="Atención"
               value={data.summary.warning}
               icon={<AlertTriangle size={16} />}
-              color={data.summary.warning > 0 ? '#D97706' : '#16A34A'}
+              color={data.summary.warning > 0 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-green-fg)'}
             />
             <KPICard
               label="Cobertura prom."
@@ -241,10 +241,10 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
 
   // Coverage bar (max 90 days display)
   const coverPct = Math.min(100, ((e.days_of_cover || 0) / 90) * 100)
-  const barColor = e.risk_level === 'critical' ? '#DC2626'
-    : e.risk_level === 'warning' ? '#D97706'
+  const barColor = e.risk_level === 'critical' ? 'var(--portal-status-red-fg)'
+    : e.risk_level === 'warning' ? 'var(--portal-status-amber-fg)'
     : e.risk_level === 'watch' ? '#6B7280'
-    : '#16A34A'
+    : 'var(--portal-status-green-fg)'
 
   return (
     <div style={{
@@ -320,12 +320,12 @@ function InventoryCard({ estimate: e, isMobile }: { estimate: InventoryEstimate;
             <span>Último envío: {fmtDate(e.last_shipment_date)}</span>
           )}
           {e.reorder_date && (
-            <span style={{ color: e.risk_level === 'critical' ? '#DC2626' : undefined }}>
+            <span style={{ color: e.risk_level === 'critical' ? 'var(--portal-status-red-fg)' : undefined }}>
               Reordenar: {fmtDate(e.reorder_date)}
             </span>
           )}
           {e.depletion_date && (
-            <span style={{ color: e.risk_level === 'critical' ? '#DC2626' : undefined }}>
+            <span style={{ color: e.risk_level === 'critical' ? 'var(--portal-status-red-fg)' : undefined }}>
               Agotamiento: {fmtDate(e.depletion_date)}
             </span>
           )}

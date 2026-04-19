@@ -41,12 +41,12 @@ function severityFor(expiryIso: string | null): { severity: Severity; days: numb
 }
 
 const SEV_STYLE: Record<Severity, { bg: string; fg: string }> = {
-  expired: { bg: 'rgba(239,68,68,0.24)', fg: '#FCA5A5' },
-  red:     { bg: 'rgba(239,68,68,0.14)', fg: '#FCA5A5' },
+  expired: { bg: 'rgba(239,68,68,0.24)', fg: 'var(--portal-status-red-fg)' },
+  red:     { bg: 'var(--portal-status-red-bg)', fg: 'var(--portal-status-red-fg)' },
   amber:   { bg: 'rgba(251,146,60,0.14)', fg: '#FDBA74' },
-  yellow:  { bg: 'rgba(251,191,36,0.14)', fg: '#FDE68A' },
+  yellow:  { bg: 'var(--portal-status-amber-bg)', fg: 'var(--portal-status-amber-fg)' },
   plum:    { bg: 'rgba(126,34,206,0.14)', fg: '#C4B5FD' },
-  green:   { bg: 'rgba(34,197,94,0.14)', fg: '#86EFAC' },
+  green:   { bg: 'var(--portal-status-green-bg)', fg: 'var(--portal-status-green-fg)' },
   none:    { bg: 'rgba(148,163,184,0.08)', fg: TEXT_MUTED },
 }
 
@@ -76,8 +76,8 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
       {criticalCount > 0 && (
         <div style={{
           padding: 16, marginTop: 16, marginBottom: 16, borderRadius: 14,
-          background: 'rgba(239,68,68,0.14)', border: '1px solid rgba(239,68,68,0.35)',
-          color: '#FCA5A5', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
+          background: 'var(--portal-status-red-bg)', border: '1px solid rgba(239,68,68,0.35)',
+          color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
         }}>
           {criticalCount} certificado{criticalCount === 1 ? '' : 's'} vencido{criticalCount === 1 ? '' : 's'} o próximo{criticalCount === 1 ? '' : 's'} a vencer (≤30 días). Renovar urgente.
         </div>
@@ -151,7 +151,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
 
               {p.certificate_file_url && (
                 <div style={{ marginTop: 16, fontSize: 'var(--aguila-fs-compact)' }}>
-                  <a href={p.certificate_file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#C0C5CE' }}>
+                  <a href={p.certificate_file_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--portal-fg-3)' }}>
                     Ver certificado actual →
                   </a>
                 </div>

@@ -51,7 +51,7 @@ const BUCKET_BORDER: Record<WaitBucket, string> = {
 }
 const BUCKET_GLOW: Record<WaitBucket, string> = {
   silver: '0 0 18px rgba(192,197,206,0.18)',
-  gold: '0 0 18px rgba(251,191,36,0.25)',
+  gold: '0 0 18px var(--portal-status-amber-ring)',
   red: '0 0 20px rgba(239,68,68,0.35)',
 }
 const BUCKET_LABEL: Record<WaitBucket, string> = {
@@ -307,8 +307,8 @@ export function PatioClient() {
       }}
     >
       <header style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <ParkingSquare size={22} color="#C0C5CE" />
-        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
+        <ParkingSquare size={22} color="var(--portal-fg-3)" />
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', margin: 0 }}>
           Patio
         </h1>
         <span style={{ marginLeft: 'auto', fontSize: 'var(--aguila-fs-compact)', color: '#7A7E86', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
@@ -322,7 +322,7 @@ export function PatioClient() {
           display: 'flex',
           gap: 8,
           fontSize: 'var(--aguila-fs-meta)',
-          color: '#94a3b8',
+          color: 'var(--portal-fg-4)',
           flexWrap: 'wrap',
         }}
       >
@@ -368,11 +368,11 @@ export function PatioClient() {
           border: '1px solid rgba(192,197,206,0.18)',
         }}
       >
-        <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: 0 }}>
+        <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)', margin: 0 }}>
           Activas
         </h2>
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--portal-fg-4)' }}>
             <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
             Cargando…
           </div>
@@ -405,7 +405,7 @@ export function PatioClient() {
                       borderRadius: 14,
                       border: `1px solid ${BUCKET_BORDER[bucket]}`,
                       background: 'rgba(255,255,255,0.04)',
-                      color: '#E6EDF3',
+                      color: 'var(--portal-fg-1)',
                       padding: 10,
                       textAlign: 'left',
                       cursor: 'pointer',
@@ -426,14 +426,14 @@ export function PatioClient() {
                         {e.yard_position}
                       </span>
                       {e.refrigerated && (
-                        <Snowflake size={14} color="#C0C5CE" aria-label="Refrigerada" />
+                        <Snowflake size={14} color="var(--portal-fg-3)" aria-label="Refrigerada" />
                       )}
                     </div>
                     <div
                       style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
                         fontSize: 'var(--aguila-fs-body)',
-                        color: '#C0C5CE',
+                        color: 'var(--portal-fg-3)',
                       }}
                     >
                       {e.trailer_number}
@@ -442,7 +442,7 @@ export function PatioClient() {
                       style={{
                         fontFamily: 'var(--font-jetbrains-mono), monospace',
                         fontSize: 'var(--aguila-fs-meta)',
-                        color: '#94a3b8',
+                        color: 'var(--portal-fg-4)',
                       }}
                     >
                       {formatElapsed(e.entered_at, now)}
@@ -472,13 +472,13 @@ export function PatioClient() {
           border: '1px solid rgba(192,197,206,0.18)',
         }}
       >
-        <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: 0 }}>
+        <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)', margin: 0 }}>
           Nueva entrada
         </h2>
 
         {/* Embarque */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
             Embarque
           </span>
           <input
@@ -496,7 +496,7 @@ export function PatioClient() {
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
               background: BG_ELEVATED,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-body-lg)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}
@@ -532,7 +532,7 @@ export function PatioClient() {
                       textAlign: 'left',
                       padding: '10px 12px',
                       background: 'transparent',
-                      color: '#E6EDF3',
+                      color: 'var(--portal-fg-1)',
                       border: 'none',
                       borderRadius: 10,
                       fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -546,7 +546,7 @@ export function PatioClient() {
             </ul>
           )}
           {traficoId && (
-            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#22C55E' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-green-fg)' }}>
               Embarque seleccionado: {traficoId}
             </span>
           )}
@@ -554,7 +554,7 @@ export function PatioClient() {
 
         {/* Trailer */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
             Número de caja
           </span>
           <input
@@ -570,7 +570,7 @@ export function PatioClient() {
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
               background: BG_ELEVATED,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-kpi-small)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               letterSpacing: '0.04em',
@@ -581,7 +581,7 @@ export function PatioClient() {
 
         {/* Position */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
             Posición (A1–Z9)
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -599,7 +599,7 @@ export function PatioClient() {
                 borderRadius: 12,
                 border: '1px solid rgba(192,197,206,0.18)',
                 background: BG_ELEVATED,
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontSize: 'var(--aguila-fs-kpi-small)',
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
                 letterSpacing: '0.08em',
@@ -620,7 +620,7 @@ export function PatioClient() {
                 borderRadius: 12,
                 border: '1px solid rgba(192,197,206,0.18)',
                 background: 'rgba(255,255,255,0.04)',
-                color: '#C0C5CE',
+                color: 'var(--portal-fg-3)',
                 cursor: 'pointer',
                 padding: '0 14px',
                 fontWeight: 600,
@@ -646,8 +646,8 @@ export function PatioClient() {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Snowflake size={18} color={refrigerated ? '#C0C5CE' : '#7A7E86'} />
-            <span style={{ fontSize: 15, color: '#E6EDF3' }}>Refrigerada</span>
+            <Snowflake size={18} color={refrigerated ? 'var(--portal-fg-3)' : '#7A7E86'} />
+            <span style={{ fontSize: 15, color: 'var(--portal-fg-1)' }}>Refrigerada</span>
           </span>
           <input
             type="checkbox"
@@ -660,7 +660,7 @@ export function PatioClient() {
 
         {refrigerated && (
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
               Temperatura (°C)
             </span>
             <input
@@ -678,7 +678,7 @@ export function PatioClient() {
                 borderRadius: 12,
                 border: '1px solid rgba(192,197,206,0.18)',
                 background: BG_ELEVATED,
-                color: '#E6EDF3',
+                color: 'var(--portal-fg-1)',
                 fontSize: 'var(--aguila-fs-kpi-small)',
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
               }}
@@ -698,7 +698,7 @@ export function PatioClient() {
               borderRadius: 12,
               background: 'rgba(220,38,38,0.12)',
               border: '1px solid rgba(220,38,38,0.35)',
-              color: '#FCA5A5',
+              color: 'var(--portal-status-red-fg)',
               fontSize: 'var(--aguila-fs-section)',
             }}
           >
@@ -716,9 +716,9 @@ export function PatioClient() {
               gap: 8,
               padding: 12,
               borderRadius: 12,
-              background: 'rgba(34,197,94,0.12)',
+              background: 'var(--portal-status-green-bg)',
               border: '1px solid rgba(34,197,94,0.35)',
-              color: '#86EFAC',
+              color: 'var(--portal-status-green-fg)',
               fontSize: 'var(--aguila-fs-section)',
             }}
           >
@@ -736,7 +736,7 @@ export function PatioClient() {
             width: '100%',
             borderRadius: 14,
             background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
-            color: '#0A0A0C',
+            color: 'var(--portal-ink-0)',
             fontWeight: 700,
             fontSize: 17,
             border: 'none',
@@ -799,7 +799,7 @@ export function PatioClient() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ color: '#E6EDF3', fontSize: 15, fontWeight: 600 }}>
+              <span style={{ color: 'var(--portal-fg-1)', fontSize: 15, fontWeight: 600 }}>
                 Posición · {formatPosition(gridFocus)}
               </span>
               <button
@@ -811,7 +811,7 @@ export function PatioClient() {
                   minWidth: 44,
                   background: 'transparent',
                   border: 'none',
-                  color: '#C0C5CE',
+                  color: 'var(--portal-fg-3)',
                   cursor: 'pointer',
                 }}
               >
@@ -864,7 +864,7 @@ export function PatioClient() {
                         background: occupied
                           ? 'rgba(192,197,206,0.15)'
                           : 'rgba(255,255,255,0.03)',
-                        color: occupied ? '#7A7E86' : '#E6EDF3',
+                        color: occupied ? '#7A7E86' : 'var(--portal-fg-1)',
                         cursor: occupied ? 'not-allowed' : 'pointer',
                         padding: 0,
                       }}
@@ -912,10 +912,10 @@ export function PatioClient() {
               gap: 14,
             }}
           >
-            <h3 style={{ margin: 0, color: '#E6EDF3', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700 }}>
+            <h3 style={{ margin: 0, color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700 }}>
               ¿Marcar salida?
             </h3>
-            <p style={{ margin: 0, color: '#C0C5CE', fontSize: 'var(--aguila-fs-section)' }}>
+            <p style={{ margin: 0, color: 'var(--portal-fg-3)', fontSize: 'var(--aguila-fs-section)' }}>
               Caja{' '}
               <span style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
                 {confirmExit.trailer_number}
@@ -935,7 +935,7 @@ export function PatioClient() {
                   minHeight: 60,
                   borderRadius: 12,
                   background: 'rgba(255,255,255,0.04)',
-                  color: '#E6EDF3',
+                  color: 'var(--portal-fg-1)',
                   fontWeight: 600,
                   fontSize: 15,
                   border: '1px solid rgba(192,197,206,0.18)',
@@ -952,7 +952,7 @@ export function PatioClient() {
                   minHeight: 60,
                   borderRadius: 12,
                   background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
-                  color: '#0A0A0C',
+                  color: 'var(--portal-ink-0)',
                   fontWeight: 700,
                   fontSize: 15,
                   border: 'none',

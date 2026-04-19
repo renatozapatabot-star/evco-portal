@@ -26,7 +26,7 @@ export default async function SyncHealthPage() {
         background: COCKPIT_CANVAS,
         minHeight: '100vh',
         padding: '32px 24px 48px',
-        color: '#E6EDF3',
+        color: 'var(--portal-fg-1)',
         overflow: 'hidden',
       }}
     >

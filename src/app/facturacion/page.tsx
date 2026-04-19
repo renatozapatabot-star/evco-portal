@@ -28,8 +28,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   draft: { label: 'Borrador', color: 'var(--text-secondary)', bg: '#F5F4F0' },
   sent: { label: 'Enviada', color: 'var(--info)', bg: 'rgba(59,130,246,0.1)' },
   viewed: { label: 'Vista', color: '#7E22CE', bg: '#F5F3FF' },
-  paid: { label: 'Pagada', color: 'var(--success)', bg: 'rgba(34,197,94,0.1)' },
-  overdue: { label: 'Vencida', color: 'var(--danger-500)', bg: 'rgba(239,68,68,0.1)' },
+  paid: { label: 'Pagada', color: 'var(--success)', bg: 'var(--portal-status-green-bg)' },
+  overdue: { label: 'Vencida', color: 'var(--danger-500)', bg: 'var(--portal-status-red-bg)' },
 }
 
 function fmtMXN(n: number) { return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }

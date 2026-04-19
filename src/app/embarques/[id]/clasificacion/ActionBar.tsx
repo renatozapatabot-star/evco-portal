@@ -224,7 +224,7 @@ function Btn({
         minHeight: 60,
         padding: '0 20px',
         background: primary ? ACCENT_SILVER : 'rgba(255,255,255,0.04)',
-        color: primary ? '#0A0A0C' : TEXT_PRIMARY,
+        color: primary ? 'var(--portal-ink-0)' : TEXT_PRIMARY,
         border: `1px solid ${primary ? ACCENT_SILVER_BRIGHT : BORDER_HAIRLINE}`,
         borderRadius: 12,
         fontSize: 'var(--aguila-fs-body)',

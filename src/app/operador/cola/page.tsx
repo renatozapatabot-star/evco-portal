@@ -49,16 +49,16 @@ export default async function ColaPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#C0C5CE',
+            color: 'var(--portal-fg-3)',
           }}
         >
           <AlertTriangle size={20} />
         </div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--portal-fg-1)', margin: 0 }}>
           Cola de Excepciones
         </h1>
       </div>
-      <p style={{ fontSize: 'var(--aguila-fs-body)', color: '#64748b', margin: '0 0 24px', paddingLeft: 52 }}>
+      <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', margin: '0 0 24px', paddingLeft: 52 }}>
         Eventos que requieren intervencion manual del operador
       </p>
 

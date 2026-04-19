@@ -98,15 +98,15 @@ export function TraficoTimelineVertical({ input }: { input: TimelineInput }) {
                   width: 42, height: 42,
                   borderRadius: 999,
                   background: m.status === 'completed'
-                    ? 'rgba(34,197,94,0.12)'
+                    ? 'var(--portal-status-green-bg)'
                     : m.status === 'active'
                       ? 'rgba(201,167,74,0.16)'
                       : m.status === 'blocked'
-                        ? 'rgba(239,68,68,0.14)'
+                        ? 'var(--portal-status-red-bg)'
                         : 'rgba(192,197,206,0.06)',
                   border: `1px solid ${
                     m.status === 'completed'
-                      ? 'rgba(34,197,94,0.32)'
+                      ? 'var(--portal-status-green-ring)'
                       : m.status === 'active'
                         ? 'rgba(201,167,74,0.5)'
                         : m.status === 'blocked'
@@ -164,13 +164,13 @@ function TimelineCard({ milestone }: { milestone: Milestone }) {
         background: milestone.status === 'active'
           ? 'rgba(201,167,74,0.06)'
           : milestone.status === 'blocked'
-            ? 'rgba(239,68,68,0.06)'
+            ? 'var(--portal-status-red-bg)'
             : 'rgba(0,0,0,0.28)',
         border: `1px solid ${
           milestone.status === 'active'
             ? 'rgba(201,167,74,0.3)'
             : milestone.status === 'blocked'
-              ? 'rgba(239,68,68,0.3)'
+              ? 'var(--portal-status-red-ring)'
               : milestone.status === 'completed'
                 ? 'rgba(34,197,94,0.18)'
                 : 'rgba(192,197,206,0.1)'

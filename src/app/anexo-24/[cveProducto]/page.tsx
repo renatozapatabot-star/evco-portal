@@ -236,7 +236,7 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
       >
         <ClipboardList size={16} color="rgba(201,167,74,0.9)" strokeWidth={1.8} aria-hidden />
         <span>
-          <strong style={{ color: '#E6EDF3' }}>Parte del Anexo 24</strong> —
+          <strong style={{ color: 'var(--portal-fg-1)' }}>Parte del Anexo 24</strong> —
           tu Formato 53 de GlobalPC.net lista este SKU con estos mismos datos.
           {linkedDocs.length > 0 && (
             <span style={{ color: 'rgba(148,163,184,0.9)' }}>
@@ -304,9 +304,9 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
               style={{
                 padding: '6px 12px',
                 borderRadius: 999,
-                background: 'rgba(34,197,94,0.12)',
-                border: '1px solid rgba(34,197,94,0.32)',
-                color: '#86EFAC',
+                background: 'var(--portal-status-green-bg)',
+                border: '1px solid var(--portal-status-green-ring)',
+                color: 'var(--portal-status-green-fg)',
                 fontSize: 'var(--aguila-fs-meta, 11px)',
                 fontWeight: 700,
                 letterSpacing: '0.06em',
@@ -338,7 +338,7 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
               margin: '0 0 12px',
               fontSize: 'var(--aguila-fs-section, 15px)',
               fontWeight: 600,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
             }}
@@ -361,7 +361,7 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
                       style={{
                         fontSize: 'var(--aguila-fs-body, 13px)',
                         fontWeight: 600,
-                        color: '#E6EDF3',
+                        color: 'var(--portal-fg-1)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',

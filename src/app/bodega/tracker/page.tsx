@@ -60,8 +60,8 @@ function ItemCard({ item }: { item: TrackerItem }) {
               <span style={{
                 fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
                 padding: '2px 8px', borderRadius: 999,
-                background: 'rgba(239,68,68,0.12)', color: '#ef4444',
-                border: '1px solid rgba(239,68,68,0.30)',
+                background: 'var(--portal-status-red-bg)', color: 'var(--portal-status-red-fg)',
+                border: '1px solid var(--portal-status-red-ring)',
               }}>
                 {item.hasDamage ? 'Daño' : 'Faltantes'}
               </span>

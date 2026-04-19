@@ -396,10 +396,10 @@ function TraficosContent() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Truck size={20} color="#C0C5CE" strokeWidth={1.8} />
+          <Truck size={20} color="var(--portal-fg-3)" strokeWidth={1.8} />
         </div>
         <h1 style={{
-          fontSize: 22, fontWeight: 800, color: '#E6EDF3',
+          fontSize: 22, fontWeight: 800, color: 'var(--portal-fg-1)',
           letterSpacing: '-0.02em', margin: 0,
         }}>
           Tráficos

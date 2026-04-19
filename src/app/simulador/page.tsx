@@ -189,7 +189,7 @@ export default function SimuladorPage() {
   if (ratesError) {
     return (
       <div className="page-shell" style={{ textAlign: 'center', padding: 60 }}>
-        <Calculator size={48} style={{ color: '#EF4444', marginBottom: 16 }} />
+        <Calculator size={48} style={{ color: 'var(--portal-status-red-fg)', marginBottom: 16 }} />
         <div style={{ fontSize: 'var(--aguila-fs-section, 14px)', color: T.text, fontWeight: 700 }}>Error cargando tasas</div>
         <div style={{ fontSize: 'var(--aguila-fs-body, 13px)', color: T.textMuted, marginTop: 8, maxWidth: 420, marginInline: 'auto' }}>
           No se pudieron obtener las tasas de DTA, IVA y tipo de cambio desde system_config. Contacta al administrador — el pipeline no calcula con tasas expiradas.
@@ -377,7 +377,7 @@ export default function SimuladorPage() {
                 <div style={{
                   padding: '10px 14px', borderRadius: 10,
                   background: T.greenBg,
-                  border: `1px solid rgba(34,197,94,0.25)`,
+                  border: `1px solid var(--portal-status-green-ring)`,
                   marginBottom: 14,
                   display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12,
                 }}>

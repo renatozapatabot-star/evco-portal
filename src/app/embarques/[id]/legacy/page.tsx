@@ -93,8 +93,8 @@ function daysSince(iso: string | null | undefined): number | null {
 
 function pillColor(status: string | null): { bg: string; fg: string; label: string } {
   const s = (status ?? '').toLowerCase()
-  if (s.includes('cruz')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
-  if (s.includes('pagado')) return { bg: 'rgba(34,197,94,0.12)', fg: GREEN, label: status ?? '' }
+  if (s.includes('cruz')) return { bg: 'var(--portal-status-green-bg)', fg: GREEN, label: status ?? '' }
+  if (s.includes('pagado')) return { bg: 'var(--portal-status-green-bg)', fg: GREEN, label: status ?? '' }
   return { bg: 'rgba(192,197,206,0.12)', fg: ACCENT_SILVER, label: status ?? 'Sin estatus' }
 }
 

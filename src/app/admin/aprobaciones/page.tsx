@@ -52,12 +52,12 @@ export default async function AprobacionesPage() {
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{
-            fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 900, color: '#E6EDF3',
+            fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 900, color: 'var(--portal-fg-1)',
             letterSpacing: '-0.03em', margin: 0,
           }}>
             Aprobaciones Pendientes
           </h1>
-          <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#94a3b8', marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', marginTop: 4 }}>
             {enrichedDrafts.length} pedimento{enrichedDrafts.length !== 1 ? 's' : ''} esperando revisión
           </p>
         </div>

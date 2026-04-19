@@ -59,8 +59,8 @@ function formatBytes(bytes: number | null): string {
 }
 
 function statusColor(status: string): string {
-  if (status === 'ready') return '#22C55E'
-  if (status === 'failed') return '#EF4444'
+  if (status === 'ready') return 'var(--portal-status-green-fg)'
+  if (status === 'failed') return 'var(--portal-status-red-fg)'
   if (status === 'running') return ACCENT_SILVER_BRIGHT
   return ACCENT_SILVER_DIM
 }
@@ -261,7 +261,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
           disabled={submitting}
           style={{
             background: SILVER_GRADIENT,
-            color: '#0A0A0C',
+            color: 'var(--portal-ink-0)',
             border: 'none',
             borderRadius: 12,
             padding: '14px 24px',

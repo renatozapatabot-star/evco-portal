@@ -3,9 +3,9 @@ import { AguilaPdfHeader } from '@/lib/pdf/brand'
 
 const C = {
   bg: '#0D1117', surface: '#161B22', border: '#30363D',
-  text: '#E6EDF3', muted: '#8B949E', dim: '#484F58',
-  gold: '#C0C5CE', green: '#22C55E', cyan: '#C0C5CE',
-  red: '#EF4444', amber: '#F59E0B',
+  text: 'var(--portal-fg-1)', muted: '#8B949E', dim: '#484F58',
+  gold: 'var(--portal-fg-3)', green: 'var(--portal-status-green-fg)', cyan: 'var(--portal-fg-3)',
+  red: 'var(--portal-status-red-fg)', amber: 'var(--portal-status-amber-fg)',
 }
 
 const s = StyleSheet.create({

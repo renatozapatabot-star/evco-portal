@@ -75,7 +75,7 @@ export function RegulatoryDocClient({
           borderColor: 'rgba(212,149,42,0.35)',
         }}
       >
-        <p className="text-sm" style={{ color: '#FBBF24' }}>
+        <p className="text-sm" style={{ color: 'var(--portal-status-amber-fg)' }}>
           Generación local. Submisión a VUCEM/SAT pendiente para V2.
         </p>
       </div>
@@ -83,7 +83,7 @@ export function RegulatoryDocClient({
       <p className="text-xs uppercase tracking-wider text-slate-400 mb-3">
         Estado de validación
       </p>
-      <p className="text-sm mb-6" style={{ color: '#22C55E' }}>
+      <p className="text-sm mb-6" style={{ color: 'var(--portal-status-green-fg)' }}>
         Listo para generar {docLabelEs}
       </p>
 
@@ -122,7 +122,7 @@ export function RegulatoryDocClient({
           style={{
             minHeight: '60px',
             background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
-            color: '#0A0A0C',
+            color: 'var(--portal-ink-0)',
           }}
         >
           {generating === 'both' ? 'Generando…' : 'Descargar ambos'}
@@ -130,7 +130,7 @@ export function RegulatoryDocClient({
       </div>
 
       {error && (
-        <p className="mt-4 text-sm" style={{ color: '#EF4444' }}>
+        <p className="mt-4 text-sm" style={{ color: 'var(--portal-status-red-fg)' }}>
           {error}
         </p>
       )}
@@ -153,7 +153,7 @@ export function RegulatoryDocClient({
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm underline"
-              style={{ color: '#C0C5CE' }}
+              style={{ color: 'var(--portal-fg-3)' }}
             >
               Descargar PDF
             </a>
@@ -162,7 +162,7 @@ export function RegulatoryDocClient({
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm underline"
-              style={{ color: '#C0C5CE' }}
+              style={{ color: 'var(--portal-fg-3)' }}
             >
               Descargar XML
             </a>

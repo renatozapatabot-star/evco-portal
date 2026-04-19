@@ -38,8 +38,8 @@ async function postVote(decisionId: string, action: 'confirm' | 'correct', corre
 
 function ConfidenceBadge({ value }: { value: number }) {
   const pct = Math.round(value * 100)
-  const color = pct >= 85 ? '#16A34A' : pct >= 70 ? '#D4952A' : '#DC2626'
-  const bg = pct >= 85 ? 'rgba(34,197,94,0.1)' : pct >= 70 ? 'rgba(192,197,206,0.08)' : 'rgba(239,68,68,0.1)'
+  const color = pct >= 85 ? 'var(--portal-status-green-fg)' : pct >= 70 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
+  const bg = pct >= 85 ? 'var(--portal-status-green-bg)' : pct >= 70 ? 'rgba(192,197,206,0.08)' : 'var(--portal-status-red-bg)'
   return (
     <span
       className="font-mono"
@@ -142,13 +142,13 @@ export function PendientesTab() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
           <div>
-            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: '#16A34A' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--portal-status-green-fg)' }}>
               {stats.confirmed}
             </span>
             <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-body)', color: '#6B6B6B' }}>Confirmadas</p>
           </div>
           <div>
-            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: '#D4952A' }}>
+            <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>
               {stats.corrected}
             </span>
             <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-body)', color: '#6B6B6B' }}>Corregidas</p>
@@ -173,7 +173,7 @@ export function PendientesTab() {
           style={{
             height: '100%',
             width: `${(currentIndex / total) * 100}%`,
-            background: '#E8EAED',
+            background: 'var(--portal-fg-1)',
             borderRadius: 2,
             transition: 'width 300ms ease',
           }}
@@ -239,8 +239,8 @@ export function PendientesTab() {
               borderRadius: 12,
               fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
-              color: p.tmec_eligible ? '#16A34A' : '#DC2626',
-              background: p.tmec_eligible ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+              color: p.tmec_eligible ? 'var(--portal-status-green-fg)' : 'var(--portal-status-red-fg)',
+              background: p.tmec_eligible ? 'var(--portal-status-green-bg)' : 'var(--portal-status-red-bg)',
             }}>
               T-MEC: {p.tmec_eligible ? '✓ IGI 0%' : `✗ IGI ${(p.igi_rate || 0) * 100}%`}
             </span>
@@ -287,7 +287,7 @@ export function PendientesTab() {
                   value={alt.fraccion}
                   checked={selectedAlt === alt.fraccion}
                   onChange={() => setSelectedAlt(alt.fraccion)}
-                  style={{ accentColor: '#E8EAED' }}
+                  style={{ accentColor: 'var(--portal-fg-1)' }}
                 />
                 <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 600 }}>{alt.fraccion}</span>
                 <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.7)', flex: 1 }}>{alt.description}</span>
@@ -320,7 +320,7 @@ export function PendientesTab() {
                   minHeight: 60,
                   borderRadius: 12,
                   background: selectedAlt ? '#eab308' : 'rgba(255,255,255,0.12)',
-                  color: '#0a0a0c',
+                  color: 'var(--portal-ink-0)',
                   border: 'none',
                   fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 600,
@@ -361,7 +361,7 @@ export function PendientesTab() {
                 minHeight: 60,
                 borderRadius: 12,
                 background: '#eab308',
-                color: '#0a0a0c',
+                color: 'var(--portal-ink-0)',
                 border: 'none',
                 fontSize: 'var(--aguila-fs-kpi-small)',
                 fontWeight: 700,
@@ -383,8 +383,8 @@ export function PendientesTab() {
 
       {(stats.confirmed + stats.corrected) > 0 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#16A34A' }}>✓ {stats.confirmed}</span>
-          <span style={{ fontSize: 'var(--aguila-fs-body)', color: '#D4952A' }}>✗ {stats.corrected}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-green-fg)' }}>✓ {stats.confirmed}</span>
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-amber-fg)' }}>✗ {stats.corrected}</span>
         </div>
       )}
 

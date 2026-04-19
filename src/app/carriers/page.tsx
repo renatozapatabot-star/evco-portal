@@ -222,7 +222,7 @@ export default function CarriersPage() {
               <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-2" style={{ color: 'var(--text-muted)' }}>Incidencias</div>
               <div className="space-y-1.5 mb-4">
                 {[
-                  { label: 'Faltantes', rate: selected.faltantes_rate, color: '#EF4444' },
+                  { label: 'Faltantes', rate: selected.faltantes_rate, color: 'var(--portal-status-red-fg)' },
                   { label: 'Danos', rate: selected.danos_rate, color: 'var(--warning-500)' },
                 ].map(item => (
                   <div key={item.label}>
@@ -243,7 +243,7 @@ export default function CarriersPage() {
                   <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-2" style={{ color: 'var(--text-muted)' }}>Tiempos de Cruce</div>
                   <div className="text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     <div>Dia mas rapido: <span className="font-semibold" style={{ color: 'var(--green)' }}>{crossingData.fastest_day}</span></div>
-                    <div>Dia mas lento: <span className="font-semibold" style={{ color: '#EF4444' }}>{crossingData.slowest_day}</span></div>
+                    <div>Dia mas lento: <span className="font-semibold" style={{ color: 'var(--portal-status-red-fg)' }}>{crossingData.slowest_day}</span></div>
                     <div>Recomendado: <span className="font-semibold" style={{ color: 'var(--amber-600)' }}>{crossingData.recommended_arrival_day}</span></div>
                   </div>
                 </div>

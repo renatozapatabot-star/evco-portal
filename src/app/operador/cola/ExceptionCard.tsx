@@ -126,7 +126,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             style={{
               fontSize: 'var(--aguila-fs-label)',
               fontFamily: 'var(--font-mono)',
-              color: '#94a3b8',
+              color: 'var(--portal-fg-4)',
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 10,
@@ -143,7 +143,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
               alignItems: 'center',
               gap: 4,
               fontSize: 'var(--aguila-fs-compact)',
-              color: '#94a3b8',
+              color: 'var(--portal-fg-4)',
             }}
           >
             {getTypeIcon(event.event_type)}
@@ -159,7 +159,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
               style={{
                 fontSize: 'var(--aguila-fs-body)',
                 fontFamily: 'var(--font-mono)',
-                color: '#C0C5CE',
+                color: 'var(--portal-fg-3)',
                 textDecoration: 'none',
               }}
             >
@@ -172,7 +172,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
         <p
           style={{
             fontSize: 'var(--aguila-fs-body)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             margin: '0 0 8px',
             lineHeight: 1.4,
             display: '-webkit-box',
@@ -189,7 +189,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
           <p
             style={{
               fontSize: 'var(--aguila-fs-meta)',
-              color: '#EF4444',
+              color: 'var(--portal-status-red-fg)',
               margin: '0 0 8px',
               fontFamily: 'var(--font-mono)',
               lineHeight: 1.4,
@@ -208,7 +208,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
           style={{
             fontSize: 'var(--aguila-fs-meta)',
             fontFamily: 'var(--font-mono)',
-            color: '#64748b',
+            color: 'var(--portal-fg-5)',
           }}
         >
           {fmtDateTime(event.created_at)}
@@ -223,8 +223,8 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             minWidth: 100,
             minHeight: 60,
             padding: '12px 16px',
-            background: '#E8EAED',
-            color: '#0D0D0C',
+            background: 'var(--portal-fg-1)',
+            color: 'var(--portal-ink-0)',
             border: 'none',
             borderRadius: 12,
             fontSize: 'var(--aguila-fs-body)',
@@ -233,7 +233,7 @@ export function ExceptionCard({ event, onAction }: ExceptionCardProps) {
             transition: 'background 150ms ease',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = '#ca8a04' }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = '#E8EAED' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--portal-fg-1)' }}
         >
           {getCTAText(event)}
         </button>

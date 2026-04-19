@@ -93,7 +93,7 @@ export default async function OcaListPage() {
               style={{
                 display: 'inline-flex', alignItems: 'center',
                 minHeight: 44, padding: '0 20px',
-                background: SILVER_GRADIENT, color: '#0A0A0C',
+                background: SILVER_GRADIENT, color: 'var(--portal-ink-0)',
                 borderRadius: 10, fontSize: 'var(--aguila-fs-body)', fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: 0.5,
                 textDecoration: 'none',

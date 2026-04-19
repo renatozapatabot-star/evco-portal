@@ -132,7 +132,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
             {draft.trafico_id && (
               <Link
                 href={`/embarques/${draft.trafico_id}`}
-                style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: '#C0C5CE', textDecoration: 'none' }}
+                style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-3)', textDecoration: 'none' }}
               >
                 {draft.trafico_id}
               </Link>
@@ -175,7 +175,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                   fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   fontFamily: 'var(--font-mono)',
-                  color: confidence >= 0.8 ? '#22C55E' : confidence >= 0.5 ? '#FBBF24' : '#EF4444',
+                  color: confidence >= 0.8 ? 'var(--portal-status-green-fg)' : confidence >= 0.5 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)',
                 }}>
                   {Math.round(confidence * 100)}%
                 </div>
@@ -251,7 +251,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                     fontSize: 'var(--aguila-fs-body)',
                     fontWeight: 700,
                     background: mode === 'reject' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.08)',
-                    color: mode === 'reject' ? '#EF4444' : TEXT_PRIMARY,
+                    color: mode === 'reject' ? 'var(--portal-status-red-fg)' : TEXT_PRIMARY,
                     border: 'none',
                     cursor: note.trim() ? 'pointer' : 'not-allowed',
                     minHeight: 44,
@@ -298,7 +298,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                   fontSize: 'var(--aguila-fs-section)',
                   fontWeight: 700,
                   background: GOLD_GRADIENT,
-                  color: '#0D0D0C',
+                  color: 'var(--portal-ink-0)',
                   border: 'none',
                   cursor: 'pointer',
                   minHeight: 60,
@@ -332,7 +332,7 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
                   fontSize: 'var(--aguila-fs-body)',
                   fontWeight: 600,
                   background: 'rgba(239,68,68,0.08)',
-                  color: '#EF4444',
+                  color: 'var(--portal-status-red-fg)',
                   border: '1px solid rgba(239,68,68,0.2)',
                   cursor: 'pointer',
                   minHeight: 60,

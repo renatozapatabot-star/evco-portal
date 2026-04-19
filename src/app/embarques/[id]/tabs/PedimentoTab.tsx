@@ -70,7 +70,7 @@ export function PedimentoTab({
               border: '1px solid rgba(192,197,206,0.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
             }}
           >
             <CreditCard size={20} strokeWidth={1.8} />
@@ -91,7 +91,7 @@ export function PedimentoTab({
                 style={{
                   fontSize: 'var(--aguila-fs-title, 22px)',
                   fontWeight: 700,
-                  color: '#E6EDF3',
+                  color: 'var(--portal-fg-1)',
                   letterSpacing: '-0.005em',
                   marginBottom: 8,
                 }}
@@ -123,13 +123,13 @@ export function PedimentoTab({
             >
               {trafico.regimen && (
                 <span>
-                  <strong style={{ color: '#E6EDF3' }}>Régimen:</strong>{' '}
+                  <strong style={{ color: 'var(--portal-fg-1)' }}>Régimen:</strong>{' '}
                   <span className="font-mono">{trafico.regimen}</span>
                 </span>
               )}
               {importeTotalUsd != null && importeTotalUsd > 0 && (
                 <span>
-                  <strong style={{ color: '#E6EDF3' }}>Valor:</strong>{' '}
+                  <strong style={{ color: 'var(--portal-fg-1)' }}>Valor:</strong>{' '}
                   <span className="font-mono">{fmtUSDCompact(importeTotalUsd)}</span>
                 </span>
               )}
@@ -150,7 +150,7 @@ export function PedimentoTab({
                 padding: '0 22px',
                 borderRadius: 14,
                 background: 'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)',
-                color: '#0A0A0C',
+                color: 'var(--portal-ink-0)',
                 fontSize: 'var(--aguila-fs-body, 13px)',
                 fontWeight: 700,
                 letterSpacing: '0.02em',
@@ -215,7 +215,7 @@ export function PedimentoTab({
           }}
         >
           <span>
-            <strong style={{ color: '#FBBF24' }}>{missingDocsCount} documento{missingDocsCount === 1 ? '' : 's'}</strong> {missingDocsCount === 1 ? 'falta' : 'faltan'} antes de que se pueda pagar el pedimento.
+            <strong style={{ color: 'var(--portal-status-amber-fg)' }}>{missingDocsCount} documento{missingDocsCount === 1 ? '' : 's'}</strong> {missingDocsCount === 1 ? 'falta' : 'faltan'} antes de que se pueda pagar el pedimento.
           </span>
           <Link
             href={`#docs-tab`}
@@ -252,8 +252,8 @@ function StatusCard({
       : tone === 'warning' ? 'rgba(251,191,36,0.55)'
       : 'rgba(192,197,206,0.4)'
   const pillColor =
-    tone === 'success' ? '#86EFAC'
-      : tone === 'warning' ? '#FBBF24'
+    tone === 'success' ? 'var(--portal-status-green-fg)'
+      : tone === 'warning' ? 'var(--portal-status-amber-fg)'
       : 'rgba(192,197,206,0.85)'
   return (
     <div

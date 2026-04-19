@@ -206,11 +206,11 @@ export function RecibirEntradaClient() {
             border: '1px solid rgba(192,197,206,0.18)',
           }}
         >
-          <CheckCircle2 size={48} color="#22C55E" />
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
+          <CheckCircle2 size={48} color="var(--portal-status-green-fg)" />
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--portal-fg-1)', margin: 0 }}>
             Entrada registrada
           </h1>
-          <p style={{ color: '#94a3b8', margin: 0 }}>
+          <p style={{ color: 'var(--portal-fg-4)', margin: 0 }}>
             {lastEntry.photo_count} foto(s) subidas
           </p>
           <p
@@ -235,7 +235,7 @@ export function RecibirEntradaClient() {
             width: '100%',
             borderRadius: 14,
             background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
-            color: '#0A0A0C',
+            color: 'var(--portal-ink-0)',
             fontWeight: 700,
             fontSize: 'var(--aguila-fs-body-lg)',
             border: 'none',
@@ -267,7 +267,7 @@ export function RecibirEntradaClient() {
               borderRadius: 12,
               background: 'rgba(192,197,206,0.12)',
               border: '1px solid rgba(192,197,206,0.35)',
-              color: '#C0C5CE',
+              color: 'var(--portal-fg-3)',
               fontSize: 'var(--aguila-fs-body)',
               textAlign: 'center',
             }}
@@ -283,7 +283,7 @@ export function RecibirEntradaClient() {
               borderRadius: 12,
               background: 'rgba(220,38,38,0.12)',
               border: '1px solid rgba(220,38,38,0.35)',
-              color: '#FCA5A5',
+              color: 'var(--portal-status-red-fg)',
               fontSize: 'var(--aguila-fs-body)',
               textAlign: 'center',
             }}
@@ -300,7 +300,7 @@ export function RecibirEntradaClient() {
             width: '100%',
             borderRadius: 14,
             background: 'rgba(255,255,255,0.04)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontWeight: 600,
             fontSize: 'var(--aguila-fs-body-lg)',
             border: '1px solid rgba(192,197,206,0.18)',
@@ -317,7 +317,7 @@ export function RecibirEntradaClient() {
             width: '100%',
             borderRadius: 14,
             background: 'rgba(255,255,255,0.04)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontWeight: 600,
             fontSize: 'var(--aguila-fs-body-lg)',
             border: '1px solid rgba(192,197,206,0.18)',
@@ -347,15 +347,15 @@ export function RecibirEntradaClient() {
       }}
     >
       <header style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <PackageCheck size={22} color="#C0C5CE" />
-        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: '#E6EDF3', margin: 0 }}>
+        <PackageCheck size={22} color="var(--portal-fg-3)" />
+        <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--portal-fg-1)', margin: 0 }}>
           Recepción en bodega
         </h1>
       </header>
 
       {/* Embarque picker */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
           Embarque
         </span>
         <input
@@ -373,7 +373,7 @@ export function RecibirEntradaClient() {
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
             background: BG_ELEVATED,
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 'var(--aguila-fs-body-lg)',
             fontFamily: 'var(--font-jetbrains-mono), monospace',
           }}
@@ -409,7 +409,7 @@ export function RecibirEntradaClient() {
                     textAlign: 'left',
                     padding: '10px 12px',
                     background: 'transparent',
-                    color: '#E6EDF3',
+                    color: 'var(--portal-fg-1)',
                     border: 'none',
                     borderRadius: 10,
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -423,7 +423,7 @@ export function RecibirEntradaClient() {
           </ul>
         )}
         {traficoId && (
-          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: '#22C55E' }}>
+          <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-status-green-fg)' }}>
             Embarque seleccionado: {traficoId}
           </span>
         )}
@@ -431,7 +431,7 @@ export function RecibirEntradaClient() {
 
       {/* Trailer number */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
           Número de caja
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -449,7 +449,7 @@ export function RecibirEntradaClient() {
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
               background: BG_ELEVATED,
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-kpi-small)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               letterSpacing: '0.04em',
@@ -474,7 +474,7 @@ export function RecibirEntradaClient() {
                 borderRadius: 12,
                 border: '1px solid rgba(192,197,206,0.18)',
                 background: 'rgba(255,255,255,0.04)',
-                color: '#C0C5CE',
+                color: 'var(--portal-fg-3)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -489,7 +489,7 @@ export function RecibirEntradaClient() {
 
       {/* Dock */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
           Andén (opcional)
         </span>
         <select
@@ -501,7 +501,7 @@ export function RecibirEntradaClient() {
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
             background: BG_ELEVATED,
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 'var(--aguila-fs-body-lg)',
             fontFamily: 'var(--font-jetbrains-mono), monospace',
           }}
@@ -518,7 +518,7 @@ export function RecibirEntradaClient() {
 
       {/* Photo capture */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
           Fotos ({photos.length}/8)
         </span>
         <input
@@ -540,7 +540,7 @@ export function RecibirEntradaClient() {
             borderRadius: 12,
             border: '2px dashed rgba(192,197,206,0.35)',
             background: 'rgba(255,255,255,0.04)',
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 15,
             fontWeight: 600,
             cursor: 'pointer',
@@ -570,7 +570,7 @@ export function RecibirEntradaClient() {
                 style={{
                   fontFamily: 'var(--font-jetbrains-mono), monospace',
                   fontSize: 'var(--aguila-fs-meta)',
-                  color: '#C0C5CE',
+                  color: 'var(--portal-fg-3)',
                   padding: '4px 8px',
                   borderRadius: 8,
                   background: 'rgba(192,197,206,0.08)',
@@ -585,7 +585,7 @@ export function RecibirEntradaClient() {
 
       {/* Notes */}
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
+        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
           Notas (opcional)
         </span>
         <textarea
@@ -598,7 +598,7 @@ export function RecibirEntradaClient() {
             borderRadius: 12,
             border: '1px solid rgba(192,197,206,0.18)',
             background: BG_ELEVATED,
-            color: '#E6EDF3',
+            color: 'var(--portal-fg-1)',
             fontSize: 15,
             resize: 'vertical',
           }}
@@ -617,7 +617,7 @@ export function RecibirEntradaClient() {
             borderRadius: 12,
             background: 'rgba(220,38,38,0.12)',
             border: '1px solid rgba(220,38,38,0.35)',
-            color: '#FCA5A5',
+            color: 'var(--portal-status-red-fg)',
             fontSize: 'var(--aguila-fs-section)',
           }}
         >
@@ -635,7 +635,7 @@ export function RecibirEntradaClient() {
           width: '100%',
           borderRadius: 14,
           background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
-          color: '#0A0A0C',
+          color: 'var(--portal-ink-0)',
           fontWeight: 700,
           fontSize: 17,
           border: 'none',

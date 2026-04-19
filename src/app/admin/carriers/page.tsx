@@ -29,7 +29,7 @@ export default async function AdminCarriersPage() {
   return (
     <main
       className="aduana-dark"
-      style={{ padding: 24, minHeight: '100vh', color: '#E6EDF3' }}
+      style={{ padding: 24, minHeight: '100vh', color: 'var(--portal-fg-1)' }}
     >
       <header style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, opacity: 0.8 }}>
@@ -39,7 +39,7 @@ export default async function AdminCarriersPage() {
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
           Catálogo de transportistas
         </h1>
-        <p style={{ margin: '6px 0 0', fontSize: 'var(--aguila-fs-body)', color: '#94a3b8' }}>
+        <p style={{ margin: '6px 0 0', fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)' }}>
           {count ?? 0} registros · MX · Transfer · Foreign
         </p>
       </header>

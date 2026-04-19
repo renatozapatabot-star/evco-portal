@@ -239,7 +239,7 @@ async function renderBodegaCockpit(opName: string) {
               borderRadius: 12,
               background: 'rgba(255,255,255,0.02)',
               textDecoration: 'none',
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 'var(--aguila-fs-body)',
               fontWeight: 600,
               minHeight: 60,

@@ -72,8 +72,8 @@ function StatusIcon({ status, size = 12 }: { status: MilestoneStatus; size?: num
 
 function nodeColors(status: MilestoneStatus) {
   if (status === 'completed') return {
-    bg: 'rgba(34,197,94,0.12)',
-    border: 'rgba(34,197,94,0.32)',
+    bg: 'var(--portal-status-green-bg)',
+    border: 'var(--portal-status-green-ring)',
     color: STATUS_GREEN,
     shadow: '0 0 14px rgba(34,197,94,0.16), inset 0 1px 0 rgba(255,255,255,0.06)',
   }
@@ -84,7 +84,7 @@ function nodeColors(status: MilestoneStatus) {
     shadow: '0 0 20px rgba(201,167,74,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
   }
   if (status === 'blocked') return {
-    bg: 'rgba(239,68,68,0.14)',
+    bg: 'var(--portal-status-red-bg)',
     border: 'rgba(239,68,68,0.38)',
     color: STATUS_RED,
     shadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',

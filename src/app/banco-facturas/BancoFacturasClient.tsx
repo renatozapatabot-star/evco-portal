@@ -428,7 +428,7 @@ function DropZone({ busy, onFiles }: { busy: boolean; onFiles: (list: FileList |
             type="button"
             onClick={() => inputRef.current?.click()}
             style={{
-              background: ACCENT_SILVER, color: '#0A0A0C',
+              background: ACCENT_SILVER, color: 'var(--portal-ink-0)',
               border: 'none', borderRadius: 10, padding: '10px 16px',
               fontWeight: 600, fontSize: 'var(--aguila-fs-section)', cursor: 'pointer',
               minHeight: 44, minWidth: 44,

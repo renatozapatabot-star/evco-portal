@@ -46,10 +46,10 @@ export default async function Page() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 320px', minWidth: 0 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#FBBF24', marginBottom: 4 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--portal-status-amber-fg)', marginBottom: 4 }}>
                   Pre-audit multi-cliente
                 </div>
-                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#E8EAED', marginBottom: 2 }}>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 2 }}>
                   Consolidación · heat map
                 </div>
                 <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.6)' }}>
@@ -64,7 +64,7 @@ export default async function Page() {
                 borderRadius: 999,
                 background: 'rgba(192,197,206,0.1)',
                 border: '1px solid rgba(192,197,206,0.25)',
-                color: '#E8EAED',
+                color: 'var(--portal-fg-1)',
                 fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: '0.06em',

@@ -119,7 +119,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
             height: '100%',
             width: `${pct}%`,
             borderRadius: 4,
-            background: '#E8EAED',
+            background: 'var(--portal-fg-1)',
             transition: 'width 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         />
@@ -165,7 +165,7 @@ function ActionCard({
             width: 36,
             height: 36,
             borderRadius: '50%',
-            background: '#E8EAED',
+            background: 'var(--portal-fg-1)',
             color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
@@ -223,7 +223,7 @@ function ActionCard({
             flex: 1,
             minHeight: 60,
             borderRadius: 12,
-            background: '#E8EAED',
+            background: 'var(--portal-fg-1)',
             color: '#FFFFFF',
             border: 'none',
             fontSize: 'var(--aguila-fs-body-lg)',
@@ -235,7 +235,7 @@ function ActionCard({
             if (!loading) (e.currentTarget.style.background = '#B8933B')
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = '#E8EAED'
+            e.currentTarget.style.background = 'var(--portal-fg-1)'
           }}
         >
           Empezar
@@ -343,7 +343,7 @@ function CruzAutoSection({
               padding: '8px 0',
             }}
           >
-            <span style={{ color: '#16A34A', fontSize: 'var(--aguila-fs-body-lg)', flexShrink: 0 }}>
+            <span style={{ color: 'var(--portal-status-green-fg)', fontSize: 'var(--aguila-fs-body-lg)', flexShrink: 0 }}>
               &#10003;
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>

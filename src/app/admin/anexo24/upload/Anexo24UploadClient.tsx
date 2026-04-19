@@ -6,10 +6,10 @@ import { Upload, CheckCircle2, AlertTriangle, Loader2, FileSpreadsheet } from 'l
 // Semantic palette shared with the rest of the AGUILA canvas. See
 // src/lib/design-system.ts for the canonical tokens; duplicated here
 // for clarity in a single-surface admin page.
-const PRIMARY_TEXT = '#E6EDF3' // design-token
-const CANVAS_BLACK = '#0A0A0C' // design-token
-const STATUS_GREEN = '#86EFAC' // design-token
-const STATUS_RED = '#FCA5A5'   // design-token
+const PRIMARY_TEXT = 'var(--portal-fg-1)' // design-token
+const CANVAS_BLACK = 'var(--portal-ink-0)' // design-token
+const STATUS_GREEN = 'var(--portal-status-green-fg)' // design-token
+const STATUS_RED = 'var(--portal-status-red-fg)'   // design-token
 
 interface Props {
   companyId: string
@@ -228,7 +228,7 @@ export function Anexo24UploadClient({ companyId, role }: Props) {
           padding: '12px 14px',
           borderRadius: 10,
           background: 'rgba(239,68,68,0.08)',
-          border: '1px solid rgba(239,68,68,0.25)',
+          border: '1px solid var(--portal-status-red-ring)',
           color: STATUS_RED,
           fontSize: 'var(--aguila-fs-body, 13px)',
           display: 'flex',
@@ -245,7 +245,7 @@ export function Anexo24UploadClient({ companyId, role }: Props) {
           marginTop: 18,
           padding: '16px 18px',
           borderRadius: 12,
-          background: 'rgba(34,197,94,0.08)',
+          background: 'var(--portal-status-green-bg)',
           border: '1px solid rgba(34,197,94,0.22)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>

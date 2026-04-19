@@ -378,7 +378,7 @@ export function EscanearClient() {
                 borderRadius: 10,
                 background: 'rgba(239,68,68,0.08)',
                 border: '1px solid rgba(239,68,68,0.35)',
-                color: '#FCA5A5',
+                color: 'var(--portal-status-red-fg)',
                 fontSize: 'var(--aguila-fs-body)',
                 display: 'flex',
                 gap: 8,

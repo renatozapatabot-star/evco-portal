@@ -78,7 +78,7 @@ export default function NuevoEmbarquePage() {
       <div className="page-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>🦀</div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
             ¡Embarque recibido!
           </h1>
           <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
@@ -86,7 +86,7 @@ export default function NuevoEmbarquePage() {
           </p>
           <button onClick={() => router.push('/')} style={{
             padding: '14px 28px', borderRadius: 10,
-            background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
+            background: 'var(--portal-fg-1)', color: '#111', fontSize: 15, fontWeight: 700,
             border: 'none', cursor: 'pointer', minHeight: 60,
           }}>
             Volver al portal →
@@ -137,7 +137,7 @@ export default function NuevoEmbarquePage() {
             style={{
               width: '100%', padding: '12px 14px', borderRadius: 8,
               background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-              color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', minHeight: 48,
+              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', minHeight: 48,
             }}
           >
             {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
@@ -163,7 +163,7 @@ export default function NuevoEmbarquePage() {
               style={{
                 padding: '12px 14px', borderRadius: 8,
                 background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#E8EAED', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, minHeight: 48,
+                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, minHeight: 48,
                 fontFamily: 'var(--font-jetbrains-mono)',
               }}
             >
@@ -192,7 +192,7 @@ export default function NuevoEmbarquePage() {
                 flex: 1, padding: '10px 8px', borderRadius: 8, textAlign: 'center',
                 background: form.urgencia === u.value ? 'rgba(192,197,206,0.15)' : '#222',
                 border: `1px solid ${form.urgencia === u.value ? 'rgba(192,197,206,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                color: form.urgencia === u.value ? '#E8EAED' : '#8B949E',
+                color: form.urgencia === u.value ? 'var(--portal-fg-1)' : '#8B949E',
                 fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer', minHeight: 48,
               }}>
                 {u.label}
@@ -215,7 +215,7 @@ export default function NuevoEmbarquePage() {
           disabled={loading}
           style={{
             width: '100%', padding: '16px 24px', borderRadius: 10, marginTop: 8,
-            background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
+            background: 'var(--portal-fg-1)', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
             border: 'none', cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.6 : 1, minHeight: 60,
           }}

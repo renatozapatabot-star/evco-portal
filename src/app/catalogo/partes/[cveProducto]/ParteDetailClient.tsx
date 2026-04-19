@@ -161,7 +161,7 @@ export function ParteDetailClient({
               background: 'transparent',
               border: 'none',
               borderBottom: active === t.id ? '2px solid #C9A84C' : '2px solid transparent',
-              color: active === t.id ? '#E8EAED' : 'rgba(255,255,255,0.6)',
+              color: active === t.id ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.6)',
               fontSize: 14,
               fontWeight: active === t.id ? 700 : 500,
               cursor: 'pointer',
@@ -188,7 +188,7 @@ export function ParteDetailClient({
               borderRadius: 12,
               background: 'rgba(192,197,206,0.12)',
               border: '1px solid rgba(192,197,206,0.3)',
-              color: '#E6EDF3',
+              color: 'var(--portal-fg-1)',
               fontSize: 14,
               fontWeight: 600,
               cursor: 'pointer',
@@ -211,7 +211,7 @@ export function ParteDetailClient({
               borderRadius: 12,
               background: 'rgba(234,179,8,0.12)',
               border: '1px solid rgba(234,179,8,0.3)',
-              color: '#FACC15',
+              color: 'var(--portal-status-amber-fg)',
               fontSize: 14,
               fontWeight: 600,
               textDecoration: 'none',
@@ -233,7 +233,7 @@ function StatCard({ label, value, sublabel }: { label: string; value: string; su
     <GlassCard padding="12px 16px">
       <div>
         <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
-        <p className="font-mono" style={{ margin: '4px 0 2px', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', color: '#E8EAED' }}>{value}</p>
+        <p className="font-mono" style={{ margin: '4px 0 2px', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--portal-fg-1)' }}>{value}</p>
         {sublabel && <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{sublabel}</p>}
       </div>
     </GlassCard>
@@ -266,7 +266,7 @@ function HistoryTab({ data }: { data: DetailPayload }) {
               <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <Td>{fmtDate(u.created_at)}</Td>
                 <Td>{u.trafico_ref ? (
-                  <Link href={`/embarques/${encodeURIComponent(u.trafico_ref)}`} className="font-mono" style={{ color: '#FACC15', textDecoration: 'none' }}>
+                  <Link href={`/embarques/${encodeURIComponent(u.trafico_ref)}`} className="font-mono" style={{ color: 'var(--portal-status-amber-fg)', textDecoration: 'none' }}>
                     {u.trafico_ref}
                   </Link>
                 ) : '—'}</Td>
@@ -308,7 +308,7 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
                     <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
                       {c.ts ? fmtDate(c.ts) : '—'}
                     </p>
-                    <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: '#FACC15' }}>
+                    <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>
                       {c.fraccion_assigned || '—'}
                     </p>
                   </div>
@@ -319,12 +319,12 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
                       </p>
                     )}
                     {c.supertito_agreed === true && (
-                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#86EFAC', fontWeight: 700 }}>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--portal-status-green-fg)', fontWeight: 700 }}>
                         ✓ Tito de acuerdo
                       </p>
                     )}
                     {c.supertito_correction && (
-                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#FCA5A5' }}>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--portal-status-red-fg)' }}>
                         ✗ Tito corrigió a <span className="font-mono">{c.supertito_correction}</span>
                       </p>
                     )}
@@ -347,7 +347,7 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
           Opiniones de Clasificación Arancelaria
         </h2>
         {!hasOcas ? (
-          <GlassCard padding="16px" style={{ borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.04)' }}>
+          <GlassCard padding="16px" style={{ borderColor: 'var(--portal-status-amber-ring)', background: 'rgba(251,191,36,0.04)' }}>
             <p style={{ margin: 0, color: '#FCD34D', fontSize: 13, fontWeight: 600 }}>
               {formattedFraccion
                 ? `La fracción ${formattedFraccion} no tiene OCA firmada para EVCO.`
@@ -375,7 +375,7 @@ function OCACard({ oca }: { oca: DetailPayload['ocas'][number] }) {
     <GlassCard padding="14px 16px">
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <p className="font-mono" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#FACC15' }}>
+          <p className="font-mono" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>
             {oca.fraccion}
           </p>
           <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
@@ -547,13 +547,13 @@ function MiniLineChart({ series }: { series: DetailPayload['cost_trend'] }) {
       <polyline
         points={points.join(' ')}
         fill="none"
-        stroke="#C0C5CE"
+        stroke="var(--portal-fg-3)"
         strokeWidth="2"
       />
       {series.map((s, i) => {
         const x = pad + i * xStep
         const y = h - pad - ((s.avg_price - min) / range) * (h - 2 * pad)
-        return <circle key={i} cx={x} cy={y} r={3} fill="#C0C5CE" />
+        return <circle key={i} cx={x} cy={y} r={3} fill="var(--portal-fg-3)" />
       })}
       {series.map((s, i) => {
         if (i % 2 !== 0 && i !== series.length - 1) return null
@@ -572,7 +572,7 @@ function StatInline({ label, value, tone }: { label: string; value: string; tone
   return (
     <div>
       <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
-      <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: tone === 'amber' ? '#FCD34D' : '#E8EAED' }}>{value}</p>
+      <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: tone === 'amber' ? '#FCD34D' : 'var(--portal-fg-1)' }}>{value}</p>
     </div>
   )
 }

@@ -28,9 +28,9 @@ interface Snapshot {
 }
 
 const TONE_COLOR: Record<TableRow['freshness'], string> = {
-  green: '#22C55E',
-  amber: '#FBBF24',
-  red: '#EF4444',
+  green: 'var(--portal-status-green-fg)',
+  amber: 'var(--portal-status-amber-fg)',
+  red: 'var(--portal-status-red-fg)',
   unknown: TEXT_MUTED,
 }
 
@@ -73,7 +73,7 @@ export function SyncHealthClient() {
 
   if (error && !snap) {
     return (
-      <div style={{ padding: 24, color: '#FCA5A5' }}>
+      <div style={{ padding: 24, color: 'var(--portal-status-red-fg)' }}>
         Error cargando sync status: {error}
       </div>
     )
@@ -184,12 +184,12 @@ export function SyncHealthClient() {
                   />
                 </div>
                 {s.status && (
-                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: s.status === 'success' ? '#22C55E' : s.status === 'failed' ? '#EF4444' : TEXT_MUTED, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: s.status === 'success' ? 'var(--portal-status-green-fg)' : s.status === 'failed' ? 'var(--portal-status-red-fg)' : TEXT_MUTED, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {s.status}
                   </div>
                 )}
                 {s.error_message && (
-                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#FCA5A5', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-status-red-fg)', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {s.error_message}
                   </div>
                 )}

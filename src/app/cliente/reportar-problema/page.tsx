@@ -16,9 +16,9 @@ const CATEGORIAS = [
 ]
 
 const SEVERIDADES = [
-  { value: 'baja', label: 'Baja', color: '#16A34A' },
-  { value: 'media', label: 'Media', color: '#D97706' },
-  { value: 'alta', label: 'Alta', color: '#DC2626' },
+  { value: 'baja', label: 'Baja', color: 'var(--portal-status-green-fg)' },
+  { value: 'media', label: 'Media', color: 'var(--portal-status-amber-fg)' },
+  { value: 'alta', label: 'Alta', color: 'var(--portal-status-red-fg)' },
 ]
 
 export default function ReportarProblemaPage() {
@@ -59,7 +59,7 @@ export default function ReportarProblemaPage() {
       <div className="page-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>✅</div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E6EDF3', marginBottom: 8 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--portal-fg-1)', marginBottom: 8 }}>
             Reporte recibido
           </h1>
           <p style={{ fontSize: 'var(--aguila-fs-section)', color: '#8B949E', lineHeight: 1.6, marginBottom: 24 }}>
@@ -67,7 +67,7 @@ export default function ReportarProblemaPage() {
           </p>
           <button onClick={() => router.push('/')} style={{
             padding: '14px 28px', borderRadius: 10,
-            background: '#E8EAED', color: '#111', fontSize: 15, fontWeight: 700,
+            background: 'var(--portal-fg-1)', color: '#111', fontSize: 15, fontWeight: 700,
             border: 'none', cursor: 'pointer', minHeight: 60,
           }}>
             Volver al portal →
@@ -92,7 +92,7 @@ export default function ReportarProblemaPage() {
           </label>
           <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} style={{
             width: '100%', padding: '12px 14px', borderRadius: 8,
-            background: '#222', border: '1px solid rgba(255,255,255,0.12)', color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', minHeight: 48,
+            background: '#222', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', minHeight: 48,
           }}>
             {CATEGORIAS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
@@ -126,7 +126,7 @@ export default function ReportarProblemaPage() {
           <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Ej: Falta factura del embarque de marzo" style={{
             width: '100%', padding: '12px 14px', borderRadius: 8,
             background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-            color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', boxSizing: 'border-box', minHeight: 48,
+            color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', boxSizing: 'border-box', minHeight: 48,
           }} />
         </div>
 
@@ -138,13 +138,13 @@ export default function ReportarProblemaPage() {
           <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe el problema con detalle..." rows={4} style={{
             width: '100%', padding: '12px 14px', borderRadius: 8,
             background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-            color: '#E6EDF3', fontSize: 'var(--aguila-fs-section)', resize: 'vertical', boxSizing: 'border-box', minHeight: 100,
+            color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'vertical', boxSizing: 'border-box', minHeight: 100,
           }} />
         </div>
 
         <button onClick={handleSubmit} disabled={loading || !form.title || !form.description} style={{
           width: '100%', padding: '16px 24px', borderRadius: 10,
-          background: '#E8EAED', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
+          background: 'var(--portal-fg-1)', color: '#111', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
           border: 'none', cursor: loading ? 'wait' : 'pointer',
           opacity: (loading || !form.title || !form.description) ? 0.5 : 1, minHeight: 60,
         }}>

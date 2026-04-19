@@ -211,7 +211,7 @@ export function QuoteForm() {
 
         {err && (
           <GlassCard>
-            <p style={{ color: '#EF4444', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
+            <p style={{ color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{err}</p>
           </GlassCard>
         )}
 
@@ -221,7 +221,7 @@ export function QuoteForm() {
             disabled={loading}
             style={{
               minHeight: 60, padding: '0 28px',
-              background: SILVER_GRADIENT, color: '#0A0A0C',
+              background: SILVER_GRADIENT, color: 'var(--portal-ink-0)',
               border: 'none', borderRadius: 10,
               fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 0.5,
@@ -263,17 +263,17 @@ export function QuoteForm() {
               {quote.tmec_eligible && quote.tmec_savings_mxn > 0 && (
                 <div style={{
                   textAlign: 'right',
-                  background: 'rgba(34,197,94,0.10)',
-                  border: '1px solid rgba(34,197,94,0.25)',
+                  background: 'var(--portal-status-green-bg)',
+                  border: '1px solid var(--portal-status-green-ring)',
                   borderRadius: 10,
                   padding: '8px 12px',
                 }}>
-                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: '#4ade80', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--portal-status-green-fg)', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 }}>
                     Ahorro T-MEC
                   </div>
                   <div style={{
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
-                    fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: '#4ade80',
+                    fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-status-green-fg)',
                     fontVariantNumeric: 'tabular-nums',
                   }}>
                     {fmtMXN(quote.tmec_savings_mxn)}

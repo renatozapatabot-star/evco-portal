@@ -54,7 +54,7 @@ export default async function ReportesAnexo24Page() {
             borderColor: 'rgba(212,149,42,0.35)',
           }}
         >
-          <p className="text-sm" style={{ color: '#FBBF24' }}>
+          <p className="text-sm" style={{ color: 'var(--portal-status-amber-fg)' }}>
             Formato Anexo 24 pendiente verificación — comparar contra muestra
             de GlobalPC antes de uso oficial.
           </p>

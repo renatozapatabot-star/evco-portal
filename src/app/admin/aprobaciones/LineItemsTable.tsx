@@ -27,7 +27,7 @@ function confidenceDot(confidence: number) {
         width: 8, height: 8, borderRadius: '50%',
         background: color, flexShrink: 0,
       }} />
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: '#94a3b8' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)' }}>
         {confidence}%
       </span>
     </span>
@@ -57,7 +57,7 @@ export function LineItemsTable({ products }: Props) {
     return (
       <div style={{
         textAlign: 'center', padding: '24px 16px',
-        color: '#64748b', fontSize: 'var(--aguila-fs-body)',
+        color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)',
       }}>
         Sin líneas de producto
       </div>
@@ -68,14 +68,14 @@ export function LineItemsTable({ products }: Props) {
     <div style={{ overflowX: 'auto', scrollbarWidth: 'thin' }}>
       <table style={{
         width: '100%', borderCollapse: 'collapse',
-        fontSize: 'var(--aguila-fs-body)', color: '#E6EDF3',
+        fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)',
       }}>
         <thead>
           <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             {['#', 'Descripción', 'Cant.', 'Valor USD', 'Fracción', 'IGI%', 'Confianza', 'Fuente'].map(h => (
               <th key={h} style={{
                 padding: '8px 10px', textAlign: 'left',
-                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: '#64748b',
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: 'var(--portal-fg-5)',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 whiteSpace: 'nowrap',
               }}>
@@ -98,7 +98,7 @@ export function LineItemsTable({ products }: Props) {
               <tr key={i} style={{
                 borderBottom: '1px solid rgba(255,255,255,0.04)',
               }}>
-                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: '#64748b' }}>{i + 1}</td>
+                <td style={{ padding: '10px', fontFamily: 'var(--font-mono)', color: 'var(--portal-fg-5)' }}>{i + 1}</td>
                 <td style={{
                   padding: '10px', maxWidth: 220,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',

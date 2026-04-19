@@ -65,9 +65,9 @@
  * This brings the primitive in line with /login's canon.
  */
 .portal-card {
-  background: rgba(0,0,0,0.25);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  background: rgba(0,0,0,0.25) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
   border: 1px solid var(--portal-line-1);
   border-radius: var(--portal-r-4);
   box-shadow:
@@ -80,6 +80,11 @@
     transform var(--portal-dur-2) var(--portal-ease-out),
     box-shadow var(--portal-dur-2) var(--portal-ease-out);
 }
+/* Re-allow accent variant to override the !important background with its
+ * radial-gradient. The accent variant ships its own inline background
+ * via PortalModuleCard; this class lets the inline win even with !important
+ * baseline. */
+.portal-card[data-accent="true"] { background: inherit !important; }
 .portal-card:hover { border-color: var(--portal-line-2); }
 .portal-card--raised {
   background: rgba(0,0,0,0.12);

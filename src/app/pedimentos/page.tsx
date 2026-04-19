@@ -309,7 +309,7 @@ function PedimentosContent() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{fmtPedimentoShort(g.pedimento) || formatPedimento(g.pedimento, g.pedimento, { dd: g.fecha?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{formatPedimento(g.pedimento, g.pedimento, { dd: g.fecha?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span>
                   {g.tmec && <span className="badge-tmec">T-MEC</span>}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

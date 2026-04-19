@@ -153,6 +153,12 @@ export function PortalModuleCard({
     width: '100%',
   }
 
+  // data-accent flag lets the accent variant's inline radial-gradient
+  // win over the .portal-card !important glass background. Audit
+  // 2026-04-19 fix: glass chemistry needed !important to defeat
+  // Next.js bundler ordering quirk; accent variant escapes via attr.
+  const accentAttr = accent ? { 'data-accent': 'true' as const } : {}
+
   if (onClick) {
     return (
       <button
@@ -161,6 +167,7 @@ export function PortalModuleCard({
         aria-label={ariaLabel}
         className="portal-card portal-card--interactive"
         style={containerStyle}
+        {...accentAttr}
       >
         {inner}
       </button>
@@ -173,13 +180,14 @@ export function PortalModuleCard({
         aria-label={ariaLabel}
         className="portal-card portal-card--interactive"
         style={containerStyle}
+        {...accentAttr}
       >
         {inner}
       </a>
     )
   }
   return (
-    <div className="portal-card" style={containerStyle} aria-label={ariaLabel}>
+    <div className="portal-card" style={containerStyle} aria-label={ariaLabel} {...accentAttr}>
       {inner}
     </div>
   )

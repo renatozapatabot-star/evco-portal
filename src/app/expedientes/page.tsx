@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
+import { formatPedimento } from '@/lib/format/pedimento'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -260,7 +261,7 @@ function ExpedientesContent() {
                       </div>
                     </div>
                     <div className="m-card-bottom">
-                      {r.pedimento && <span className="ped-pill" style={{ fontSize: 'var(--aguila-fs-meta)', padding: '2px 7px' }}>{fmtPedimentoShort(r.pedimento)}</span>}
+                      {r.pedimento && <span className="ped-pill" style={{ fontSize: 'var(--aguila-fs-meta)', padding: '2px 7px' }}>{formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span>}
                       <span className="m-card-meta" style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-mono))' }}>{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
                     </div>
                   </button>
@@ -334,7 +335,7 @@ function ExpedientesContent() {
                         }} />
                       </td>
                       <td><span className="trafico-id">{fmtId(r.trafico)}</span></td>
-                      <td>{r.pedimento ? <span className="pedimento-num">{fmtPedimentoShort(r.pedimento)}</span> : <span className="pedimento-pending">Sin pedimento</span>}</td>
+                      <td>{r.pedimento ? <span className="pedimento-num">{formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span> : <span className="pedimento-pending">Sin pedimento</span>}</td>
                       <td>
                         <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
                           <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}

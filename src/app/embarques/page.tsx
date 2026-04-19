@@ -6,6 +6,7 @@ import { Search, Download, ChevronLeft, ChevronRight, Truck } from 'lucide-react
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { fmtId, fmtDesc, fmtUSDCompact, fmtDate, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
+import { formatPedimento } from '@/lib/format/pedimento'
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -402,7 +403,7 @@ function TraficosContent() {
           fontSize: 22, fontWeight: 800, color: 'var(--portal-fg-1)',
           letterSpacing: '-0.02em', margin: 0,
         }}>
-          Tráficos
+          Embarques
         </h1>
       </div>
 
@@ -483,7 +484,7 @@ function TraficosContent() {
                         }}
                         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}
                       >
-                        {fmtPedimentoShort(r.pedimento)}
+                        {formatPedimento(r.pedimento, r.pedimento ?? '—', { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}
                       </button>
                     ) : <span>Ped. pendiente</span>}
                     {r.fecha_llegada ? <span>{fmtDateShort(r.fecha_llegada)}</span> : null}
@@ -589,7 +590,7 @@ function TraficosContent() {
                             className="pedimento-num"
                             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}
                           >
-                            {fmtPedimentoShort(r.pedimento)}
+                            {formatPedimento(r.pedimento, r.pedimento ?? '—', { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}
                           </button>
                         ) : (
                           <span className="pedimento-pending">Pendiente</span>

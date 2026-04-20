@@ -8,6 +8,7 @@ const { emitEvent, supabase } = require('./workflow-emitter')
 const { logDecision } = require('../decision-logger')
 const { getExchangeRate, getIVARate } = require('./rates')
 const { sendEmail } = require('./email-send')
+const { sendTelegram } = require('./telegram')
 
 // ── Fee schedule (replicates auto-invoice.js pattern) ───────────────────────
 
@@ -380,13 +381,34 @@ async function handleInvoiceReady(event) {
   const lineItems = invoice.line_items || []
   const subtotal = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0)
 
-  // Fetch IVA rate from system_config
-  let ivaRate = 0.16
+  // Fetch IVA rate from system_config. Refuse-to-calculate + Telegram
+  // SEV-1 alert if rate is missing or expired — silent fallback to 0.16
+  // produces incorrect invoices when SAT adjusts the rate or
+  // system_config is stale (CLAUDE.md §FINANCIAL CONFIG + core-invariants
+  // rule 17). Event handler returns success:false so the workflow
+  // processor routes this back to the queue for a later retry once
+  // system_config is refreshed.
+  let ivaRate
   try {
     const iva = await getIVARate()
-    ivaRate = iva?.rate || 0.16
+    ivaRate = iva?.rate
+    if (typeof ivaRate !== 'number' || ivaRate <= 0) {
+      throw new Error(`IVA rate invalid shape: ${JSON.stringify(iva)}`)
+    }
   } catch (e) {
-    console.warn(`  [invoice_ready] IVA rate fetch failed, using 0.16: ${e.message}`)
+    await sendTelegram([
+      `🔴 <b>invoice_ready · ABORT</b>`,
+      ``,
+      `Invoice <code>${invoice.invoice_number || invoiceId}</code> (${company_id})`,
+      `cannot finalize — IVA rate unavailable.`,
+      ``,
+      `Error: <code>${e.message}</code>`,
+      `Fix: update <code>system_config</code> key <code>iva_rate</code> + valid_to.`,
+    ].join('\n'))
+    return {
+      success: false,
+      result: `IVA rate unavailable — invoice ${invoice.invoice_number || invoiceId} finalization blocked: ${e.message}`,
+    }
   }
 
   const ivaAmount = Math.round(subtotal * ivaRate * 100) / 100

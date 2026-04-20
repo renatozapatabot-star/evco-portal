@@ -38,7 +38,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 // ── Constants ──
 const DEFAULT_IGI_RATE = 0.05
-const IVA_RATE = 0.16
 const BRIDGE_FACTORS = {
   'World Trade': { time: 1.0, reco: 0.12 },
   'Colombia': { time: 0.85, reco: 0.09 },
@@ -48,17 +47,30 @@ const BRIDGE_FACTORS = {
 const MVE_DEADLINE = '2026-03-31T23:59:59-06:00'
 
 // ── Rate helpers ──
+// All rates come from system_config via the canonical helpers. No silent
+// fallbacks — if config is missing or expired, getRates() throws and the
+// caller returns a structured error to Claude so the LLM can explain the
+// fix ("update system_config keys iva_rate / dta_rates /
+// banxico_exchange_rate"). Hardcoding fallback rates here produced
+// subtly-wrong landed-cost quotes when system_config was stale.
+
+const { getDTARates, getIVARate, getExchangeRate } = require('./lib/rates')
 
 async function getRates() {
-  const [dtaRes, ivaRes, tcRes] = await Promise.all([
-    supabase.from('system_config').select('value, valid_to').eq('key', 'dta_rates').single(),
-    supabase.from('system_config').select('value, valid_to').eq('key', 'iva_rate').single(),
-    supabase.from('system_config').select('value').eq('key', 'banxico_exchange_rate').single(),
+  const [dtaData, ivaData, tcData] = await Promise.all([
+    getDTARates(),
+    getIVARate(),
+    getExchangeRate(),
   ])
-  const dta = dtaRes.data?.value?.A1?.rate ?? 0.008
-  const iva = ivaRes.data?.value?.rate ?? IVA_RATE
-  const tc = tcRes.data?.value?.rate ?? 17.5
-  const tcDate = tcRes.data?.value?.date ?? null
+  const dta = dtaData?.A1?.rate
+  const iva = ivaData?.rate
+  const tc = tcData?.rate
+  const tcDate = tcData?.date ?? null
+  if (typeof dta !== 'number' || typeof iva !== 'number' || typeof tc !== 'number') {
+    throw new Error(
+      `system_config rate shape invalid: dta=${dta} iva=${iva} tc=${tc} — update keys dta_rates.A1.rate / iva_rate.rate / banxico_exchange_rate.rate`,
+    )
+  }
   return { dta, iva, tc, tcDate }
 }
 
@@ -145,7 +157,16 @@ Return JSON only: { "fraccion": "XXXX.XX.XX", "description_es": "...", "igi_rate
 }
 
 async function estimateLandedCost({ value_usd, weight_kg, fraccion, origin_country, regimen }) {
-  const rates = await getRates()
+  let rates
+  try {
+    rates = await getRates()
+  } catch (e) {
+    return {
+      error: 'rates_unavailable',
+      message: `No se pudo estimar el costo: ${e.message}`,
+      hint: 'Broker must refresh system_config (iva_rate / dta_rates / banxico_exchange_rate) before landed-cost estimates are available.',
+    }
+  }
   const isTmec = regimen && ['ITE', 'ITR', 'IMD'].includes(regimen.toUpperCase())
   const igiRate = isTmec ? 0 : DEFAULT_IGI_RATE
 

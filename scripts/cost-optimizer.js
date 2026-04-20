@@ -219,10 +219,28 @@ async function analyzeFilingTiming(companyId, facturas, exchangeRate) {
   const totalValue = recentFacturas.reduce((s, f) => s + f.valor_usd, 0)
   const avgOpValue = totalValue / recentFacturas.length
 
-  // If exchange rate moves 1%, that's ~1% savings on duties
-  const fxSavingsPct = 0.008 // Conservative 0.8% FX opportunity
+  // Filing-timing heuristic: how much FX-opportunity upside to estimate per
+  // pedimento when surrounding weeks show > 1% exchange-rate variation.
+  // Not a regulatory rate — a business-tuned number the broker can adjust
+  // without a code change. Pulled from system_config
+  // (key: fx_savings_heuristic_pct, shape: { rate: number }). If missing,
+  // skip the insight rather than fabricate a value — the rest of the
+  // savings dimensions still run.
+  const { data: heuristicCfg } = await supabase
+    .from('system_config')
+    .select('value')
+    .eq('key', 'fx_savings_heuristic_pct')
+    .maybeSingle()
+  const fxSavingsFactor = heuristicCfg?.value?.rate
+  if (typeof fxSavingsFactor !== 'number' || fxSavingsFactor <= 0 || fxSavingsFactor > 0.05) {
+    console.log(
+      '[cost-optimizer] fx_savings_heuristic_pct not configured or outside sane range (0 < rate ≤ 0.05) — skipping filing-timing insight',
+    )
+    return insights
+  }
+
   const monthlyOps = Math.round(recentFacturas.length / 6)
-  const monthlySavings = Math.round(avgOpValue * fxSavingsPct * monthlyOps)
+  const monthlySavings = Math.round(avgOpValue * fxSavingsFactor * monthlyOps)
 
   if (monthlySavings > 100) {
     insights.push({
@@ -235,8 +253,8 @@ async function analyzeFilingTiming(companyId, facturas, exchangeRate) {
       savings_basis: `Optimizar timing de pago de pedimento según tipo de cambio (TC actual: ${exchangeRate})`,
       confidence: 50,
       current_value: `Pedimentos pagados sin considerar variación de TC`,
-      optimized_value: `Monitorear TC y retrasar 24-48h cuando tendencia es favorable (~0.8% ahorro)`,
-      detail: { exchange_rate: exchangeRate, avg_op_value: avgOpValue, monthly_ops: monthlyOps },
+      optimized_value: `Monitorear TC y retrasar 24-48h cuando tendencia es favorable (~${(fxSavingsFactor * 100).toFixed(1)}% ahorro)`,
+      detail: { exchange_rate: exchangeRate, avg_op_value: avgOpValue, monthly_ops: monthlyOps, fx_savings_factor: fxSavingsFactor },
     })
   }
 

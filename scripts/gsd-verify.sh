@@ -819,24 +819,25 @@ else
 fi
 
 # --------------------------------------------------------------------------
-# R11 — scripts/ financial rate hardcodes (gap closer).
-# The existing "Financial — Rates" ratchet (line ~194) only scans src/.
-# Four known hardcodes persist in scripts/ (generate-invoice.js,
-# cruz-mcp-server.js, cost-optimizer.js, lib/invoice-handlers.js) —
-# carried as baseline so we prevent NEW drift while the Tier 2 sweep
-# replaces them with getIVARate()/getDTARates()/getExchangeRate()
-# refuse-to-calculate semantics. Ratchet down as each is fixed.
-# Ship date: 2026-04-19 night pre-Ursula stress pass.
+# R11 — scripts/ financial rate hardcodes (enforced at zero).
+# Complements the existing "Financial — Rates" ratchet (line ~194) which
+# only scans src/. Baseline is 0 — any hardcoded rate in a cron/tool
+# script is a SEV-2 against core-invariants rule 17. Route through
+# scripts/lib/rates.js (getIVARate / getDTARates / getExchangeRate) with
+# refuse-to-calculate semantics or move to system_config with a graceful
+# skip for non-regulatory heuristics.
+# Baseline ratcheted 4 → 0 on 2026-04-20 after the Tier 2 sweep
+# (generate-invoice.js, cruz-mcp-server.js, cost-optimizer.js,
+# lib/invoice-handlers.js). fx_savings_heuristic_pct migrated to
+# system_config via 20260420_fx_savings_heuristic.sql.
 # --------------------------------------------------------------------------
-SCRIPTS_RATES_BASELINE=${SCRIPTS_RATES_BASELINE:-4}
-header "Financial — scripts/ rate hardcodes ratchet (target ↓)"
+SCRIPTS_RATES_BASELINE=${SCRIPTS_RATES_BASELINE:-0}
+header "Financial — scripts/ rate hardcodes ratchet (enforced at 0)"
 SCRIPTS_RATES_COUNT=$(set +eo pipefail;{ grep -rnE "IVA_RATE\s*=\s*0\.1[56]|ivaRate\s*=\s*0\.1[56]|=\s*0\.008\b|fxSavingsPct\s*=" scripts/ --include="*.js" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$SCRIPTS_RATES_COUNT" -gt "$SCRIPTS_RATES_BASELINE" ]; then
-  fail "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (baseline $SCRIPTS_RATES_BASELINE). New hardcoded rate added to a cron/tool script — route through lib/rates or system_config directly."
-elif [ "$SCRIPTS_RATES_COUNT" -lt "$SCRIPTS_RATES_BASELINE" ]; then
-  pass "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (baseline $SCRIPTS_RATES_BASELINE, improving ✓). Update SCRIPTS_RATES_BASELINE in this script."
+  fail "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (baseline $SCRIPTS_RATES_BASELINE). New hardcoded rate in a cron/tool script — route through scripts/lib/rates.js or system_config."
 else
-  warn "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (at baseline — Tier 2 sweep pending: generate-invoice.js, cruz-mcp-server.js, cost-optimizer.js, lib/invoice-handlers.js)"
+  pass "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (enforced at baseline 0)"
 fi
 
 # --------------------------------------------------------------------------

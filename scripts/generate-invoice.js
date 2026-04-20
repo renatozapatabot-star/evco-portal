@@ -10,6 +10,7 @@
 const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { getIVARate } = require('./lib/rates')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -19,7 +20,6 @@ const supabase = createClient(
 const DRY_RUN = process.argv.includes('--dry-run')
 const MONTH_ARG = process.argv.find(a => a.startsWith('--month='))?.split('=')[1]
 const TELEGRAM_CHAT = '-5085543275'
-const IVA_RATE = 0.16
 
 // Default fee schedule (should be in system_config per client)
 const DEFAULT_FEES = {
@@ -44,7 +44,7 @@ async function sendTelegram(msg) {
 
 function fmtMXN(n) { return '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 
-async function generateForClient(company, monthStart, monthEnd, year, month) {
+async function generateForClient(company, monthStart, monthEnd, year, month, ivaRate) {
   const { company_id, name } = company
 
   // Get completed tráficos in period
@@ -76,7 +76,7 @@ async function generateForClient(company, monthStart, monthEnd, year, month) {
   }
 
   const subtotal = lineItems.reduce((s, l) => s + l.total, 0)
-  const iva = Math.round(subtotal * IVA_RATE * 100) / 100
+  const iva = Math.round(subtotal * ivaRate * 100) / 100
   const total = subtotal + iva
 
   // Generate invoice number: RZ-YYYY-MM-NNN
@@ -131,6 +131,32 @@ async function main() {
   console.log(`💰 CRUZ Invoice Generator — ${monthNames[month]} ${year}`)
   console.log(`  Period: ${monthStart} → ${monthEnd} · ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
+  // Fetch IVA rate BEFORE any invoice math. Refuse-to-calculate + Telegram
+  // alert if system_config is missing or expired (CLAUDE.md §FINANCIAL
+  // CONFIG + core-invariants rule 17). Silent fallback to 0.16 produces
+  // wrong invoices when SAT adjusts the rate or system_config is stale.
+  let ivaRate
+  try {
+    const iva = await getIVARate()
+    ivaRate = iva?.rate
+    if (typeof ivaRate !== 'number' || ivaRate <= 0) {
+      throw new Error(`IVA rate invalid shape: ${JSON.stringify(iva)}`)
+    }
+  } catch (err) {
+    await sendTelegram([
+      `🔴 <b>generate-invoice · ABORT</b>`,
+      ``,
+      `IVA rate unavailable — invoice generation blocked.`,
+      `Error: <code>${err.message}</code>`,
+      ``,
+      `Fix: update <code>system_config</code> key <code>iva_rate</code> + valid_to.`,
+      `Then rerun: <code>node scripts/generate-invoice.js</code>`,
+    ].join('\n'))
+    console.error(`Fatal: IVA rate fetch failed — ${err.message}`)
+    process.exit(1)
+  }
+  console.log(`  IVA rate: ${(ivaRate * 100).toFixed(1)}% (from system_config)`)
+
   const { data: companies } = await supabase
     .from('companies')
     .select('company_id, name')
@@ -139,7 +165,7 @@ async function main() {
 
   const invoices = []
   for (const company of (companies || [])) {
-    const invoice = await generateForClient(company, monthStart, monthEnd, year, month)
+    const invoice = await generateForClient(company, monthStart, monthEnd, year, month, ivaRate)
     if (invoice) {
       invoices.push(invoice)
       console.log(`  ✅ ${invoice.client_name}: ${invoice.invoice_number} · ${invoice.traficos_count} tráficos · ${fmtMXN(invoice.total)}`)

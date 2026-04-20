@@ -93,6 +93,23 @@ bash scripts/block-audit.sh > /tmp/cruz-ship-blockaudit.log 2>&1 || {
   exit 1
 }
 echo "    ✅"
+echo "  · alert-coverage (cron silent-failure guard)"
+# Non-blocking for now — cruz-bot daemon pattern legitimately fits
+# partial coverage. Report the gap count; fail only if we drop below
+# the 28-covered baseline (of 29 PM2 scripts · 1 acceptable daemon
+# exception). If an engineer silently removes a sendTelegram call,
+# that count flips and this gate fails on the next ship.
+COVERAGE_BASELINE=${ALERT_COVERAGE_BASELINE:-28}
+node scripts/alert-coverage-audit.js > /tmp/cruz-ship-coverage.log 2>&1 || true
+COVERAGE_OK=$(grep -oE "full [0-9]+" /tmp/cruz-ship-coverage.log | awk '{sum += $2} END {print sum}')
+COVERAGE_COVERED=$(grep -oE "covered [0-9]+" /tmp/cruz-ship-coverage.log | awk '{sum += $2} END {print sum}')
+COVERAGE_TOTAL=$(( ${COVERAGE_OK:-0} + ${COVERAGE_COVERED:-0} ))
+if [ "$COVERAGE_TOTAL" -lt "$COVERAGE_BASELINE" ]; then
+  tail -20 /tmp/cruz-ship-coverage.log
+  echo "  ❌ alert coverage dropped: $COVERAGE_TOTAL (baseline $COVERAGE_BASELINE) — a script lost its sendTelegram / process.exit / heartbeat / top-catch signals. See /tmp/cruz-ship-coverage.log"
+  exit 1
+fi
+echo "    ✅ ($COVERAGE_TOTAL of 29 scripts ≥ 3/4 signals; baseline $COVERAGE_BASELINE)"
 
 # ── Gate 2: data-integrity smoke ────────────────────────────
 echo ""

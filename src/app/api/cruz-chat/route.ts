@@ -1403,21 +1403,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: PORTAL_CHAT_FALLBACK, is_fallback: true }, { status: 503 })
   }
 
-  const companyId = req.cookies.get('company_id')?.value ?? ''
-  const clientClave = req.cookies.get('company_clave')?.value ?? ''
-  const rawClientName = req.cookies.get('company_name')?.value
-  const clientName = rawClientName ? decodeURIComponent(rawClientName) : ''
+  // Session-derived scope. The raw company_id / company_clave /
+  // company_name cookies are unsigned and forgeable (core-invariants
+  // rule 15). Pre-fix: an authenticated client could set
+  // `company_id=<other-tenant>` in their cookie jar and the chat
+  // agent would ground responses in that tenant's data — explicit
+  // cross-tenant AI context leak. The display-hint cookies
+  // (clave / name) are rebuilt from the companies table below
+  // using the verified companyId.
+  const companyId = session.companyId
+  if (!companyId) {
+    return NextResponse.json({ message: 'Tenant scope required.' }, { status: 400 })
+  }
 
   // Load company details for dynamic system prompt
   const { data: companyRow } = await supabase
     .from('companies')
-    .select('patente, aduana, name')
+    .select('patente, aduana, name, clave_cliente')
     .eq('company_id', companyId)
     .maybeSingle()
 
   const patente = companyRow?.patente || '3596'
   const aduana = companyRow?.aduana || '240'
-  const resolvedName = companyRow?.name || clientName || companyId
+  // clientClave + clientName now derived from the verified companies
+  // row instead of trusted-from-cookie. A client that tampers with
+  // their session ends up with no company row (verifySession fails),
+  // not a spoofed clave.
+  const clientClave = (companyRow as { clave_cliente: string | null } | null)?.clave_cliente ?? ''
+  const clientName = companyRow?.name || companyId
+  const resolvedName = clientName
 
   try {
     const body = await req.json()

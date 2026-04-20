@@ -14,9 +14,12 @@ export async function GET(req: NextRequest) {
   const session = await verifySession(sessionToken)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Auth: broker or admin only
-  const role = req.cookies.get('user_role')?.value
-  if (role !== 'broker' && role !== 'admin') {
+  // Auth: broker or admin only — role MUST come from signed session,
+  // not from the raw user_role cookie (which is trivially forgeable).
+  // core-invariants rule 15 + learned-rules.md · pre-R15 this route
+  // was a SEV-1: any authenticated user could set user_role=admin in
+  // their cookie jar and read cross-client broker data.
+  if (session.role !== 'broker' && session.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

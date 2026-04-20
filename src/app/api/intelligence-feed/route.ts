@@ -4,12 +4,24 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
+const INTERNAL_ROLES = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
+
 export async function GET(req: NextRequest) {
   const sessionToken = req.cookies.get('portal_session')?.value || ''
   const session = await verifySession(sessionToken)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const companyId = req.cookies.get('company_id')?.value ?? ''
+  // Tenant scope MUST come from signed HMAC session, not the
+  // forgeable company_id cookie. Pre-fix: any authenticated user
+  // could set company_id=<target-tenant> in their cookie jar and
+  // read compliance predictions + anomaly baselines + crossing
+  // predictions for that tenant (SEV-1). Internal roles can pass
+  // ?company_id= for oversight (already established pattern in
+  // /api/data and /api/catalogo/partes).
+  const isInternal = INTERNAL_ROLES.has(session.role)
+  const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
+  const companyId = isInternal && paramCompany ? paramCompany : session.companyId
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || '20'), 50)
 
   const [compRes, anomRes, crossRes] = await Promise.all([

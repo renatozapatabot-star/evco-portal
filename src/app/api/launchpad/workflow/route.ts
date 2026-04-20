@@ -43,8 +43,11 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const companyId =
-    req.cookies.get('company_id')?.value || session.companyId
+  // Session-derived scope · core-invariants rule 15. Internal roles
+  // may pass ?company_id= for oversight.
+  const isInternal = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
+  const paramCompany = req.nextUrl.searchParams.get('company_id')
+  const companyId = (isInternal && paramCompany) || session.companyId
 
   const detail = await getWorkflowDetail(supabase, companyId, sourceTable, sourceId)
 
@@ -104,8 +107,10 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const companyId =
-    req.cookies.get('company_id')?.value || session.companyId
+  // Same session-derived scope contract as GET.
+  const isInternalPost = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
+  const paramCompanyPost = req.nextUrl.searchParams.get('company_id')
+  const companyId = (isInternalPost && paramCompanyPost) || session.companyId
 
   const result = await completeWorkflow(supabase, companyId, sourceTable, sourceId, {
     action_type: actionType as 'confirm' | 'correct' | 'approve' | 'reject' | 'call_done',

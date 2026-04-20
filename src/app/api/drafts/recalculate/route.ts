@@ -17,9 +17,11 @@ export async function POST(req: NextRequest) {
     if (!session) {
       return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
     }
+    // Client: always session. Internal roles: ?company_id= query param
+    // (never raw cookie — forgeable per core-invariants rule 15).
     const companyId = session.role === 'client'
       ? session.companyId
-      : req.cookies.get('company_id')?.value || session.companyId
+      : (req.nextUrl.searchParams.get('company_id') || session.companyId)
 
     const body = await req.json()
     const { draftId, valorUSD, regimen, paisOrigen } = body

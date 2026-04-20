@@ -441,7 +441,7 @@ ROLE_COOKIE_BASELINE=0
 header "Role-from-cookie ratchet"
 # Skip the /api/debug/whoami route — it intentionally reports the raw
 # user_role cookie alongside the signed session for diagnostic purposes.
-ROLE_COOKIE_COUNT=$(set +eo pipefail;{ grep -rn "cookieStore\.get..user_role.\|cookies().get..user_role." src --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v "api/debug/whoami" | grep -v "lib/route-guards.ts" | wc -l | tr -d ' ')
+ROLE_COOKIE_COUNT=$(set +eo pipefail;{ grep -rnE "cookieStore\.get\(.user_role.\)|cookies\(\)\.get\(.user_role.\)|req\.cookies\.get\(.user_role.\)|req\.cookies\.get\(.company_id.\)" src --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v "api/debug/whoami" | grep -v "lib/route-guards.ts" | wc -l | tr -d ' ')
 if [ "$ROLE_COOKIE_COUNT" -gt "$ROLE_COOKIE_BASELINE" ]; then
   fail "Reading role from raw cookie: $ROLE_COOKIE_COUNT (baseline $ROLE_COOKIE_BASELINE). Use verifySession() to read signed role."
 elif [ "$ROLE_COOKIE_COUNT" -lt "$ROLE_COOKIE_BASELINE" ]; then

@@ -63,10 +63,12 @@ export async function POST(req: NextRequest) {
   if (loadErr || !row) return err('NOT_FOUND', 'Producto no encontrado', 404)
 
   const companyId = row.company_id as string | null
+  // Internal roles may override via ?company_id= query param; raw
+  // cookie is forgeable (core-invariants rule 15) and never consulted.
   const requestCompanyId =
     session.role === 'client'
       ? session.companyId
-      : (req.cookies.get('company_id')?.value || session.companyId)
+      : (req.nextUrl.searchParams.get('company_id') || session.companyId)
   if (session.role === 'client' && companyId !== session.companyId) {
     return err('FORBIDDEN', 'Producto de otro cliente', 403)
   }

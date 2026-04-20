@@ -27,10 +27,12 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const companyId =
-    req.nextUrl.searchParams.get('company_id') ||
-    req.cookies.get('company_id')?.value ||
-    session.companyId
+  // Session-derived scope. Query param allowed for internal roles;
+  // raw company_id cookie is forgeable (core-invariants rule 15) and
+  // never consulted.
+  const isInternal = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
+  const paramCompany = req.nextUrl.searchParams.get('company_id')
+  const companyId = (isInternal && paramCompany) || session.companyId
 
   const [scored, auto] = await Promise.all([
     scoreLaunchpadActions(supabase, companyId),
@@ -87,8 +89,10 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const companyId =
-    req.cookies.get('company_id')?.value || session.companyId
+  // Session-derived scope (same contract as GET). Cookies not trusted.
+  const isInternalPost = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
+  const paramCompanyPost = req.nextUrl.searchParams.get('company_id')
+  const companyId = (isInternalPost && paramCompanyPost) || session.companyId
 
   // YYYY-MM-DD in Laredo timezone for DB storage
   const now = new Date()

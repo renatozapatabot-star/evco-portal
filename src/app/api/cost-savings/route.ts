@@ -12,11 +12,20 @@ const supabase = createClient(
  * Calculate exactly how much CRUZ saves a client vs market average.
  * ROI that makes $300/month feel like nothing.
  */
+const INTERNAL_ROLES_COST = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
+
 export async function GET(req: NextRequest) {
   const session = await verifySession(req.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const companyId = req.nextUrl.searchParams.get('company_id') || req.cookies.get('company_id')?.value || ''
+  // Session-derived tenant scope — raw company_id cookie is forgeable
+  // (core-invariants rule 15). Pre-fix, any authenticated user could
+  // set company_id=<target> in their cookie jar and read that tenant's
+  // traficos. Internal roles may override via ?company_id= param.
+  const isInternal = INTERNAL_ROLES_COST.has(session.role)
+  const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
+  const companyId = isInternal && paramCompany ? paramCompany : session.companyId
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
 
   const { data: traficos } = await supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, fecha_cruce, importe_total, regimen')

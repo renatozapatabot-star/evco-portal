@@ -132,7 +132,11 @@ export async function POST(req: NextRequest) {
       confidence: classification.confidence,
       size_bytes: file.size,
     },
-    company_id: req.cookies.get('company_id')?.value || '',
+    // Tenant scope from signed session — raw company_id cookie is
+    // forgeable (core-invariants rule 15). Audit-log rows with the
+    // wrong company_id would poison the per-tenant audit trail that
+    // Patente 3596 relies on for SAT traceability.
+    company_id: session.companyId,
   }).then(() => {}, (e) => console.error('[audit-log] ocr-classify:', e.message))
 
   // Log cost

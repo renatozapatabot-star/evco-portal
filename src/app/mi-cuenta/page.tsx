@@ -132,7 +132,7 @@ export default async function MiCuentaPage() {
             <Link
               href="/inicio"
               style={{
-                color: 'var(--aguila-text-muted, #94a3b8)',
+                color: 'var(--aguila-text-muted)',
                 fontSize: 'var(--aguila-fs-meta, 11px)',
                 textDecoration: 'none',
                 display: 'inline-flex',
@@ -263,7 +263,7 @@ function AgingSection({ ar, isClient }: { ar: AgingResult; isClient: boolean }) 
         <SectionHeader title={isClient ? 'Tu cuenta está al corriente' : 'Sin saldos abiertos'} />
         <p
           style={{
-            color: 'var(--aguila-text-muted, #94a3b8)',
+            color: 'var(--aguila-text-muted)',
             fontSize: 'var(--aguila-fs-body, 13px)',
             margin: '8px 0 0',
           }}
@@ -298,7 +298,7 @@ function AgingSection({ ar, isClient }: { ar: AgingResult; isClient: boolean }) 
                 fontSize: 'var(--aguila-fs-label, 10px)',
                 letterSpacing: 'var(--aguila-ls-label, 0.08em)',
                 textTransform: 'uppercase',
-                color: 'var(--aguila-text-muted, #94a3b8)',
+                color: 'var(--aguila-text-muted)',
               }}
             >
               {b.bucket} días
@@ -324,7 +324,7 @@ function AgingSection({ ar, isClient }: { ar: AgingResult; isClient: boolean }) 
               style={{
                 fontFamily: 'var(--font-jetbrains-mono, ui-monospace)',
                 fontSize: 'var(--aguila-fs-body, 13px)',
-                color: 'var(--aguila-text-primary, #E6EDF3)',
+                color: 'var(--aguila-text-primary)',
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
@@ -362,7 +362,7 @@ function OpenInvoicesSection({ ar, isClient }: { ar: AgingResult; isClient: bool
             <span
               style={{
                 fontSize: 'var(--aguila-fs-body, 13px)',
-                color: 'var(--aguila-text-primary, #E6EDF3)',
+                color: 'var(--aguila-text-primary)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -373,7 +373,7 @@ function OpenInvoicesSection({ ar, isClient }: { ar: AgingResult; isClient: bool
             <span
               style={{
                 fontSize: 'var(--aguila-fs-meta, 11px)',
-                color: 'var(--aguila-text-muted, #94a3b8)',
+                color: 'var(--aguila-text-muted)',
               }}
             >
               {d.daysOverdue} día{d.daysOverdue === 1 ? '' : 's'}
@@ -382,7 +382,7 @@ function OpenInvoicesSection({ ar, isClient }: { ar: AgingResult; isClient: bool
               style={{
                 fontFamily: 'var(--font-jetbrains-mono, ui-monospace)',
                 fontSize: 'var(--aguila-fs-body, 13px)',
-                color: 'var(--aguila-text-primary, #E6EDF3)',
+                color: 'var(--aguila-text-primary)',
                 fontVariantNumeric: 'tabular-nums',
                 textAlign: 'right',
                 minWidth: 100,
@@ -415,13 +415,13 @@ function MensajeriaCta({ isClient }: { isClient: boolean }) {
               flexShrink: 0,
             }}
           >
-            <MessageSquare size={18} color="var(--aguila-text-muted, #94a3b8)" />
+            <MessageSquare size={18} color="var(--aguila-text-muted)" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
                 fontSize: 'var(--aguila-fs-body, 13px)',
-                color: 'var(--aguila-text-primary, #E6EDF3)',
+                color: 'var(--aguila-text-primary)',
                 marginBottom: 4,
               }}
             >
@@ -430,7 +430,7 @@ function MensajeriaCta({ isClient }: { isClient: boolean }) {
             <div
               style={{
                 fontSize: 'var(--aguila-fs-meta, 11px)',
-                color: 'var(--aguila-text-muted, #94a3b8)',
+                color: 'var(--aguila-text-muted)',
               }}
             >
               Anabel te responde. Escríbele por Mensajería.
@@ -443,7 +443,7 @@ function MensajeriaCta({ isClient }: { isClient: boolean }) {
               borderRadius: 12,
               border: '1px solid rgba(192,197,206,0.18)',
               background: 'rgba(192,197,206,0.06)',
-              color: 'var(--aguila-text-primary, #E6EDF3)',
+              color: 'var(--aguila-text-primary)',
               fontSize: 'var(--aguila-fs-body, 13px)',
               textDecoration: 'none',
               minHeight: 60,

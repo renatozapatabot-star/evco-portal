@@ -1,0 +1,31 @@
+# Exclude parallel-session WIP and local-only artifacts from Vercel uploads.
+# Added 2026-04-19 during Contabilidad-tile marathon deploy — parallel
+# sessions had uncommitted prospect/* code that Vercel's TypeScript
+# check tripped over. Scoped narrowly to untracked paths so nothing
+# tracked gets accidentally excluded.
+
+# Parallel-session prospect surface (WIP, not yet committed)
+src/app/prospect/
+src/app/admin/prospect-link/
+src/app/api/admin/prospects/
+src/app/api/prospect/
+src/components/prospect/
+
+# Planning + batch-report docs (not needed in prod)
+.planning/HANDOFF_2026_04_16.md
+docs/v2c-batch-reports/
+
+# Local script checkpoints + probes
+scripts/.backfill-checkpoints/
+scripts/.purge-snapshots/
+scripts/.sync-checkpoints/wsdl_docs_vollrath.json
+scripts/.sync-checkpoints/wsdl_docs_yates.json
+scripts/_phase-external-synthesize.mjs
+scripts/_phase-needle-synthesize.mjs
+scripts/_phase-score-all.mjs
+scripts/_phase1-dive.mjs
+scripts/_phase4-synthesize.mjs
+scripts/_probe-revenue.mjs
+
+# Backup migration artifact
+supabase/migrations/20260420_rls_sev1_deny_all.sql.backup-*

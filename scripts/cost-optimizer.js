@@ -27,21 +27,20 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = '-5085543275'
+// Telegram token/chat now owned by scripts/lib/telegram.js (shared helper).
 const { fetchAll } = require('./lib/paginate')
 const SCRIPT_NAME = 'cost-optimizer'
 
+// Use the shared Telegram helper so transport errors are logged, not
+// swallowed. core-invariants rule 18.
+const { sendTelegram } = require('./lib/telegram')
+
 async function tg(msg) {
-  if (DRY_RUN || process.env.TELEGRAM_SILENT === 'true' || !TELEGRAM_TOKEN) {
+  if (DRY_RUN) {
     console.log('[TG]', msg.replace(/<[^>]+>/g, ''))
     return
   }
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
-  }).catch(() => {})
+  await sendTelegram(msg)
 }
 
 function daysAgo(n) { return new Date(Date.now() - n * 86400000).toISOString() }
@@ -401,7 +400,9 @@ async function main() {
         estimated_savings_usd: totalEstimated,
         savings_by_type: byType,
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'company_id,month' }).catch(() => {})
+      }, { onConflict: 'company_id,month' }).catch((upsertErr) => {
+        console.warn(`  [operations_savings upsert skip] ${companyId} ${monthKey}: ${upsertErr?.message || upsertErr}`)
+      })
     }
 
     totalInsights += allInsights.length
@@ -424,7 +425,9 @@ async function main() {
       script: SCRIPT_NAME,
       status: 'success',
       details: { insights: totalInsights, savings_usd: totalSavings, companies: companyIds.length },
-    }).catch(() => {})
+    }).catch((hbErr) => {
+      console.warn(`  [heartbeat insert skip] ${SCRIPT_NAME}: ${hbErr?.message || hbErr}`)
+    })
   }
 
   console.log(`\n✅ ${totalInsights} insights · ~${fmtUSD(totalSavings)} USD/mes potencial · ${((Date.now() - startTime) / 1000).toFixed(1)}s`)

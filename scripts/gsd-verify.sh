@@ -852,7 +852,7 @@ fi
 # ratchet refuses growth and nags toward cleanup.
 # Ship date: 2026-04-19 night pre-Ursula stress pass.
 # --------------------------------------------------------------------------
-SCRIPTS_SILENT_CATCH_BASELINE=${SCRIPTS_SILENT_CATCH_BASELINE:-161}
+SCRIPTS_SILENT_CATCH_BASELINE=${SCRIPTS_SILENT_CATCH_BASELINE:-155}
 header "Operational resilience — scripts/ silent-catch ratchet (target ↓)"
 SCRIPTS_SILENT_CATCH_COUNT=$(set +eo pipefail;{ grep -rnE "\.catch\(\(\)\s*=>\s*\{\s*\}\)|\.catch\(\(\w+\)\s*=>\s*\{\s*\}\)" scripts/ --include="*.js" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$SCRIPTS_SILENT_CATCH_COUNT" -gt "$SCRIPTS_SILENT_CATCH_BASELINE" ]; then

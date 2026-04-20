@@ -44,23 +44,19 @@ const POLL_INTERVAL_MS = 10_000
 const MAX_RETRIES = 3
 const HEARTBEAT_PATH = path.join(__dirname, 'heartbeat-state.json')
 
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID || '-5085543275'
-
 // ── Telegram ──
+// Use the shared Telegram helper so transport errors (reach, DNS,
+// timeout) get a console.error instead of a silent empty-catch swallow.
+// core-invariants rule 18.
+
+const { sendTelegram } = require('./lib/telegram')
 
 async function tg(msg) {
-  if (DRY_RUN || process.env.TELEGRAM_SILENT === 'true') {
+  if (DRY_RUN) {
     console.log('[TG]', msg.replace(/<[^>]+>/g, ''))
     return
   }
-  const token = TELEGRAM_TOKEN
-  if (!token) return
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
-  }).catch(() => {})
+  await sendTelegram(msg)
 }
 
 // ── Heartbeat ──
@@ -806,14 +802,19 @@ async function processEvent(event) {
       await updateEventStatus(event.id, 'completed')
       if (VERBOSE) console.log(`  ✅ ${handlerKey}: ${result.result}`)
 
-      // Log decision for operational brain
+      // Log decision for operational brain. Failures here must not block
+      // the main event-processing flow (a stuck decision-log shouldn't
+      // freeze the workflow pipeline), but they should be visible instead
+      // of swallowed — core-invariants rule 18.
       await logDecision({
         trafico: event.trigger_id,
         company_id: event.company_id,
         decision_type: event.workflow,
         decision: `${event.event_type}_processed`,
         reasoning: result.result,
-      }).catch(() => {})
+      }).catch((logErr) => {
+        console.warn(`  [logDecision skip] event ${event.id}: ${logErr?.message || logErr}`)
+      })
 
       // Chain to next workflow(s)
       const chained = await chainNext(event)

@@ -27,24 +27,24 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT = '-5085543275'
 const SCRIPT_NAME = 'po-predictor'
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
+// Use the shared Telegram helper (scripts/lib/telegram.js) instead of an
+// inline fetch with an empty-catch swallow. The shared helper respects
+// TELEGRAM_SILENT + logs transport errors to console, so a Telegram
+// outage is visible instead of invisible (core-invariants rule 18).
+const { sendTelegram } = require('./lib/telegram')
+
 async function tg(msg) {
-  if (DRY_RUN || process.env.TELEGRAM_SILENT === 'true' || !TELEGRAM_TOKEN) {
+  if (DRY_RUN) {
     console.log('[TG]', msg.replace(/<[^>]+>/g, ''))
     return
   }
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
-  }).catch(() => {})
+  await sendTelegram(msg)
 }
 
 function stdDev(arr) {
@@ -293,8 +293,11 @@ async function main() {
           igi_ratio_used: Math.round(igiRatio * 10000) / 10000,
           calculated_at: new Date().toISOString(),
         }
-      } catch {
-        // Duty calc failed — proceed without estimate
+      } catch (err) {
+        // Duty calc failed — proceed without estimate. Log the reason so
+        // repeated failures show up in pipeline-postmortem (the sweeper
+        // that scans for silent-degradation patterns in cron output).
+        console.warn(`  [duty-calc skip] trafico ${t?.trafico || '?'}: ${err?.message || err}`)
       }
     }
 

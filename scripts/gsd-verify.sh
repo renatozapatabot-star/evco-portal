@@ -474,8 +474,11 @@ fi
 # borders/backgrounds/accents. Ratchet down instead of big-bang refactor.
 # Baseline 2026-04-17 = 18 (pre-existing drift during rebrand; none from
 #   Friday polish — pedimento-pdf HTML template uses solid dark tokens).
+# Baseline 2026-04-19 discipline-cascade = 12 (ParteDetailClient tab
+#   underline hex #C9A84C retired; one more gold hex converted to
+#   var(--portal-gold-500) token).
 # --------------------------------------------------------------------------
-INVARIANT_2_BASELINE=17
+INVARIANT_2_BASELINE=12
 header "Invariant 2 — Gold decorative ratchet"
 INV2_COUNT=$(set +eo pipefail;{ grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$INV2_COUNT" -gt "$INVARIANT_2_BASELINE" ]; then
@@ -518,7 +521,13 @@ fi
 # Baseline 2026-04-17 late evening = 421 (Phase E + Phase G gallery:
 #   +2 for PortalCrucesMap SVG font-size text labels (9px / 8px / 8.5px
 #   coordinates). Still handoff-specific.)
-INVARIANT_27_BASELINE=421
+# Baseline 2026-04-19 discipline-cascade = 388 (ParteDetailClient.tsx
+#   tokenized: 33 inline fontSize values routed through --aguila-fs-*
+#   (21 direct token maps) or tagged with same-line WHY: (12 intermediate
+#   sizes — 12px and 16px — that don't map cleanly to the scale).
+#   No new violations introduced; one of the file-level worst offenders
+#   now reads at 0 ratchet-excluded lines.)
+INVARIANT_27_BASELINE=388
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

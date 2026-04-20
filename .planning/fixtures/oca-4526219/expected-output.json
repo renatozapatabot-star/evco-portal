@@ -1,0 +1,157 @@
+{
+  "_comment": "Golden fixture — invoice #4526219 (Plastic Process Equipment Inc → EVCO). The fracciones + NICO below are the correct LIGIE/TIGIE answers for each NP on this invoice. They are derived from LIGIE chapter 96 (cepillos), chapter 84 (aparatos mecánicos), and chapter 73 (manufacturas de hierro/acero). The pipeline must land on these (or better, with defensible GRI reasoning) for invoice #4526219 to be the first real green ship.",
+  "_source_pdf": "invoice.pdf",
+  "_tito_signs": "OCA-2026-NNN per unknown NP; 4 OCAs produced for this invoice",
+
+  "invoice_number": "4526219",
+  "supplier": "Plastic Process Equipment, Inc",
+  "supplier_account_number": "31842",
+  "invoice_date": "2026-04-13",
+  "po_number": "109422",
+  "total_invoice_amount_usd": 651.53,
+  "incoterm": "EXW",
+  "ship_to": {
+    "name": "EVCO PLASTICS DE MEXICO",
+    "care_of": "RENATO ZAPATA & CO",
+    "address": "8402 KILLAM INDUSTRIAL BLVD, LAREDO TX 78045-1816, USA"
+  },
+  "importer_of_record": {
+    "name": "EVCO PLASTICS DE MEXICO S DE RL DE CV",
+    "rfc": "EPM 001109 I74",
+    "address": "AV PABLO LIVAS NO.4211, COL GPE VICTORIA, GUADALUPE, N L 67185, MEXICO"
+  },
+  "trafico_ref": "9254-Y4554",
+  "clave_cliente": "9254",
+
+  "parts": [
+    {
+      "line": 1, "item_no": "18MB",
+      "description": "18MM CLEANING BRUSHES — BRUSH WIRE SIZE .010",
+      "qty": 8, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 7.45, "extended_price_usd": 59.60,
+      "pre_classified_fraccion": "9603.90"
+    },
+    {
+      "line": 2, "item_no": "231050",
+      "description": "5/8\"DIA 12\"OAL BRASS DOUBLE SPIRAL BRUSH",
+      "qty": 4, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 6.95, "extended_price_usd": 27.80,
+      "pre_classified_fraccion": "9603.90"
+    },
+    {
+      "line": 3, "item_no": "28MB",
+      "description": "28MM CLEANING BRUSHES — BRUSH WIRE SIZE .012",
+      "qty": 6, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 7.55, "extended_price_usd": 45.30,
+      "pre_classified_fraccion": "9603.90"
+    },
+    {
+      "line": 4, "item_no": "BG600E",
+      "description": "ECONOMY PUSH LEVER BLOW GUN",
+      "qty": 2, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 5.60, "extended_price_usd": 11.20,
+      "pre_classified_fraccion": "9603.90"
+    },
+    {
+      "line": 5, "item_no": "HN6",
+      "description": "3/4\"-10 HEX NUT FOR T-SLOT BOLT",
+      "qty": 20, "uom": "EA", "country_raw": "CHINA",
+      "unit_price_usd": 4.05, "extended_price_usd": 81.00,
+      "pre_classified_fraccion": "8424.20", "tmec_note": "NO USMCA"
+    },
+    {
+      "line": 6, "item_no": "TS66",
+      "description": "3/4\"-10, 6\" LONG T-SLOT BOLT",
+      "qty": 12, "uom": "EA", "country_raw": "JAPAN",
+      "unit_price_usd": 9.65, "extended_price_usd": 115.80,
+      "pre_classified_fraccion": "7318.16", "tmec_note": "NO USMCA"
+    },
+    {
+      "line": 7, "item_no": "TS67",
+      "description": "3/4\"-10, 7\" LONG T-SLOT BOLT",
+      "qty": 8, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 10.10, "extended_price_usd": 80.80,
+      "pre_classified_fraccion": "7318.15"
+    },
+    {
+      "line": 8, "item_no": "W-5",
+      "description": "2\" MOLD CLAMP WASHER 1-1/16\" ID 1/2\" THICK",
+      "qty": 10, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 4.50, "extended_price_usd": 45.00,
+      "pre_classified_fraccion": "7318.15"
+    },
+    {
+      "line": 9, "item_no": "W-6",
+      "description": "2-1/2\" MOLD CLAMP WASHER 13/16\" ID 1/2\" THICK",
+      "qty": 15, "uom": "EA", "country_raw": "USA",
+      "unit_price_usd": 6.37, "extended_price_usd": 95.55,
+      "pre_classified_fraccion": "7318.15"
+    }
+  ],
+
+  "globalpc_resolved_fracciones": [
+    { "item_no": "231050", "fraccion": "9603.90.99", "nico": "00", "tigie_description": "CEPILLOS PULIDORES DE METAL" },
+    { "item_no": "HN6",    "fraccion": "7318.16.06", "nico": "04", "tigie_description": "TUERCAS DE ACERO DE 19.05 MM DE DIAMETRO" },
+    { "item_no": "TS66",   "fraccion": "7318.15.99", "nico": "06", "tigie_description": "TORNILLO DE ACERO DE 19.05 MM DE DIAMETRO Y 152.4 MM DE LARGO" },
+    { "item_no": "TS67",   "fraccion": "7318.15.99", "nico": "06", "tigie_description": "TORNILLOS DE ACERO" },
+    { "item_no": "W-6",    "fraccion": "7318.22.91", "nico": "99", "tigie_description": "ARANDELAS PLANAS" }
+  ],
+
+  "expected_classifications": {
+    "_note": "Tito must propose these four fracciones (or better, with defensible GRI reasoning rooted in the Reglas Generales de Interpretación and the TIGIE).",
+    "unknowns": [
+      {
+        "item_no": "18MB",
+        "fraccion": "9603.90.99",
+        "nico": "99",
+        "tigie_description": "LOS DEMÁS CEPILLOS",
+        "nom_aplicable": "NOM-050-SCFI-2004",
+        "nom_exception": "Se exceptúa de NOM-050-SCFI-2004",
+        "identificador": "EN U",
+        "tmec_elegible": true,
+        "notes": "Cepillos de alambre de acero tipo barril, de uso industrial",
+        "gri_applied": ["1", "6"]
+      },
+      {
+        "item_no": "28MB",
+        "fraccion": "9603.90.99",
+        "nico": "99",
+        "tigie_description": "LOS DEMÁS CEPILLOS",
+        "nom_aplicable": "NOM-050-SCFI-2004",
+        "nom_exception": "Se exceptúa de NOM-050-SCFI-2004",
+        "identificador": "EN U",
+        "tmec_elegible": true,
+        "notes": "Cepillos de alambre de acero tipo barril, de uso industrial",
+        "gri_applied": ["1", "6"]
+      },
+      {
+        "item_no": "BG600E",
+        "fraccion": "8424.20.01",
+        "nico": "00",
+        "tigie_description": "PISTOLAS AEROGRÁFICAS Y APARATOS SIMILARES",
+        "nom_aplicable": null,
+        "tmec_elegible": true,
+        "notes": "Pistolas esparcidoras o aspersoras de aire",
+        "gri_applied": ["1"]
+      },
+      {
+        "item_no": "W-5",
+        "fraccion": "7318.15.99",
+        "nico": "99",
+        "tigie_description": "LOS DEMÁS TORNILLOS Y PERNOS",
+        "nom_aplicable": "NOM-050-SCFI-2004",
+        "nom_requires": true,
+        "tmec_elegible": true,
+        "notes": "Arandelas de acero cuadradas, roscadas, para moldes",
+        "gri_applied": ["1", "6"]
+      }
+    ],
+    "tmec_discrepancy_flag": {
+      "certificate_line": 1,
+      "certificate_shows": "9306.90",
+      "correct_fraccion": "9603.90",
+      "severity": "must_correct_before_cross",
+      "message_es": "En el Certificado T-MEC hay diferencias en las sub-partidas. Renglón #1 dice 9306.90, debe decir 9603.90."
+    }
+  }
+}

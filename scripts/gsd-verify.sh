@@ -544,9 +544,15 @@ fi
 #   page.tsx server wrapper tokenized: 8 more fontSize values — 2 direct
 #   token maps (body/meta), 6 same-line WHY: for intermediate 12px chips.
 #   Full parte-detail surface now fully ratchet-clean.)
+# Baseline 2026-04-19 PDF-restore-phase-2 = 385 (unchanged). @react-pdf
+#   rendering files exempt — @react-pdf StyleSheet requires numeric
+#   fontSize; CSS var substitution breaks rendering (same root cause
+#   as the hex ratchet PDF exclusion above). The 7 api/*-pdf/
+#   pdf-document.tsx + lib PDF files restored from 2d4f196^ have
+#   numeric fontSize by necessity.
 INVARIANT_27_BASELINE=385
 header "Invariant 27 — Hardcoded fontSize ratchet"
-INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
+INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
   fail "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE). Use var(--aguila-fs-*) or add // WHY: comment."
 elif [ "$INV27_COUNT" -lt "$INVARIANT_27_BASELINE" ]; then

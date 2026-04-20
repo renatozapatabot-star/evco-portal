@@ -68,3 +68,4 @@ tmp/
 # Aider session artifacts — chat history / input history / tags cache.
 # These can contain pasted secrets or proprietary context; never commit.
 .aider*
+schema_*.sql

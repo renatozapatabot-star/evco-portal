@@ -27,6 +27,10 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.loc
 
 const { createClient } = require('@supabase/supabase-js')
 const { Resend } = require('resend')
+// Telegram is reserved for pipeline/infra alerts per CLAUDE.md — this
+// import is for SCRIPT-FAILURE alerts only (the cron crashed), NOT for
+// client-facing messaging. Client messaging goes through Resend above.
+const { sendTelegram } = require('./lib/telegram')
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -178,7 +182,13 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
-main().catch(err => {
+main().catch(async (err) => {
   console.error('[mensajeria-email-fallback] FATAL:', err)
+  // Infra-level alert — distinct from client-facing messaging
+  // (which never uses Telegram per CLAUDE.md). This fires only when
+  // the cron itself crashes, not when a user message is delivered.
+  await sendTelegram(
+    `🔴 <b>mensajeria-email-fallback</b> fatal: ${err?.message || err}`,
+  )
   process.exit(1)
 })

@@ -18,12 +18,14 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { sendTelegram } = require('./lib/telegram')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+const SCRIPT_NAME = 'seed-tariff-rates'
 const DRY_RUN = process.argv.includes('--dry-run')
 
 async function run() {
@@ -261,6 +263,21 @@ async function run() {
   rates.sort((a, b) => b.sample_count - a.sample_count).slice(0, 15).forEach(r =>
     console.log(`   ${r.fraccion}: ${(r.igi_rate * 100).toFixed(2)}% (${r.sample_count} samples)`)
   )
+
+  // Heartbeat so pipeline-postmortem + /api/health can see this ran.
+  // core-invariants rule 18: cron scripts log success structurally.
+  if (!DRY_RUN) {
+    await supabase.from('heartbeat_log').insert({
+      script: SCRIPT_NAME,
+      status: 'success',
+      details: {
+        rates_seeded: rates.length,
+        tmec_fracciones: tmecFracciones.size,
+      },
+    }).catch((hbErr) => {
+      console.warn(`[heartbeat skip] ${SCRIPT_NAME}: ${hbErr?.message || hbErr}`)
+    })
+  }
 }
 
 /**
@@ -283,4 +300,11 @@ function formatFraccion(f) {
   return String(f).replace(/[^\d]/g, '')
 }
 
-run().catch(e => console.error('Fatal:', e.message))
+run().catch(async (e) => {
+  console.error('Fatal:', e.message)
+  // Silent-swallow was core-invariants rule 18 violation. Weekly Sunday
+  // 03:00 cron — if this silently fails, tariff rates go stale and
+  // no one notices until a client asks why IGI estimates drift.
+  await sendTelegram(`🔴 <b>${SCRIPT_NAME}</b> fatal: ${e.message}`)
+  process.exit(1)
+})

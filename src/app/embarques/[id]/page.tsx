@@ -226,11 +226,16 @@ export default async function TraficoDetailPage({
 
   let partidas: PartidaRow[] = []
   if (folios.length > 0) {
-    const { data: rawPartidas } = await supabase
+    // Defense-in-depth: the folios set is already tenant-scoped (parent
+    // facturas were scoped to this trafico), but a folio collision across
+    // tenants would leak a row. Explicit company_id filter closes the edge.
+    let partidasQ = supabase
       .from('globalpc_partidas')
       .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
       .in('folio', folios)
       .limit(500)
+    if (!isInternal) partidasQ = partidasQ.eq('company_id', session.companyId)
+    const { data: rawPartidas } = await partidasQ
     const partidaRows = (rawPartidas ?? []) as Array<{
       id: number
       folio: number | null

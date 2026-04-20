@@ -41,3 +41,40 @@ export interface OcaOpinionDraft {
   vigencia_hasta: string
   razonamiento: string
 }
+
+export interface OcaTmecDiscrepancy {
+  certificate_line: number
+  certificate_shows: string
+  correct_fraccion: string
+  message_es: string
+}
+
+/**
+ * Classifier-enriched OCA draft — adds the full I/II/III/IV template
+ * from the OCA skill (~/.claude/skills/oca-opinion.md) plus NICO + T-MEC
+ * discrepancy flags + GRI citations. Returned by the Classifier pipeline
+ * (generateOcaClassifierDraft / generateOcaBatch). The legacy
+ * `OcaOpinionDraft` stays untouched for back-compat with existing callers.
+ */
+export interface OcaClassifierDraft extends OcaOpinionDraft {
+  nico: string
+  antecedentes: string
+  analisis: string
+  clasificacion_descripcion_tigie: string
+  arancel_general: string
+  tmec_discrepancies: OcaTmecDiscrepancy[]
+  gri_applied: string[]
+}
+
+export interface OcaClassifierInput extends OcaGenerateInput {
+  item_no?: string
+  invoice_ref?: string
+  /** Optional pre-printed fraccion from the invoice itself (XXXX.XX or XXXX.XX.XX). */
+  certificate_fraccion_hint?: string
+  /** Country of origin in ISO-2 form (US, MX, CA, CN, JP, DE, KR, TW, IT, OTHER). */
+  pais_origen_iso?: string
+  /** Extended price in USD from the invoice line, for context. */
+  extended_price_usd?: number
+  /** Unit of measure (EA, PZ, KG, LB, ...). */
+  uom?: string
+}

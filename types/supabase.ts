@@ -1973,6 +1973,56 @@ export type Database = {
         }
         Relationships: []
       }
+      client_briefings: {
+        Row: {
+          action_item: string | null
+          action_url: string | null
+          briefing_text: string
+          company_id: string
+          data_points: Json | null
+          dismissed_at: string | null
+          generated_at: string
+          id: string
+          period_end: string
+          period_start: string
+          seen_at: string | null
+        }
+        Insert: {
+          action_item?: string | null
+          action_url?: string | null
+          briefing_text: string
+          company_id: string
+          data_points?: Json | null
+          dismissed_at?: string | null
+          generated_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          seen_at?: string | null
+        }
+        Update: {
+          action_item?: string | null
+          action_url?: string | null
+          briefing_text?: string
+          company_id?: string
+          data_points?: Json | null
+          dismissed_at?: string | null
+          generated_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          seen_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_briefings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["company_id"]
+          },
+        ]
+      }
       client_documents: {
         Row: {
           client_id: string

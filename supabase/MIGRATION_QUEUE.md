@@ -36,7 +36,47 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ---
 
-## Currently pending (as of 2026-04-20 07:45 CT)
+## Currently pending
+
+*(none — drained 2026-04-20 · see "Applied this session" below)*
+
+---
+
+## Applied this session (2026-04-20)
+
+All 3 migrations were applied directly via `npx supabase db query
+--linked` (not `supabase db push` — local/remote migration history
+was divergent with 142 pending repair commands; decision was to
+skip the CLI migration-history reconcile and apply schema changes
+via the direct SQL execution path instead). Path B of this runbook.
+
+Applied via service role · verified post-apply:
+
+```
+✓ system_config row:   fx_savings_heuristic_pct  (value + valid_to 2027-01-01)
+✓ idx_expediente_documentos_company_uploaded
+✓ idx_globalpc_productos_company_cve
+✓ idx_globalpc_partidas_company_cve
+✓ idx_globalpc_partidas_cve_producto
+✓ idx_entradas_company_fecha_llegada
+✓ idx_traficos_company_fecha_cruce
+✓ idx_globalpc_productos_classified_at  (partial WHERE fraccion_classified_at IS NOT NULL)
+```
+
+**Separate tech debt:** migration_history table on remote remains
+out of sync with local migrations/ — 142 local files, zero rows in
+remote history. This predates today's session. Cleaning it up
+requires someone to audit which of the 142 are actually in the
+schema vs authored-but-not-applied (several are future-dated), then
+running `supabase migration repair --status applied/reverted` per
+file. Deferred — does not block functionality, just the next
+`supabase db push` caller.
+
+---
+
+## Historical (reference)
+
+### ~~`20260420_fx_savings_heuristic.sql`~~ · APPLIED 2026-04-20
 
 ### `20260420_fx_savings_heuristic.sql`
 
@@ -66,7 +106,7 @@ Then run next Sunday 04:00 cost-optimizer cycle and grep pm2 logs for
 "filing-timing insight" — should be present, not the "skipping"
 console.log.
 
-### `20260420_perf_indexes.sql`
+### ~~`20260420_perf_indexes.sql`~~ · APPLIED 2026-04-20
 
 **What:** adds 4 indexes on hot-path tables:
 
@@ -77,7 +117,7 @@ console.log.
 | `globalpc_partidas` | `(company_id, cve_producto)` | partidas→productos joins (22K rows) |
 | `globalpc_partidas` | `(cve_producto)` | back-filter catalog (previously 0 indexes on this table) |
 
-### `20260420_inicio_hot_path_indexes.sql`
+### ~~`20260420_inicio_hot_path_indexes.sql`~~ · APPLIED 2026-04-20
 
 **What:** supplementary to the first perf pass — adds 3 more compound
 indexes discovered by line-by-line review of `src/app/inicio/page.tsx`:

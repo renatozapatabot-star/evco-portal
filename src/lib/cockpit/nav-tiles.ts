@@ -70,16 +70,45 @@ export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
 
 /**
  * Resolve the href for a nav tile given a role. Client role sees their
- * own A/R at /mi-cuenta; every other role routes to the broker cockpit.
- * Extend here when new role-forked tiles arrive — keeping the branch
- * in one function means every consumer (CockpitInicio + PortalDashboard)
- * agrees without duplicated conditionals.
+ * own A/R at /mi-cuenta (gated by NEXT_PUBLIC_MI_CUENTA_ENABLED); every
+ * other role routes to the broker cockpit.
+ *
+ * When the client flag is OFF, the Contabilidad tile for clients routes
+ * to /pedimentos — the pre-2026-04-19 destination — so Ursula's click
+ * still lands on a usable surface instead of a redirect loop.
  */
 export function resolveNavHref(tile: NavTileDef, role: NavRole): string {
   if (tile.key === 'contabilidad' && role === 'client') {
-    return '/mi-cuenta'
+    const clientEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
+    return clientEnabled ? '/mi-cuenta' : '/pedimentos'
   }
   return tile.href
+}
+
+/**
+ * Returns a possibly-relabelled tile for a given role + env flag state.
+ *
+ * Contract: when a client lands on the Contabilidad tile AND the
+ * NEXT_PUBLIC_MI_CUENTA_ENABLED flag is OFF, the tile renders AS
+ * "Pedimentos" (the pre-override label/icon/description + route) so the
+ * pre-flag UX is 100% preserved for clients. When the flag is ON, or
+ * for non-client roles, the tile renders normally as Contabilidad.
+ *
+ * This is the integration point the approval gate rides on: Tito flips
+ * the flag after walking through /mi-cuenta on preview, and clients
+ * see the change only once approval has landed.
+ */
+export function resolveNavTile(tile: NavTileDef, role: NavRole): NavTileDef {
+  if (tile.key !== 'contabilidad' || role !== 'client') return tile
+  const clientEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
+  if (clientEnabled) return tile
+  return {
+    key: tile.key,
+    href: '/pedimentos',
+    label: 'Pedimentos',
+    icon: FileText,
+    description: 'Declaraciones aduanales',
+  }
 }
 
 // Suppress unused-import warnings — retained for downstream consumers

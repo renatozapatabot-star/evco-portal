@@ -34,17 +34,30 @@ export function useNotificationBadge() {
     return h >= 23 || h < 5
   }
 
-  // Fetch initial count
+  // Fetch initial count — with retry so a single transient failure
+  // (network blip, cold function, 5xx) doesn't leave the badge stuck.
   useEffect(() => {
     if (!companyId) return
-    fetch('/api/notifications')
-      .then(r => r.json())
-      .then(d => {
-        const notifs = d.notifications ?? []
-        const unread = notifs.filter((n: { read: boolean }) => !n.read).length
-        setCount(unread)
-      })
-      .catch((err) => console.error('[use-notifications] fetch failed:', err.message))
+    let cancelled = false
+    let attempt = 0
+    const load = (): void => {
+      fetch('/api/notifications')
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(String(r.status))))
+        .then(d => {
+          if (cancelled) return
+          const notifs = d.notifications ?? []
+          const unread = notifs.filter((n: { read: boolean }) => !n.read).length
+          setCount(unread)
+        })
+        .catch(() => {
+          attempt += 1
+          if (!cancelled && attempt < 5) {
+            setTimeout(load, Math.min(30_000, 1000 * 2 ** attempt))
+          }
+        })
+    }
+    load()
+    return () => { cancelled = true }
   }, [companyId])
 
   // Realtime subscription
@@ -96,7 +109,15 @@ export function useNotificationBadge() {
           }
         }
       )
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'notifications-badge', reason: status, error: err?.message },
+            }))
+          }
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)

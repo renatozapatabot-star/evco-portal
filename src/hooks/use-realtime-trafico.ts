@@ -31,6 +31,7 @@ export function useRealtimeTrafico() {
   const [lastUpdate, setLastUpdate] = useState<TraficoUpdate | null>(null)
   const [lastEntradaUpdate, setLastEntradaUpdate] = useState<EntradaUpdate | null>(null)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
+  const [channelHealthy, setChannelHealthy] = useState(true)
   const companyIdRef = useRef('')
 
   const handleTraficoUpdate = useCallback((payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
@@ -119,7 +120,21 @@ export function useRealtimeTrafico() {
         },
         handleEntradaUpdate
       )
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        // Surface subscription health so the UI can switch the
+        // "En línea" pill to amber instead of silently showing
+        // stale data when Realtime drops.
+        if (status === 'SUBSCRIBED') {
+          setChannelHealthy(true)
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          setChannelHealthy(false)
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'cruz-realtime', reason: status, error: err?.message },
+            }))
+          }
+        }
+      })
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
     setUpdatedAt(new Date())
@@ -129,5 +144,5 @@ export function useRealtimeTrafico() {
     }
   }, [handleTraficoUpdate, handleEntradaUpdate])
 
-  return { lastUpdate, lastEntradaUpdate, updatedAt }
+  return { lastUpdate, lastEntradaUpdate, updatedAt, channelHealthy }
 }

@@ -47,8 +47,15 @@ export function useCockpitRealtime(enabled = true): UseCockpitRealtimeReturn {
           }, 200)
         },
       )
-      .subscribe((status: string) => {
+      .subscribe((status: string, err?: Error) => {
         setIsLive(status === 'SUBSCRIBED')
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'cockpit-realtime', reason: status, error: err?.message },
+            }))
+          }
+        }
       })
 
     return () => {
@@ -92,7 +99,15 @@ export function useTraficoRealtime(companyId?: string, enabled = true) {
           }
         },
       )
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'traficos-live', reason: status, error: err?.message },
+            }))
+          }
+        }
+      })
 
     return () => { sb.removeChannel(channel) }
   }, [companyId, enabled])

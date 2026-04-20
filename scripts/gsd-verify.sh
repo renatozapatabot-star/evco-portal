@@ -840,6 +840,29 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# R13 — scripts/ silent-catch ratchet (target ↓).
+# The po-predictor class: `.catch(() => {})` or `.catch((err) => {})` in a
+# cron/tool script swallows failures silently. core-invariants rule 18 and
+# operational-resilience.md rule 1 forbid this — every failure must log to
+# Supabase AND fire Telegram. Scope is `scripts/` only; src/ has legitimate
+# fire-and-forget patterns (e.g., `void recordView()` audit logging in
+# /mi-cuenta where the ethics contract explicitly allows swallowing render-
+# path audit failures). Baseline 161 captures pre-existing drift; the
+# ratchet refuses growth and nags toward cleanup.
+# Ship date: 2026-04-19 night pre-Ursula stress pass.
+# --------------------------------------------------------------------------
+SCRIPTS_SILENT_CATCH_BASELINE=${SCRIPTS_SILENT_CATCH_BASELINE:-161}
+header "Operational resilience — scripts/ silent-catch ratchet (target ↓)"
+SCRIPTS_SILENT_CATCH_COUNT=$(set +eo pipefail;{ grep -rnE "\.catch\(\(\)\s*=>\s*\{\s*\}\)|\.catch\(\(\w+\)\s*=>\s*\{\s*\}\)" scripts/ --include="*.js" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
+if [ "$SCRIPTS_SILENT_CATCH_COUNT" -gt "$SCRIPTS_SILENT_CATCH_BASELINE" ]; then
+  fail "scripts/ silent .catch(() => {}): $SCRIPTS_SILENT_CATCH_COUNT (baseline $SCRIPTS_SILENT_CATCH_BASELINE). New silent swallow in a cron/tool script — log to sync_log + sendTelegram or re-throw. See core-invariants.md rule 18."
+elif [ "$SCRIPTS_SILENT_CATCH_COUNT" -lt "$SCRIPTS_SILENT_CATCH_BASELINE" ]; then
+  pass "scripts/ silent .catch(): $SCRIPTS_SILENT_CATCH_COUNT (baseline $SCRIPTS_SILENT_CATCH_BASELINE, improving ✓). Update SCRIPTS_SILENT_CATCH_BASELINE in this script."
+else
+  warn "scripts/ silent .catch(): $SCRIPTS_SILENT_CATCH_COUNT (at baseline — Tier 2 cleanup pending; see po-predictor.js:47 for reference fix pattern)"
+fi
+
+# --------------------------------------------------------------------------
 # R12 — /mi-cuenta calm-tone ratchet (client-accounting-ethics.md §tone).
 # The client A/R surface must never render traffic-light dunning colors
 # or urgency language. Aging buckets use silver chrome; past-due invoices

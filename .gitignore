@@ -62,6 +62,14 @@ scripts/.sync-checkpoints/
 # Migration backups (SQL rollback snapshots — keep local, not in VCS)
 supabase/migrations/*.sql.backup-*
 
+# Archived migration sets — kept on disk during consolidation, not in VCS
+# (git history preserves the originals; these folders are rollback-only).
+supabase/migrations_broken_*/
+supabase/migrations_backup_*/
+
+# Schema snapshots — regenerable via `pg_dump -s --schema=public`
+.planning/schema-public-*.sql
+
 # Temporary scratch (local-only debugging / curl / paste buffer)
 tmp/
 

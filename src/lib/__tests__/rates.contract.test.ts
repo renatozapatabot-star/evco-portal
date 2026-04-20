@@ -42,13 +42,11 @@ vi.mock('@supabase/supabase-js', () => {
   }
 })
 
-// Set envs before the rates module loads.
+// Set envs before the rates module loads. The actual rates module is
+// loaded via `await import('../rates')` inside each test, so the env
+// + mock are in place by then.
 process.env.NEXT_PUBLIC_SUPABASE_URL ||= 'https://fake.supabase.co'
 process.env.SUPABASE_SERVICE_ROLE_KEY ||= 'fake-key'
-
-// Import AFTER the mock + env setup so the module captures the stub.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import('../rates').then(() => {})  // warm-import suppresses race
 
 beforeEach(() => {
   mockQueryResult = { data: null, error: null }

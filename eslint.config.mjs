@@ -31,6 +31,18 @@ const eslintConfig = defineConfig([
       "react-hooks/preserve-manual-memoization": "warn",
       "react-hooks/immutability": "warn",
       "react-hooks/static-components": "warn",
+      // Honor the "_foo" convention for intentionally-unused identifiers.
+      // Standard TS community pattern — unused function args, unused
+      // destructured vars, and caught-error bindings are all fine when
+      // the name starts with "_". Without this override, test stubs
+      // `(_token: string) => ...` and `catch (_err) {}` silently
+      // accumulate warnings (~50 instances across the repo).
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+      }],
     },
   },
 ]);

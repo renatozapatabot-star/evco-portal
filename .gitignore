@@ -64,3 +64,7 @@ supabase/migrations/*.sql.backup-*
 
 # Temporary scratch (local-only debugging / curl / paste buffer)
 tmp/
+
+# Aider session artifacts — chat history / input history / tags cache.
+# These can contain pasted secrets or proprietary context; never commit.
+.aider*

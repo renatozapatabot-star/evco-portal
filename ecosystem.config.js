@@ -139,6 +139,27 @@ module.exports = {
       max_size: '10M',
     },
     {
+      // Daily content intelligence for LinkedIn B2B. Pulls 24h news via
+      // Google News RSS + DOF + CBP, ranks with Haiku, drafts top 3 in
+      // Spanish, posts to Telegram. Cost ~$0.014/day. Lands 15 min
+      // before tito-daily-briefing so both arrive with morning coffee.
+      // TODO: update cron_restart to '15 12 * * *' on first Sunday of
+      // November when CT returns to CST (UTC-6).
+      name: 'content-intel-cron',
+      script: 'scripts/content-intel-cron.js',
+      cwd,
+      cron_restart: '15 11 * * *', // 6:15 AM CDT = 11:15 UTC
+      autorestart: false,
+      instances: 1,
+      watch: false,
+      max_memory_restart: '300M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/content-intel-cron-error.log',
+      out_file: '/tmp/content-intel-cron-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
+    },
+    {
       name: 'v2c-batch',
       script: 'scripts/v2c-managed-agent/nightly-batch.js',
       args: '--limit=50',

@@ -23,12 +23,12 @@ import type {
   Partida,
 } from '@/types/classification'
 
-const SILVER = 'var(--portal-fg-3)'
-const SILVER_BRIGHT = 'var(--portal-fg-1)'
-const TEXT_MUTED = 'var(--portal-fg-5)'
-const TEXT_PRIMARY = 'var(--portal-ink-1)'
-const BORDER = 'var(--portal-fg-2)'
-const ZEBRA = 'var(--portal-fg-1)'
+const SILVER = '#C0C5CE'
+const SILVER_BRIGHT = '#E8EAED'
+const TEXT_MUTED = '#6B7280'
+const TEXT_PRIMARY = '#111827'
+const BORDER = '#E5E7EB'
+const ZEBRA = '#F9FAFB'
 
 const styles = StyleSheet.create({
   page: {
@@ -99,17 +99,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 6,
     borderWidth: 0.5,
-    borderColor: 'var(--portal-status-amber-fg)',
-    backgroundColor: 'var(--portal-status-amber-bg)',
+    borderColor: '#F59E0B',
+    backgroundColor: '#FEF3C7',
     borderRadius: 2,
   },
   warningTitle: {
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
-    color: 'var(--portal-status-amber-fg)',
+    color: '#92400E',
     marginBottom: 3,
   },
-  warningItem: { fontSize: 7, color: 'var(--portal-status-amber-fg)', marginBottom: 1 },
+  warningItem: { fontSize: 7, color: '#92400E', marginBottom: 1 },
 })
 
 function MetaBlock({ meta }: { meta: GeneratedSheetMeta }) {

@@ -7,36 +7,36 @@ const C = {
   surface: '#1A1918',
   surfaceLight: '#222120',
   border: '#333230',
-  gold: 'var(--portal-fg-1)',
-  goldDark: 'var(--portal-fg-5)',
+  gold: '#E8EAED',
+  goldDark: '#7A7E86',
   goldMuted: '#6B5A2E',
   orange: '#E67E22',
   green: '#27AE60',
   greenDark: '#1E8449',
   red: '#E74C3C',
-  text: 'var(--portal-ink-2)',
+  text: '#E8E5DF',
   textSub: '#A09C94',
   textMuted: '#6B6860',
-  white: 'var(--portal-fg-1)',
+  white: '#FFFFFF',
 }
 
 const s = StyleSheet.create({
   page: { backgroundColor: C.bg, paddingTop: 30, paddingBottom: 40, paddingHorizontal: 36, fontFamily: 'Helvetica', fontSize: 8, color: C.text },
   // Header
   headerTitle: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: C.gold, textAlign: 'center', letterSpacing: 3, textTransform: 'uppercase' as const },
-  headerDate: { fontSize: 'var(--aguila-fs-label)', color: C.textSub, textAlign: 'center', marginTop: 4, marginBottom: 16 },
+  headerDate: { fontSize: 10, color: C.textSub, textAlign: 'center', marginTop: 4, marginBottom: 16 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border },
   headerLeft: {},
   headerRight: { alignItems: 'flex-end' },
   headerLabel: { fontSize: 7, color: C.orange, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 4 },
-  headerCompany: { fontSize: 'var(--aguila-fs-compact)', fontFamily: 'Helvetica-Bold', color: C.text },
+  headerCompany: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: C.text },
   headerSub: { fontSize: 8, color: C.textSub, marginTop: 2 },
   headerInfo: { fontSize: 7, color: C.textMuted, marginTop: 1 },
   // KPI strip
   kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
   kpiCard: { flex: 1, backgroundColor: C.surface, borderRadius: 4, padding: 12, borderWidth: 1, borderColor: C.border },
   kpiLabel: { fontSize: 7, color: C.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
-  kpiValue: { fontSize: 'var(--aguila-fs-body-lg)', fontFamily: 'Helvetica-Bold', color: C.text, marginTop: 4 },
+  kpiValue: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: C.text, marginTop: 4 },
   kpiSub: { fontSize: 7, color: C.textSub, marginTop: 2 },
   // Section headers
   sectionTitle: { fontSize: 9, color: C.orange, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase' as const, marginTop: 16, marginBottom: 8 },
@@ -62,7 +62,7 @@ const s = StyleSheet.create({
   entradaDayText: { fontSize: 7, color: C.orange, fontFamily: 'Helvetica-Bold' },
   // Fraccion card
   fraccionCard: { backgroundColor: C.surface, borderRadius: 4, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: C.border },
-  fraccionTitle: { fontSize: 'var(--aguila-fs-label)', color: C.gold, fontFamily: 'Courier-Bold' },
+  fraccionTitle: { fontSize: 10, color: C.gold, fontFamily: 'Courier-Bold' },
   fraccionDesc: { fontSize: 7.5, color: C.text, fontFamily: 'Helvetica-Bold', marginTop: 2 },
   fraccionSub: { fontSize: 7, color: C.textMuted, marginTop: 1 },
   fraccionValue: { fontSize: 8, color: C.green, fontFamily: 'Courier-Bold', marginTop: 4 },
@@ -127,7 +127,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
             <Text style={s.headerSub}>Preparado por Grupo Aduanal Renato Zapata S.C. · Patente 3596 · Aduana 240 Nuevo Laredo</Text>
           </View>
           <View style={s.headerRight}>
-            <Text style={{ ...s.headerCompany, fontSize: 'var(--aguila-fs-label)' }}>{d.clientName}</Text>
+            <Text style={{ ...s.headerCompany, fontSize: 10 }}>{d.clientName}</Text>
             <Text style={s.headerInfo}>RFC: {d.clientRFC} · Clave: {d.clientClave}</Text>
             <Text style={s.headerInfo}>Período: {fmtDateShort(d.from)} – {fmtDateShort(d.to)} · Emitido: {d.emittedDate}</Text>
           </View>
@@ -139,8 +139,8 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
             <Text style={s.bannerLabel}>AVISO</Text>
             <Text style={s.bannerText}>
               {d.missingPagoCount} embarque{d.missingPagoCount === 1 ? '' : 's'} con estatus
-              {' '}Pedimento Pagado sin fecha_pago — no aparecen en este período.
-              {' '}Pendiente actualizar.
+              {' '}Pedimento Pagado sin fecha_pago — no aparecen en este período. Fuente:
+              {' '}pipeline GlobalPC. Pendiente actualizar.
             </Text>
           </View>
         ) : null}
@@ -276,7 +276,7 @@ export function AuditoriaPDF({ data }: { data: AuditData }) {
           <Text style={{ ...s.tableHeaderCell, width: 20 }}>#</Text>
           <Text style={{ ...s.tableHeaderCell, width: 45 }}>Entrada</Text>
           <Text style={{ ...s.tableHeaderCell, width: 35 }}>Fecha</Text>
-          <Text style={{ ...s.tableHeaderCell, width: 160 }}>Mercancía</Text>
+          <Text style={{ ...s.tableHeaderCell, width: 160 }}>Descripción Mercancía</Text>
           <Text style={{ ...s.tableHeaderCell, width: 50 }}># Pedido</Text>
           <Text style={{ ...s.tableHeaderCell, width: 35, textAlign: 'right' }}>Bultos</Text>
           <Text style={{ ...s.tableHeaderCell, width: 50, textAlign: 'right' }}>Peso</Text>

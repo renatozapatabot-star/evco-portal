@@ -6,20 +6,20 @@ import {
 import { ORIGIN_CRITERION_LABELS, type UsmcaCertRow } from '@/lib/usmca/types'
 
 const s = StyleSheet.create({
-  page: { backgroundColor: 'var(--portal-fg-1)', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 'var(--aguila-fs-label)' },
-  h2: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_SILVER_DIM, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
+  page: { backgroundColor: '#FFFFFF', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 10 },
+  h2: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: PDF_SILVER_DIM, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 5 },
   label: { width: 120, fontSize: 9, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },
-  value: { flex: 1, fontSize: 'var(--aguila-fs-label)', color: PDF_TEXT_PRIMARY },
-  mono: { fontFamily: 'Courier', fontSize: 'var(--aguila-fs-meta)', color: PDF_TEXT_PRIMARY },
-  para: { fontSize: 'var(--aguila-fs-label)', lineHeight: 1.5, marginTop: 4, textAlign: 'justify' },
-  ruling: { marginTop: 10, padding: 12, borderWidth: 0.5, borderColor: PDF_BORDER, backgroundColor: 'var(--portal-ink-2)' },
+  value: { flex: 1, fontSize: 10, color: PDF_TEXT_PRIMARY },
+  mono: { fontFamily: 'Courier', fontSize: 11, color: PDF_TEXT_PRIMARY },
+  para: { fontSize: 10, lineHeight: 1.5, marginTop: 4, textAlign: 'justify' },
+  ruling: { marginTop: 10, padding: 12, borderWidth: 0.5, borderColor: PDF_BORDER, backgroundColor: '#FAFAF8' },
   rulingLabel: { fontSize: 8, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
-  rulingValue: { fontSize: 'var(--aguila-fs-body-lg)', fontFamily: 'Courier-Bold', color: PDF_TEXT_PRIMARY, letterSpacing: 1 },
+  rulingValue: { fontSize: 16, fontFamily: 'Courier-Bold', color: PDF_TEXT_PRIMARY, letterSpacing: 1 },
   sig: { marginTop: 28, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },
-  sigName: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY, marginTop: 6 },
+  sigName: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY, marginTop: 6 },
   sigTitle: { fontSize: 9, color: PDF_TEXT_MUTED, marginTop: 2 },
-  draftBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, backgroundColor: 'var(--portal-status-amber-bg)', color: 'var(--portal-status-amber-fg)', fontSize: 9, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, marginTop: 6 },
+  draftBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, backgroundColor: '#FEF3C7', color: '#92400E', fontSize: 9, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, marginTop: 6 },
   grid: { flexDirection: 'row', gap: 16, marginTop: 6 },
   col: { flex: 1 },
 })
@@ -62,7 +62,7 @@ export function UsmcaPDF({ cert }: UsmcaPDFProps) {
           <Text style={s.rulingLabel}>Clasificación armonizada (HS)</Text>
           <Text style={s.rulingValue}>{cert.hs_code}</Text>
           <Text style={[s.rulingLabel, { marginTop: 8 }]}>Criterio de origen</Text>
-          <Text style={[s.value, { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', marginTop: 2 }]}>
+          <Text style={[s.value, { fontSize: 11, fontFamily: 'Helvetica-Bold', marginTop: 2 }]}>
             {ORIGIN_CRITERION_LABELS[cert.origin_criterion]}
           </Text>
           {cert.rvc_method && (

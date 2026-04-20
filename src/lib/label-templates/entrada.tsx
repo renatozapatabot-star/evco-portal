@@ -43,8 +43,8 @@ const LABEL_HEIGHT_PT = 432
 const styles = StyleSheet.create({
   page: {
     padding: 16,
-    backgroundColor: 'var(--portal-fg-1)',
-    color: 'var(--portal-ink-0)',
+    backgroundColor: '#FFFFFF',
+    color: '#0A0A0C',
     fontFamily: 'Helvetica',
   },
   header: {
@@ -52,18 +52,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: 'var(--portal-fg-5)',
+    borderBottomColor: '#7A7E86',
     paddingBottom: 6,
   },
   brand: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: 2,
-    color: 'var(--portal-fg-5)',
+    color: '#6B7280',
   },
   brandTag: {
     fontSize: 7,
-    color: 'var(--portal-fg-5)',
+    color: '#6B7280',
   },
   qrWrap: {
     alignItems: 'center',
@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Courier-Bold',
     fontSize: 11,
     letterSpacing: 2,
-    color: 'var(--portal-ink-1)',
+    color: '#111827',
     marginTop: 4,
   },
   infoBlock: {
     borderTopWidth: 1,
-    borderTopColor: 'var(--portal-fg-2)',
+    borderTopColor: '#E5E7EB',
     paddingTop: 8,
     gap: 4,
   },
@@ -95,25 +95,25 @@ const styles = StyleSheet.create({
   },
   labelKey: {
     fontSize: 7,
-    color: 'var(--portal-fg-5)',
+    color: '#6B7280',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   traficoRef: {
     fontFamily: 'Courier-Bold',
     fontSize: 20,
-    color: 'var(--portal-ink-1)',
+    color: '#111827',
     letterSpacing: 1,
   },
   cliente: {
     fontSize: 12,
     fontFamily: 'Helvetica-Bold',
-    color: 'var(--portal-ink-1)',
+    color: '#111827',
   },
   dock: {
     fontFamily: 'Courier-Bold',
     fontSize: 16,
-    color: 'var(--portal-ink-1)',
+    color: '#111827',
   },
   small: {
     fontSize: 9,
@@ -126,10 +126,10 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     fontSize: 6,
-    color: 'var(--portal-fg-5)',
+    color: '#6B7280',
     textAlign: 'center',
     borderTopWidth: 0.5,
-    borderTopColor: 'var(--portal-fg-2)',
+    borderTopColor: '#E5E7EB',
     paddingTop: 4,
   },
 })

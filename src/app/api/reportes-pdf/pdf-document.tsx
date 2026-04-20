@@ -2,16 +2,16 @@ import React from 'react'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 const COLORS = {
-  bg: 'var(--bg-main)',
-  surface: 'var(--bg-card)',
-  border: 'var(--border)',
-  text: 'var(--text-primary)',
-  textSub: 'var(--text-secondary)',
-  textMuted: 'var(--portal-fg-4)',
-  gold: 'var(--gold)',
-  green: 'var(--portal-status-green-fg)',
-  amber: 'var(--portal-status-amber-fg)',
-  red: 'var(--portal-status-red-fg)',
+  bg: '#FAFAF8',
+  surface: '#FFFFFF',
+  border: '#E8E5E0',
+  text: '#1A1A1A',
+  textSub: '#6B6B6B',
+  textMuted: '#9C9890',
+  gold: '#C4963C',
+  green: '#2D8540',
+  amber: '#C47F17',
+  red: '#C23B22',
   darkBg: '#1E1A16',
   darkGold: '#B8973A',
 }
@@ -23,7 +23,7 @@ const s = StyleSheet.create({
     paddingBottom: 60,
     paddingHorizontal: 40,
     fontFamily: 'Helvetica',
-    fontSize: 'var(--aguila-fs-label)',
+    fontSize: 10,
     color: COLORS.text,
   },
   // Header
@@ -37,7 +37,7 @@ const s = StyleSheet.create({
     borderBottomColor: COLORS.gold,
   },
   logoText: {
-    fontSize: 'var(--aguila-fs-kpi-mid)',
+    fontSize: 28,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.text,
     letterSpacing: 4,
@@ -58,7 +58,7 @@ const s = StyleSheet.create({
     color: COLORS.textMuted,
   },
   subtitle: {
-    fontSize: 'var(--aguila-fs-section)',
+    fontSize: 14,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.text,
     marginBottom: 4,
@@ -79,8 +79,8 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   execText: {
-    fontSize: 'var(--aguila-fs-meta)',
-    color: 'var(--portal-ink-2)',
+    fontSize: 11,
+    color: '#EAE6DC',
     lineHeight: 1.5,
   },
   // KPI row
@@ -99,7 +99,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   kpiValue: {
-    fontSize: 'var(--aguila-fs-kpi-small)',
+    fontSize: 18,
     fontFamily: 'Helvetica-Bold',
     marginBottom: 2,
   },
@@ -111,7 +111,7 @@ const s = StyleSheet.create({
   },
   // Section
   sectionTitle: {
-    fontSize: 'var(--aguila-fs-meta)',
+    fontSize: 11,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.textMuted,
     letterSpacing: 1,
@@ -129,7 +129,7 @@ const s = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: 'var(--portal-ink-2)',
+    backgroundColor: '#F5F3EF',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     paddingVertical: 8,
@@ -187,7 +187,7 @@ const s = StyleSheet.create({
 function fmtUSD(v: number): string {
   if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M USD`
   if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K USD`
-  return `$${v.toLocaleString('es-MX')} USD`
+  return `$${v.toLocaleString('en-US')} USD`
 }
 
 function complianceColor(pct: number): string {
@@ -253,7 +253,7 @@ export function ReportesPDF(props: PDFProps) {
             <Text style={[s.kpiValue, { color: COLORS.gold }]}>
               {kpis.totalTraficos.toLocaleString()}
             </Text>
-            <Text style={s.kpiLabel}>Embarques</Text>
+            <Text style={s.kpiLabel}>Tráficos</Text>
           </View>
           <View style={s.kpiBox}>
             <Text style={[s.kpiValue, { color: COLORS.gold }]}>

@@ -2,16 +2,16 @@ import React from 'react'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 const C = {
-  bg: 'var(--portal-ink-2)',
-  surface: 'var(--portal-fg-1)',
-  border: 'var(--portal-line-1)',
-  text: 'var(--portal-ink-2)',
-  textSub: 'var(--portal-fg-5)',
-  textMuted: 'var(--portal-fg-4)',
-  gold: 'var(--portal-fg-3)',
-  green: 'var(--portal-status-green-fg)',
-  amber: 'var(--portal-status-amber-fg)',
-  red: 'var(--portal-status-red-fg)',
+  bg: '#FAFAF8',
+  surface: '#FFFFFF',
+  border: '#E8E5E0',
+  text: '#1A1A1A',
+  textSub: '#6B6B6B',
+  textMuted: '#9C9890',
+  gold: '#C0C5CE',
+  green: '#2D8540',
+  amber: '#C47F17',
+  red: '#C23B22',
   darkBg: '#1E1A16',
   darkGold: '#B8973A',
 }
@@ -23,7 +23,7 @@ const s = StyleSheet.create({
     paddingBottom: 60,
     paddingHorizontal: 40,
     fontFamily: 'Helvetica',
-    fontSize: 'var(--aguila-fs-label)',
+    fontSize: 10,
     color: C.text,
   },
   header: {
@@ -36,7 +36,7 @@ const s = StyleSheet.create({
     borderBottomColor: C.gold,
   },
   logoText: {
-    fontSize: 'var(--aguila-fs-kpi-mid)',
+    fontSize: 28,
     fontFamily: 'Helvetica-Bold',
     color: C.text,
     letterSpacing: 4,
@@ -46,13 +46,13 @@ const s = StyleSheet.create({
   headerCompany: { fontSize: 9, color: C.textSub, marginBottom: 2 },
   headerDate: { fontSize: 9, color: C.textMuted },
   reportTitle: {
-    fontSize: 'var(--aguila-fs-section)',
+    fontSize: 14,
     fontFamily: 'Helvetica-Bold',
     color: C.text,
     marginBottom: 4,
   },
   reportSubtitle: {
-    fontSize: 'var(--aguila-fs-label)',
+    fontSize: 10,
     color: C.textSub,
     marginBottom: 16,
   },
@@ -71,8 +71,8 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   execText: {
-    fontSize: 'var(--aguila-fs-meta)',
-    color: 'var(--portal-ink-2)',
+    fontSize: 11,
+    color: '#EAE6DC',
     lineHeight: 1.5,
   },
   kpiRow: {
@@ -90,7 +90,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   kpiValue: {
-    fontSize: 'var(--aguila-fs-kpi-small)',
+    fontSize: 18,
     fontFamily: 'Helvetica-Bold',
     marginBottom: 2,
   },
@@ -101,7 +101,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.5,
   },
   sectionTitle: {
-    fontSize: 'var(--aguila-fs-meta)',
+    fontSize: 11,
     fontFamily: 'Helvetica-Bold',
     color: C.textMuted,
     letterSpacing: 1,
@@ -118,7 +118,7 @@ const s = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: 'var(--portal-ink-2)',
+    backgroundColor: '#F5F3EF',
     borderBottomWidth: 1,
     borderBottomColor: C.border,
     paddingVertical: 6,

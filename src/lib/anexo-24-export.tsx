@@ -25,12 +25,12 @@ import {
 } from '@react-pdf/renderer'
 import { AguilaPdfHeader, AguilaPdfFooter } from '@/lib/pdf/brand'
 
-const SILVER = 'var(--portal-fg-3)'
-const SILVER_BRIGHT = 'var(--portal-fg-1)'
-const TEXT_MUTED = 'var(--portal-fg-5)'
-const TEXT_PRIMARY = 'var(--portal-ink-1)'
-const BORDER = 'var(--portal-fg-2)'
-const ZEBRA = 'var(--portal-fg-1)'
+const SILVER = '#C0C5CE'
+const SILVER_BRIGHT = '#E8EAED'
+const TEXT_MUTED = '#6B7280'
+const TEXT_PRIMARY = '#111827'
+const BORDER = '#E5E7EB'
+const ZEBRA = '#F9FAFB'
 
 // ---------------------------------------------------------------------------
 // Types — match the 41-column Formato 53 shape.

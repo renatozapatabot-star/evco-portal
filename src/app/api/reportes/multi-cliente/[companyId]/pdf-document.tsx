@@ -6,24 +6,24 @@ import {
 import type { WeeklyAuditData } from '@/lib/reports/weekly-audit'
 
 const s = StyleSheet.create({
-  page: { backgroundColor: 'var(--portal-fg-1)', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 'var(--aguila-fs-label)' },
-  h2: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_SILVER_DIM, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
+  page: { backgroundColor: '#FFFFFF', padding: 36, fontFamily: 'Helvetica', color: PDF_TEXT_PRIMARY, fontSize: 10 },
+  h2: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: PDF_SILVER_DIM, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 5 },
   label: { width: 120, fontSize: 9, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },
-  value: { flex: 1, fontSize: 'var(--aguila-fs-label)', color: PDF_TEXT_PRIMARY },
+  value: { flex: 1, fontSize: 10, color: PDF_TEXT_PRIMARY },
   mono: { fontFamily: 'Courier' },
   kpiGrid: { flexDirection: 'row', gap: 10, marginTop: 8 },
   kpi: { flex: 1, padding: 10, borderWidth: 0.5, borderColor: PDF_BORDER, borderRadius: 4, backgroundColor: PDF_ZEBRA },
   kpiLabel: { fontSize: 8, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.6 },
-  kpiValue: { fontSize: 'var(--aguila-fs-kpi-small)', fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY, marginTop: 3 },
+  kpiValue: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY, marginTop: 3 },
   kpiSub: { fontSize: 8, color: PDF_TEXT_MUTED, marginTop: 2 },
   table: { marginTop: 6, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },
   th: { flexDirection: 'row', paddingVertical: 4, borderBottomWidth: 0.5, borderBottomColor: PDF_BORDER, backgroundColor: PDF_ZEBRA },
-  td: { flexDirection: 'row', paddingVertical: 3, borderBottomWidth: 0.3, borderBottomColor: 'var(--portal-ink-2)' },
+  td: { flexDirection: 'row', paddingVertical: 3, borderBottomWidth: 0.3, borderBottomColor: '#F3F4F6' },
   cell: { fontSize: 9, color: PDF_TEXT_PRIMARY, paddingHorizontal: 4 },
   cellHead: { fontSize: 8, color: PDF_TEXT_MUTED, textTransform: 'uppercase', letterSpacing: 0.5, paddingHorizontal: 4 },
   footer: { marginTop: 24, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: PDF_BORDER },
-  sigName: { fontSize: 'var(--aguila-fs-meta)', fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY },
+  sigName: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: PDF_TEXT_PRIMARY },
   sigTitle: { fontSize: 9, color: PDF_TEXT_MUTED, marginTop: 2 },
 })
 

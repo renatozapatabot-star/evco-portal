@@ -40,6 +40,26 @@ echo "[Gate 1/6] Pre-flight"
 echo "  · typecheck"
 npx tsc --noEmit
 echo "    ✅"
+echo "  · lint (errors block; warnings acceptable)"
+# Capture lint exit code without tripping `set -e`. eslint exits non-zero
+# only on errors (not warnings), so exit==0 means zero errors regardless
+# of warning count.
+LINT_EXIT=0
+npm run lint > /tmp/cruz-ship-lint.log 2>&1 || LINT_EXIT=$?
+LINT_ERROR_COUNT=$(grep -cE "^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+error[[:space:]]" /tmp/cruz-ship-lint.log 2>/dev/null || true)
+LINT_ERROR_COUNT=${LINT_ERROR_COUNT:-0}
+LINT_WARNING_COUNT=$(grep -cE "^[[:space:]]+[0-9]+:[0-9]+[[:space:]]+warning[[:space:]]" /tmp/cruz-ship-lint.log 2>/dev/null || true)
+LINT_WARNING_COUNT=${LINT_WARNING_COUNT:-0}
+if [ "$LINT_ERROR_COUNT" -gt 0 ] || [ "$LINT_EXIT" -ne 0 ]; then
+  tail -40 /tmp/cruz-ship-lint.log
+  echo "  ❌ $LINT_ERROR_COUNT lint error(s) — see /tmp/cruz-ship-lint.log"
+  exit 1
+fi
+if [ "$LINT_WARNING_COUNT" -gt 0 ]; then
+  echo "    ✅ (0 errors; $LINT_WARNING_COUNT warnings non-blocking)"
+else
+  echo "    ✅ (clean)"
+fi
 echo "  · vitest (full suite)"
 npx vitest run > /tmp/cruz-ship-vitest.log 2>&1 || {
   tail -40 /tmp/cruz-ship-vitest.log

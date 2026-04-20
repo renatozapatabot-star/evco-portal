@@ -91,15 +91,22 @@ function auditScript(scriptPath) {
         /sendTelegram\s*\(/.test(src) ||
         /\brequire\(['"][^'"]*\/telegram['"]\)/.test(src) ||
         /async\s+function\s+tg\s*\(/.test(src) ||
+        /async\s+function\s+notify\s*\(/.test(src) ||
         /const\s+tg\s*=/.test(src) ||
-        /sendTg\s*\(/.test(src),
+        /sendTg\s*\(/.test(src) ||
+        /api\.telegram\.org\/bot/.test(src),
       exit1: /process\.exit\(\s*1\s*\)/.test(src),
       log:
         /\.from\(['"]heartbeat_log['"]\)/.test(src) ||
         /\.from\(['"]sync_log['"]\)/.test(src) ||
         /\blogToSupabase\(/.test(src) ||
         /\brequire\(['"][^'"]*\/sync-log['"]\)/.test(src),
-      topCatch: /main\(\)\s*\.catch\s*\(/.test(src),
+      topCatch:
+        /main\(\)\s*\.catch\s*\(/.test(src) ||
+        /run\(\)\s*\.catch\s*\(/.test(src) ||
+        /withSyncLog\([^)]*,\s*\w+\)\s*\.catch\s*\(/.test(src) ||
+        // IIFE pattern: (async () => {...})().catch(...)
+        /\)\(\)\s*\.catch\s*\(/.test(src),
     },
   }
 }

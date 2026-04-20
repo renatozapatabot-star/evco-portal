@@ -209,8 +209,24 @@ async function runForCompany(companyId, targetDate) {
     }
   }
   console.log(`\nDone. ${ok} ok · ${skipped} skipped · ${failed} failed`)
+
+  // Heartbeat so pipeline-postmortem + /admin/eagle dashboards can see
+  // this ran. core-invariants rule 18: every cron logs structurally.
+  // On a partial-success exit(1) we still write — operators want to
+  // know how many briefings landed vs failed.
+  await supabase.from('heartbeat_log').insert({
+    script: 'client-briefing-generator',
+    status: failed > 0 ? 'alerted' : 'success',
+    details: { ok, skipped, failed, date: today, anthropic_dry: anthropicDry },
+  }).catch((hbErr) => {
+    console.warn(`[heartbeat skip] client-briefing-generator: ${hbErr?.message || hbErr}`)
+  })
+
   process.exit(failed > 0 ? 1 : 0)
-})().catch((e) => {
+})().catch(async (e) => {
   console.error('Fatal:', e)
+  try {
+    await sendTelegram(`🔴 <b>client-briefing-generator</b> fatal: ${e?.message || e}`)
+  } catch { /* best-effort */ }
   process.exit(1)
 })

@@ -13,6 +13,8 @@ import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { renderNull, renderPending } from '@/lib/ui/cell-renderers'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
+import { FreshnessBanner } from '@/components/aguila'
+import { useFreshness } from '@/hooks/use-freshness'
 import Link from 'next/link'
 
 interface TraficoRow {
@@ -64,6 +66,7 @@ function PedimentosContent() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
+  const freshness = useFreshness()
   const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const [aduanetValorMap, setAduanetValorMap] = useState<Map<string, number>>(new Map())
@@ -234,6 +237,8 @@ function PedimentosContent() {
           options={monthOptions}
         />
       </div>
+
+      {freshness && <div style={{ marginBottom: 12 }}><FreshnessBanner reading={freshness} /></div>}
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>

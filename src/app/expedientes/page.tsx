@@ -16,6 +16,8 @@ import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
 import type { DocFile } from '@/components/expedientes/DocChecklist'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
+import { FreshnessBanner } from '@/components/aguila'
+import { useFreshness } from '@/hooks/use-freshness'
 
 const REQUIRED_DOCS = [
   'factura_comercial', 'packing_list', 'pedimento_detallado',
@@ -65,6 +67,7 @@ function ExpedientesContent() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(0)
+  const freshness = useFreshness()
   const { sort, toggleSort } = useSort('expedientes', { column: 'fecha_llegada', direction: 'desc' })
 
   const [cookiesReady, setCookiesReady] = useState(false)
@@ -216,6 +219,8 @@ function ExpedientesContent() {
           options={monthOptions}
         />
       </div>
+
+      {freshness && <div style={{ marginBottom: 12 }}><FreshnessBanner reading={freshness} /></div>}
 
       {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}
 

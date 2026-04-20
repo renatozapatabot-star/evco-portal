@@ -17,6 +17,8 @@ import { useSessionCache } from '@/hooks/use-session-cache'
 import { useSupplierNames } from '@/hooks/use-supplier-names'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
+import { FreshnessBanner } from '@/components/aguila'
+import { useFreshness } from '@/hooks/use-freshness'
 
 interface EntradaRow {
   id: number
@@ -64,6 +66,7 @@ function EntradasContent() {
   const [transportMap, setTransportMap] = useState<Map<string, string>>(new Map())
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const { getCached, setCache } = useSessionCache()
+  const freshness = useFreshness()
   // Proveedor resolution lives in a shared hook so every surface uses the
   // same PRV_#### → human name fallback (no raw codes ever reach the UI).
   const supplierNames = useSupplierNames()
@@ -222,6 +225,8 @@ function EntradasContent() {
           options={monthOptions}
         />
       </div>
+
+      {freshness && <div style={{ marginBottom: 12 }}><FreshnessBanner reading={freshness} /></div>}
 
       <div className="table-shell">
         <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>

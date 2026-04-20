@@ -141,14 +141,22 @@ All glass surfaces compose through `<GlassCard>`. Hero tier
 `rgba(0,0,0,0.4)` + `blur(20px) saturate(1.2)` + top-lit inset
 `rgba(255,255,255,0.07)`.
 
-### I10 — Six locked nav tiles
+### I10 — Six cockpit nav tiles (post-override 2026-04-19)
+
+**[SUPERSEDED 2026-04-19 by founder-overrides.md]** — tile #2 promoted
+from "Pedimentos" to "Contabilidad" per Renato IV founder decision.
+The new tile list below reflects current truth:
 
 ```bash
 grep -n "UNIFIED_NAV_TILES" src/lib/cockpit/nav-tiles.ts
-# → array with exactly 6 entries: embarques, pedimentos, expedientes,
+# → array with exactly 6 entries: embarques, contabilidad, expedientes,
 #   catalogo, entradas, anexo24
 ```
-Changing this list requires Tito + Renato IV sign-off (invariant #29).
+
+Tile swaps are now governed by `.claude/rules/founder-overrides.md`
+(the rule is SOFT). Client role routes Contabilidad to `/mi-cuenta`;
+operator/owner route to `/contabilidad/inicio`. Legacy `/pedimentos`
+route stays live via deep link — only the nav position changed.
 
 ---
 

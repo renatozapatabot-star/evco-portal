@@ -159,7 +159,12 @@ plan rides on these constraints.
 - `/api/econta/export` queues writes to `trafico_econta_exports` — the
   PM2 script that pushes from queue into eConta MySQL is **NOT deployed**
 - `/contabilidad/exportar` and `/contabilidad/kpis` are placeholders
-- Client A/R visibility is a known gap (broker-internal by design)
+- **[SUPERSEDED 2026-04-19 by founder-overrides.md]** ~~Client A/R
+  visibility is a known gap (broker-internal by design)~~ — Renato IV
+  founder-override 2026-04-19 exposes client's OWN A/R at `/mi-cuenta`
+  per `.claude/rules/client-accounting-ethics.md`. Calm tone, no
+  cross-tenant leak, Mensajería CTA to Anabel paired with every number.
+  Internal margin + cross-client data stays broker-internal.
 
 ### Approval gates that ride on these systems
 

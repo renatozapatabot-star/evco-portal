@@ -163,21 +163,25 @@ caused a real regression, a compliance risk, or a silent failure in production.
     blocking same-origin embeds — never set those again.
     verify: `grep -n "X-Frame-Options\|frame-ancestors" next.config.ts` → must show SAMEORIGIN + 'self'
 
-29. **Six cockpit nav cards, locked across `/inicio`, `/operador/inicio`,
-    `/admin/eagle`.** The six are **Embarques, Pedimentos, Expedientes,
-    Catálogo, Entradas, Anexo 24** (tile #6 promoted from "Reportes" to
-    "Anexo 24" on 2026-04-18 per Renato IV founder sign-off — Anexo 24
-    is the SAT-audit truth document for IMMEX and the canonical product
-    reference; legacy `/reportes/**` sub-routes stay alive behind the
-    client-role redirect for back-compat. Prior promotion: Reportes
-    replaced Clasificaciones on 2026-04-15 per Tito + Renato IV audit —
-    Clasificaciones folded into the Asistente/Clasificador surface).
-    Order, labels, icons, and
-    descriptions are defined once in `src/lib/cockpit/nav-tiles.ts`
-    (`UNIFIED_NAV_TILES`). Role decides what *data* populates each card;
-    role does not decide which cards appear. Adding a 7th tile or
-    removing one requires explicit Tito + Renato IV sign-off — the
-    three-surface mental model is the load-bearing promise.
+29. **Six cockpit nav cards across `/inicio`, `/operador/inicio`,
+    `/admin/eagle`.** The six are **Embarques, Contabilidad, Expedientes,
+    Catálogo, Entradas, Anexo 24**. Tile #2 promoted from "Pedimentos"
+    to "Contabilidad" on 2026-04-19 per the founder-override log
+    (`.claude/rules/founder-overrides.md`) — client role routes to
+    `/mi-cuenta` (their own A/R per the ethical contract at
+    `.claude/rules/client-accounting-ethics.md`), operator + owner route
+    to `/contabilidad/inicio` (Anabel's broker cockpit). Tile #6
+    (Anexo 24) promotion from "Reportes" remains — 2026-04-18 per
+    Renato IV founder sign-off. Legacy `/pedimentos` and `/reportes`
+    routes stay live via deep link, CruzCommand, and CRUZ AI tools for
+    back-compat. Order, labels, icons, and descriptions are defined
+    once in `src/lib/cockpit/nav-tiles.ts` (`UNIFIED_NAV_TILES`).
+    Role-aware href resolution lives in `resolveNavHref(tile, role)`
+    exported from the same file. Role decides what *data* populates
+    each card; role does not decide which cards appear. **This rule is
+    SOFT per founder-overrides.md** — future tile swaps overridable via
+    a dated log entry + same-commit doc updates (no dual sign-off
+    required for SOFT changes; only HARD invariants need it).
     verify: `grep -rn "UNIFIED_NAV_TILES" src/app/inicio src/app/operador/inicio src/app/admin/eagle` → every cockpit route imports the constant
 
 30. **CockpitInicio is the canonical composition.** `/inicio`,

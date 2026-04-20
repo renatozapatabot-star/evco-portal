@@ -647,7 +647,7 @@ export function PatioClient() {
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Snowflake size={18} color={refrigerated ? 'var(--portal-fg-3)' : 'var(--portal-fg-5)'} />
-            <span style={{ fontSize: 15, color: 'var(--portal-fg-1)' }}>Refrigerada</span>
+            <span style={{ fontSize: 15 /* WHY: refrigerated checkbox label, between body and kpi-small */, color: 'var(--portal-fg-1)' }}>Refrigerada</span>
           </span>
           <input
             type="checkbox"
@@ -738,7 +738,7 @@ export function PatioClient() {
             background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
             color: 'var(--portal-ink-0)',
             fontWeight: 700,
-            fontSize: 17,
+            fontSize: 17 /* WHY: primary submit CTA, emphasis between kpi-small and title */,
             border: 'none',
             cursor: status === 'submitting' ? 'wait' : 'pointer',
             display: 'flex',
@@ -799,7 +799,7 @@ export function PatioClient() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--portal-fg-1)', fontSize: 15, fontWeight: 600 }}>
+              <span style={{ color: 'var(--portal-fg-1)', fontSize: 15 /* WHY: grid position header, between body and kpi-small */, fontWeight: 600 }}>
                 Posición · {formatPosition(gridFocus)}
               </span>
               <button
@@ -937,7 +937,7 @@ export function PatioClient() {
                   background: 'rgba(255,255,255,0.04)',
                   color: 'var(--portal-fg-1)',
                   fontWeight: 600,
-                  fontSize: 15,
+                  fontSize: 15 /* WHY: confirm-exit cancel button, between body and kpi-small */,
                   border: '1px solid rgba(192,197,206,0.18)',
                   cursor: 'pointer',
                 }}
@@ -954,7 +954,7 @@ export function PatioClient() {
                   background: 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)',
                   color: 'var(--portal-ink-0)',
                   fontWeight: 700,
-                  fontSize: 15,
+                  fontSize: 15 /* WHY: confirm-exit primary action button, between body and kpi-small */,
                   border: 'none',
                   cursor: 'pointer',
                   display: 'flex',

@@ -157,6 +157,14 @@ fi
 #   scripts/codemod-theme-v6.js. Commit 8742fd0. −700 inline hex in
 #   one pass, more than the entire hand-tokenization phase.)
 # --------------------------------------------------------------------------
+# Baseline 2026-04-19 PDF-restore = 662 (unchanged). @react-pdf/renderer files
+#   (src/lib/pdf/, doc-generators/, any *-pdf/ route, classification-pdf,
+#   label-templates) excluded from hex ratchet — @react-pdf cannot resolve
+#   CSS variables, so literal hex is *required*. Codemods b2eac39/c02e064/
+#   9763f56/e9016bb naively substituted var(--portal-*) into these files
+#   and broke gradient rendering (null stop in PDFLinearGradient.stop).
+#   Exclusion prevents future codemod drift AND accounts for the legitimate
+#   hex restored in pdf/brand.tsx + the 4 doc/pedimento PDF files.
 INVARIANT_HEX_BASELINE=662
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
@@ -166,6 +174,11 @@ HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   | grep -v '\.test\.\|__tests__' \
   | grep -v '// allowed-color' \
   | grep -v '// design-token' \
+  | grep -v 'src/lib/pdf/' \
+  | grep -v 'src/lib/doc-generators/' \
+  | grep -v 'src/lib/classification-pdf\|src/lib/anexo-24-export\|src/lib/report-exports/pdf\|src/lib/label-templates/' \
+  | grep -v 'src/app/api/pedimento-pdf/\|src/app/api/anexo24-pdf/\|src/app/api/reportes-pdf/\|src/app/api/auditoria-pdf/' \
+  | grep -v 'src/app/api/oca/.*/pdf/\|src/app/api/usmca/.*/pdf/\|src/app/api/reportes/multi-cliente/.*/pdf-document' \
   | wc -l | tr -d ' ')
 if [ "$HEX_COUNT" -gt "$INVARIANT_HEX_BASELINE" ]; then
   fail "Hardcoded hex: $HEX_COUNT (baseline $INVARIANT_HEX_BASELINE). Use a design-system token or add // design-token."
@@ -527,7 +540,11 @@ fi
 #   sizes — 12px and 16px — that don't map cleanly to the scale).
 #   No new violations introduced; one of the file-level worst offenders
 #   now reads at 0 ratchet-excluded lines.)
-INVARIANT_27_BASELINE=388
+# Baseline 2026-04-19 discipline-cascade phase 2 = 385 (parte-detail
+#   page.tsx server wrapper tokenized: 8 more fontSize values — 2 direct
+#   token maps (body/meta), 6 same-line WHY: for intermediate 12px chips.
+#   Full parte-detail surface now fully ratchet-clean.)
+INVARIANT_27_BASELINE=385
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

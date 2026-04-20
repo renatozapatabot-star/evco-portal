@@ -3,22 +3,22 @@ import { AguilaPdfHeader } from '@/lib/pdf/brand'
 
 const C = {
   bg: '#0D1117', surface: '#161B22', border: '#30363D',
-  text: 'var(--portal-fg-1)', muted: 'var(--portal-fg-4)', dim: '#484F58',
-  gold: 'var(--portal-fg-3)', green: 'var(--portal-status-green-fg)', cyan: 'var(--portal-fg-3)',
-  red: 'var(--portal-status-red-fg)', amber: 'var(--portal-status-amber-fg)',
+  text: '#E6EDF3', muted: '#8B949E', dim: '#484F58',
+  gold: '#C0C5CE', green: '#22C55E', cyan: '#C0C5CE',
+  red: '#EF4444', amber: '#F59E0B',
 }
 
 const s = StyleSheet.create({
   page: { backgroundColor: C.bg, padding: 30, fontFamily: 'Helvetica', color: C.text, fontSize: 9 },
   header: { borderBottom: `1px solid ${C.border}`, paddingBottom: 12, marginBottom: 16 },
-  title: { fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 'bold', color: C.gold, marginBottom: 4 },
+  title: { fontSize: 16, fontWeight: 'bold', color: C.gold, marginBottom: 4 },
   subtitle: { fontSize: 9, color: C.muted },
   kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   kpiCard: { flex: 1, backgroundColor: C.surface, borderRadius: 4, padding: 8, border: `0.5px solid ${C.border}` },
   kpiLabel: { fontSize: 7, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  kpiValue: { fontSize: 'var(--aguila-fs-section)', fontWeight: 'bold', color: C.text },
+  kpiValue: { fontSize: 14, fontWeight: 'bold', color: C.text },
   kpiSub: { fontSize: 7, color: C.dim, marginTop: 2 },
-  sectionTitle: { fontSize: 'var(--aguila-fs-label)', fontWeight: 'bold', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginTop: 12 },
+  sectionTitle: { fontSize: 10, fontWeight: 'bold', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginTop: 12 },
   tableHeader: { flexDirection: 'row', backgroundColor: C.surface, borderBottom: `0.5px solid ${C.border}`, paddingVertical: 4, paddingHorizontal: 6 },
   tableRow: { flexDirection: 'row', borderBottom: `0.5px solid ${C.border}`, paddingVertical: 3, paddingHorizontal: 6 },
   thText: { fontSize: 7, fontWeight: 'bold', color: C.muted, textTransform: 'uppercase' },
@@ -101,11 +101,11 @@ export function PedimentoPDF(props: PedimentoPDFProps) {
         <View style={s.kpiRow}>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>Proveedor</Text>
-            <Text style={[s.kpiValue, { fontSize: 'var(--aguila-fs-label)' }]}>{props.proveedor || '—'}</Text>
+            <Text style={[s.kpiValue, { fontSize: 10 }]}>{props.proveedor || '—'}</Text>
           </View>
           <View style={s.kpiCard}>
             <Text style={s.kpiLabel}>Mercancía</Text>
-            <Text style={[s.kpiValue, { fontSize: 'var(--aguila-fs-label)' }]}>{props.descripcion || '—'}</Text>
+            <Text style={[s.kpiValue, { fontSize: 10 }]}>{props.descripcion || '—'}</Text>
           </View>
         </View>
 

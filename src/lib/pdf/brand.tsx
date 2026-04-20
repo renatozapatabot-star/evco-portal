@@ -18,13 +18,17 @@ import {
   Stop,
 } from '@react-pdf/renderer'
 
-export const PDF_SILVER = 'var(--portal-fg-3)'
-export const PDF_SILVER_BRIGHT = 'var(--portal-fg-1)'
-export const PDF_SILVER_DIM = 'var(--portal-fg-5)'
-export const PDF_TEXT_MUTED = 'var(--portal-fg-5)'
-export const PDF_TEXT_PRIMARY = 'var(--portal-ink-1)'
-export const PDF_BORDER = 'var(--portal-fg-2)'
-export const PDF_ZEBRA = 'var(--portal-fg-1)'
+// NO-CODEMOD: @react-pdf/renderer cannot resolve CSS variables — literal hex required.
+// Codemod b2eac39/c02e064 swept these to var(--portal-*) and broke PDF rendering (null
+// gradient stop in PDFLinearGradient.stop). Values restored to pre-codemod state; any
+// future theme codemod must exclude src/lib/pdf/ and src/lib/doc-generators/.
+export const PDF_SILVER = '#C0C5CE'
+export const PDF_SILVER_BRIGHT = '#E8EAED'
+export const PDF_SILVER_DIM = '#7A7E86'
+export const PDF_TEXT_MUTED = '#6B7280'
+export const PDF_TEXT_PRIMARY = '#111827'
+export const PDF_BORDER = '#E5E7EB'
+export const PDF_ZEBRA = '#F9FAFB'
 
 // Silhouette path kept deliberately simple so @react-pdf renders reliably.
 export const EAGLE_PATH =

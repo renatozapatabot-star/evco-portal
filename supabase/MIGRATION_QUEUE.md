@@ -77,6 +77,40 @@ console.log.
 | `globalpc_partidas` | `(company_id, cve_producto)` | partidas→productos joins (22K rows) |
 | `globalpc_partidas` | `(cve_producto)` | back-filter catalog (previously 0 indexes on this table) |
 
+### `20260420_inicio_hot_path_indexes.sql`
+
+**What:** supplementary to the first perf pass — adds 3 more compound
+indexes discovered by line-by-line review of `src/app/inicio/page.tsx`:
+
+| Table | Columns | Powers |
+|---|---|---|
+| `entradas` | `(company_id, fecha_llegada_mercancia DESC)` | `entradas.semana` count (65K rows, previously **zero indexes**) |
+| `traficos` | `(company_id, fecha_cruce)` | `.is('fecha_cruce', null)` + `.gte('fecha_cruce', monthStart)` — both directions |
+| `globalpc_productos` | `(company_id, fraccion_classified_at) WHERE NOT NULL` | `catalogo.mes` classification-date filter (partial index avoids overhead on null-classified rows) |
+
+**Why:** first pass (perf_indexes.sql) focused on agent-reported
+tables; second pass came from reading the actual `/inicio` SSR
+queries. Together they cover the 12 softCount + 7 softData queries
+run per client cockpit render.
+
+**Rollback:**
+
+```sql
+DROP INDEX IF EXISTS idx_entradas_company_fecha_llegada;
+DROP INDEX IF EXISTS idx_traficos_company_fecha_cruce;
+DROP INDEX IF EXISTS idx_globalpc_productos_classified_at;
+```
+
+**Verification:**
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+  SELECT count(*) FROM entradas
+  WHERE company_id = 'evco'
+    AND fecha_llegada_mercancia >= now() - interval '7 days';
+-- expect: "Index Scan using idx_entradas_company_fecha_llegada"
+```
+
 **Why:** performance budgets in CLAUDE.md §PERFORMANCE BUDGETS (dashboard
 < 2s FCP, tráfico list < 1s interactive). Existing indexes were verified
 before writing the migration — no duplicates. `globalpc_partidas` had
@@ -111,11 +145,12 @@ on the KPI tile aggregation.
 
 ## Application order
 
-Both migrations are idempotent (`IF NOT EXISTS` / `ON CONFLICT DO
+All migrations are idempotent (`IF NOT EXISTS` / `ON CONFLICT DO
 UPDATE`) so order doesn't matter. Apply in filename order by convention:
 
 1. `20260420_fx_savings_heuristic.sql`
 2. `20260420_perf_indexes.sql`
+3. `20260420_inicio_hot_path_indexes.sql`
 
 ---
 

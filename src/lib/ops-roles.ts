@@ -71,8 +71,6 @@ export interface OpsMetrics {
   inactiveClients: Array<{ company_id: string; name: string; daysSinceActivity: number }>
 }
 
-const LEVEL_NAMES = ['Manual', 'Sugerencia', 'Actúa+Notifica', 'Autónomo']
-
 export function buildSummary(config: StaffConfig, metrics: OpsMetrics): string {
   switch (config.role) {
     case 'director': {

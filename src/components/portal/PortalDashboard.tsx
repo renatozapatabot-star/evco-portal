@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Truck, FileText, FolderOpen, Book, Package, ClipboardList } from 'lucide-react'
+import { Truck, FileText, FolderOpen, Book, Package, ClipboardList, Receipt } from 'lucide-react'
 import { PortalTopBar } from './PortalTopBar'
 import { PortalGreeting } from './PortalGreeting'
 import { PortalModuleCard } from './PortalModuleCard'
@@ -106,6 +106,10 @@ export function PortalDashboard({
 
   useCmdK(openCmd, closeCmd)
 
+  // onOpenTheater retained in the prop signature for back-compat callers
+  // but no longer wired — tile 2 is now a direct-nav Contabilidad card.
+  void onOpenTheater
+
   // Prefer the role-aware description but keep the 6 cards identical in
   // order, icon, label (invariant #29). Clients see warm copy; operator
   // + owner see terser ops copy.
@@ -189,27 +193,31 @@ export function PortalDashboard({
             ariaLabel="Ir a Embarques"
           />
 
-          {/* 2. Pedimentos */}
+          {/* 2. Contabilidad (2026-04-19 founder-override — was Pedimentos).
+               Client → /mi-cuenta (own A/R, ethical contract in
+               .claude/rules/client-accounting-ethics.md). Broker/operator →
+               /contabilidad/inicio (Anabel's cockpit). Pedimentos route
+               stays live via deep-link + CruzCommand. */}
           <PortalModuleCard
-            icon={<FileText size={ICON_SIZE} />}
-            title="Pedimentos"
+            icon={<Receipt size={ICON_SIZE} />}
+            title="Contabilidad"
             desc={
               isClient
-                ? navCounts.pedimentos?.microStatus ??
-                  'Declaraciones aduanales firmadas este mes.'
-                : 'Declaraciones aduanales · SAT.'
+                ? navCounts.contabilidad?.microStatus ??
+                  'Tu saldo, facturas del mes, próximos vencimientos.'
+                : 'CxC · CxP · cierre del mes.'
             }
             badge={
-              navCounts.pedimentos?.count
-                ? { tone: 'info', label: `${navCounts.pedimentos.count} MES` }
+              navCounts.contabilidad?.count
+                ? { tone: 'info', label: `${navCounts.contabilidad.count} ABIERTA${navCounts.contabilidad.count === 1 ? '' : 'S'}` }
                 : undefined
             }
             viz={<VizPedimentoLedger />}
-            metric={fmt(navCounts.pedimentos?.count ?? null, '0')}
-            metricLabel="ESTE MES"
+            metric={fmt(navCounts.contabilidad?.count ?? null, '0')}
+            metricLabel={isClient ? 'ABIERTAS' : 'CxC ABIERTAS'}
+            href={navHref('contabilidad', isClient ? '/mi-cuenta' : '/contabilidad/inicio')}
             accent
-            onClick={onOpenTheater}
-            ariaLabel="Abrir trazabilidad de pedimentos"
+            ariaLabel={isClient ? 'Ir a Mi cuenta' : 'Ir a Contabilidad'}
           />
 
           {/* 3. Expedientes */}

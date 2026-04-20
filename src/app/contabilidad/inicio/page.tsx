@@ -214,6 +214,9 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
 
   const navCounts: NavCounts = {
     traficos:        { count: activosCount,         series: activosSeries,         microStatus: `${cruzados7dCount} cruzaron esta semana` },
+    // 2026-04-19 override: own cockpit surface — self-referential
+    // Contabilidad tile. Uses the AR aging already computed for the KPIs.
+    contabilidad:    { count: ar.count ?? null,      series: [],                  microStatus: arVencido > 0 ? 'Saldos vencidos hoy' : 'Al corriente' },
     pedimentos:      { count: pedimentosMesCount,   series: pedimentosSeries,      microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesCount,     series: expedientesSeries,     microStatus: 'Documentos totales' },
     catalogo:        { count: catalogoCount,        series: [],                    microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },

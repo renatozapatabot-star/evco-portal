@@ -354,6 +354,13 @@ async function renderEagle(opName: string, rawMonth: string | null) {
       series: traficosActivosSeries,
       microStatus: `${cruzadosMesCount} cruzaron en ${monthShort}`,
     },
+    // 2026-04-19 override: Contabilidad takes nav tile #2. Real count
+    // wired in Phase 5 (all-client aggregate CxC from econta_cartera).
+    contabilidad: {
+      count: null,
+      series: [],
+      microStatus: 'CxC total · cierre del mes',
+    },
     pedimentos: {
       // Show actionable count (pedimentos awaiting cruce) — that's what
       // moves the needle. Cruces-este-mes is the hero KPI separately.

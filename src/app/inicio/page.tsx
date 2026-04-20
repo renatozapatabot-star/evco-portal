@@ -360,6 +360,9 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
 
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
+    // 2026-04-19 override: Pedimentos tile retired from nav grid; Contabilidad takes tile #2.
+    // Real count wired in Phase 5 from econta_cartera (client's own open invoices).
+    contabilidad:    { count: null,                   series: [],                     microStatus: 'Se llena con tu saldo y facturas' },
     pedimentos:      { count: pedimentosMesCount,     series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: expedientesMicroStatus, historicMicrocopy: expedientesHistoricMicrocopy },
     catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus,    historicMicrocopy: catalogoHistoricMicrocopy },

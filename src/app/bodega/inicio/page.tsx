@@ -195,6 +195,9 @@ async function renderBodegaCockpit(opName: string) {
 
   const navCounts: NavCounts = {
     traficos:        { count: activosCount,         series: activosSeries,        microStatus: `${cruzados7dCount} cruzaron esta semana` },
+    // 2026-04-19 override: Contabilidad nav tile #2. Bodega role doesn't
+    // surface accounting counts — leave null so tile renders empty-state.
+    contabilidad:    { count: null,                 series: [],                   microStatus: '—' },
     pedimentos:      { count: pedimentosMesCount,   series: pedimentosSeries,     microStatus: 'Este mes' },
     expedientes:     { count: expedientesCount,     series: expedientesSeries,    microStatus: 'Documentos totales' },
     catalogo:        { count: catalogoCount,        series: [],                   microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar' },

@@ -239,6 +239,13 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
       series: activosSeries,
       microStatus: `${cruzados7dCount} cruzaron esta semana`,
     },
+    // 2026-04-19 override: Contabilidad takes nav tile #2. Real count
+    // wired in Phase 5 (broker-wide CxC from econta_cartera).
+    contabilidad: {
+      count: null,
+      series: [],
+      microStatus: 'CxC · CxP · cierre del mes',
+    },
     pedimentos: {
       count: pedimentosMonthCount,
       series: pendientesSeries,

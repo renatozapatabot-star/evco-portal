@@ -8,7 +8,7 @@ import { KPITile } from './KPITile'
 import { TimelineFeed, type TimelineItem } from './TimelineFeed'
 import type { SparklineTone } from './Sparkline'
 import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
-import { UNIFIED_NAV_TILES, type NavCounts, type NavTileKey } from '@/lib/cockpit/nav-tiles'
+import { UNIFIED_NAV_TILES, resolveNavHref, type NavCounts, type NavTileKey } from '@/lib/cockpit/nav-tiles'
 import { CockpitBanner, type CockpitRole } from './CockpitBanner'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { PortalCard } from '@/components/portal/PortalCard'
@@ -121,9 +121,10 @@ export function CockpitInicio({
   }
   const navItems: NavCardGridItem[] = UNIFIED_NAV_TILES.map((tile) => {
     const cell = navCounts[tile.key as NavTileKey]
+    const roleResolvedHref = resolveNavHref(tile, role)
     return {
       tile: {
-        href: withMonth(tile.href) ?? tile.href,
+        href: withMonth(roleResolvedHref) ?? roleResolvedHref,
         label: tile.label,
         icon: tile.icon,
         description: tile.description,

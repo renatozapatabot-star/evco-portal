@@ -341,6 +341,59 @@ module.exports = {
       error_file: '/tmp/backfill-transporte-error.log',
       out_file: '/tmp/backfill-transporte-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    // -------------------------------------------------------------------
+    // Econta cadence (2026-04-19 · Contabilidad-tile marathon Phase 6).
+    //
+    // Purpose: lift econta_* tables onto the 30-minute intraday cadence
+    // promised by `.claude/rules/sync-contract.md`. Before this entry,
+    // full-sync-econta.js was manual-run only — /contabilidad/inicio +
+    // /mi-cuenta would silently render stale numbers without a freshness
+    // banner (because no sync_log row meant the banner short-circuits).
+    //
+    // full-sync-econta.js is idempotent (safeUpsert) and Telegram-alerted
+    // on success + failure. Runtime is seconds, not minutes, since the
+    // econta_* tables are O(10⁴) rows. Running the full script every
+    // 30 minutes is simpler than a delta path; the perf budget is fine.
+    //
+    // After editing this file, on Throne:
+    //   pm2 reload ecosystem.config.js --only econta-intraday
+    //   pm2 save
+    // (Per operational-resilience.md rule #2 — pm2 save is non-negotiable
+    //  after every process change.)
+    // -------------------------------------------------------------------
+    {
+      name: 'econta-intraday',
+      script: 'scripts/full-sync-econta.js',
+      cwd,
+      cron_restart: '*/30 * * * *',   // every 30 min · sync-contract.md §1
+      autorestart: false, watch: false, max_memory_restart: '512M',
+      env: { NODE_ENV: 'production', ECONTA_SYNC_MODE: 'intraday' },
+      error_file: '/tmp/econta-intraday-error.log',
+      out_file: '/tmp/econta-intraday-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'econta-nightly-full',
+      script: 'scripts/full-sync-econta.js',
+      cwd,
+      cron_restart: '0 1 * * *',      // 01:00 CST · authoritative pass
+      autorestart: false, watch: false, max_memory_restart: '512M',
+      env: { NODE_ENV: 'production', ECONTA_SYNC_MODE: 'nightly' },
+      error_file: '/tmp/econta-nightly-error.log',
+      out_file: '/tmp/econta-nightly-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      name: 'econta-reconciler',
+      script: 'scripts/econta-reconciler.js',
+      cwd,
+      cron_restart: '0 4 * * 1',      // Monday 04:00 CST · weekly drift check
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/econta-reconciler-error.log',
+      out_file: '/tmp/econta-reconciler-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]
 }

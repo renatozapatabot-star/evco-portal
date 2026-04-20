@@ -299,6 +299,21 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     },
     {
+      // Proactive 7-day heads-up on system_config rows with valid_to.
+      // Complements the rate-sweep hardening (74b67db) — refuse-to-
+      // calculate paths now fire loudly when rates expire, so a
+      // week of warning lets the broker refresh before pipelines stall.
+      name: 'system-config-expiry-watch',
+      script: 'scripts/system-config-expiry-watch.js',
+      cwd,
+      cron_restart: '15 7 * * *',
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/system-config-expiry-watch-error.log',
+      out_file: '/tmp/system-config-expiry-watch-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
       name: 'mensajeria-email-fallback',
       script: 'scripts/mensajeria-email-fallback.js',
       cwd,

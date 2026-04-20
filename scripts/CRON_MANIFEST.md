@@ -4,16 +4,18 @@
 > in the same commit that edits `ecosystem.config.js`. If a script runs on
 > cadence but isn't here, the manifest is lying — fix that first.
 
-**Last reconciled:** 2026-04-19 night pre-Ursula stress pass.
+**Last reconciled:** 2026-04-20 post-rate-sweep block.
 **Source of truth:** `ecosystem.config.js` @ repo root · inspected on branch `fix/pdf-react-pdf-literal-colors-2026-04-19`.
 **Host:** Throne (local Mac Studio, `50.84.32.162`). `pm2 save` must run after every edit.
 
 **CLAUDE.md gap:** global constitution (user file) claims 33 cron jobs. This
-manifest accounts for 28 PM2 processes. The 5-job gap is likely (a)
-`nightly-pipeline.js` which invokes multiple sub-jobs and counts as 1 PM2 entry,
-(b) legacy crontab entries that migrated to PM2 but were counted in both
-inventories, or (c) ad-hoc scripts run manually that were included in the
-"cron" count. Investigation is Tier 2 follow-up; the 28 below are verified.
+manifest accounts for 29 PM2 processes (28 on 2026-04-19 + 1 added
+2026-04-20: `system-config-expiry-watch`). The remaining 4-job gap is likely
+(a) `nightly-pipeline.js` which invokes multiple sub-jobs and counts as 1
+PM2 entry, (b) legacy crontab entries that migrated to PM2 but were counted
+in both inventories, or (c) ad-hoc scripts run manually that were included
+in the "cron" count. Investigation is Tier 2 follow-up; the 29 below are
+verified.
 
 ---
 
@@ -55,7 +57,7 @@ inventories, or (c) ad-hoc scripts run manually that were included in the
 | 8 | `risk-scorer` | ⏰ `0 */2 * * *` | `scripts/risk-scorer.js` | 💾📣 | Re-scores active tráficos every 2h. Used by `risk-feed` and `/admin/eagle`. |
 | 9 | `risk-feed` | ⏰ `0 * * * *` | `scripts/risk-feed.js` | 💾📣 | Hourly emit of risk-feed rows to `risk_feed` table. |
 
-## Daily operational jobs — 7 processes
+## Daily operational jobs — 8 processes
 
 | # | Name | Cadence | Script | Contract | Notes |
 |---|---|---|---|---|---|
@@ -69,6 +71,7 @@ inventories, or (c) ad-hoc scripts run manually that were included in the
 | 17 | `completeness-checker` | ⏰ `0 6 * * *` | `scripts/completeness-checker.js` | 💾📣 | 06:00 — flags tráficos with incomplete expedientes. Feeds `/admin/eagle` alert panel. |
 | 18 | `tito-daily-briefing` | ⏰ `30 6 * * *` | `scripts/tito-daily-briefing.js` | 💾📣 | 06:30 — Telegram morning brief to Tito. Includes semáforo holds, MVE countdowns, overnight alerts. |
 | 19 | `client-briefing-generator` | ⏰ `0 7 * * 1-5` | `scripts/generate-client-briefing.js` | 💾📣 | 07:00 weekdays — per-client Anthropic-generated digest. Dedup Telegram on credit failure. |
+| 19b | `system-config-expiry-watch` | ⏰ `15 7 * * *` | `scripts/system-config-expiry-watch.js` | 💾📣 | 07:15 daily — checks every `system_config` row with `valid_to`; fires 🔴 SEV-2 on expired, 🟡 on ≤3d, 🟢 on ≤7d. Exits non-zero on expired → loud cron failure. |
 | 20 | `patentes-watch` | ⏰ `0 8 * * *` | `scripts/patentes-watch.js` | 💾📣 | 08:00 — monitors patente validity + SAT-side status. |
 | 21 | `vencimientos-watch` | ⏰ `0 9 * * *` | `scripts/vencimientos-watch.js` | 💾📣 | 09:00 — surfaces upcoming deadline expirations (MVE, Anexo 24, etc). |
 

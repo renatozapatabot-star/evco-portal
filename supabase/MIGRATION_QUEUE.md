@@ -38,6 +38,45 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ## Currently pending (as of 2026-04-20 07:45 CT)
 
+### `20260420_oca_classifier_schema.sql`
+
+**What:** additive schema for Tito's OCA Classifier tool (branch
+`feat/tito-oca-classifier-2026-04-20`). Adds 9 columns to `oca_database`
+(`nico`, `invoice_ref`, `np_code`, `razonamiento`, `antecedentes`,
+`analisis`, `clasificacion_descripcion_tigie`, `arancel_general`,
+`tmec_discrepancies`) plus `signature_image_url` on `companies`. Also
+adds 2 indexes for Classifier lookups.
+
+**Why:** the Classifier produces formal OCA-YYYY-NNN records per
+newly-classified NP. The current `oca_database` (live shape: pattern
+cache with `fraccion` + `description` + `use_count`) lacks the columns
+needed to store the formal opinion (NICO, I/II/III/IV sections, T-MEC
+discrepancy flags, invoice anchor). This migration adds them
+idempotently without touching or renaming existing columns.
+
+**Rollback:**
+
+```sql
+ALTER TABLE oca_database
+  DROP COLUMN IF EXISTS nico,
+  DROP COLUMN IF EXISTS invoice_ref,
+  DROP COLUMN IF EXISTS np_code,
+  DROP COLUMN IF EXISTS razonamiento,
+  DROP COLUMN IF EXISTS antecedentes,
+  DROP COLUMN IF EXISTS analisis,
+  DROP COLUMN IF EXISTS clasificacion_descripcion_tigie,
+  DROP COLUMN IF EXISTS arancel_general,
+  DROP COLUMN IF EXISTS tmec_discrepancies;
+ALTER TABLE companies DROP COLUMN IF EXISTS signature_image_url;
+DROP INDEX IF EXISTS idx_oca_company_invoice_np;
+DROP INDEX IF EXISTS idx_oca_np_code_created;
+```
+
+**Verification:** see in-file comments. Expect 9 new columns on
+`oca_database`, 1 new column on `companies`, 2 new indexes. Golden-
+fixture check: after Tito signs on invoice #4526219, expect 4 rows
+with `invoice_ref='4526219'`.
+
 ### `20260420_fx_savings_heuristic.sql`
 
 **What:** seeds `system_config` with the `fx_savings_heuristic_pct` key
@@ -151,6 +190,7 @@ UPDATE`) so order doesn't matter. Apply in filename order by convention:
 1. `20260420_fx_savings_heuristic.sql`
 2. `20260420_perf_indexes.sql`
 3. `20260420_inicio_hot_path_indexes.sql`
+4. `20260420_oca_classifier_schema.sql`
 
 ---
 

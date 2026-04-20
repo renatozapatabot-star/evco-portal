@@ -35,12 +35,15 @@ async function safeUpsert(supabase, table, rows, { onConflict, ignoreDuplicates 
   })
   if (error) {
     console.error(`[${scriptName}] ${table} upsert failed:`, error.message)
-    await sendTelegram(`🔴 <b>${scriptName}</b>: ${table} upsert failed — ${error.message}`).catch(() => {})
+    // sendTelegram swallows transport errors internally (console.error
+    // log, never throws), so no outer .catch needed. Previously had
+    // a .catch(() => {}) that R13 rightly flagged as silent.
+    await sendTelegram(`🔴 <b>${scriptName}</b>: ${table} upsert failed — ${error.message}`)
     throw new Error(`${table} upsert failed: ${error.message}`)
   }
   if ((count ?? 0) === 0 && rows.length > 0) {
     console.warn(`[${scriptName}] ${table}: attempted ${rows.length}, 0 written`)
-    await sendTelegram(`🟡 <b>${scriptName}</b>: ${table} attempted ${rows.length}, 0 written`).catch(() => {})
+    await sendTelegram(`🟡 <b>${scriptName}</b>: ${table} attempted ${rows.length}, 0 written`)
   }
   return { count: count ?? 0 }
 }
@@ -54,7 +57,7 @@ async function safeInsert(supabase, table, rows, { scriptName = 'unknown', silen
       return { count: 0, duplicate: true }
     }
     console.error(`[${scriptName}] ${table} insert failed:`, error.message)
-    await sendTelegram(`🔴 <b>${scriptName}</b>: ${table} insert failed — ${error.message}`).catch(() => {})
+    await sendTelegram(`🔴 <b>${scriptName}</b>: ${table} insert failed — ${error.message}`)
     throw new Error(`${table} insert failed: ${error.message}`)
   }
   return { count: count ?? 0 }

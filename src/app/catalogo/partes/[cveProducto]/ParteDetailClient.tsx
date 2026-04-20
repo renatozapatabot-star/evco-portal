@@ -118,7 +118,7 @@ export function ParteDetailClient({
 
   return (
     <>
-      <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
+      <p style={{ margin: '0 0 16px', fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.6)' }}>
         {metaLine}
       </p>
 
@@ -160,9 +160,9 @@ export function ParteDetailClient({
               padding: '0 18px',
               background: 'transparent',
               border: 'none',
-              borderBottom: active === t.id ? '2px solid #C9A84C' : '2px solid transparent',
+              borderBottom: active === t.id ? '2px solid var(--portal-gold-500)' : '2px solid transparent',
               color: active === t.id ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.6)',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: active === t.id ? 700 : 500,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
@@ -189,7 +189,7 @@ export function ParteDetailClient({
               background: 'rgba(192,197,206,0.12)',
               border: '1px solid rgba(192,197,206,0.3)',
               color: 'var(--portal-fg-1)',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -212,7 +212,7 @@ export function ParteDetailClient({
               background: 'rgba(234,179,8,0.12)',
               border: '1px solid rgba(234,179,8,0.3)',
               color: 'var(--portal-status-amber-fg)',
-              fontSize: 14,
+              fontSize: 'var(--aguila-fs-section)',
               fontWeight: 600,
               textDecoration: 'none',
               display: 'inline-flex',
@@ -232,9 +232,9 @@ function StatCard({ label, value, sublabel }: { label: string; value: string; su
   return (
     <GlassCard padding="12px 16px">
       <div>
-        <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
-        <p className="font-mono" style={{ margin: '4px 0 2px', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--portal-fg-1)' }}>{value}</p>
-        {sublabel && <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{sublabel}</p>}
+        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+        <p className="font-mono" style={{ margin: '4px 0 2px', fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--portal-fg-1)' }}>{value}</p>
+        {sublabel && <p style={{ margin: 0, fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>{sublabel}</p>}
       </div>
     </GlassCard>
   )
@@ -251,7 +251,7 @@ function HistoryTab({ data }: { data: DetailPayload }) {
   return (
     <GlassCard padding="0">
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <Th>Fecha</Th>
@@ -290,12 +290,12 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Classifications section */}
       <section>
-        <h2 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.02em' }}>
+        <h2 style={{ margin: '0 0 10px', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.02em' }}>
           Historial de clasificación
         </h2>
         {!hasClassifications ? (
           <GlassCard padding="16px">
-            <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: 'var(--aguila-fs-body)' }}>
               Sin clasificaciones registradas para esta parte.
             </p>
           </GlassCard>
@@ -305,31 +305,31 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
               <GlassCard key={i} padding="14px 16px">
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+                    <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{/* WHY: intermediate meta (between label-10 and meta-11) */}
                       {c.ts ? fmtDate(c.ts) : '—'}
                     </p>
-                    <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>
+                    <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>{/* WHY: fraccion emphasis value between body-13 and kpi-small-18 */}
                       {c.fraccion_assigned || '—'}
                     </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     {typeof c.think_confidence === 'number' && (
-                      <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
+                      <p style={{ margin: 0, fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.55)' }}>
                         Confianza: <span className="font-mono">{Math.round(c.think_confidence * 100)}%</span>
                       </p>
                     )}
                     {c.supertito_agreed === true && (
-                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--portal-status-green-fg)', fontWeight: 700 }}>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--portal-status-green-fg)', fontWeight: 700 }}>{/* WHY: intermediate meta for inline supertito signal */}
                         ✓ Tito de acuerdo
                       </p>
                     )}
                     {c.supertito_correction && (
-                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--portal-status-red-fg)' }}>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--portal-status-red-fg)' }}>{/* WHY: intermediate meta for inline supertito correction */}
                         ✗ Tito corrigió a <span className="font-mono">{c.supertito_correction}</span>
                       </p>
                     )}
                     {c.supertito_agreed === null && !c.supertito_correction && (
-                      <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                      <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>
                         Pendiente de revisión
                       </p>
                     )}
@@ -343,17 +343,17 @@ function ClassificationTab({ data, formattedFraccion }: { data: DetailPayload; f
 
       {/* OCAs section */}
       <section>
-        <h2 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.02em' }}>
+        <h2 style={{ margin: '0 0 10px', fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.02em' }}>
           Opiniones de Clasificación Arancelaria
         </h2>
         {!hasOcas ? (
           <GlassCard padding="16px" style={{ borderColor: 'var(--portal-status-amber-ring)', background: 'rgba(251,191,36,0.04)' }}>
-            <p style={{ margin: 0, color: 'var(--portal-status-amber-fg)', fontSize: 13, fontWeight: 600 }}>
+            <p style={{ margin: 0, color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>
               {formattedFraccion
                 ? `La fracción ${formattedFraccion} no tiene OCA firmada para EVCO.`
                 : 'Esta parte aún no tiene fracción clasificada.'}
             </p>
-            <p style={{ margin: '6px 0 0', color: 'rgba(252,211,77,0.75)', fontSize: 12 }}>
+            <p style={{ margin: '6px 0 0', color: 'rgba(252,211,77,0.75)', fontSize: 12 }}>{/* WHY: intermediate meta paired with body-13 primary line */}
               Contacta a tu agente aduanal para generar una.
             </p>
           </GlassCard>
@@ -375,16 +375,16 @@ function OCACard({ oca }: { oca: DetailPayload['ocas'][number] }) {
     <GlassCard padding="14px 16px">
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <p className="font-mono" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>
+          <p className="font-mono" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--portal-status-amber-fg)' }}>{/* WHY: fraccion emphasis value between body-13 and kpi-small-18 */}
             {oca.fraccion}
           </p>
-          <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+          <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{/* WHY: intermediate meta for OCA provenance line */}
             {oca.approved_by ? `Firmada por ${oca.approved_by}` : 'Firma pendiente'}
             {oca.last_used && ` · último uso ${fmtDate(oca.last_used)}`}
             {typeof oca.use_count === 'number' && ` · ${oca.use_count} usos`}
           </p>
           {oca.alternative_fracciones && oca.alternative_fracciones.length > 0 && (
-            <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+            <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>
               Fracciones alternativas consideradas: <span className="font-mono">{oca.alternative_fracciones.join(', ')}</span>
             </p>
           )}
@@ -402,7 +402,7 @@ function OCACard({ oca }: { oca: DetailPayload['ocas'][number] }) {
               border: '1px solid rgba(255,255,255,0.15)',
               borderRadius: 8,
               color: 'rgba(255,255,255,0.75)',
-              fontSize: 12,
+              fontSize: 12, // WHY: intermediate meta for inline expand/collapse control
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -410,7 +410,7 @@ function OCACard({ oca }: { oca: DetailPayload['ocas'][number] }) {
             {expanded ? '− Ocultar razonamiento' : '+ Razonamiento legal'}
           </button>
           {expanded && (
-            <p style={{ marginTop: 12, fontSize: 13, color: 'rgba(255,255,255,0.8)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+            <p style={{ marginTop: 12, fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.8)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
               {oca.legal_reasoning}
             </p>
           )}
@@ -437,13 +437,13 @@ function ProveedoresTab({ data }: { data: DetailPayload }) {
           <GlassCard key={p.clave} padding="14px 16px">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 16 }}>
               <div style={{ minWidth: 0 }}>
-                <p className="font-mono" style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+                <p className="font-mono" style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{/* WHY: intermediate meta for supplier clave code */}
                   {p.clave}
                 </p>
-                <p style={{ margin: '2px 0 0', fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
+                <p style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
                   {p.nombre || p.clave}
                 </p>
-                <p style={{ margin: '6px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                <p style={{ margin: '6px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>{/* WHY: intermediate meta for supplier stats line */}
                   {p.uses}× · {p.avg_price != null ? `prom. ${fmtUsd(p.avg_price)}` : 'sin precio'}
                   {p.last_use && ` · último ${fmtDate(p.last_use)}`}
                 </p>
@@ -503,7 +503,7 @@ function CostosTab({ data }: { data: DetailPayload }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {alertVariation && (
         <GlassCard padding="12px 16px" style={{ borderColor: 'rgba(251,191,36,0.28)', background: 'rgba(251,191,36,0.04)' }}>
-          <p style={{ margin: 0, color: 'var(--portal-status-amber-fg)', fontSize: 13, fontWeight: 600 }}>
+          <p style={{ margin: 0, color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>
             El costo unitario ha {variationPct > 0 ? 'aumentado' : 'bajado'} un {Math.abs(variationPct)}% en los últimos 6 meses. Revisa con tu comprador.
           </p>
         </GlassCard>
@@ -528,7 +528,11 @@ function CostosTab({ data }: { data: DetailPayload }) {
 
 function MiniLineChart({ series }: { series: DetailPayload['cost_trend'] }) {
   if (series.length < 2) {
-    return <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Necesitamos al menos 2 meses de datos.</p>
+    return (
+      <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: 12 /* WHY: intermediate meta for chart fallback hint */ }}>
+        Necesitamos al menos 2 meses de datos.
+      </p>
+    )
   }
   const w = 600
   const h = 140
@@ -571,15 +575,15 @@ function MiniLineChart({ series }: { series: DetailPayload['cost_trend'] }) {
 function StatInline({ label, value, tone }: { label: string; value: string; tone?: 'amber' }) {
   return (
     <div>
-      <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
-      <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)' }}>{value}</p>
+      <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+      <p className="font-mono" style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)' }}>{value}</p>{/* WHY: stat-inline emphasis value between body-13 and kpi-small-18 */}
     </div>
   )
 }
 
 function Th({ children, align = 'left' }: { children: React.ReactNode; align?: 'left' | 'right' }) {
   return (
-    <th style={{ padding: '10px 12px', textAlign: align, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+    <th style={{ padding: '10px 12px', textAlign: align, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
       {children}
     </th>
   )
@@ -587,7 +591,7 @@ function Th({ children, align = 'left' }: { children: React.ReactNode; align?: '
 
 function Td({ children, align = 'left', mono = false }: { children: React.ReactNode; align?: 'left' | 'right'; mono?: boolean }) {
   return (
-    <td className={mono ? 'font-mono' : undefined} style={{ padding: '10px 12px', textAlign: align, fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>
+    <td className={mono ? 'font-mono' : undefined} style={{ padding: '10px 12px', textAlign: align, fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.85)' }}>
       {children}
     </td>
   )

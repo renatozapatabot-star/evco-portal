@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { getCompanyIdCookie } from '@/lib/client-config'
 import { haptic } from '@/hooks/use-haptic'
 
 const supabase = createClient(
@@ -92,13 +91,34 @@ export function useRealtimeTrafico() {
   }, [])
 
   useEffect(() => {
-    const companyId = getCompanyIdCookie()
-    companyIdRef.current = companyId
+    // Resolve tenant scope from the signed HMAC session, not a forgeable
+    // cookie (baseline-2026-04-20 I20 contract extended to the browser).
+    let cancelled = false
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    ;(async () => {
+      let companyId = ''
+      try {
+        const res = await fetch('/api/session/scope', { cache: 'no-store', credentials: 'include' })
+        if (res.ok) {
+          const body = await res.json()
+          companyId = String(body.companyId || '')
+        }
+      } catch {
+        // If the endpoint fails we leave companyId empty — the subscribe
+        // below will never fire (filter is required) and channelHealthy
+        // stays false, which is the honest signal.
+      }
+      if (cancelled || !companyId) {
+        setChannelHealthy(false)
+        return
+      }
+      companyIdRef.current = companyId
 
     // supabase-js realtime overload types require the literal cast below;
     // dropping the cast breaks generic inference on .on(). Tracked in supabase-js.
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    const channel = supabase
+    channel = supabase
       .channel('cruz-realtime')
       .on(
         'postgres_changes' as any, // any-ok: supabase-js realtime event name type lacks string literals
@@ -137,10 +157,12 @@ export function useRealtimeTrafico() {
       })
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    setUpdatedAt(new Date())
+      setUpdatedAt(new Date())
+    })()
 
     return () => {
-      supabase.removeChannel(channel)
+      cancelled = true
+      if (channel) supabase.removeChannel(channel)
     }
   }, [handleTraficoUpdate, handleEntradaUpdate])
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getCookieValue } from '@/lib/client-config'
 
 interface NotificationCount {
   unread: number
@@ -13,12 +12,26 @@ interface NotificationCount {
  * v2 Notification hook — subscribes to Supabase Realtime with rate limiting.
  * Buffers notifications for 5s before updating the badge.
  * Quiet hours (11 PM – 5 AM): accumulates silently.
+ *
+ * Tenant scope resolved from the signed HMAC session via
+ * `/api/session/scope`, not a forgeable cookie (I20 contract).
  */
 export function useNotificationBadge() {
   const [count, setCount] = useState(0)
+  const [companyId, setCompanyId] = useState('')
   const bufferRef = useRef<number>(0)
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const companyId = typeof document !== 'undefined' ? getCookieValue('company_id') : ''
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/session/scope', { cache: 'no-store', credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(body => {
+        if (!cancelled && body?.companyId) setCompanyId(String(body.companyId))
+      })
+      .catch(() => { /* keep companyId empty — hooks below gate on it */ })
+    return () => { cancelled = true }
+  }, [])
 
   // Flush buffered notifications to state
   const flush = useCallback(() => {

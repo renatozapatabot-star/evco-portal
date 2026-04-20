@@ -154,7 +154,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
     : { data: [] as Array<{ cve_proveedor: string; nombre: string | null }> }
 
   const nameByClave = new Map<string, string | null>(
-    (proveedorRows || []).map((r: any) => [r.cve_proveedor, r.nombre]),
+    (proveedorRows || []).map(
+      (r: { cve_proveedor: string; nombre: string | null }) => [r.cve_proveedor, r.nombre],
+    ),
   )
 
   const proveedores = proveedorClaves
@@ -212,7 +214,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
 
   // tmecRes.data is now an array (.limit(1)) or null (empty branch)
   const tmecRow = Array.isArray(tmecRes.data) ? tmecRes.data[0] : tmecRes.data
-  const tmecEligible = !!(tmecRow && (tmecRow as any).preferential_rate_tmec === 0)
+  const tmecEligible = !!(
+    tmecRow && (tmecRow as { preferential_rate_tmec: number | null }).preferential_rate_tmec === 0
+  )
 
   return NextResponse.json(
     {
@@ -236,8 +240,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
           times_used_lifetime: lifetimeCount ?? partidas.length,
           last_used_at: partidas[0]?.created_at ?? null,
         },
-        classifications: (classificationsRes.data || []) as any[],
-        ocas: (ocasRes.data || []) as any[],
+        classifications: (classificationsRes.data || []) as Record<string, unknown>[],
+        ocas: (ocasRes.data || []) as Record<string, unknown>[],
         uses_timeline,
         proveedores,
         cost_trend,

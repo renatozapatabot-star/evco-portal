@@ -98,7 +98,7 @@ function defaultCellRenderer<T extends Record<string, unknown>>(
   if (col.render && (type === 'custom' || type === 'text')) {
     return col.render
   }
-  return (row) => {
+  return function AguilaDefaultCell(row) {
     const raw = row[col.key]
     switch (type) {
       case 'pedimento':

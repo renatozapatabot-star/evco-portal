@@ -151,7 +151,11 @@ export async function GET(req: NextRequest) {
     .eq('preferential_rate_tmec', 0)
     .limit(5000)
 
-  const tmecFraccions = new Set<string>((tmecRows || []).map((t: any) => t.fraccion).filter(Boolean))
+  const tmecFraccions = new Set<string>(
+    (tmecRows || [])
+      .map((t: { fraccion: string | null }) => t.fraccion)
+      .filter((f): f is string => Boolean(f)),
+  )
 
   // Step 3.5: active-parts allowlist — only show SKUs this client has
   // actually imported (has ≥ 1 globalpc_partida row for). Per

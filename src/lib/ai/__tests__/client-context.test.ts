@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- this test stubs
+   the Supabase chainable query-builder, whose terminal-method dispatch
+   is inherently dynamic; typing the mock faithfully would require
+   reproducing `PostgrestQueryBuilder` which adds no test value. */
 import { describe, it, expect } from 'vitest'
 import { buildClientAIContext, formatClientAIContextPreamble } from '../client-context'
 

@@ -44,21 +44,21 @@ export async function buildClientAIContext(
       // the whole row doesn't null out on a missing-column error.
       Promise.resolve(
         supabase.from('companies').select('name, rfc').eq('company_id', companyId).maybeSingle()
-      ).then((r: any) => r?.data ?? null).catch(() => null),
+      ).then((r: { data: unknown } | null) => r?.data ?? null).catch(() => null),
       Promise.resolve(
         supabase.from('traficos').select('trafico, fecha_llegada, estatus').eq('company_id', companyId)
           .not('estatus', 'in', '("Cruzado","E1","Entregado","Cancelado")')
           .order('fecha_llegada', { ascending: true }).limit(10)
-      ).then((r: any) => r?.data ?? []).catch(() => []),
+      ).then((r: { data: unknown[] | null } | null) => r?.data ?? []).catch(() => []),
       Promise.resolve(
         supabase.from('traficos').select('trafico, pedimento, fecha_pago').eq('company_id', companyId)
           .not('pedimento', 'is', null)
           .order('fecha_pago', { ascending: false }).limit(5)
-      ).then((r: any) => r?.data ?? []).catch(() => []),
+      ).then((r: { data: unknown[] | null } | null) => r?.data ?? []).catch(() => []),
       Promise.resolve(
         supabase.from('expediente_documentos').select('trafico_id, doc_type').eq('company_id', companyId)
           .is('file_url', null).limit(50)
-      ).then((r: any) => r?.data ?? []).catch(() => []),
+      ).then((r: { data: unknown[] | null } | null) => r?.data ?? []).catch(() => []),
     ])
 
   const companyRow = company as { name?: string | null; rfc?: string | null; portal_company_name?: string | null } | null

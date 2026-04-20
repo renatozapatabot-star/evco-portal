@@ -92,72 +92,91 @@ export default async function MiCuentaPage() {
   // strictly scoped to their own `scvecliente` via the companies join.
   const scopedCompanyId: string | null = isClient ? companyId : null
 
-  try {
-    const [ar, freshness, name] = await Promise.all([
-      computeARAging(supabase, scopedCompanyId),
-      readFreshness(supabase, companyId),
-      readDisplayName(supabase, companyId),
-    ])
-
-    // Fire-and-forget audit log — records WHO viewed, not WHAT they saw.
-    // Failures swallowed to avoid blocking the render path. See
-    // client-accounting-ethics.md §7 (audit contract).
-    void recordView(supabase, session, isClient)
-
-    return (
-      <PageShell
-        title={isClient ? 'Tu cuenta' : 'Vista broker · Tu cuenta'}
-        subtitle={isClient ? name : 'Agregado · vista interna'}
-      >
-        {freshness.hasData && <FreshnessBanner reading={freshness} />}
-
-        {/* Hero KPIs — silver chrome, no severity, no urgency colors.
-            Aging buckets render in calm silver per ethics contract §tone. */}
-        <HeroStrip ar={ar} isClient={isClient} />
-
-        {/* Aging breakdown */}
-        <AgingSection ar={ar} isClient={isClient} />
-
-        {/* Open invoices — the top debtors slice, relabeled for the
-            client surface. No "overdue" language; days since emission. */}
-        <OpenInvoicesSection ar={ar} isClient={isClient} />
-
-        {/* Always-paired Mensajería CTA — Anabel is the human for anything
-            the numbers don't explain. */}
-        <MensajeriaCta isClient={isClient} />
-
-        {/* Back link — calm escape hatch to /inicio. Client only. */}
-        {isClient && (
-          <div style={{ marginTop: 'var(--aguila-gap-section, 32px)', textAlign: 'center' }}>
-            <Link
-              href="/inicio"
-              style={{
-                color: 'var(--aguila-text-muted)',
-                fontSize: 'var(--aguila-fs-meta, 11px)',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <ArrowLeft size={12} />
-              Volver al inicio
-            </Link>
-          </div>
-        )}
-      </PageShell>
-    )
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    const digest =
-      typeof err === 'object' && err !== null && 'digest' in err
-        ? String((err as { digest?: unknown }).digest ?? '')
-        : ''
-    if (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND' || msg === 'NEXT_REDIRECT') {
-      throw err
-    }
-    return <CockpitErrorCard message={`No se pudo cargar tu cuenta: ${msg}`} />
+  // Data fetch isolated from render — keep JSX out of try/catch so React
+  // render-phase exceptions route to error.tsx (the error boundary)
+  // rather than being swallowed here (react-hooks/error-boundaries rule).
+  type FetchSuccess = {
+    ok: true
+    ar: Awaited<ReturnType<typeof computeARAging>>
+    freshness: Awaited<ReturnType<typeof readFreshness>>
+    name: string
   }
+  type FetchFailure = { ok: false; message: string }
+  const fetched: FetchSuccess | FetchFailure = await (async () => {
+    try {
+      const [ar, freshness, name] = await Promise.all([
+        computeARAging(supabase, scopedCompanyId),
+        readFreshness(supabase, companyId),
+        readDisplayName(supabase, companyId),
+      ])
+      return { ok: true, ar, freshness, name }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      const digest =
+        typeof err === 'object' && err !== null && 'digest' in err
+          ? String((err as { digest?: unknown }).digest ?? '')
+          : ''
+      if (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND' || msg === 'NEXT_REDIRECT') {
+        throw err
+      }
+      return { ok: false, message: msg }
+    }
+  })()
+
+  if (!fetched.ok) {
+    return <CockpitErrorCard message={`No se pudo cargar tu cuenta: ${fetched.message}`} />
+  }
+
+  const { ar, freshness, name } = fetched
+
+  // Fire-and-forget audit log — records WHO viewed, not WHAT they saw.
+  // Failures swallowed to avoid blocking the render path. See
+  // client-accounting-ethics.md §7 (audit contract).
+  void recordView(supabase, session, isClient)
+
+  return (
+    <PageShell
+      title={isClient ? 'Tu cuenta' : 'Vista broker · Tu cuenta'}
+      subtitle={isClient ? name : 'Agregado · vista interna'}
+    >
+      {freshness.hasData && <FreshnessBanner reading={freshness} />}
+
+      {/* Hero KPIs — silver chrome, no severity, no urgency colors.
+          Aging buckets render in calm silver per ethics contract §tone. */}
+      <HeroStrip ar={ar} isClient={isClient} />
+
+      {/* Aging breakdown */}
+      <AgingSection ar={ar} isClient={isClient} />
+
+      {/* Open invoices — the top debtors slice, relabeled for the
+          client surface. No "overdue" language; days since emission. */}
+      <OpenInvoicesSection ar={ar} isClient={isClient} />
+
+      {/* Always-paired Mensajería CTA — Anabel is the human for anything
+          the numbers don't explain. */}
+      <MensajeriaCta isClient={isClient} />
+
+      {/* Back link — calm escape hatch to /inicio. Client only. */}
+      {isClient && (
+        <div style={{ marginTop: 'var(--aguila-gap-section, 32px)', textAlign: 'center' }}>
+          <Link
+            href="/inicio"
+            style={{
+              color: 'var(--aguila-text-muted)',
+              fontSize: 'var(--aguila-fs-meta, 11px)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <ArrowLeft size={12} />
+            Volver al inicio
+          </Link>
+        </div>
+      )}
+    </PageShell>
+  )
 }
 
 async function readDisplayName(

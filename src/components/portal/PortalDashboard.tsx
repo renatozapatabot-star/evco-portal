@@ -196,29 +196,57 @@ export function PortalDashboard({
           {/* 2. Contabilidad (2026-04-19 founder-override — was Pedimentos).
                Client → /mi-cuenta (own A/R, ethical contract in
                .claude/rules/client-accounting-ethics.md). Broker/operator →
-               /contabilidad/inicio (Anabel's cockpit). Pedimentos route
-               stays live via deep-link + CruzCommand. */}
-          <PortalModuleCard
-            icon={<Receipt size={ICON_SIZE} />}
-            title="Contabilidad"
-            desc={
-              isClient
-                ? navCounts.contabilidad?.microStatus ??
-                  'Tu saldo, facturas del mes, próximos vencimientos.'
-                : 'CxC · CxP · cierre del mes.'
-            }
-            badge={
-              navCounts.contabilidad?.count
-                ? { tone: 'info', label: `${navCounts.contabilidad.count} ABIERTA${navCounts.contabilidad.count === 1 ? '' : 'S'}` }
-                : undefined
-            }
-            viz={<VizPedimentoLedger />}
-            metric={fmt(navCounts.contabilidad?.count ?? null, '0')}
-            metricLabel={isClient ? 'ABIERTAS' : 'CxC ABIERTAS'}
-            href={navHref('contabilidad', isClient ? '/mi-cuenta' : '/contabilidad/inicio')}
-            accent
-            ariaLabel={isClient ? 'Ir a Mi cuenta' : 'Ir a Contabilidad'}
-          />
+               /contabilidad/inicio (Anabel's cockpit). For clients, gated
+               by NEXT_PUBLIC_MI_CUENTA_ENABLED — when OFF, tile renders
+               AS the old Pedimentos card so Ursula's experience is
+               preserved until Tito flips the flag post-walkthrough. */}
+          {(() => {
+            const miCuentaEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
+            const clientFallback = isClient && !miCuentaEnabled
+            return clientFallback ? (
+              <PortalModuleCard
+                icon={<FileText size={ICON_SIZE} />}
+                title="Pedimentos"
+                desc={
+                  navCounts.pedimentos?.microStatus ??
+                  'Declaraciones aduanales firmadas este mes.'
+                }
+                badge={
+                  navCounts.pedimentos?.count
+                    ? { tone: 'info', label: `${navCounts.pedimentos.count} MES` }
+                    : undefined
+                }
+                viz={<VizPedimentoLedger />}
+                metric={fmt(navCounts.pedimentos?.count ?? null, '0')}
+                metricLabel="ESTE MES"
+                href={navHref('pedimentos', '/pedimentos')}
+                accent
+                ariaLabel="Ir a Pedimentos"
+              />
+            ) : (
+              <PortalModuleCard
+                icon={<Receipt size={ICON_SIZE} />}
+                title="Contabilidad"
+                desc={
+                  isClient
+                    ? navCounts.contabilidad?.microStatus ??
+                      'Tu saldo, facturas del mes, próximos vencimientos.'
+                    : 'CxC · CxP · cierre del mes.'
+                }
+                badge={
+                  navCounts.contabilidad?.count
+                    ? { tone: 'info', label: `${navCounts.contabilidad.count} ABIERTA${navCounts.contabilidad.count === 1 ? '' : 'S'}` }
+                    : undefined
+                }
+                viz={<VizPedimentoLedger />}
+                metric={fmt(navCounts.contabilidad?.count ?? null, '0')}
+                metricLabel={isClient ? 'ABIERTAS' : 'CxC ABIERTAS'}
+                href={navHref('contabilidad', isClient ? '/mi-cuenta' : '/contabilidad/inicio')}
+                accent
+                ariaLabel={isClient ? 'Ir a Mi cuenta' : 'Ir a Contabilidad'}
+              />
+            )
+          })()}
 
           {/* 3. Expedientes */}
           <PortalModuleCard

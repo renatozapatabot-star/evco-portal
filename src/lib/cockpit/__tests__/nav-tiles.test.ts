@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import {
   UNIFIED_NAV_TILES,
   EMPTY_NAV_COUNTS,
   resolveNavHref,
+  resolveNavTile,
   type NavTileKey,
 } from '../../cockpit/nav-tiles'
 
@@ -53,9 +54,24 @@ describe('EMPTY_NAV_COUNTS', () => {
 describe('resolveNavHref', () => {
   const contabilidadTile = UNIFIED_NAV_TILES.find((t) => t.key === 'contabilidad')!
   const traficosTile = UNIFIED_NAV_TILES.find((t) => t.key === 'traficos')!
+  let originalFlag: string | undefined
 
-  it('client role routes Contabilidad to /mi-cuenta (their own A/R surface)', () => {
+  beforeEach(() => {
+    originalFlag = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+  })
+  afterEach(() => {
+    if (originalFlag === undefined) delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+    else process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = originalFlag
+  })
+
+  it('client role + flag ON routes Contabilidad to /mi-cuenta', () => {
+    process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = 'true'
     expect(resolveNavHref(contabilidadTile, 'client')).toBe('/mi-cuenta')
+  })
+
+  it('client role + flag OFF routes Contabilidad to /pedimentos (pre-flag UX preserved)', () => {
+    delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+    expect(resolveNavHref(contabilidadTile, 'client')).toBe('/pedimentos')
   })
 
   it('operator role routes Contabilidad to /contabilidad/inicio (Anabel cockpit)', () => {
@@ -76,5 +92,39 @@ describe('resolveNavHref', () => {
 
   it('unknown role falls back to default href (safe default)', () => {
     expect(resolveNavHref(contabilidadTile, 'bogus-role')).toBe('/contabilidad/inicio')
+  })
+})
+
+describe('resolveNavTile (client flag-gate)', () => {
+  const contabilidadTile = UNIFIED_NAV_TILES.find((t) => t.key === 'contabilidad')!
+  let originalFlag: string | undefined
+
+  beforeEach(() => {
+    originalFlag = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+  })
+  afterEach(() => {
+    if (originalFlag === undefined) delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+    else process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = originalFlag
+  })
+
+  it('client + flag OFF → renders as Pedimentos (pre-flag UX preserved)', () => {
+    delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+    const t = resolveNavTile(contabilidadTile, 'client')
+    expect(t.label).toBe('Pedimentos')
+    expect(t.href).toBe('/pedimentos')
+  })
+
+  it('client + flag ON → renders as Contabilidad', () => {
+    process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = 'true'
+    const t = resolveNavTile(contabilidadTile, 'client')
+    expect(t.label).toBe('Contabilidad')
+  })
+
+  it('non-client role → always renders as Contabilidad (never gated)', () => {
+    delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
+    expect(resolveNavTile(contabilidadTile, 'operator').label).toBe('Contabilidad')
+    expect(resolveNavTile(contabilidadTile, 'admin').label).toBe('Contabilidad')
+    expect(resolveNavTile(contabilidadTile, 'broker').label).toBe('Contabilidad')
+    expect(resolveNavTile(contabilidadTile, 'owner').label).toBe('Contabilidad')
   })
 })

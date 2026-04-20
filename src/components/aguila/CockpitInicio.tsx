@@ -8,7 +8,7 @@ import { KPITile } from './KPITile'
 import { TimelineFeed, type TimelineItem } from './TimelineFeed'
 import type { SparklineTone } from './Sparkline'
 import { NavCardGrid, type NavCardGridItem } from '@/components/NavCardGrid'
-import { UNIFIED_NAV_TILES, resolveNavHref, type NavCounts, type NavTileKey } from '@/lib/cockpit/nav-tiles'
+import { UNIFIED_NAV_TILES, resolveNavHref, resolveNavTile, type NavCounts, type NavTileKey } from '@/lib/cockpit/nav-tiles'
 import { CockpitBanner, type CockpitRole } from './CockpitBanner'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { PortalCard } from '@/components/portal/PortalCard'
@@ -119,8 +119,12 @@ export function CockpitInicio({
     if (!month) return href
     return href.includes('?') ? `${href}&month=${encodeURIComponent(month)}` : `${href}?month=${encodeURIComponent(month)}`
   }
-  const navItems: NavCardGridItem[] = UNIFIED_NAV_TILES.map((tile) => {
-    const cell = navCounts[tile.key as NavTileKey]
+  const navItems: NavCardGridItem[] = UNIFIED_NAV_TILES.map((rawTile) => {
+    // resolveNavTile may rewrite the Contabilidad tile back to Pedimentos
+    // for clients when NEXT_PUBLIC_MI_CUENTA_ENABLED is OFF — preserves
+    // Ursula's pre-flag experience until Tito approves /mi-cuenta.
+    const tile = resolveNavTile(rawTile, role)
+    const cell = navCounts[tile.key as NavTileKey] ?? navCounts[rawTile.key as NavTileKey]
     const roleResolvedHref = resolveNavHref(tile, role)
     return {
       tile: {

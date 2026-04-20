@@ -1403,15 +1403,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: PORTAL_CHAT_FALLBACK, is_fallback: true }, { status: 503 })
   }
 
-  // Session-derived scope. The raw company_id / company_clave /
-  // company_name cookies are unsigned and forgeable (core-invariants
-  // rule 15). Pre-fix: an authenticated client could set
-  // `company_id=<other-tenant>` in their cookie jar and the chat
-  // agent would ground responses in that tenant's data — explicit
-  // cross-tenant AI context leak. The display-hint cookies
-  // (clave / name) are rebuilt from the companies table below
-  // using the verified companyId.
-  const companyId = session.companyId
+  // Session-authoritative for client role. Internal roles can impersonate
+  // via ?company_id= param (explicit) or the company_id cookie set by
+  // /api/auth/view-as (legacy view-as feature). Display-hint cookies
+  // (clave / name) are rebuilt from the companies table below using
+  // the resolved companyId — never trusted as-is.
+  const { resolveTenantScope: resolveScope } = await import('@/lib/api/tenant-scope')
+  const companyId = resolveScope(session, req)
   if (!companyId) {
     return NextResponse.json({ message: 'Tenant scope required.' }, { status: 400 })
   }

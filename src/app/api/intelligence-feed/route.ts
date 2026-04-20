@@ -1,26 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-
-const INTERNAL_ROLES = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
 
 export async function GET(req: NextRequest) {
   const sessionToken = req.cookies.get('portal_session')?.value || ''
   const session = await verifySession(sessionToken)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Tenant scope MUST come from signed HMAC session, not the
-  // forgeable company_id cookie. Pre-fix: any authenticated user
-  // could set company_id=<target-tenant> in their cookie jar and
-  // read compliance predictions + anomaly baselines + crossing
-  // predictions for that tenant (SEV-1). Internal roles can pass
-  // ?company_id= for oversight (already established pattern in
-  // /api/data and /api/catalogo/partes).
-  const isInternal = INTERNAL_ROLES.has(session.role)
-  const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
-  const companyId = isInternal && paramCompany ? paramCompany : session.companyId
+  // Session-authoritative for client role; param/cookie fallback
+  // for internal roles via resolveTenantScope (restores admin
+  // view-as). core-invariants rule 15.
+  const companyId = resolveTenantScope(session, req)
   if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || '20'), 50)
 

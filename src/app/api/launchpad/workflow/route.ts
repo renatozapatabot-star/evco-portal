@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { getWorkflowDetail, completeWorkflow } from '@/lib/launchpad-actions'
 
 const supabase = createClient(
@@ -43,11 +44,9 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // Session-derived scope · core-invariants rule 15. Internal roles
-  // may pass ?company_id= for oversight.
-  const isInternal = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
-  const paramCompany = req.nextUrl.searchParams.get('company_id')
-  const companyId = (isInternal && paramCompany) || session.companyId
+  // Client: session only. Internal: param/cookie/session chain.
+  // resolveTenantScope · core-invariants rule 15.
+  const companyId = resolveTenantScope(session, req)
 
   const detail = await getWorkflowDetail(supabase, companyId, sourceTable, sourceId)
 
@@ -107,10 +106,8 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Same session-derived scope contract as GET.
-  const isInternalPost = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
-  const paramCompanyPost = req.nextUrl.searchParams.get('company_id')
-  const companyId = (isInternalPost && paramCompanyPost) || session.companyId
+  // Same contract as GET. resolveTenantScope is the single fence.
+  const companyId = resolveTenantScope(session, req)
 
   const result = await completeWorkflow(supabase, companyId, sourceTable, sourceId, {
     action_type: actionType as 'confirm' | 'correct' | 'approve' | 'reject' | 'call_done',

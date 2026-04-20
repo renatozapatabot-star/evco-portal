@@ -96,6 +96,27 @@ describe('GET /api/launchpad · scope resolution', () => {
     expect(res.status).toBe(200)
     expect(capturedCompanyIds.every(id => id === 'mafesa')).toBe(true)
   })
+
+  it('VIEW-AS: admin + company_id cookie (no param) → cookie honored', async () => {
+    // This is the path /api/auth/view-as sets up: admin clicks "view
+    // as EVCO", the server sets company_id=evco cookie, then all
+    // subsequent client-facing routes honor that cookie so the admin
+    // sees EVCO-scoped data. Pre-option-1 patch this was broken
+    // (cookie was dropped in favor of session='admin' placeholder).
+    const { GET } = await import('../route')
+    mockSession = { role: 'admin', companyId: 'admin' }
+    const res = await GET(makeRequest('GET', 'token', {}, undefined, { company_id: 'evco' }))
+    expect(res.status).toBe(200)
+    expect(capturedCompanyIds.every(id => id === 'evco')).toBe(true)
+  })
+
+  it('VIEW-AS: admin + param overrides view-as cookie (explicit wins)', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'admin', companyId: 'admin' }
+    const res = await GET(makeRequest('GET', 'token', { company_id: 'mafesa' }, undefined, { company_id: 'evco' }))
+    expect(res.status).toBe(200)
+    expect(capturedCompanyIds.every(id => id === 'mafesa')).toBe(true)
+  })
 })
 
 describe('POST /api/launchpad · scope resolution on completion writes', () => {

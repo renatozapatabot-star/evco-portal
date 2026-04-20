@@ -1,30 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-// Role + tenant scope MUST come from the signed HMAC session —
-// raw user_role / company_id cookies are unsigned and forgeable
-// (core-invariants rule 15). Pre-fix, any authenticated user could
-// set `company_id=<other-tenant>` in their cookie and read
-// communication_events for that tenant.
-
-const INTERNAL_ROLES = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
+// Tenant scope comes from the signed session (client) or from
+// param/cookie for internal roles via resolveTenantScope (which
+// powers the admin view-as feature). core-invariants rule 15.
+// Pre-fix, any authenticated user could set `company_id=<other>`
+// in their cookie jar; the helper now fences that at the rule layer.
 
 export async function GET(req: NextRequest) {
   const session = await verifySession(req.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  // Client role → always scoped to session.companyId. Internal roles
-  // can pass ?company_id= query param for oversight (they already
-  // aggregate across tenants via /api/data and /api/broker/data).
-  const isInternal = INTERNAL_ROLES.has(session.role)
-  const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
-  const companyId = isInternal && paramCompany ? paramCompany : session.companyId
+  const companyId = resolveTenantScope(session, req)
   if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
 
   const { data } = await supabase.from('communication_events')
@@ -36,12 +30,7 @@ export async function POST(req: NextRequest) {
   const session = await verifySession(req.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  // Same isolation contract as GET — session-derived scope, never
-  // raw cookies. Prevents forging company_id to write communication
-  // events for another tenant.
-  const isInternal = INTERNAL_ROLES.has(session.role)
-  const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
-  const companyId = isInternal && paramCompany ? paramCompany : session.companyId
+  const companyId = resolveTenantScope(session, req)
   if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
 
   const { supplier, trafico, message_type } = await req.json()

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,19 +13,14 @@ const supabase = createClient(
  * Calculate exactly how much CRUZ saves a client vs market average.
  * ROI that makes $300/month feel like nothing.
  */
-const INTERNAL_ROLES_COST = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
-
 export async function GET(req: NextRequest) {
   const session = await verifySession(req.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Session-derived tenant scope — raw company_id cookie is forgeable
-  // (core-invariants rule 15). Pre-fix, any authenticated user could
-  // set company_id=<target> in their cookie jar and read that tenant's
-  // traficos. Internal roles may override via ?company_id= param.
-  const isInternal = INTERNAL_ROLES_COST.has(session.role)
-  const paramCompany = req.nextUrl.searchParams.get('company_id') || undefined
-  const companyId = isInternal && paramCompany ? paramCompany : session.companyId
+  // resolveTenantScope: session only for client role; param/cookie/
+  // session chain for internal roles (restores admin view-as).
+  // core-invariants rule 15.
+  const companyId = resolveTenantScope(session, req)
   if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
 
   const { data: traficos } = await supabase.from('traficos')

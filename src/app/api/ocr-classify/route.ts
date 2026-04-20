@@ -122,6 +122,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Log to audit
+  // Audit log tenant scope: session-authoritative for client role,
+  // resolveTenantScope (param/cookie/session chain) for internal so
+  // admin view-as writes land in the impersonated tenant's audit
+  // trail. core-invariants rule 15 · restores view-as without
+  // reintroducing the client-side forgery vector.
+  const { resolveTenantScope: resolveScope2 } = await import('@/lib/api/tenant-scope')
+  const auditCompanyId = resolveScope2(session, req)
   await supabase.from('audit_log').insert({
     action: 'document_ocr_classified',
     entity_type: 'document',
@@ -132,11 +139,7 @@ export async function POST(req: NextRequest) {
       confidence: classification.confidence,
       size_bytes: file.size,
     },
-    // Tenant scope from signed session — raw company_id cookie is
-    // forgeable (core-invariants rule 15). Audit-log rows with the
-    // wrong company_id would poison the per-tenant audit trail that
-    // Patente 3596 relies on for SAT traceability.
-    company_id: session.companyId,
+    company_id: auditCompanyId || session.companyId,
   }).then(() => {}, (e) => console.error('[audit-log] ocr-classify:', e.message))
 
   // Log cost

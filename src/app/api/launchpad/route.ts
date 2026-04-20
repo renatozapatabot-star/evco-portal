@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import {
   scoreLaunchpadActions,
   getCruzAutoActions,
@@ -27,12 +28,10 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // Session-derived scope. Query param allowed for internal roles;
-  // raw company_id cookie is forgeable (core-invariants rule 15) and
-  // never consulted.
-  const isInternal = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
-  const paramCompany = req.nextUrl.searchParams.get('company_id')
-  const companyId = (isInternal && paramCompany) || session.companyId
+  // resolveTenantScope · client role → session · internal → param/
+  // cookie/session chain (cookie path restores admin view-as).
+  // core-invariants rule 15 · single source of truth.
+  const companyId = resolveTenantScope(session, req)
 
   const [scored, auto] = await Promise.all([
     scoreLaunchpadActions(supabase, companyId),
@@ -89,10 +88,8 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Session-derived scope (same contract as GET). Cookies not trusted.
-  const isInternalPost = ['admin', 'broker', 'operator', 'contabilidad', 'owner'].includes(session.role)
-  const paramCompanyPost = req.nextUrl.searchParams.get('company_id')
-  const companyId = (isInternalPost && paramCompanyPost) || session.companyId
+  // Same scope contract as GET. resolveTenantScope is the single fence.
+  const companyId = resolveTenantScope(session, req)
 
   // YYYY-MM-DD in Laredo timezone for DB storage
   const now = new Date()

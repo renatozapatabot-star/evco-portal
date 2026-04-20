@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDTARates, getExchangeRate, getIVARate } from '@/lib/rates'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,11 +18,10 @@ export async function POST(req: NextRequest) {
     if (!session) {
       return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
     }
-    // Client: always session. Internal roles: ?company_id= query param
-    // (never raw cookie — forgeable per core-invariants rule 15).
-    const companyId = session.role === 'client'
-      ? session.companyId
-      : (req.nextUrl.searchParams.get('company_id') || session.companyId)
+    // Client: session only. Internal: param/cookie/session chain
+    // (cookie path restores admin view-as). resolveTenantScope is
+    // the canonical fence (core-invariants rule 15).
+    const companyId = resolveTenantScope(session, req)
 
     const body = await req.json()
     const { draftId, valorUSD, regimen, paisOrigen } = body

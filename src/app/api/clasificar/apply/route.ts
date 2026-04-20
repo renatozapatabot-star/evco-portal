@@ -63,12 +63,11 @@ export async function POST(req: NextRequest) {
   if (loadErr || !row) return err('NOT_FOUND', 'Producto no encontrado', 404)
 
   const companyId = row.company_id as string | null
-  // Internal roles may override via ?company_id= query param; raw
-  // cookie is forgeable (core-invariants rule 15) and never consulted.
-  const requestCompanyId =
-    session.role === 'client'
-      ? session.companyId
-      : (req.nextUrl.searchParams.get('company_id') || session.companyId)
+  // Client: session only. Internal: param/cookie/session chain
+  // (cookie path supports admin view-as · see /api/auth/view-as).
+  // resolveTenantScope centralizes this · core-invariants rule 15.
+  const { resolveTenantScope: resolveScope3 } = await import('@/lib/api/tenant-scope')
+  const requestCompanyId = resolveScope3(session, req)
   if (session.role === 'client' && companyId !== session.companyId) {
     return err('FORBIDDEN', 'Producto de otro cliente', 403)
   }

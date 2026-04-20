@@ -81,3 +81,71 @@ describe('session', () => {
     expect(mafesaSession?.companyId).toBe('mafesa')
   })
 })
+
+describe('prospect tokens', () => {
+  let signProspectToken: typeof import('../session').signProspectToken
+  let verifyProspectToken: typeof import('../session').verifyProspectToken
+  let hashProspectToken: typeof import('../session').hashProspectToken
+  let verifySession: typeof import('../session').verifySession
+  let signSession: typeof import('../session').signSession
+
+  beforeAll(async () => {
+    const mod = await import('../session')
+    signProspectToken = mod.signProspectToken
+    verifyProspectToken = mod.verifyProspectToken
+    hashProspectToken = mod.hashProspectToken
+    verifySession = mod.verifySession
+    signSession = mod.signSession
+  })
+
+  it('signs and verifies a 12-char RFC', async () => {
+    const token = await signProspectToken('FSA980318AL3', 60 * 60 * 24 * 7)
+    expect(token).toContain('prospect:FSA980318AL3:')
+    const verified = await verifyProspectToken(token)
+    expect(verified?.rfc).toBe('FSA980318AL3')
+    expect(verified?.expiresAt).toBeGreaterThan(Math.floor(Date.now() / 1000))
+  })
+
+  it('uppercases lowercase RFC input', async () => {
+    const token = await signProspectToken('fsa980318al3', 3600)
+    const verified = await verifyProspectToken(token)
+    expect(verified?.rfc).toBe('FSA980318AL3')
+  })
+
+  it('rejects malformed RFC', async () => {
+    await expect(signProspectToken('not-an-rfc')).rejects.toThrow('invalid_rfc')
+    await expect(signProspectToken('FOO')).rejects.toThrow('invalid_rfc')
+  })
+
+  it('rejects expired prospect tokens', async () => {
+    // Sign with negative TTL → already expired at issuance
+    const token = await signProspectToken('FSA980318AL3', -10)
+    const verified = await verifyProspectToken(token)
+    expect(verified).toBeNull()
+  })
+
+  it('rejects prospect tokens through the portal-session verifier', async () => {
+    const prospectToken = await signProspectToken('FSA980318AL3', 3600)
+    const wrongVerify = await verifySession(prospectToken)
+    expect(wrongVerify).toBeNull()
+  })
+
+  it('rejects portal session tokens through the prospect verifier', async () => {
+    const portalToken = await signSession('evco', 'client', 3600)
+    const wrongVerify = await verifyProspectToken(portalToken)
+    expect(wrongVerify).toBeNull()
+  })
+
+  it('hashProspectToken returns 64-char hex', async () => {
+    const token = await signProspectToken('FSA980318AL3', 3600)
+    const hash = await hashProspectToken(token)
+    expect(hash).toMatch(/^[a-f0-9]{64}$/)
+  })
+
+  it('hashProspectToken is deterministic for the same token', async () => {
+    const token = await signProspectToken('FSA980318AL3', 3600)
+    const a = await hashProspectToken(token)
+    const b = await hashProspectToken(token)
+    expect(a).toBe(b)
+  })
+})

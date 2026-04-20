@@ -233,18 +233,24 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
     ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)
     : null
 
+  // Phase 5 — broker-wide CxC count (all clients). Soft-wrapped.
+  const cxcAbiertasCount = await softCount(
+    sb.from('econta_cartera').select('id', { count: 'exact', head: true }).gt('saldo', 0),
+  )
+
   const navCounts: import('@/lib/cockpit/nav-tiles').NavCounts = {
     traficos: {
       count: personalAssignedCount,
       series: activosSeries,
       microStatus: `${cruzados7dCount} cruzaron esta semana`,
     },
-    // 2026-04-19 override: Contabilidad takes nav tile #2. Real count
-    // wired in Phase 5 (broker-wide CxC from econta_cartera).
+    // 2026-04-19 override: Contabilidad tile #2. Broker-wide CxC.
     contabilidad: {
-      count: null,
+      count: cxcAbiertasCount,
       series: [],
-      microStatus: 'CxC · CxP · cierre del mes',
+      microStatus: cxcAbiertasCount > 0
+        ? `${cxcAbiertasCount.toLocaleString('es-MX')} CxC abiertas · Anabel`
+        : 'Sin saldos abiertos',
     },
     pedimentos: {
       count: pedimentosMonthCount,

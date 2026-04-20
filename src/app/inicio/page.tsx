@@ -358,11 +358,25 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     ? `${catalogoMesCount} nuevo${catalogoMesCount === 1 ? '' : 's'} este mes`
     : undefined
 
+  // Phase 5 — client's own open-invoice count from econta_cartera.
+  // Join via companies.clave_cliente (resolved above as companyRow.clave_cliente).
+  // Soft-wrapped so a missing RLS or table hiccup doesn't crash the cockpit.
+  const clave = companyRow.clave_cliente ?? null
+  const contabilidadAbiertasCount = clave
+    ? await softCount(
+        supabase.from('econta_cartera').select('id', { count: 'exact', head: true }).eq('cve_cliente', clave).gt('saldo', 0),
+        { label: 'contabilidad.abiertas', signals },
+      )
+    : 0
+  const contabilidadMicroStatus = contabilidadAbiertasCount > 0
+    ? `${contabilidadAbiertasCount} factura${contabilidadAbiertasCount === 1 ? '' : 's'} abierta${contabilidadAbiertasCount === 1 ? '' : 's'}`
+    : 'Tu cuenta al corriente'
+
   const navCounts: NavCounts = {
     traficos:        { count: activeTraficosCount,    series: activosSeries,          microStatus: `${cruzadosLast7Count} cruzaron esta semana` },
     // 2026-04-19 override: Pedimentos tile retired from nav grid; Contabilidad takes tile #2.
-    // Real count wired in Phase 5 from econta_cartera (client's own open invoices).
-    contabilidad:    { count: null,                   series: [],                     microStatus: 'Se llena con tu saldo y facturas' },
+    // Count = client's own open invoices (saldo>0) from econta_cartera.
+    contabilidad:    { count: contabilidadAbiertasCount, series: [],                  microStatus: contabilidadMicroStatus },
     pedimentos:      { count: pedimentosMesCount,     series: pedimentosListosSeries, microStatus: daysSinceLastCruce != null ? `Último cruce hace ${daysSinceLastCruce} día${daysSinceLastCruce === 1 ? '' : 's'}` : 'Sin cruces recientes' },
     expedientes:     { count: expedientesMesCount,    series: expedientesSeries,      microStatus: expedientesMicroStatus, historicMicrocopy: expedientesHistoricMicrocopy },
     catalogo:        { count: catalogoMesCount,       series: [],                     microStatus: catalogoMicroStatus,    historicMicrocopy: catalogoHistoricMicrocopy },

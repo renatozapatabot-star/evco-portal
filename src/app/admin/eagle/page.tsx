@@ -348,18 +348,24 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)
     : null
 
+  // Phase 5 — all-client aggregate CxC count for the Eagle View.
+  const cxcAbiertasCountEagle = await softCount(
+    sb.from('econta_cartera').select('id', { count: 'exact', head: true }).gt('saldo', 0),
+  )
+
   const navCounts: NavCounts = {
     traficos: {
       count: activeTraficosTotal,
       series: traficosActivosSeries,
       microStatus: `${cruzadosMesCount} cruzaron en ${monthShort}`,
     },
-    // 2026-04-19 override: Contabilidad takes nav tile #2. Real count
-    // wired in Phase 5 (all-client aggregate CxC from econta_cartera).
+    // 2026-04-19 override: Contabilidad tile #2. All-client aggregate CxC.
     contabilidad: {
-      count: null,
+      count: cxcAbiertasCountEagle,
       series: [],
-      microStatus: 'CxC total · cierre del mes',
+      microStatus: cxcAbiertasCountEagle > 0
+        ? `${cxcAbiertasCountEagle.toLocaleString('es-MX')} saldos abiertos · patente completa`
+        : 'Sin saldos abiertos',
     },
     pedimentos: {
       // Show actionable count (pedimentos awaiting cruce) — that's what

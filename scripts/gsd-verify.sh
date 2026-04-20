@@ -819,6 +819,48 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# R11 — scripts/ financial rate hardcodes (gap closer).
+# The existing "Financial — Rates" ratchet (line ~194) only scans src/.
+# Four known hardcodes persist in scripts/ (generate-invoice.js,
+# cruz-mcp-server.js, cost-optimizer.js, lib/invoice-handlers.js) —
+# carried as baseline so we prevent NEW drift while the Tier 2 sweep
+# replaces them with getIVARate()/getDTARates()/getExchangeRate()
+# refuse-to-calculate semantics. Ratchet down as each is fixed.
+# Ship date: 2026-04-19 night pre-Ursula stress pass.
+# --------------------------------------------------------------------------
+SCRIPTS_RATES_BASELINE=${SCRIPTS_RATES_BASELINE:-4}
+header "Financial — scripts/ rate hardcodes ratchet (target ↓)"
+SCRIPTS_RATES_COUNT=$(set +eo pipefail;{ grep -rnE "IVA_RATE\s*=\s*0\.1[56]|ivaRate\s*=\s*0\.1[56]|=\s*0\.008\b|fxSavingsPct\s*=" scripts/ --include="*.js" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
+if [ "$SCRIPTS_RATES_COUNT" -gt "$SCRIPTS_RATES_BASELINE" ]; then
+  fail "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (baseline $SCRIPTS_RATES_BASELINE). New hardcoded rate added to a cron/tool script — route through lib/rates or system_config directly."
+elif [ "$SCRIPTS_RATES_COUNT" -lt "$SCRIPTS_RATES_BASELINE" ]; then
+  pass "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (baseline $SCRIPTS_RATES_BASELINE, improving ✓). Update SCRIPTS_RATES_BASELINE in this script."
+else
+  warn "scripts/ rate hardcodes: $SCRIPTS_RATES_COUNT (at baseline — Tier 2 sweep pending: generate-invoice.js, cruz-mcp-server.js, cost-optimizer.js, lib/invoice-handlers.js)"
+fi
+
+# --------------------------------------------------------------------------
+# R12 — /mi-cuenta calm-tone ratchet (client-accounting-ethics.md §tone).
+# The client A/R surface must never render traffic-light dunning colors
+# or urgency language. Aging buckets use silver chrome; past-due invoices
+# are labeled by days-since-emission, never by severity. Baseline = 0 is
+# a hard invariant — any match is a SEV-2 regression against the ethical
+# contract.
+# Ship date: 2026-04-19 night pre-Ursula stress pass.
+# --------------------------------------------------------------------------
+MI_CUENTA_TONE_BASELINE=0
+header "Tone — /mi-cuenta client surface calm-tone ratchet"
+# Exclude JSX/block comments, JS line comments, and string-literal docs
+# that MENTION the banned vocabulary to explain the rule. Real violations
+# live in rendered text, class names, or conditionals — never in comments.
+MI_CUENTA_TONE_HITS=$(set +eo pipefail;{ grep -rnE "portal-status-red|portal-status-amber|\bVENCIDO\b|\burgente\b|\bURGENTE\b|\boverdue\b" src/app/mi-cuenta/ 2>/dev/null || true; } | grep -vE "^[^:]*:[0-9]+:[[:space:]]*(//|\*|\{/\*)" | grep -v '"overdue"' | grep -v "'overdue'" | wc -l | tr -d ' ')
+if [ "$MI_CUENTA_TONE_HITS" -gt "$MI_CUENTA_TONE_BASELINE" ]; then
+  fail "/mi-cuenta tone violations: $MI_CUENTA_TONE_HITS (baseline $MI_CUENTA_TONE_BASELINE). Client A/R surface must stay calm silver — no red/amber, no VENCIDO/urgente/overdue. See .claude/rules/client-accounting-ethics.md §tone."
+else
+  pass "/mi-cuenta tone: clean (0 red/amber/urgente strings — ethical contract held)"
+fi
+
+# --------------------------------------------------------------------------
 # Results
 # --------------------------------------------------------------------------
 echo ""

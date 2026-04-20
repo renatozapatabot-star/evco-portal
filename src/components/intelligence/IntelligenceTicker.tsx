@@ -117,7 +117,6 @@ export default function IntelligenceTicker() {
     if (process.env.NODE_ENV === 'production') return
     const count = document.querySelectorAll('[data-ticker-root]').length
     if (count > 1) {
-      // eslint-disable-next-line no-console
       console.warn(`[CRUZ] Duplicate IntelligenceTicker detected: ${count} mounted`)
     }
   }, [])

@@ -30,7 +30,6 @@ export async function withHardTimeout<T>(
   let timer: ReturnType<typeof setTimeout> | null = null
   const timeout = new Promise<null>((resolve) => {
     timer = setTimeout(() => {
-      // eslint-disable-next-line no-console
       console.warn(`[timeout] ${label} exceeded ${ms}ms`)
       resolve(null)
     }, ms)

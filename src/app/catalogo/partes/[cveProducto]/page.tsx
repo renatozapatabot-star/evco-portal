@@ -72,7 +72,7 @@ export default async function PartePage({ params }: PageProps) {
       {/* Breadcrumb */}
       <nav
         aria-label="Breadcrumb"
-        style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.55)', marginBottom: 16 }}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 /* WHY: breadcrumb nav intermediate meta */, color: 'rgba(255,255,255,0.55)', marginBottom: 16 }}
       >
         <Link
           href="/catalogo"
@@ -98,7 +98,7 @@ export default async function PartePage({ params }: PageProps) {
       <header style={{ marginBottom: 24 }}>
         <p
           className="font-mono"
-          style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.06em' }}
+          style={{ margin: 0, fontSize: 12 /* WHY: cve_producto mono code intermediate meta */, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.06em' }}
         >
           {data.parte.cve_producto}
         </p>
@@ -115,7 +115,7 @@ export default async function PartePage({ params }: PageProps) {
           {data.parte.descripcion || 'Sin descripción'}
         </h1>
         {data.parte.descripcion_ingles && (
-          <p style={{ margin: 0, fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>
+          <p style={{ margin: 0, fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 'var(--aguila-fs-body)' }}>
             {data.parte.descripcion_ingles}
           </p>
         )}
@@ -138,7 +138,7 @@ export default async function PartePage({ params }: PageProps) {
                 background: 'rgba(234,179,8,0.12)',
                 border: '1px solid rgba(234,179,8,0.32)',
                 color: 'var(--portal-status-amber-fg)',
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 700,
                 letterSpacing: '0.02em',
               }}
@@ -154,7 +154,7 @@ export default async function PartePage({ params }: PageProps) {
                 background: 'var(--portal-status-green-bg)',
                 border: '1px solid var(--portal-status-green-ring)',
                 color: 'var(--portal-status-green-fg)',
-                fontSize: 12,
+                fontSize: 12 /* WHY: T-MEC pill intermediate meta for uppercase tracking */,
                 fontWeight: 700,
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',
@@ -164,12 +164,12 @@ export default async function PartePage({ params }: PageProps) {
             </span>
           )}
           {data.parte.marca && (
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+            <span style={{ fontSize: 12 /* WHY: marca inline chip intermediate meta */, color: 'rgba(255,255,255,0.6)' }}>
               {data.parte.marca}
             </span>
           )}
           {data.parte.pais_origen && (
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+            <span style={{ fontSize: 12 /* WHY: pais_origen inline chip intermediate meta */, color: 'rgba(255,255,255,0.6)' }}>
               · {data.parte.pais_origen}
             </span>
           )}
@@ -199,7 +199,7 @@ function SuperTitoBadge({ stats }: { stats: { agreed: number; corrections: numbe
         background: 'rgba(192,197,206,0.08)',
         border: '1px solid rgba(192,197,206,0.28)',
         color: 'var(--portal-fg-1)',
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         fontWeight: 600,
         letterSpacing: '0.06em',
         textTransform: 'uppercase',

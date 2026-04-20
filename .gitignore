@@ -53,3 +53,14 @@ scripts/sandbox/results/
 docs/SYSTEM_STATE.md
 docs/SYSTEM_STATE.previous.md
 scripts/heartbeat-state.json
+
+# Cron runtime state — checkpoints, snapshots, sync progress (local only)
+scripts/.backfill-checkpoints/
+scripts/.purge-snapshots/
+scripts/.sync-checkpoints/
+
+# Migration backups (SQL rollback snapshots — keep local, not in VCS)
+supabase/migrations/*.sql.backup-*
+
+# Temporary scratch (local-only debugging / curl / paste buffer)
+tmp/

@@ -36,6 +36,7 @@ const supabase = createClient(
 )
 
 const DRY_RUN = process.argv.includes('--dry-run')
+const VERBOSE = process.argv.includes('--verbose')
 const SCRIPT_NAME = 'system-config-expiry-watch'
 
 const DAY_MS = 86_400_000
@@ -50,10 +51,14 @@ async function main() {
   const startedAt = new Date()
   console.log(`🔔 ${SCRIPT_NAME} — ${DRY_RUN ? 'DRY RUN' : 'LIVE'} @ ${startedAt.toISOString()}`)
 
+  // No `.not('valid_to', 'is', null)` filter — we want to surface
+  // rows with NULL valid_to as "unguarded" so the broker can opt a
+  // critical key (iva_rate, dta_rates, banxico_exchange_rate) into
+  // expiry tracking. Silent NULL is the failure mode this watch is
+  // supposed to prevent.
   const { data, error } = await supabase
     .from('system_config')
     .select('key, value, valid_to')
-    .not('valid_to', 'is', null)
 
   if (error) {
     const msg = `🔴 <b>${SCRIPT_NAME}</b> query failed: ${error.message}`
@@ -62,14 +67,40 @@ async function main() {
     process.exit(1)
   }
 
+  if (VERBOSE) {
+    console.log(`\n--- system_config snapshot (${(data || []).length} rows) ---`)
+    for (const row of (data || []).sort((a, b) => a.key.localeCompare(b.key))) {
+      const vt = row.valid_to ?? '(null — unguarded)'
+      console.log(`  ${row.key.padEnd(32)} valid_to=${vt}`)
+    }
+    console.log('---')
+  }
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+
+  // Critical keys that MUST have valid_to set (regulatory rates the
+  // broker needs to refresh annually). Not exhaustive — any key can
+  // carry valid_to, this list is just which ones trigger an "unguarded"
+  // warning when valid_to is NULL.
+  const CRITICAL_KEYS_REQUIRING_EXPIRY = [
+    'iva_rate',
+    'dta_rates',
+    'banxico_exchange_rate',
+  ]
 
   const expired = []
   const urgent = []
   const heads_up = []
+  const unguarded = []
 
   for (const row of data || []) {
+    if (row.valid_to == null) {
+      if (CRITICAL_KEYS_REQUIRING_EXPIRY.includes(row.key)) {
+        unguarded.push({ key: row.key })
+      }
+      continue
+    }
     const validTo = new Date(row.valid_to)
     if (isNaN(validTo.getTime())) continue
     validTo.setHours(0, 0, 0, 0)
@@ -84,7 +115,7 @@ async function main() {
     }
   }
 
-  const totalAlerts = expired.length + urgent.length + heads_up.length
+  const totalAlerts = expired.length + urgent.length + heads_up.length + unguarded.length
 
   if (totalAlerts === 0) {
     console.log('✅ All system_config rows with valid_to are fresh (> 7 days).')
@@ -124,6 +155,14 @@ async function main() {
     }
     lines.push('')
   }
+  if (unguarded.length > 0) {
+    lines.push(`⚠️ <b>Unguarded critical rate(s) — ${unguarded.length} key(s)</b>`)
+    lines.push(`<i>These rates have no valid_to — silent staleness risk. Opt in:</i>`)
+    for (const u of unguarded) {
+      lines.push(`  • <code>${u.key}</code> — set valid_to to enable expiry tracking`)
+    }
+    lines.push('')
+  }
   lines.push(`<i>Fix: UPDATE system_config SET valid_to = '&lt;date&gt;' WHERE key = '&lt;key&gt;';</i>`)
 
   const telegramMsg = lines.join('\n')
@@ -139,7 +178,9 @@ async function main() {
         expired: expired.length,
         urgent: urgent.length,
         heads_up: heads_up.length,
+        unguarded: unguarded.length,
         expired_keys: expired.map(e => e.key),
+        unguarded_keys: unguarded.map(u => u.key),
       },
     }).catch((e) => {
       console.warn(`[heartbeat skip] ${e?.message || e}`)

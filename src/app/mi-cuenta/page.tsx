@@ -27,6 +27,7 @@ import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { computeARAging, type AgingResult } from '@/lib/contabilidad/aging'
 import { readFreshness } from '@/lib/cockpit/freshness'
+import { resolveMiCuentaAccess } from './access'
 import {
   PageShell,
   GlassCard,
@@ -40,7 +41,6 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const CLIENT_FEATURE_FLAG = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
-const INTERNAL_ROLES = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
 
 function fmtMXN(n: number): string {
   return new Intl.NumberFormat('es-MX', {
@@ -72,25 +72,20 @@ export default async function MiCuentaPage() {
   const cookieStore = await cookies()
   const token = cookieStore.get('portal_session')?.value ?? ''
   const session = await verifySession(token)
-  if (!session) redirect('/login')
 
-  const role = session.role
-  const isClient = role === 'client'
-  const isInternal = INTERNAL_ROLES.has(role)
-
-  // Feature-gate for clients only. Internal roles always pass through.
-  if (isClient && !CLIENT_FEATURE_FLAG) {
-    redirect('/inicio')
+  // Authorization contract lives in ./access.ts — unit-tested via
+  // __tests__/isolation.test.ts per client-accounting-ethics.md §7.
+  const access = resolveMiCuentaAccess(session, CLIENT_FEATURE_FLAG)
+  if (access.decision === 'redirect') {
+    redirect(access.to)
   }
-  // Reject unknown roles (malformed session)
-  if (!isClient && !isInternal) redirect('/login')
+  // access.decision === 'render' implies session was non-null (resolver
+  // returns redirect otherwise) — narrow for downstream uses (recordView
+  // needs session.role).
+  if (!session) redirect('/login')
+  const { isClient, scopedCompanyId, companyId } = access
 
   const supabase = createServerClient()
-  const companyId = session.companyId
-
-  // Internal sessions aggregate across all tenants; client sessions are
-  // strictly scoped to their own `scvecliente` via the companies join.
-  const scopedCompanyId: string | null = isClient ? companyId : null
 
   // Data fetch isolated from render — keep JSX out of try/catch so React
   // render-phase exceptions route to error.tsx (the error boundary)

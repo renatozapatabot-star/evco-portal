@@ -589,7 +589,7 @@ else
   warn "Inline backdropFilter: $PORTAL_BACKDROP_COUNT (at baseline, awaiting cleanup block)"
 fi
 
-PORTAL_IMPORT_BASELINE=3
+PORTAL_IMPORT_BASELINE=6
 header "PORTAL · primitive adoption ratchet (target ↑)"
 PORTAL_IMPORTS=$(set +eo pipefail;{ grep -rln "from '@/components/portal'" src/app src/components 2>/dev/null || true; } | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
 if [ "$PORTAL_IMPORTS" -lt "$PORTAL_IMPORT_BASELINE" ]; then

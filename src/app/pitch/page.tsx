@@ -95,10 +95,42 @@ export default function PitchPage() {
               lineHeight: 1.5,
             }}
           >
-            Construido por dos personas con patente 3596 — para importadores
-            mexicanos que están hartos de esperar horas por una clasificación
-            arancelaria, una liberación, o una firma.
+            Sin call centers. Sin intermediarios. Patente 3596 honrada en
+            cada pedimento, con IA que hace lo tedioso y dos brokers que
+            firman lo importante.
           </p>
+
+          {/* Trust strip — visible above-the-fold social signals */}
+          <div
+            style={{
+              marginTop: 22,
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '14px 26px',
+              fontFamily: 'var(--portal-font-mono)',
+              fontSize: 'var(--portal-fs-tiny)',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'var(--portal-fg-4)',
+            }}
+          >
+            <span>Onboarding · 48 h</span>
+            <span
+              aria-hidden
+              style={{ color: 'var(--portal-fg-5)' }}
+            >
+              ·
+            </span>
+            <span>Respuesta · &lt; 4 h hábiles</span>
+            <span
+              aria-hidden
+              style={{ color: 'var(--portal-fg-5)' }}
+            >
+              ·
+            </span>
+            <span>Patente propia · 85 años</span>
+          </div>
         </section>
 
         {/* ── Before/After strip ─────────────────────────────── */}
@@ -138,9 +170,9 @@ export default function PitchPage() {
             sub="Semáforo verde últimos 90 días"
           />
           <AguilaMetric
-            label="SKUs activos"
+            label="SKUs clasificados"
             value="148,537"
-            sub="EVCO Plastics catálogo"
+            sub="Catálogo vivo · auditable"
           />
         </section>
 

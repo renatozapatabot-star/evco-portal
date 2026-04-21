@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { resolveProveedorName } from '@/lib/proveedor-names'
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,9 +75,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
   // All follow-up queries are guarded — one failure shouldn't blank the
   // whole page. The base parte row is already loaded above.
   const [partidasRes, classificationsRes, ocasRes, tmecRes, supertitoRes] = await Promise.all([
+    // Real partidas schema — NO cve_trafico (M12 fix). Linkage to
+    // traficos goes through facturas.folio. See
+    // src/lib/queries/partidas-trafico-link.ts.
     supabase
       .from('globalpc_partidas')
-      .select('created_at, cantidad, precio_unitario, cve_proveedor, cve_trafico')
+      .select('created_at, cantidad, precio_unitario, cve_proveedor, folio')
       .eq('cve_producto', cveProducto)
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
@@ -116,65 +120,32 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
     cantidad: number | null
     precio_unitario: number | null
     cve_proveedor: string | null
-    cve_trafico: string | null
+    folio: number | null
   }
   const partidas = (partidasRes.data as PartidaLite[] | null) || []
 
-  // Enrich with the associated trafico row so the UI can show
-  // pedimento, fecha_cruce, semáforo — the demo-critical moment.
-  // Join key: globalpc_partidas.cve_trafico = traficos.trafico
-  // (both are the operator-facing string reference like "T-26-12345").
-  const distinctTraficoRefs = Array.from(
-    new Set(
-      partidas
-        .slice(0, 40)
-        .map((p) => p.cve_trafico)
-        .filter((r): r is string => !!r),
-    ),
+  // Resolve the 2-hop join (partidas.folio → facturas → traficos) via
+  // the shared helper. Tenant-scoped internally.
+  const firstFortyPartidas = partidas.slice(0, 40)
+  const links = await resolvePartidaLinks(
+    supabase,
+    companyId,
+    firstFortyPartidas.map((p) => ({
+      folio: p.folio,
+      cve_proveedor: p.cve_proveedor,
+    })),
   )
-  const { data: traficoRows } = distinctTraficoRefs.length
-    ? await supabase
-        .from('traficos')
-        .select('trafico, pedimento, fecha_cruce, fecha_llegada, semaforo')
-        .eq('company_id', companyId)
-        .in('trafico', distinctTraficoRefs)
-    : { data: [] as Array<{
-        trafico: string | null
-        pedimento: string | null
-        fecha_cruce: string | null
-        fecha_llegada: string | null
-        semaforo: number | null
-      }> }
-
-  const traficoByRef = new Map<
-    string,
-    {
-      pedimento: string | null
-      fecha_cruce: string | null
-      fecha_llegada: string | null
-      semaforo: number | null
-    }
-  >()
-  for (const t of traficoRows ?? []) {
-    if (!t.trafico) continue
-    traficoByRef.set(t.trafico, {
-      pedimento: t.pedimento ?? null,
-      fecha_cruce: t.fecha_cruce ?? null,
-      fecha_llegada: t.fecha_llegada ?? null,
-      semaforo: typeof t.semaforo === 'number' ? t.semaforo : null,
-    })
-  }
 
   // Derived: usage_timeline (first 20), enriched
   const uses_timeline = partidas.slice(0, 20).map((p) => {
-    const trafico = p.cve_trafico ? traficoByRef.get(p.cve_trafico) : null
+    const link = p.folio != null ? links.byFolio.get(p.folio) ?? null : null
     return {
       created_at: p.created_at,
-      trafico_ref: p.cve_trafico,
-      pedimento: trafico?.pedimento ?? null,
-      fecha_cruce: trafico?.fecha_cruce ?? null,
-      fecha_llegada: trafico?.fecha_llegada ?? null,
-      semaforo: trafico?.semaforo ?? null,
+      trafico_ref: link?.cve_trafico ?? null,
+      pedimento: link?.pedimento ?? null,
+      fecha_cruce: link?.fecha_cruce ?? null,
+      fecha_llegada: link?.fecha_llegada ?? null,
+      semaforo: link?.semaforo ?? null,
       cantidad: p.cantidad,
       umt: parteRow.umt,
       precio_unitario: p.precio_unitario,

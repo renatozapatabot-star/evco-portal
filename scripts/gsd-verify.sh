@@ -311,6 +311,26 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# 12b. Phantom-column guard (M12)
+#   globalpc_partidas does NOT have cve_trafico, descripcion,
+#   valor_comercial, fecha_llegada, or seq columns. Queries that select
+#   them 400 in prod and get masked by soft-wrappers. Use the 2-hop
+#   helper in src/lib/queries/partidas-trafico-link.ts instead.
+# --------------------------------------------------------------------------
+header "Schema — Phantom-column guard"
+PHANTOM_PARTIDAS=$(grep -rnE "from\(['\"]globalpc_partidas['\"]\)[^;]*\.select\([^)]*(cve_trafico|descripcion|valor_comercial|fecha_llegada|seq)[^)]*\)" src/ \
+  --include="*.ts" --include="*.tsx" \
+  | grep -v 'node_modules' \
+  | grep -v '\.test\.\|__tests__' \
+  || true)
+if [ -n "$PHANTOM_PARTIDAS" ]; then
+  fail "Phantom column on globalpc_partidas (use src/lib/queries/partidas-trafico-link.ts):"
+  echo "$PHANTOM_PARTIDAS" | head -5
+else
+  pass "No phantom-column selects on globalpc_partidas (M12 gate)"
+fi
+
+# --------------------------------------------------------------------------
 # 13. No console.log in Production
 # --------------------------------------------------------------------------
 header "Code Quality — Console Logs"

@@ -33,6 +33,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -98,16 +99,10 @@ export interface InsightsPayload {
 
 // ── Pure aggregation helpers (unit-testable) ───────────────────────
 
-interface RawCrossing {
+interface RawPartidaForInsights {
   cve_producto: string | null
   cve_proveedor: string | null
-  cve_trafico: string | null
-}
-
-interface RawTrafico {
-  trafico: string | null
-  fecha_cruce: string | null
-  semaforo: number | null
+  folio: number | null
 }
 
 /**
@@ -369,53 +364,34 @@ export async function getCrossingInsights(
   }
   if (!companyId) return empty
 
-  // 1. Partidas in window — pulls the SKU + proveedor + trafico-ref triple.
+  // 1. Partidas in window — real schema: cve_producto + cve_proveedor +
+  //    folio. The join to traficos goes through facturas (partidas
+  //    DOES NOT have cve_trafico — M11/M12 schema-drift finding).
   const { data: partidasRaw, error: partidasErr } = await supabase
     .from('globalpc_partidas')
-    .select('cve_producto, cve_proveedor, cve_trafico')
+    .select('cve_producto, cve_proveedor, folio')
     .eq('company_id', companyId)
     .gte('created_at', cutoffIso)
     .limit(PART_FETCH_LIMIT)
 
   if (partidasErr) return empty
-  const partidas = (partidasRaw ?? []) as RawCrossing[]
+  const partidas = (partidasRaw ?? []) as RawPartidaForInsights[]
   if (partidas.length === 0) return empty
 
-  // 2. Traficos for those distinct trafico refs — for fecha_cruce + semaforo.
-  const distinctTraficos = Array.from(
-    new Set(
-      partidas
-        .map((p) => p.cve_trafico)
-        .filter((t): t is string => typeof t === 'string' && t.length > 0),
-    ),
+  // 2. Resolve the 2-hop join (partidas → facturas → traficos) via the
+  //    shared helper. Handles tenant scoping + chunking.
+  const links = await resolvePartidaLinks(
+    supabase,
+    companyId,
+    partidas.map((p) => ({
+      folio: p.folio,
+      cve_producto: p.cve_producto,
+      cve_proveedor: p.cve_proveedor,
+    })),
   )
-  if (distinctTraficos.length === 0) return empty
+  if (links.byFolio.size === 0) return empty
 
-  const traficoByRef = new Map<
-    string,
-    { fecha_cruce: string | null; semaforo: SemaforoValue }
-  >()
-  // Chunk to avoid overly-long IN clauses.
-  for (let i = 0; i < distinctTraficos.length; i += 500) {
-    const batch = distinctTraficos.slice(i, i + 500)
-    const { data: traficosRaw } = await supabase
-      .from('traficos')
-      .select('trafico, fecha_cruce, semaforo')
-      .eq('company_id', companyId)
-      .in('trafico', batch)
-    for (const t of (traficosRaw ?? []) as RawTrafico[]) {
-      if (!t.trafico) continue
-      traficoByRef.set(t.trafico, {
-        fecha_cruce: t.fecha_cruce ?? null,
-        semaforo:
-          t.semaforo === 0 || t.semaforo === 1 || t.semaforo === 2
-            ? (t.semaforo as SemaforoValue)
-            : null,
-      })
-    }
-  }
-
-  // 3. Join: build the enriched crossing stream.
+  // 3. Build the enriched crossing stream.
   const enriched: Array<{
     cve_producto: string | null
     cve_proveedor: string | null
@@ -423,13 +399,16 @@ export async function getCrossingInsights(
     semaforo: SemaforoValue
   }> = partidas
     .map((p) => {
-      const t = p.cve_trafico ? traficoByRef.get(p.cve_trafico) : null
-      if (!t || !t.fecha_cruce) return null // only count filed crossings
+      const link = p.folio != null ? links.byFolio.get(p.folio) : null
+      if (!link || !link.fecha_cruce) return null // only count filed crossings
       return {
         cve_producto: p.cve_producto,
         cve_proveedor: p.cve_proveedor,
-        fecha_cruce: t.fecha_cruce,
-        semaforo: t.semaforo,
+        fecha_cruce: link.fecha_cruce,
+        semaforo:
+          link.semaforo === 0 || link.semaforo === 1 || link.semaforo === 2
+            ? (link.semaforo as SemaforoValue)
+            : null,
       }
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)

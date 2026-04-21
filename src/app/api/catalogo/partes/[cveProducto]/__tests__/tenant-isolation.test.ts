@@ -251,7 +251,7 @@ describe('GET /api/catalogo/partes/[cveProducto] · tenant isolation', () => {
     expect(body.error.code).toBe('NOT_FOUND')
   })
 
-  it('enriches uses_timeline with pedimento + fecha_cruce + semaforo from traficos join', async () => {
+  it('enriches uses_timeline with pedimento + fecha_cruce + semaforo via 2-hop join (M12 fix)', async () => {
     const { GET } = await import('../route')
     mockSession = { role: 'client', companyId: 'evco' }
     ownershipResult = {
@@ -271,24 +271,32 @@ describe('GET /api/catalogo/partes/[cveProducto] · tenant isolation', () => {
       }],
       error: null,
     }
+    // M12 join path: partidas.folio → facturas.folio+cve_trafico → traficos
     deepResults = [
-      // partidas — 3 uses, all pointing to distinct traficos
+      // partidas — 3 uses with folios (NOT cve_trafico)
       { data: [
-        { created_at: '2026-04-18T00:00:00Z', cantidad: 100, precio_unitario: 15.5, cve_proveedor: 'PRV_001', cve_trafico: 'T-001' },
-        { created_at: '2026-04-10T00:00:00Z', cantidad: 120, precio_unitario: 15.6, cve_proveedor: 'PRV_001', cve_trafico: 'T-002' },
-        { created_at: '2026-03-28T00:00:00Z', cantidad: 90, precio_unitario: 15.4, cve_proveedor: 'PRV_002', cve_trafico: 'T-003' },
+        { created_at: '2026-04-18T00:00:00Z', cantidad: 100, precio_unitario: 15.5, cve_proveedor: 'PRV_001', folio: 1001 },
+        { created_at: '2026-04-10T00:00:00Z', cantidad: 120, precio_unitario: 15.6, cve_proveedor: 'PRV_001', folio: 1002 },
+        { created_at: '2026-03-28T00:00:00Z', cantidad: 90, precio_unitario: 15.4, cve_proveedor: 'PRV_002', folio: 1003 },
       ], error: null },
       { data: [], error: null }, // classifications
       { data: [], error: null }, // ocas
       { data: null, error: null }, // tmec
       { data: [], error: null }, // supertito
+      // facturas — folio → cve_trafico pivot (M12 fix: this is the
+      // missing hop that was causing phantom-column queries to 400)
+      { data: [
+        { folio: 1001, cve_trafico: 'T-001', fecha_facturacion: '2026-04-16T00:00:00Z', valor_comercial: 1550 },
+        { folio: 1002, cve_trafico: 'T-002', fecha_facturacion: '2026-04-08T00:00:00Z', valor_comercial: 1872 },
+        { folio: 1003, cve_trafico: 'T-003', fecha_facturacion: '2026-03-26T00:00:00Z', valor_comercial: 1386 },
+      ], error: null },
       // traficos — all 3 crossed, 2 green + 1 amber
       { data: [
         { trafico: 'T-001', pedimento: '26 24 3596 6500441', fecha_cruce: '2026-04-18T09:00:00Z', fecha_llegada: '2026-04-17T18:00:00Z', semaforo: 0 },
         { trafico: 'T-002', pedimento: '26 24 3596 6500442', fecha_cruce: '2026-04-10T11:00:00Z', fecha_llegada: '2026-04-09T16:00:00Z', semaforo: 0 },
         { trafico: 'T-003', pedimento: '26 24 3596 6500443', fecha_cruce: '2026-03-28T10:00:00Z', fecha_llegada: '2026-03-27T14:00:00Z', semaforo: 1 },
       ], error: null },
-      { data: [], error: null }, // globalpc_proveedores (empty — no match required)
+      { data: [], error: null }, // globalpc_proveedores
       { data: [], error: null }, // lifetime count
     ]
     const req = makeRequest('XR-847', 'token')
@@ -297,19 +305,19 @@ describe('GET /api/catalogo/partes/[cveProducto] · tenant isolation', () => {
     const body = await res.json()
 
     expect(body.data.uses_timeline).toHaveLength(3)
+    expect(body.data.uses_timeline[0].trafico_ref).toBe('T-001')
     expect(body.data.uses_timeline[0].pedimento).toBe('26 24 3596 6500441')
     expect(body.data.uses_timeline[0].semaforo).toBe(0)
     expect(body.data.uses_timeline[0].fecha_cruce).toBe('2026-04-18T09:00:00Z')
     expect(body.data.uses_timeline[2].semaforo).toBe(1)
 
-    // Crossings summary: 2 verde of 3 total
     expect(body.data.crossings_summary).toBeDefined()
     expect(body.data.crossings_summary.total).toBe(3)
     expect(body.data.crossings_summary.verde).toBe(2)
     expect(body.data.crossings_summary.pct_verde).toBe(67)
   })
 
-  it('leaves pedimento + semaforo null when the trafico is missing from the join', async () => {
+  it('leaves pedimento + semaforo null when the folio has no matching factura', async () => {
     const { GET } = await import('../route')
     mockSession = { role: 'client', companyId: 'evco' }
     ownershipResult = {
@@ -330,14 +338,17 @@ describe('GET /api/catalogo/partes/[cveProducto] · tenant isolation', () => {
       error: null,
     }
     deepResults = [
+      // partida has folio but facturas will have no match for it
       { data: [
-        { created_at: '2026-04-18T00:00:00Z', cantidad: 100, precio_unitario: 15.5, cve_proveedor: 'PRV_001', cve_trafico: 'T-999-ORPHAN' },
+        { created_at: '2026-04-18T00:00:00Z', cantidad: 100, precio_unitario: 15.5, cve_proveedor: 'PRV_001', folio: 9999 },
       ], error: null },
       { data: [], error: null },
       { data: [], error: null },
       { data: null, error: null },
       { data: [], error: null },
-      // traficos — empty (ref not found; stale partida row or cross-tenant scrub)
+      // facturas — empty (orphan folio: factura not yet synced)
+      { data: [], error: null },
+      // traficos query still fires but with empty ref list → returns empty
       { data: [], error: null },
       { data: [], error: null },
       { data: [], error: null },
@@ -346,10 +357,10 @@ describe('GET /api/catalogo/partes/[cveProducto] · tenant isolation', () => {
     const res = await GET(req, { params: Promise.resolve({ cveProducto: 'XR-847' }) })
     expect(res.status).toBe(200)
     const body = await res.json()
+    expect(body.data.uses_timeline[0].trafico_ref).toBeNull()
     expect(body.data.uses_timeline[0].pedimento).toBeNull()
     expect(body.data.uses_timeline[0].fecha_cruce).toBeNull()
     expect(body.data.uses_timeline[0].semaforo).toBeNull()
-    expect(body.data.uses_timeline[0].trafico_ref).toBe('T-999-ORPHAN')
     expect(body.data.crossings_summary.total).toBe(0)
     expect(body.data.crossings_summary.verde).toBe(0)
     expect(body.data.crossings_summary.pct_verde).toBeNull()

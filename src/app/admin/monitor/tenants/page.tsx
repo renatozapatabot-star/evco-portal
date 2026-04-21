@@ -16,7 +16,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
-import { PageShell, GlassCard } from '@/components/aguila'
+import { PageShell, GlassCard, AguilaDataTable } from '@/components/aguila'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
@@ -154,19 +154,18 @@ export default async function TenantsMonitorPage() {
             Rows con <code>company_id</code> empezando en <code>orphan-</code> — su <code>cve_cliente</code> no está en la tabla <code>companies</code>.
             No aparecen en ningún cockpit de cliente pero permanecen auditables.
           </p>
-          <table className="portal-table" style={{ width: '100%' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left' }}>Tabla</th>
-                <th className="num" style={{ textAlign: 'right' }}>Rows</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>globalpc_productos</td><td className="num">{fmt(orphanProductos)}</td></tr>
-              <tr><td>globalpc_partidas</td><td className="num">{fmt(orphanPartidas)}</td></tr>
-              <tr><td>globalpc_facturas</td><td className="num">{fmt(orphanFacturas)}</td></tr>
-            </tbody>
-          </table>
+          <AguilaDataTable
+            ariaLabel="Orphan rows por tabla"
+            columns={[
+              { key: 'tabla', label: 'Tabla', type: 'text' },
+              { key: 'rows', label: 'Rows', type: 'number' },
+            ]}
+            rows={[
+              { tabla: 'globalpc_productos', rows: orphanProductos },
+              { tabla: 'globalpc_partidas', rows: orphanPartidas },
+              { tabla: 'globalpc_facturas', rows: orphanFacturas },
+            ]}
+          />
         </GlassCard>
       )}
 
@@ -174,36 +173,37 @@ export default async function TenantsMonitorPage() {
         <h2 className="portal-eyebrow" style={{ color: 'var(--portal-fg-3)', marginBottom: 12 }}>
           Por cliente
         </h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="portal-table" style={{ width: '100%', minWidth: 900 }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left' }}>company_id</th>
-                <th style={{ textAlign: 'left' }}>clave</th>
-                <th className="num" style={{ textAlign: 'right' }}>productos</th>
-                <th className="num" style={{ textAlign: 'right' }}>partidas</th>
-                <th className="num" style={{ textAlign: 'right' }}>facturas</th>
-                <th className="num" style={{ textAlign: 'right' }}>proveedores</th>
-                <th className="num" style={{ textAlign: 'right' }}>tráficos</th>
-                <th className="num" style={{ textAlign: 'right' }}>entradas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.company_id}>
-                  <td style={{ fontFamily: 'var(--portal-font-mono)', color: 'var(--portal-fg-2)' }}>{r.company_id}</td>
-                  <td style={{ fontFamily: 'var(--portal-font-mono)', color: 'var(--portal-fg-4)' }}>{r.clave_cliente ?? '—'}</td>
-                  <td className="num">{fmt(r.productos)}</td>
-                  <td className="num">{fmt(r.partidas)}</td>
-                  <td className="num">{fmt(r.facturas)}</td>
-                  <td className="num">{fmt(r.proveedores)}</td>
-                  <td className="num">{fmt(r.traficos)}</td>
-                  <td className="num">{fmt(r.entradas)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AguilaDataTable
+          ariaLabel="Filas por cliente · drift post-Block-EE"
+          columns={[
+            {
+              key: 'company_id',
+              label: 'company_id',
+              render: (r) => (
+                <span style={{ fontFamily: 'var(--portal-font-mono)', color: 'var(--portal-fg-2)' }}>
+                  {r.company_id}
+                </span>
+              ),
+            },
+            {
+              key: 'clave_cliente',
+              label: 'clave',
+              render: (r) => (
+                <span style={{ fontFamily: 'var(--portal-font-mono)', color: 'var(--portal-fg-4)' }}>
+                  {r.clave_cliente ?? '—'}
+                </span>
+              ),
+            },
+            { key: 'productos', label: 'productos', type: 'number' },
+            { key: 'partidas', label: 'partidas', type: 'number' },
+            { key: 'facturas', label: 'facturas', type: 'number' },
+            { key: 'proveedores', label: 'proveedores', type: 'number' },
+            { key: 'traficos', label: 'tráficos', type: 'number' },
+            { key: 'entradas', label: 'entradas', type: 'number' },
+          ]}
+          rows={rows}
+          keyFor={(r) => r.company_id}
+        />
       </GlassCard>
     </PageShell>
   )

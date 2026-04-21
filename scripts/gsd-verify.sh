@@ -784,7 +784,7 @@ fi
 
 # R8 — AguilaDataTable adoption (positive direction).
 header "theme/v6 · <AguilaDataTable> adoption (target ↑)"
-AGUILA_DT_BASELINE=${AGUILA_DT_BASELINE:-0}
+AGUILA_DT_BASELINE=${AGUILA_DT_BASELINE:-2}
 AGUILA_DT_COUNT=$(set +eo pipefail;{ grep -rln "<AguilaDataTable" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$AGUILA_DT_COUNT" -lt "$AGUILA_DT_BASELINE" ]; then
   fail "<AguilaDataTable> usage regressed: $AGUILA_DT_COUNT (was $AGUILA_DT_BASELINE). Adoption should only grow."

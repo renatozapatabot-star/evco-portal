@@ -121,8 +121,10 @@ function Anexo24Surface({
           <Anexo24DownloadCta companyId={snapshot.company_id} isInternal={isInternal} />
         </section>
 
-        {/* Última ingesta badge */}
-        {lastIngest?.completed_at && (
+        {/* Última ingesta badge — renders a calm placeholder when the
+            ingest hasn't run yet so Ursula never sees an unexplained
+            empty section. */}
+        {lastIngest?.completed_at ? (
           <section className="aguila-reveal aguila-reveal-delay-1" style={{ marginBottom: 24 }}>
             <GlassCard padding="12px 16px">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -142,6 +144,23 @@ function Anexo24Surface({
                 </span>
                 <span style={{ color: 'rgba(192,197,206,0.55)', fontSize: 'var(--aguila-fs-meta, 11px)' }}>
                   {formatAbsolute(lastIngest.completed_at)}
+                </span>
+              </div>
+            </GlassCard>
+          </section>
+        ) : (
+          <section className="aguila-reveal aguila-reveal-delay-1" style={{ marginBottom: 24 }}>
+            <GlassCard padding="12px 16px">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{
+                  fontSize: 'var(--aguila-fs-meta, 11px)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  color: 'rgba(192,197,206,0.7)',
+                  fontWeight: 600,
+                }}>Última ingesta SAT</span>
+                <span style={{ color: 'rgba(192,197,206,0.78)', fontSize: 'var(--aguila-fs-body, 13px)' }}>
+                  Sin ingestas registradas aún · tu primera subida activará este panel
                 </span>
               </div>
             </GlassCard>

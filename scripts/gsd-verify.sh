@@ -578,7 +578,7 @@ else
   warn "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (at baseline, awaiting cleanup block)"
 fi
 
-PORTAL_BACKDROP_BASELINE=172
+PORTAL_BACKDROP_BASELINE=170
 header "PORTAL · inline backdropFilter ratchet (target 0)"
 PORTAL_BACKDROP_COUNT=$(set +eo pipefail;{ grep -rn "backdropFilter" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
 if [ "$PORTAL_BACKDROP_COUNT" -gt "$PORTAL_BACKDROP_BASELINE" ]; then

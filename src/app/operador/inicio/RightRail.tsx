@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import { Activity } from 'lucide-react'
 import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
   TEXT_SECONDARY, TEXT_MUTED, ACCENT_SILVER, GREEN, AMBER, GOLD,
 } from '@/lib/design-system'
 import {
-  SeverityRibbon, severityFromCount,
+  GlassCard,
+  severityFromCount,
   TimelineFeed, type TimelineItem,
 } from '@/components/aguila'
 import type { DecisionRow } from './types'
@@ -53,18 +53,7 @@ export function RightRail({ colaCount, feed }: Props) {
   return (
     <aside style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
       {/* Cola de excepciones */}
-      <section style={{
-        position: 'relative',
-        overflow: 'hidden',
-        background: BG_CARD,
-        backdropFilter: `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-        border: `1px solid ${BORDER}`,
-        borderRadius: 20,
-        boxShadow: GLASS_SHADOW,
-        padding: '20px 20px 20px 23px',
-      }}>
-        {colaCount > 0 && <SeverityRibbon tone={severity} />}
+      <GlassCard tier="hero" severity={colaCount > 0 ? severity : undefined}>
         <div style={{
           fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
           textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -108,18 +97,10 @@ export function RightRail({ colaCount, feed }: Props) {
             Sin excepciones pendientes.
           </p>
         )}
-      </section>
+      </GlassCard>
 
       {/* Actividad reciente */}
-      <section style={{
-        background: BG_CARD,
-        backdropFilter: `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-        border: `1px solid ${BORDER}`,
-        borderRadius: 20,
-        boxShadow: GLASS_SHADOW,
-        padding: '16px 20px',
-      }}>
+      <GlassCard tier="hero" padding="16px 20px">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: items.length > 0 ? 12 : 0 }}>
           <Activity size={14} color={ACCENT_SILVER} />
           <span style={{
@@ -137,7 +118,7 @@ export function RightRail({ colaCount, feed }: Props) {
           )}
         </div>
         <TimelineFeed items={items} max={5} emptyLabel="Aún no hay actividad registrada hoy." />
-      </section>
+      </GlassCard>
     </aside>
   )
 }

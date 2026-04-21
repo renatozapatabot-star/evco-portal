@@ -615,10 +615,23 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     morningBriefing = briefingData as BriefingRow | null
   } catch { /* table missing or RLS denied — briefing feature dormant */ }
 
+  // When there's a recent crossing, surface its semáforo in-line so the
+  // subtitle reads "cruzó verde hace 3 días" instead of the plain "cruzó
+  // hace 3 días". The verde adjective lands as a micro-delight moment
+  // without adding a new component — pure copy enrichment. Fallbacks to
+  // the plain form when semaforo is null/unknown.
+  const lastCruceSemaforoWord: string | null =
+    lastCruce?.semaforo === 0
+      ? 'verde'
+      : lastCruce?.semaforo === 1
+        ? 'amarillo'
+        : lastCruce?.semaforo === 2
+          ? 'rojo'
+          : null
   const computedSummary = activeTraficos.length > 0
     ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en tránsito · Patente en movimiento`
     : lastCruzadoRow
-      ? `Último embarque · ${lastCruzadoRow.trafico} · cruzó ${daysAgoLabel(lastCruzadoRow.fecha_cruce)}`
+      ? `Último embarque · ${lastCruzadoRow.trafico} · cruzó${lastCruceSemaforoWord ? ` ${lastCruceSemaforoWord}` : ''} ${daysAgoLabel(lastCruzadoRow.fecha_cruce)}`
       : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
   const summaryLine = heroBuild.summaryLine ?? computedSummary
 

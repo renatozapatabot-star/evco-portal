@@ -28,6 +28,13 @@ export interface CatalogoRow {
   valor_ytd_usd: number | null
   ultimo_cve_trafico: string | null
   ultima_fecha_llegada: string | null
+  /** Crossing-health enrichment from the traficos join (M8 — list-level
+   * signal so Ursula sees semáforo health without drilling in). All
+   * three are null when the last trafico never filed (still in-process)
+   * or when the ref doesn't join (stale partida ref). */
+  ultimo_semaforo: number | null
+  ultima_fecha_cruce: string | null
+  ultimo_pedimento: string | null
   /** Where this row's canonical name + fracción came from. */
   source_of_truth: SourceOfTruth
   /** Relationship between anexo24_parts + globalpc_productos for this cve. */
@@ -127,6 +134,13 @@ export function mergeCatalogoRows(
         valor_ytd_usd: agg ? agg.valor : null,
         ultimo_cve_trafico: agg?.lastTrafico ?? null,
         ultima_fecha_llegada: agg?.lastFecha ?? null,
+        // Crossing enrichment filled in a separate pass after the merge
+        // (see enrichRowsWithCrossings below). mergeCatalogoRows stays
+        // pure — the traficos query needs a Supabase client which belongs
+        // in getCatalogo, not here.
+        ultimo_semaforo: null,
+        ultima_fecha_cruce: null,
+        ultimo_pedimento: null,
         source_of_truth: sourceOfTruth,
         drift,
       }
@@ -392,6 +406,58 @@ export async function getCatalogo(
   }
 
   let merged = mergeCatalogoRows(productos, proveedorMap, partidaAgg, anexoOverlay)
+
+  // Crossings enrichment — single bulk query by distinct
+  // ultimo_cve_trafico, then back-fill each row. Keeps the hot-list
+  // page to ≤4 DB roundtrips while still delivering the M8 list-level
+  // signal ("Último cruce · verde · 3 abr").
+  const distinctLastTraficos = Array.from(
+    new Set(
+      merged
+        .map((r) => r.ultimo_cve_trafico)
+        .filter((t): t is string => typeof t === 'string' && t.length > 0),
+    ),
+  )
+  if (distinctLastTraficos.length > 0) {
+    try {
+      const { data: traficoRows } = await supabase
+        .from('traficos')
+        .select('trafico, pedimento, fecha_cruce, semaforo')
+        .eq('company_id', companyId)
+        .in('trafico', distinctLastTraficos)
+      const lookup = new Map<
+        string,
+        { semaforo: number | null; pedimento: string | null; fecha_cruce: string | null }
+      >()
+      for (const t of (traficoRows ?? []) as Array<{
+        trafico: string | null
+        pedimento: string | null
+        fecha_cruce: string | null
+        semaforo: number | null
+      }>) {
+        if (!t.trafico) continue
+        lookup.set(t.trafico, {
+          semaforo: typeof t.semaforo === 'number' ? t.semaforo : null,
+          pedimento: t.pedimento ?? null,
+          fecha_cruce: t.fecha_cruce ?? null,
+        })
+      }
+      merged = merged.map((r) => {
+        if (!r.ultimo_cve_trafico) return r
+        const hit = lookup.get(r.ultimo_cve_trafico)
+        if (!hit) return r
+        return {
+          ...r,
+          ultimo_semaforo: hit.semaforo,
+          ultimo_pedimento: hit.pedimento,
+          ultima_fecha_cruce: hit.fecha_cruce,
+        }
+      })
+    } catch {
+      // Enrichment is best-effort — if traficos query fails, rows keep
+      // their null defaults and the UI degrades gracefully.
+    }
+  }
 
   // Source-of-truth filter at the row level (post-merge, so the drift
   // classification is already populated).

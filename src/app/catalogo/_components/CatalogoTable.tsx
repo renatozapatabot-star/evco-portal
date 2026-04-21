@@ -389,9 +389,37 @@ function CatalogoRowCard({ row }: { row: CatalogoRow }) {
                 textDecoration: 'none',
               }}
             >
+              {/* Semáforo dot — appears only when the cruce has landed.
+                  Row-level trust signal so Ursula sees crossing health at
+                  list level without drilling into the parte detail. */}
+              {row.ultima_fecha_cruce && row.ultimo_semaforo !== null && (
+                <span
+                  aria-label={
+                    row.ultimo_semaforo === 0
+                      ? 'Cruzó en verde'
+                      : row.ultimo_semaforo === 1
+                      ? 'Cruzó en amarillo'
+                      : 'Cruzó en rojo'
+                  }
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    background:
+                      row.ultimo_semaforo === 0
+                        ? 'var(--portal-status-green-fg)'
+                        : row.ultimo_semaforo === 1
+                        ? 'var(--portal-status-amber-fg)'
+                        : 'var(--portal-status-red-fg)',
+                  }}
+                />
+              )}
               <span className="font-mono">{row.ultimo_cve_trafico}</span>
-              {row.ultima_fecha_llegada && (
-                <span style={{ color: 'rgba(250,204,21,0.7)' }}>· {fmtDate(row.ultima_fecha_llegada)}</span>
+              {(row.ultima_fecha_cruce || row.ultima_fecha_llegada) && (
+                <span style={{ color: 'rgba(250,204,21,0.7)' }}>
+                  · {fmtDate(row.ultima_fecha_cruce ?? row.ultima_fecha_llegada)}
+                </span>
               )}
               <span aria-hidden>→</span>
             </Link>

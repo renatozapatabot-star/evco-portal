@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 import { signupAction } from './actions'
 import Link from 'next/link'
 import { AduanaMark } from '@/components/command-center/CommandCenterAguilaMark'
+import { AguilaInput, AguilaSelect } from '@/components/aguila'
 
 const ADUANAS = ['Nuevo Laredo (240)', 'Colombia (240)', 'Reynosa (260)', 'Matamoros (210)', 'Ciudad Juárez (070)', 'Tijuana (070)', 'Mexicali (071)', 'Nogales (080)', 'Manzanillo (160)', 'Lázaro Cárdenas (470)', 'Veracruz (430)', 'Monterrey', 'Guadalajara', 'Otra']
 
@@ -52,24 +53,19 @@ export default function SignupPage() {
         )}
 
         <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <Input name="full_name" label="Nombre del agente" placeholder="Juan García López" required />
-          <Input name="email" label="Correo electrónico" type="email" placeholder="juan@agencia.com" required />
-          <Input name="firm_name" label="Nombre de la agencia" placeholder="Agencia Aduanal García" required />
-          <Input name="patente" label="Patente aduanal" placeholder="3596" required maxLength={5} />
-          <div>
-            <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 4, display: 'block' }}>
-              Aduana principal
-            </label>
-            <select name="aduana" required style={{
-              width: '100%', padding: '10px 14px', borderRadius: 8,
-              background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)',
-            }}>
-              <option value="">Seleccionar...</option>
-              {ADUANAS.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-          </div>
-          <Input name="telefono" label="Teléfono (opcional)" placeholder="+52 956 123 4567" />
+          <AguilaInput name="full_name" label="Nombre del agente" placeholder="Juan García López" required />
+          <AguilaInput name="email" label="Correo electrónico" type="email" placeholder="juan@agencia.com" required />
+          <AguilaInput name="firm_name" label="Nombre de la agencia" placeholder="Agencia Aduanal García" required />
+          <AguilaInput name="patente" label="Patente aduanal" placeholder="3596" required maxLength={5} mono />
+          <AguilaSelect
+            name="aduana"
+            label="Aduana principal"
+            required
+            placeholder="Seleccionar..."
+            defaultValue=""
+            options={ADUANAS.map((a) => ({ value: a, label: a }))}
+          />
+          <AguilaInput name="telefono" label="Teléfono (opcional)" placeholder="+52 956 123 4567" type="tel" />
 
           <button type="submit" disabled={pending} style={{
             marginTop: 8, padding: '14px 20px', borderRadius: 10,
@@ -92,19 +88,3 @@ export default function SignupPage() {
   )
 }
 
-function Input({ name, label, type = 'text', placeholder, required, maxLength }: {
-  name: string; label: string; type?: string; placeholder?: string; required?: boolean; maxLength?: number
-}) {
-  return (
-    <div>
-      <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 4, display: 'block' }}>
-        {label}
-      </label>
-      <input name={name} type={type} placeholder={placeholder} required={required} maxLength={maxLength} style={{
-        width: '100%', padding: '10px 14px', borderRadius: 8,
-        background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.1)',
-        color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)',
-      }} />
-    </div>
-  )
-}

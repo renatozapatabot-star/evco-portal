@@ -1318,30 +1318,70 @@ if (await hasFeature(supabase, session.companyId, 'white_label_surfaces')) {
 Accent-token routing `style={{ color: \`var(${accentVar})\` }}` keeps
 the tokens-only rule intact when the tenant supplies its own color.
 
-### 26.4 — Schema-drift finding (M11) — follow-up needed
+### 26.4 — Schema-drift finding (M11) — RESOLVED in M12
 
-**Discovered during MAFESA seed:** `globalpc_partidas` in prod does
-NOT have these columns that multiple pieces of repo code reference:
-- `cve_trafico`  (referenced in 3 surfaces)
-- `descripcion` · `valor_comercial` · `fecha_llegada` · `seq`
+**Originally:** `globalpc_partidas` has NO `cve_trafico`, `descripcion`,
+`valor_comercial`, `fecha_llegada`, or `seq` columns. Three pre-M11
+code paths silently 400'd in prod, masked by soft-wrappers.
 
-Real schema:
+**M12 fix shipped** — the real 2-hop linkage goes through `globalpc_facturas`:
+
+```
+globalpc_partidas.folio
+  → globalpc_facturas.folio         (pivot — facturas IS the document)
+  → globalpc_facturas.cve_trafico
+  → traficos.trafico
+```
+
+Facturas is the pivot table. Every SKU's usage goes: partida
+(quantity + price) → factura (invoice-level cve_trafico) → trafico
+(crossing date + semáforo + pedimento).
+
+Canonical helper: **`src/lib/queries/partidas-trafico-link.ts`**.
+Use `resolvePartidaLinks(supabase, companyId, partidas)` to batch-
+join with correct tenant scoping. All three call-sites migrated:
+- `src/app/api/catalogo/partes/[cveProducto]/route.ts`
+- `src/lib/catalogo/products.ts`
+- `src/lib/intelligence/crossing-insights.ts`
+
+**Regression guards shipped:**
+1. TypeScript compile-time column assertions in
+   `src/lib/queries/__tests__/partidas-trafico-link.test.ts` — use
+   `Database['public']['Tables'][X]['Row']` types to lock every
+   real column the helper depends on. A migration that drops/renames
+   any of them fails `tsc --noEmit`.
+2. `gsd-verify.sh` phantom-column gate — greps src/ for
+   `.from('globalpc_partidas').select('...cve_trafico...')` etc.
+   Fails the ship gate if any phantom-column reference sneaks in.
+
+### 26.5 — Real schemas quick reference
+
+For any Grok work that touches these tables, memorize:
+
+**`globalpc_partidas`** (line-item within an invoice):
 ```
 id, folio, numero_item, cve_cliente, cve_proveedor, cve_producto,
 precio_unitario, cantidad, peso, pais_origen, marca, modelo,
 serie, tenant_id, created_at, company_id
 ```
 
-Three code paths currently 400 in prod (caught by soft-wrappers,
-UI renders empty states):
-1. `src/app/api/catalogo/partes/[cveProducto]/route.ts` (M7)
-2. `src/lib/catalogo/products.ts` (M8)
-3. `src/lib/intelligence/crossing-insights.ts` (M10)
+**`globalpc_facturas`** (the pivot / document-level):
+```
+id, folio, cve_trafico, cve_cliente, cve_proveedor, numero,
+incoterm, moneda, fecha_facturacion, valor_comercial, flete,
+seguros, embalajes, incrementables, deducibles, cove_vucem,
+tenant_id, created_at, updated_at, company_id
+```
 
-The partidas → traficos linkage **likely** goes through
-`globalpc_contenedores.cve_trafico` (2-hop: partidas → contenedores
-via folio → trafico via cve_trafico). M12 follow-up needed to
-validate + refactor.
+**`traficos`** (crossing / customs record):
+```
+id, trafico, pedimento, fecha_cruce, fecha_llegada, semaforo,
+estatus, aduana, patente, company_id, tenant_id, tenant_slug,
+... (40+ columns — the largest table)
+```
+
+To join partidas to traficos: always go **via facturas**. Never
+reach for a direct `partidas.cve_trafico` — it doesn't exist.
 
 ---
 

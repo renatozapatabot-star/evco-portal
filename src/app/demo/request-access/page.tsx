@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { AguilaInput } from '@/components/aguila'
+import { AguilaInput, AguilaTextarea } from '@/components/aguila'
 
 export default function RequestAccessPage() {
   const isMobile = useIsMobile()
@@ -77,17 +77,12 @@ export default function RequestAccessPage() {
           <AguilaInput label="Patente (opcional)" placeholder="Ej: 3596" mono value={form.patente} onChange={(e) => setForm((f) => ({ ...f, patente: e.target.value }))} />
           <AguilaInput label="WhatsApp" required type="tel" placeholder="+52 956 123 4567" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
           <AguilaInput label="Correo electrónico (opcional)" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
-          <div>
-            <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>
-              ¿Qué te interesó del Portal? (opcional)
-            </label>
-            <textarea
-              value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              rows={3}
-              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, background: '#222', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', fontSize: 'var(--aguila-fs-section)', resize: 'vertical', boxSizing: 'border-box' }}
-            />
-          </div>
+          <AguilaTextarea
+            label="¿Qué te interesó del Portal? (opcional)"
+            value={form.notes}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            rows={3}
+          />
           <button type="submit" disabled={loading} style={{
             marginTop: 8, padding: '16px 20px', borderRadius: 10,
             background: 'var(--portal-fg-1)', color: 'rgba(255,255,255,0.03)', fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,

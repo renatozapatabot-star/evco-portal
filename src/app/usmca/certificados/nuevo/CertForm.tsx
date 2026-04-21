@@ -2,41 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { GlassCard, SectionHeader, AguilaInput, AguilaSelect } from '@/components/aguila'
-import { TEXT_PRIMARY, TEXT_MUTED, SILVER_GRADIENT } from '@/lib/design-system'
+import { GlassCard, SectionHeader, AguilaInput, AguilaSelect, AguilaTextarea } from '@/components/aguila'
+import { TEXT_MUTED, SILVER_GRADIENT } from '@/lib/design-system'
 import { ORIGIN_CRITERION_LABELS, type UsmcaCertRow } from '@/lib/usmca/types'
 
 interface Response {
   data: { certificate: UsmcaCertRow } | null
   error: { code: string; message: string } | null
-}
-
-const inputStyle = {
-  width: '100%',
-  minHeight: 48,
-  padding: '12px 14px',
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 10,
-  color: TEXT_PRIMARY,
-  fontSize: 'var(--aguila-fs-section)',
-  fontFamily: 'inherit',
-  outline: 'none',
-} as const
-
-const monoInputStyle = {
-  ...inputStyle,
-  fontFamily: 'var(--font-jetbrains-mono), monospace',
-} as const
-
-const labelStyle = {
-  display: 'block',
-  fontSize: 'var(--aguila-fs-label)',
-  fontWeight: 700,
-  color: TEXT_MUTED,
-  textTransform: 'uppercase' as const,
-  letterSpacing: 0.8,
-  marginBottom: 6,
 }
 
 export function CertForm() {
@@ -103,16 +75,16 @@ export function CertForm() {
       <GlassCard>
         <SectionHeader title="Bienes" />
         <div style={{ display: 'grid', gap: 14 }}>
-          <div>
-            <label htmlFor="goods_description" style={labelStyle}>Descripción de los bienes *</label>
-            <textarea
-              id="goods_description"
-              name="goods_description"
-              required minLength={5} maxLength={2000} rows={4}
-              placeholder="Suficiente para identificar los bienes (marca, modelo, material, uso)…"
-              style={{ ...inputStyle, resize: 'vertical', minHeight: 96 }}
-            />
-          </div>
+          <AguilaTextarea
+            id="goods_description"
+            name="goods_description"
+            label="Descripción de los bienes"
+            required
+            minLength={5}
+            maxLength={2000}
+            rows={4}
+            placeholder="Suficiente para identificar los bienes (marca, modelo, material, uso)…"
+          />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
             <AguilaInput id="hs_code" name="hs_code" label="HS Code (6+ dígitos)" required placeholder="3901.20 ó 3901.20.01" mono />
             <AguilaInput id="country_of_origin" name="country_of_origin" label="País origen" defaultValue="US" maxLength={3} mono />
@@ -189,8 +161,7 @@ export function CertForm() {
           <AguilaInput id="trafico_id" name="trafico_id" label="Embarque vinculado" mono />
         </div>
         <div style={{ marginTop: 14 }}>
-          <label htmlFor="notes" style={labelStyle}>Notas internas</label>
-          <textarea id="notes" name="notes" rows={2} maxLength={1000} style={{ ...inputStyle, resize: 'vertical', minHeight: 64 }} />
+          <AguilaTextarea id="notes" name="notes" label="Notas internas" rows={2} maxLength={1000} style={{ minHeight: 64 }} />
         </div>
       </GlassCard>
 

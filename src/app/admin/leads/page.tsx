@@ -20,6 +20,8 @@ import {
 } from '@/components/aguila'
 import { NewLeadForm } from './NewLeadForm'
 import { LeadsFilterBar } from './LeadsFilterBar'
+import { RecentActivityFeed } from './RecentActivityFeed'
+import type { LeadActivityKind } from '@/lib/leads/types'
 import {
   LEAD_STAGES,
   LEAD_STAGE_LABELS,
@@ -86,11 +88,18 @@ export default async function AdminLeadsPage({
 
   const supabase = createServerClient()
 
-  const { data: allLeads, error } = await supabase
-    .from('leads')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(500)
+  const [{ data: allLeads, error }, { data: activities }] = await Promise.all([
+    supabase
+      .from('leads')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(500),
+    supabase
+      .from('lead_activities')
+      .select('id,lead_id,kind,summary,actor_name,occurred_at')
+      .order('occurred_at', { ascending: false })
+      .limit(15),
+  ])
 
   const allRows: LeadsPageRow[] = ((allLeads ?? []) as LeadRow[]).map((r) => ({
     ...r,
@@ -140,6 +149,34 @@ export default async function AdminLeadsPage({
     .filter((r) => r.stage === 'won')
     .reduce((s, r) => s + (r.value_monthly_mxn ?? 0), 0)
 
+  // Conversion metrics
+  const converted = allRows.filter((r) => r.converted_at !== null)
+  const convertedCount = converted.length
+  const conversionRate =
+    total > 0 ? Math.round((convertedCount / total) * 100) : 0
+
+  // Activity feed — join activities with firm_name via allRows index
+  const leadFirmMap = new Map(allRows.map((r) => [r.id, r.firm_name]))
+  const feed = ((activities ?? []) as Array<{
+    id: string
+    lead_id: string
+    kind: LeadActivityKind
+    summary: string
+    actor_name: string | null
+    occurred_at: string
+  }>).map((a) => ({
+    ...a,
+    firm_name: leadFirmMap.get(a.lead_id) ?? null,
+  }))
+
+  const exportHref = (() => {
+    const next = new URLSearchParams()
+    if (filterStage) next.set('stage', filterStage)
+    if (filterQuery) next.set('q', filterQuery)
+    const qs = next.toString()
+    return `/api/leads/export${qs ? `?${qs}` : ''}`
+  })()
+
   return (
     <PageShell
       title="Pipeline de leads"
@@ -160,14 +197,14 @@ export default async function AdminLeadsPage({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
           gap: 14,
           marginBottom: 24,
         }}
       >
         <AguilaMetric label="Total" value={String(total)} sub="pipeline completo" />
         <AguilaMetric
-          label="Acciones pendientes"
+          label="Acciones hoy"
           value={String(due.length)}
           tone={due.length > 0 ? 'attention' : 'neutral'}
           sub="next_action_at vencido"
@@ -176,7 +213,7 @@ export default async function AdminLeadsPage({
           label="Demo vistos"
           value={String(counts['demo-viewed'])}
           tone="positive"
-          sub="en las últimas 30 días"
+          sub="convertibles a proposal"
         />
         <AguilaMetric
           label="Ganados"
@@ -184,7 +221,16 @@ export default async function AdminLeadsPage({
           tone="positive"
           sub={wonValue > 0 ? `${fmtMXN(wonValue)} MXN/mes` : undefined}
         />
+        <AguilaMetric
+          label="Convertidos"
+          value={String(convertedCount)}
+          tone="positive"
+          sub={`${conversionRate}% del total`}
+        />
       </div>
+
+      {/* Recent cross-lead activity */}
+      <RecentActivityFeed items={feed} />
 
       {/* Acciones pendientes */}
       {due.length > 0 && (
@@ -243,21 +289,47 @@ export default async function AdminLeadsPage({
 
       {/* Full pipeline */}
       <GlassCard tier="hero" padding={20}>
-        <h2
-          className="portal-eyebrow"
+        <div
           style={{
-            fontSize: 'var(--portal-fs-label)',
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            color: 'var(--portal-fg-4)',
-            margin: '0 0 12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 12,
+            gap: 10,
           }}
         >
-          {isFiltered
-            ? `Leads filtrados · ${filtered} de ${total}`
-            : `Todos los leads · ${total}`}
-        </h2>
+          <h2
+            className="portal-eyebrow"
+            style={{
+              fontSize: 'var(--portal-fs-label)',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--portal-fg-4)',
+              margin: 0,
+            }}
+          >
+            {isFiltered
+              ? `Leads filtrados · ${filtered} de ${total}`
+              : `Todos los leads · ${total}`}
+          </h2>
+          <a
+            href={exportHref}
+            className="portal-btn portal-btn--ghost"
+            style={{
+              minHeight: 36,
+              padding: '0 12px',
+              fontSize: 'var(--portal-fs-sm)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Exportar CSV
+          </a>
+        </div>
 
         <LeadsFilterBar counts={counts} total={total} />
 

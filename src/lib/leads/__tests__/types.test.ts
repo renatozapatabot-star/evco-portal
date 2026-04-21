@@ -7,13 +7,29 @@ import {
 } from '../types'
 
 describe('leads/types', () => {
-  it('ships 8 pipeline stages', () => {
-    expect(LEAD_STAGES.length).toBe(8)
+  it('ships 9 pipeline stages', () => {
+    expect(LEAD_STAGES.length).toBe(9)
     expect(LEAD_STAGES).toContain('new')
+    expect(LEAD_STAGES).toContain('contacted')
+    expect(LEAD_STAGES).toContain('qualified')
+    expect(LEAD_STAGES).toContain('demo-booked')
+    expect(LEAD_STAGES).toContain('demo-viewed')
+    expect(LEAD_STAGES).toContain('negotiating')
     expect(LEAD_STAGES).toContain('won')
     expect(LEAD_STAGES).toContain('lost')
-    expect(LEAD_STAGES).toContain('demo-viewed')
     expect(LEAD_STAGES).toContain('nurture')
+  })
+
+  it('labels qualified stage as "Calificado"', () => {
+    expect(LEAD_STAGE_LABELS.qualified).toBe('Calificado')
+  })
+
+  it('orders qualified between contacted and demo-booked', () => {
+    const qualifiedIdx = LEAD_STAGES.indexOf('qualified')
+    const contactedIdx = LEAD_STAGES.indexOf('contacted')
+    const demoBookedIdx = LEAD_STAGES.indexOf('demo-booked')
+    expect(qualifiedIdx).toBeGreaterThan(contactedIdx)
+    expect(qualifiedIdx).toBeLessThan(demoBookedIdx)
   })
 
   it('covers every stage with a Spanish label', () => {

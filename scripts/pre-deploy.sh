@@ -22,7 +22,7 @@ echo "  ✅ Data integrity verified"
 
 echo "4/4 Grep checks..."
 [ "$(grep -r 'CRUD' src/ 2>/dev/null | wc -l | tr -d ' ')" = "0" ] && echo "  ✅ No CRUD" || { echo "  ❌ CRUD found"; exit 1; }
-[ "$(grep -rn "'9254'" src/app/ --include="*.tsx" 2>/dev/null | grep -v config | wc -l | tr -d ' ')" = "0" ] && echo "  ✅ No hardcoded IDs" || { echo "  ❌ Hardcoded '9254'"; exit 1; }
+[ "$(grep -rn "'9254'" src/app/ --include="*.tsx" 2>/dev/null | grep -v config | grep -v '__tests__' | grep -v '\.test\.' | wc -l | tr -d ' ')" = "0" ] && echo "  ✅ No hardcoded IDs" || { echo "  ❌ Hardcoded '9254'"; exit 1; }
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"

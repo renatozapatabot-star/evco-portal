@@ -42,6 +42,10 @@ vi.mock('@supabase/supabase-js', () => ({
         or: () => chain,
         order: () => chain,
         limit: () => chain,
+        // .in() is used by the traficos enrichment query + proveedor
+        // name-resolution query added in M7 — returns the same chain
+        // so .then() can pop from deepResults like every other query.
+        in: () => chain,
       }
       // Ownership query hits globalpc_productos with .limit(1)
       // Deep queries hit other tables — pop off the queue
@@ -245,5 +249,145 @@ describe('GET /api/catalogo/partes/[cveProducto] · tenant isolation', () => {
     expect(res.status).toBe(404)
     const body = await res.json()
     expect(body.error.code).toBe('NOT_FOUND')
+  })
+
+  it('enriches uses_timeline with pedimento + fecha_cruce + semaforo from traficos join', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    ownershipResult = {
+      data: [{
+        cve_producto: 'XR-847',
+        descripcion: 'Catalizador XR-847',
+        descripcion_ingles: null,
+        fraccion: '3901.20.01',
+        nico: null,
+        umt: 'KGM',
+        pais_origen: 'US',
+        marca: null,
+        precio_unitario: null,
+        fraccion_classified_at: null,
+        fraccion_source: null,
+        created_at: '2026-04-01T00:00:00Z',
+      }],
+      error: null,
+    }
+    deepResults = [
+      // partidas — 3 uses, all pointing to distinct traficos
+      { data: [
+        { created_at: '2026-04-18T00:00:00Z', cantidad: 100, precio_unitario: 15.5, cve_proveedor: 'PRV_001', cve_trafico: 'T-001' },
+        { created_at: '2026-04-10T00:00:00Z', cantidad: 120, precio_unitario: 15.6, cve_proveedor: 'PRV_001', cve_trafico: 'T-002' },
+        { created_at: '2026-03-28T00:00:00Z', cantidad: 90, precio_unitario: 15.4, cve_proveedor: 'PRV_002', cve_trafico: 'T-003' },
+      ], error: null },
+      { data: [], error: null }, // classifications
+      { data: [], error: null }, // ocas
+      { data: null, error: null }, // tmec
+      { data: [], error: null }, // supertito
+      // traficos — all 3 crossed, 2 green + 1 amber
+      { data: [
+        { trafico: 'T-001', pedimento: '26 24 3596 6500441', fecha_cruce: '2026-04-18T09:00:00Z', fecha_llegada: '2026-04-17T18:00:00Z', semaforo: 0 },
+        { trafico: 'T-002', pedimento: '26 24 3596 6500442', fecha_cruce: '2026-04-10T11:00:00Z', fecha_llegada: '2026-04-09T16:00:00Z', semaforo: 0 },
+        { trafico: 'T-003', pedimento: '26 24 3596 6500443', fecha_cruce: '2026-03-28T10:00:00Z', fecha_llegada: '2026-03-27T14:00:00Z', semaforo: 1 },
+      ], error: null },
+      { data: [], error: null }, // globalpc_proveedores (empty — no match required)
+      { data: [], error: null }, // lifetime count
+    ]
+    const req = makeRequest('XR-847', 'token')
+    const res = await GET(req, { params: Promise.resolve({ cveProducto: 'XR-847' }) })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+
+    expect(body.data.uses_timeline).toHaveLength(3)
+    expect(body.data.uses_timeline[0].pedimento).toBe('26 24 3596 6500441')
+    expect(body.data.uses_timeline[0].semaforo).toBe(0)
+    expect(body.data.uses_timeline[0].fecha_cruce).toBe('2026-04-18T09:00:00Z')
+    expect(body.data.uses_timeline[2].semaforo).toBe(1)
+
+    // Crossings summary: 2 verde of 3 total
+    expect(body.data.crossings_summary).toBeDefined()
+    expect(body.data.crossings_summary.total).toBe(3)
+    expect(body.data.crossings_summary.verde).toBe(2)
+    expect(body.data.crossings_summary.pct_verde).toBe(67)
+  })
+
+  it('leaves pedimento + semaforo null when the trafico is missing from the join', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    ownershipResult = {
+      data: [{
+        cve_producto: 'XR-847',
+        descripcion: 'Catalizador XR-847',
+        descripcion_ingles: null,
+        fraccion: null,
+        nico: null,
+        umt: 'KGM',
+        pais_origen: null,
+        marca: null,
+        precio_unitario: null,
+        fraccion_classified_at: null,
+        fraccion_source: null,
+        created_at: '2026-04-01T00:00:00Z',
+      }],
+      error: null,
+    }
+    deepResults = [
+      { data: [
+        { created_at: '2026-04-18T00:00:00Z', cantidad: 100, precio_unitario: 15.5, cve_proveedor: 'PRV_001', cve_trafico: 'T-999-ORPHAN' },
+      ], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: null, error: null },
+      { data: [], error: null },
+      // traficos — empty (ref not found; stale partida row or cross-tenant scrub)
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+    ]
+    const req = makeRequest('XR-847', 'token')
+    const res = await GET(req, { params: Promise.resolve({ cveProducto: 'XR-847' }) })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data.uses_timeline[0].pedimento).toBeNull()
+    expect(body.data.uses_timeline[0].fecha_cruce).toBeNull()
+    expect(body.data.uses_timeline[0].semaforo).toBeNull()
+    expect(body.data.uses_timeline[0].trafico_ref).toBe('T-999-ORPHAN')
+    expect(body.data.crossings_summary.total).toBe(0)
+    expect(body.data.crossings_summary.verde).toBe(0)
+    expect(body.data.crossings_summary.pct_verde).toBeNull()
+  })
+
+  it('returns empty crossings_summary when there are no partidas', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    ownershipResult = {
+      data: [{
+        cve_producto: 'NEW-SKU',
+        descripcion: null,
+        descripcion_ingles: null,
+        fraccion: null,
+        nico: null,
+        umt: null,
+        pais_origen: null,
+        marca: null,
+        precio_unitario: null,
+        fraccion_classified_at: null,
+        fraccion_source: null,
+        created_at: '2026-04-20T00:00:00Z',
+      }],
+      error: null,
+    }
+    deepResults = [
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: null, error: null },
+      { data: [], error: null },
+    ]
+    const req = makeRequest('NEW-SKU', 'token')
+    const res = await GET(req, { params: Promise.resolve({ cveProducto: 'NEW-SKU' }) })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data.uses_timeline).toHaveLength(0)
+    expect(body.data.crossings_summary.total).toBe(0)
+    expect(body.data.crossings_summary.pct_verde).toBeNull()
   })
 })

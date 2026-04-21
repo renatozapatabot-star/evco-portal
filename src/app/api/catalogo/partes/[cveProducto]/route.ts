@@ -120,15 +120,86 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
   }
   const partidas = (partidasRes.data as PartidaLite[] | null) || []
 
-  // Derived: usage_timeline (first 20)
-  const uses_timeline = partidas.slice(0, 20).map((p) => ({
-    created_at: p.created_at,
-    trafico_ref: p.cve_trafico,
-    cantidad: p.cantidad,
-    umt: parteRow.umt,
-    precio_unitario: p.precio_unitario,
-    proveedor_clave: p.cve_proveedor,
-  }))
+  // Enrich with the associated trafico row so the UI can show
+  // pedimento, fecha_cruce, semáforo — the demo-critical moment.
+  // Join key: globalpc_partidas.cve_trafico = traficos.trafico
+  // (both are the operator-facing string reference like "T-26-12345").
+  const distinctTraficoRefs = Array.from(
+    new Set(
+      partidas
+        .slice(0, 40)
+        .map((p) => p.cve_trafico)
+        .filter((r): r is string => !!r),
+    ),
+  )
+  const { data: traficoRows } = distinctTraficoRefs.length
+    ? await supabase
+        .from('traficos')
+        .select('trafico, pedimento, fecha_cruce, fecha_llegada, semaforo')
+        .eq('company_id', companyId)
+        .in('trafico', distinctTraficoRefs)
+    : { data: [] as Array<{
+        trafico: string | null
+        pedimento: string | null
+        fecha_cruce: string | null
+        fecha_llegada: string | null
+        semaforo: number | null
+      }> }
+
+  const traficoByRef = new Map<
+    string,
+    {
+      pedimento: string | null
+      fecha_cruce: string | null
+      fecha_llegada: string | null
+      semaforo: number | null
+    }
+  >()
+  for (const t of traficoRows ?? []) {
+    if (!t.trafico) continue
+    traficoByRef.set(t.trafico, {
+      pedimento: t.pedimento ?? null,
+      fecha_cruce: t.fecha_cruce ?? null,
+      fecha_llegada: t.fecha_llegada ?? null,
+      semaforo: typeof t.semaforo === 'number' ? t.semaforo : null,
+    })
+  }
+
+  // Derived: usage_timeline (first 20), enriched
+  const uses_timeline = partidas.slice(0, 20).map((p) => {
+    const trafico = p.cve_trafico ? traficoByRef.get(p.cve_trafico) : null
+    return {
+      created_at: p.created_at,
+      trafico_ref: p.cve_trafico,
+      pedimento: trafico?.pedimento ?? null,
+      fecha_cruce: trafico?.fecha_cruce ?? null,
+      fecha_llegada: trafico?.fecha_llegada ?? null,
+      semaforo: trafico?.semaforo ?? null,
+      cantidad: p.cantidad,
+      umt: parteRow.umt,
+      precio_unitario: p.precio_unitario,
+      proveedor_clave: p.cve_proveedor,
+    }
+  })
+
+  // Aggregate crossing health over the fetched window.
+  // semaforo: 0 = verde, 1 = amarillo, 2 = rojo (null = unknown)
+  let crossings_total = 0
+  let crossings_verde = 0
+  for (const enriched of uses_timeline) {
+    if (enriched.fecha_cruce) {
+      crossings_total += 1
+      if (enriched.semaforo === 0) crossings_verde += 1
+    }
+  }
+  const crossings_summary = {
+    total: crossings_total,
+    verde: crossings_verde,
+    pct_verde:
+      crossings_total > 0
+        ? Math.round((crossings_verde / crossings_total) * 100)
+        : null,
+  }
 
   // Derived: proveedores aggregate (top 5)
   const proveedorStats = new Map<string, { uses: number; priceSum: number; priceN: number; last: string | null }>()
@@ -243,6 +314,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
         classifications: (classificationsRes.data || []) as Record<string, unknown>[],
         ocas: (ocasRes.data || []) as Record<string, unknown>[],
         uses_timeline,
+        crossings_summary,
         proveedores,
         cost_trend,
         supertito_stats,

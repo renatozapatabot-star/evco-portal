@@ -529,6 +529,13 @@ async function renderEagle(opName: string, rawMonth: string | null) {
             <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
               <PortalCrucesMap />
             </div>
+            {/* WHY: no FreshnessBanner on Eagle — owner aggregates across
+                all tenants (invariant 31). readFreshness is per-tenant
+                (src/lib/cockpit/freshness.ts returns empty on null
+                companyId); a single "hace 5 min" row here would be
+                misleading. LiveTimestamp + StateOfDayStrip provide the
+                liveness signal. Per-sync-type health band planned
+                post-Ursula — see sync-contract.md §2.5. */}
             <CockpitInicio
               role="owner"
               name={opName}

@@ -236,6 +236,14 @@ export function InicioClient(props: Props) {
             <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
               <PortalCrucesMap />
             </div>
+            {/* WHY: no FreshnessBanner on the operator cockpit — operator
+                surfaces are ops-wide (no session.companyId scope) and
+                readFreshness is per-tenant (returns empty on null
+                companyId, src/lib/cockpit/freshness.ts line 48).
+                LiveTimestamp + StateOfDayStrip inside CockpitInicio
+                carry the liveness signal. Per-sync-type health band for
+                cross-tenant surfaces planned post-Ursula — see
+                sync-contract.md §2.5 (readPipelineHealth). */}
             <CockpitInicio
               role="operator"
             name={props.operatorName}

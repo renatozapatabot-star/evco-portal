@@ -316,6 +316,14 @@ async function renderContabilidadCockpit(opName: string, scopedCompanyId: string
       ? `${closeOpen} pendiente${closeOpen === 1 ? '' : 's'} del cierre mensual.`
       : `${cruzadosMesCount} cruces facturables este mes.`
 
+  // WHY: no FreshnessBanner on the contabilidad cockpit — aggregate
+  // roles (admin/broker/contabilidad) resolve scopedCompanyId to null,
+  // and readFreshness returns empty for null companyId
+  // (src/lib/cockpit/freshness.ts line 48). Rendering the banner would
+  // always show no-data. LiveTimestamp inside CockpitInicio carries the
+  // liveness signal. Per-sync-type health band for cross-tenant
+  // surfaces planned post-Ursula — see sync-contract.md §2.5
+  // (readPipelineHealth).
   return (
     <CockpitInicio
       role="accounting"

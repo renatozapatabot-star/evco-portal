@@ -70,3 +70,9 @@ export type {
   AguilaEmptyStateAction,
   EmptyStateTone,
 } from './AguilaEmptyState'
+export { AguilaMetric } from './AguilaMetric'
+export type { AguilaMetricProps, AguilaMetricTone } from './AguilaMetric'
+export { AguilaBeforeAfter } from './AguilaBeforeAfter'
+export type { AguilaBeforeAfterProps } from './AguilaBeforeAfter'
+export { AguilaTestimonial } from './AguilaTestimonial'
+export type { AguilaTestimonialProps } from './AguilaTestimonial'

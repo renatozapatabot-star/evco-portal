@@ -185,6 +185,115 @@ regex extended from `(AguilaInput|AguilaSelect|AguilaCheckbox)` to
 also match `AguilaTextarea` — textarea migrations now count toward
 form adoption.
 
+## Extension part 4 — closing pass (17 more commits · 45 → 62 total)
+
+User directive: "don't stop until it's all done." Final sweep across
+remaining clean GlassCard + Aguila form migration targets.
+
+| Commit | Change | Impact |
+|---|---|---|
+| `c5e91eb` | banco-facturas list + filter → GlassCard | backdrop 148→146 |
+| `e6fd9ed` | bodega/patio 2 sections → GlassCard | backdrop 146→144 |
+| `0308cdd` | admin/clientes-dormidos threshold + table | backdrop 144→142 |
+| `deeb0c0` | bodega/recibir + ExceptionModal 3 textareas | form 81→84 · fontSize 302→301 |
+| `b410b47` | clasificar + ConfigForm 2 textareas | form 84→86 |
+| `3cda2ad` | FieldPrimitives → compose from Aguila | form 86→90 (cascades to all config tabs) |
+| `81a70c0` | proveedor/[token] confirm note → AguilaTextarea | form 90→91 |
+| `4d8260b` | legacy NotasTab textarea → AguilaTextarea | form 91→92 |
+| `ed17a81` | vencimientos kind filter + table → GlassCard | backdrop 142→140 |
+| `4c66882` | QB-export 3 cards → GlassCard | backdrop 140→137 |
+| `bc9fb06` | pedimento ClienteObservaciones 3 cards | backdrop 137→134 |
+| `9b71fe4` | admin/operadores/[id] 3 cards → GlassCard | backdrop 134→131 |
+| `35bb174` | pedimento TransportistasTab 2 cards | backdrop 131→129 |
+| `0400377` | operadores EmptyState → GlassCard | backdrop 129→128 |
+
+### Cumulative marathon state at close (62 commits)
+
+- **Portal backdropFilter: 179 → 128** (−51, -29% of baseline)
+- **Aguila form primitives: 0 → 92** across 21 pages
+- **DetailPageShell: 1 → 4**
+- **AguilaDataTable: 0 → 2**
+- **Hardcoded fontSize: 385 → 301** (−84)
+- **Hardcoded hex: 662 → 619** (−43)
+- **Gold decorative hex: 12 → 11**
+- **Portal inline hero rgba: 60 → 55**
+- **tailwind.config.ts hex: 13 → 0**
+- **Portal import adoption: 3 → 6**
+- **CRUZ strings: 218 → 214**
+- **console.error/warn: 130 → 128**
+
+### Total ratchet baselines locked: 16
+
+### Tests 667 → 980 (+313 across full session)
+
+### Three new primitives shipped with full test coverage:
+- `AguilaTextarea` (+10 tests)
+- `AguilaPasswordInput` (+10 tests)
+- `scripts/ratchet-bump-advisor.sh` (used 23× this session)
+
+### 21 pages migrated to Aguila form primitives:
+`/signup` · `/demo/request-access` · `/cotizacion` ·
+`/usmca/certificados/nuevo` · `/oca/nuevo` · `/cliente/reportar-problema` ·
+`/cambiar-contrasena` · `/admin/onboard` · `/admin/aprobaciones` ·
+`/admin/aprobar` · `/admin/_components/ActionEngine` · `/admin/auditoria` ·
+`/admin/quickbooks-export` · `/admin/carriers` · `/admin/notificaciones` ·
+`/mve/alerts` · `/upload/[token]` · `/bodega/recibir` ·
+`/operador/cola/ExceptionModal` · `/clasificar` ·
+`/embarques/[id]/clasificacion/ConfigForm` · `/clientes/[id]/configuracion`
+(via FieldPrimitives) · `/proveedor/[token]` ·
+`/embarques/[id]/legacy/NotasTab`.
+
+### GlassCard adoption across 21 surfaces:
+operador/inicio (7) · operador/inicio/RightRail (2) ·
+embarques/[id]/Cronologia · AdminHeroStrip · AdminRightRail ·
+admin/shadow (2) · admin/patentes · admin/demo (2) · /monitor (2) ·
+pago-pece · /transportistas (2) · /kpis GlassPanel ·
+ConfigEditor completeness · fracciones (2) · operador/subir (3) ·
+admin/operadores header + table · ConfigEditor · banco-facturas (2) ·
+bodega/patio (2) · clientes-dormidos (2) · vencimientos (2) ·
+QB-export (3) · ClienteObservaciones (3) · operadores/[id] (3) ·
+TransportistasTab (2) · operadores EmptyState.
+
+### DetailPageShell adoption: 4 detail routes
+`/embarques/[id]` · `/catalogo/fraccion/[code]` · `/oca/[id]` ·
+`/anexo-24/[cveProducto]`.
+
+### What's explicitly NOT migrated (intentional preservation)
+
+- Login ENTRAR button (gray — ceremonial, design-system locked)
+- KPICard premium tile (top-accent + radial glow — distinctive chrome)
+- Gradient-text h1s on admin/operadores/[id] (intentional effect)
+- NotasTab modern version with MentionAutocomplete + textareaRef
+- DropZone uploaders (drag-active conditional border)
+- Modal overlays (use their own dark backdrop pattern)
+- Sticky toasts + action bars (position coupling)
+- Toggle buttons acting as glass cards (semantic element clash)
+- Nav tablist elements (lose role/aria-label semantics)
+- Comunicaciones inline (Tailwind chrome, different system)
+- Mensajeria message composers (Enter-to-send + autosize coupling)
+
+### Pending (blocked on external work)
+
+- **scripts/ silent-catch baseline 153** — fix on `fix/pdf-react-pdf-literal-colors-2026-04-19` branch hasn't merged to main. Task #9 stays pending.
+
+### Guards fired throughout
+
+- **Client calm-tone** — caught mock "Requiere tu atención" hero
+  before `/inicio` render
+- **Audit-agent hallucination** — rejected 7/10 agent-claimed gaps
+  after grep verification
+- **Customs domain invariants** — pedimento spaces preserved, fracción
+  dots preserved, both tested in DetailPageShell primitive
+
+### Gates at handoff
+
+`npm run typecheck` · 0 errors
+`npx vitest run` · 980/980 passing (0 skipped)
+`bash scripts/gsd-verify.sh --ratchets-only` · 0 failures · 24 warnings (all at-floor)
+`npm run build` · compiles clean
+
+---
+
 ## Extension part 3 — third wind (9 more commits · 36 → 45 total)
 
 | Commit | Change | Impact |

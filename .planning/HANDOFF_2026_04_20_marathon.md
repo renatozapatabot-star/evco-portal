@@ -185,22 +185,51 @@ regex extended from `(AguilaInput|AguilaSelect|AguilaCheckbox)` to
 also match `AguilaTextarea` — textarea migrations now count toward
 form adoption.
 
+## Extension part 2 — continued further (5 more commits)
+
+| Commit | Change | Impact |
+|---|---|---|
+| `8dfc98d` | /cliente/reportar-problema → AguilaInput + Textarea | form 46→48 |
+| `e47059d` | **AguilaPasswordInput primitive** (+10 tests) + migrate /cambiar-contrasena | form 48→51 · fontSize 305→302 |
+| `9dfec87` | /admin/onboard step-1 → AguilaInput × 5 | form 51→56 |
+| `b0c3803` | /admin/aprobaciones PedimentoDetail 2 textareas → AguilaTextarea | form 56→58 |
+| `fc9203f` | /mve/alerts "Mostrar resueltas" → AguilaCheckbox (first AguilaCheckbox adoption!) | form 58→59 |
+
+**AguilaPasswordInput** ships with:
+- Eye/EyeOff toggle on the right (44px touch target, aria-label in Spanish)
+- `aria-pressed` reflects visibility
+- Internal state (type is Omit'd from props)
+- padding-right: 52 so value never overlaps the toggle
+- Full hint/error/required envelope matching AguilaInput
+
+Ratchet R9 now matches `AguilaInput|AguilaSelect|AguilaCheckbox|AguilaTextarea|AguilaPasswordInput`.
+Header renamed "Aguila form primitives adoption" to reflect the
+broader scope.
+
 **Cumulative marathon state (on top of the 13 in the main table):**
 
-- **21 commits** on `main`
-- **970 tests passing** (was 941 at 3fe2cda · +29 this extension)
-- **13 ratchet baseline locks** total across the session:
-  - INVARIANT_HEX 662→619 · CRUZ 218→214 · fontSize 385→305 ·
-    console 130→128 · gold 11→12 · portal-rgba 60→58
+- **26 commits** on `main`
+- **980 tests passing** (was 941 at 3fe2cda · +39 this extension)
+- **14 ratchet baseline locks** total across the session:
+  - INVARIANT_HEX 662→619 · CRUZ 218→214 · fontSize 385→302 ·
+    console 130→128 · gold 12→11 · portal-rgba 60→58
   - PORTAL_IMPORT 3→6 · TAILWIND_HEX 13→0
-  - AGUILA_DT 0→2 · AGUILA_FORM 0→46 · DETAIL_SHELL 1→3
+  - AGUILA_DT 0→2 · AGUILA_FORM 0→59 · DETAIL_SHELL 1→3
   - PORTAL_BACKDROP 179→169
 
-Forms migrated to Aguila primitives across 4 full pages:
+Forms migrated to Aguila primitives across 9 pages:
 `/signup` · `/demo/request-access` · `/cotizacion` ·
-`/usmca/certificados/nuevo` · `/oca/nuevo`. Five local helper
-components (Input · Field · QuoteForm inputStyle · CertForm
-inputStyle · OcaForm inputStyle) deleted.
+`/usmca/certificados/nuevo` · `/oca/nuevo` · `/cliente/reportar-problema` ·
+`/cambiar-contrasena` · `/admin/onboard` · `/admin/aprobaciones` ·
+`/mve/alerts`. Seven local helper components deleted
+(Input · Field · 3× inputStyle + labelStyle triplets · 3× inline
+password toggle patterns).
+
+**Two new primitives shipped:**
+- `AguilaTextarea` (+10 tests) — label+required+hint/error envelope
+  for multi-line input
+- `AguilaPasswordInput` (+10 tests) — eye-toggle + full ARIA +
+  padding-right preserved for value
 
 ---
 

@@ -6425,6 +6425,50 @@ export type Database = {
           },
         ]
       }
+      lead_activities: {
+        Row: {
+          actor_name: string | null
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          lead_id: string
+          metadata: Json | null
+          occurred_at: string
+          summary: string
+        }
+        Insert: {
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          lead_id: string
+          metadata?: Json | null
+          occurred_at?: string
+          summary: string
+        }
+        Update: {
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          lead_id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           aduana: string | null

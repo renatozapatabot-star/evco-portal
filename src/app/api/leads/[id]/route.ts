@@ -21,6 +21,7 @@ import {
   type LeadPriority,
   type LeadRow,
 } from '@/lib/leads/types'
+import { diffToActivities, writeActivities } from '@/lib/leads/activities'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -194,6 +195,26 @@ export async function PATCH(
   }
 
   const supabase = createServerClient()
+
+  // Read current row so we can diff old vs new and emit activities.
+  const { data: before, error: readErr } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (readErr) {
+    return NextResponse.json(
+      { data: null, error: { code: 'INTERNAL_ERROR', message: 'update_failed' } },
+      { status: 500 },
+    )
+  }
+  if (!before) {
+    return NextResponse.json(
+      { data: null, error: { code: 'NOT_FOUND', message: 'lead_not_found' } },
+      { status: 404 },
+    )
+  }
+
   const { data, error } = await supabase
     .from('leads')
     .update(patch)
@@ -212,6 +233,17 @@ export async function PATCH(
       { data: null, error: { code: 'NOT_FOUND', message: 'lead_not_found' } },
       { status: 404 },
     )
+  }
+
+  // Best-effort audit trail. Never fail the edit on a timeline write error.
+  // HMAC session doesn't carry a user id; the role + companyId is the best
+  // actor tag we have today ("admin" / "broker" / "internal").
+  const activities = diffToActivities(id, before as LeadRow, data as LeadRow, {
+    userId: null,
+    name: session.role,
+  })
+  if (activities.length > 0) {
+    await writeActivities(supabase, activities)
   }
 
   return NextResponse.json({ data: data as LeadRow, error: null })

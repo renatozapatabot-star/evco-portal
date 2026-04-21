@@ -88,3 +88,62 @@ export interface LeadRow {
   created_at: string
   updated_at: string
 }
+
+// ── Lead activities (timeline) ──────────────────────────────────────
+
+export type LeadActivityKind =
+  | 'stage_change'
+  | 'field_update'
+  | 'note'
+  | 'call'
+  | 'email_sent'
+  | 'email_received'
+  | 'meeting'
+  | 'demo_sent'
+  | 'system'
+
+export const LEAD_ACTIVITY_KINDS: readonly LeadActivityKind[] = [
+  'stage_change',
+  'field_update',
+  'note',
+  'call',
+  'email_sent',
+  'email_received',
+  'meeting',
+  'demo_sent',
+  'system',
+] as const
+
+export const LEAD_ACTIVITY_KIND_LABELS: Record<LeadActivityKind, string> = {
+  'stage_change': 'Cambio de etapa',
+  'field_update': 'Edición',
+  'note': 'Nota',
+  'call': 'Llamada',
+  'email_sent': 'Email enviado',
+  'email_received': 'Email recibido',
+  'meeting': 'Reunión',
+  'demo_sent': 'Demo compartido',
+  'system': 'Sistema',
+}
+
+/** Kinds a user can log manually (others are system-generated). */
+export const MANUAL_ACTIVITY_KINDS: readonly LeadActivityKind[] = [
+  'note',
+  'call',
+  'email_sent',
+  'email_received',
+  'meeting',
+  'demo_sent',
+] as const
+
+export interface LeadActivityRow {
+  id: string
+  lead_id: string
+  kind: LeadActivityKind
+  summary: string
+  metadata: Record<string, unknown> | null
+  actor_user_id: string | null
+  actor_name: string | null
+  occurred_at: string
+  created_at: string
+}

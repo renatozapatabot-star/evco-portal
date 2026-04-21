@@ -1254,10 +1254,122 @@ src/components/aguila/
 
 ---
 
+## 26. MAFESA activation (tenant #2) — the template for tenant N
+
+Shipped M11 as the first real use of the M10 white-label foundation.
+Grok follows this verbatim when tenant #3 comes in.
+
+### 26.1 — The two-registry reality
+
+The portal has TWO tenant registries in the DB, both populated for
+every active tenant:
+
+| Table | Purpose | Key |
+|---|---|---|
+| `companies` | Operational identity (clave, patente, aduana, branding, features) | `company_id` (slug) + `id` (uuid) |
+| `tenants` | SaaS/billing layer (slug, plan, status, stripe_*) | `id` (uuid) + `slug` |
+
+Every tenant-scoped data table (`traficos`, `globalpc_productos`,
+`globalpc_partidas`, `expediente_documentos`) FKs into `tenants.id`
+via `tenant_id uuid` — NOT `companies.id`. This is a historical
+split from a pre-V1 SaaS phase. **Both registries must be populated
+or data-row inserts fail the FK check.**
+
+### 26.2 — New tenant onboarding recipe
+
+1. **Migration A** — INSERT into `companies` with:
+   - company_id slug · name · patente · aduana
+   - clave_cliente + rfc (null if TBD)
+   - language='es' · active=true
+   - branding jsonb (wordmark + accent_token · tokens only)
+   - features jsonb (cruz_ai on; others off)
+   - `ON CONFLICT (company_id) DO NOTHING`
+
+2. **Migration B** — INSERT into `tenants` with:
+   - slug matching `companies.company_id`
+   - status='active' · plan='standard'
+   - `ON CONFLICT (slug) DO NOTHING`
+
+3. **(Optional) Seed script** at `scripts/<tenant>-seed-demo-data.mjs`:
+   - Resolves `tenants.id` UUID at runtime
+   - Delete-first for idempotency (no relying on unique constraints)
+   - Reversible via `node scripts/<tenant>-seed-demo-data.mjs cleanup`
+
+4. **Verify** at `/admin/tenants/<company_id>` — dashboard shows
+   config + row counts + feature chips.
+
+See `supabase/migrations/20260421180000_*` + `20260421181500_*`
++ `scripts/mafesa-seed-demo-data.mjs` for the canonical example.
+
+### 26.3 — Feature + branding consumption pattern
+
+```ts
+import { readTenantConfig, hasFeature } from '@/lib/tenant/config'
+
+const tenant = await readTenantConfig(supabase, session.companyId)
+const wordmark = tenant.branding.wordmark ?? tenant.name
+const accentVar = tenant.branding.accent_token ?? '--portal-gold-500'
+
+if (await hasFeature(supabase, session.companyId, 'white_label_surfaces')) {
+  return <WhiteLabelDashboard />
+}
+```
+
+Accent-token routing `style={{ color: \`var(${accentVar})\` }}` keeps
+the tokens-only rule intact when the tenant supplies its own color.
+
+### 26.4 — Schema-drift finding (M11) — follow-up needed
+
+**Discovered during MAFESA seed:** `globalpc_partidas` in prod does
+NOT have these columns that multiple pieces of repo code reference:
+- `cve_trafico`  (referenced in 3 surfaces)
+- `descripcion` · `valor_comercial` · `fecha_llegada` · `seq`
+
+Real schema:
+```
+id, folio, numero_item, cve_cliente, cve_proveedor, cve_producto,
+precio_unitario, cantidad, peso, pais_origen, marca, modelo,
+serie, tenant_id, created_at, company_id
+```
+
+Three code paths currently 400 in prod (caught by soft-wrappers,
+UI renders empty states):
+1. `src/app/api/catalogo/partes/[cveProducto]/route.ts` (M7)
+2. `src/lib/catalogo/products.ts` (M8)
+3. `src/lib/intelligence/crossing-insights.ts` (M10)
+
+The partidas → traficos linkage **likely** goes through
+`globalpc_contenedores.cve_trafico` (2-hop: partidas → contenedores
+via folio → trafico via cve_trafico). M12 follow-up needed to
+validate + refactor.
+
+---
+
+## 27. V2 onboarding timeline (first 7 days per tenant)
+
+| Day | Step | Owner |
+|---|---|---|
+| 0 | Tito provides RFC + GlobalPC clave | Tito |
+| 0 | Operator runs onboarding migrations (companies + tenants) | Operator |
+| 0 | Walk through `/admin/tenants/<company_id>` | Tito + operator |
+| 1-2 | GlobalPC sync wires up (cron picks up new company_id) | Automated |
+| 2-3 | Anexo 24 ingest populates `anexo24_partidas` | Operator |
+| 3-4 | Intelligence layer starts showing real signals | Automated |
+| 4-5 | Set feature flags (mensajeria_client, mi_cuenta, etc.) | Tito + operator |
+| 5-6 | Credentials sent to tenant's primary contact | Tito |
+| 7 | Tenant logs in · `first_login_at` updates | Tenant |
+
+MAFESA is at Day 0 step 3 — row exists + admin dashboard works +
+seed data shows operational shape. Real GlobalPC clave + Anexo 24
+ingest are the next operator steps (blocked on Tito sign-off).
+
+---
+
 *If you're Grok reading this: welcome. The primitives are in
 `src/components/aguila/`. The invariants are in
 `.claude/rules/core-invariants.md`. API helpers are in
 `src/lib/api/response.ts` + `src/lib/auth/session-guards.ts`.
 V2 intelligence layer starts in `src/lib/intelligence/`. White-label
-foundation is `src/lib/tenant/config.ts`. Build, don't reinvent.
-When confused, read `CLAUDE.md`. When still confused, grep for it.*
+foundation is `src/lib/tenant/config.ts`. MAFESA activation pattern
+is §26. Build, don't reinvent. When confused, read `CLAUDE.md`.
+When still confused, grep for it.*

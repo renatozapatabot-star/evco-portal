@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
 import { BankSelector } from '@/components/banks/BankSelector'
+import { GlassCard } from '@/components/aguila'
 import {
   ACCENT_SILVER,
   TEXT_PRIMARY,
@@ -140,16 +141,13 @@ export function PagoPeceClient({
   }
 
   return (
-    <div
+    <GlassCard
+      tier="hero"
+      padding={24}
       style={{
         display: 'flex',
         flexDirection: 'column',
         gap: 20,
-        padding: 24,
-        borderRadius: 20,
-        background: 'rgba(255,255,255,0.045)',
-        border: `1px solid ${BORDER_SILVER}`,
-        backdropFilter: 'blur(20px)',
       }}
     >
       {error && (
@@ -273,7 +271,7 @@ export function PagoPeceClient({
       ) : (
         <SubmittedSummary payment={payment!} />
       )}
-    </div>
+    </GlassCard>
   )
 }
 

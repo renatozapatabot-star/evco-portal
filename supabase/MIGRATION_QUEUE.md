@@ -38,11 +38,38 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ## Currently pending
 
-*(none — drained 2026-04-20 · see "Applied this session" below)*
+*(none — drained 2026-04-21 · see "Applied this session" below)*
 
 ---
 
-## Applied this session (2026-04-20)
+## Applied this session (2026-04-21)
+
+`20260421150251_leads_table.sql` applied via `npx supabase db push`
+(CLI path, not Path B). Required one `supabase migration repair
+--status reverted 20260420` first to clear the orphan ghost row in
+the remote `schema_migrations` table (documented tech debt from the
+2026-04-20 session). The repair is metadata-only — no schema object
+dropped, just history-table cleanup.
+
+Applied via Supabase CLI · verified post-apply via `npx supabase
+migration list --linked`:
+
+```
+✓ leads table (25 columns, UUID PK, audit timestamps)
+✓ 5 indexes (stage, source, next_action_at, owner, created_at DESC)
+✓ leads_touch_updated_at() trigger function
+✓ leads_touch_updated_at_trg BEFORE UPDATE trigger
+✓ RLS enabled + leads_deny_all policy (service-role bypass only)
+✓ types/supabase.ts regenerated — `leads` type exports at line 6429
+```
+
+**Tech debt status:** the 20260420 orphan is now cleared. Remote
+`schema_migrations` and local `supabase/migrations/` are fully in
+sync. Future `supabase db push` calls will not require repair.
+
+---
+
+## Applied earlier (2026-04-20)
 
 All 3 migrations were applied directly via `npx supabase db query
 --linked` (not `supabase db push` — local/remote migration history

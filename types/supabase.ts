@@ -387,7 +387,7 @@ export type Database = {
         Row: {
           action_taken: string | null
           autonomy_level: number | null
-          company_id: string | null
+          company_id: string
           confidence: number | null
           corrected_by: string | null
           created_at: string | null
@@ -406,7 +406,7 @@ export type Database = {
         Insert: {
           action_taken?: string | null
           autonomy_level?: number | null
-          company_id?: string | null
+          company_id: string
           confidence?: number | null
           corrected_by?: string | null
           created_at?: string | null
@@ -425,7 +425,7 @@ export type Database = {
         Update: {
           action_taken?: string | null
           autonomy_level?: number | null
-          company_id?: string | null
+          company_id?: string
           confidence?: number | null
           corrected_by?: string | null
           created_at?: string | null
@@ -6425,6 +6425,87 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          aduana: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_title: string | null
+          created_at: string
+          firm_name: string
+          id: string
+          industry: string | null
+          last_contact_at: string | null
+          next_action_at: string | null
+          next_action_note: string | null
+          notes: string | null
+          owner_user_id: string | null
+          priority: string | null
+          rfc: string | null
+          source: string
+          source_campaign: string | null
+          source_url: string | null
+          stage: string
+          stage_changed_at: string | null
+          updated_at: string
+          value_monthly_mxn: number | null
+          volume_note: string | null
+        }
+        Insert: {
+          aduana?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_title?: string | null
+          created_at?: string
+          firm_name: string
+          id?: string
+          industry?: string | null
+          last_contact_at?: string | null
+          next_action_at?: string | null
+          next_action_note?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          priority?: string | null
+          rfc?: string | null
+          source?: string
+          source_campaign?: string | null
+          source_url?: string | null
+          stage?: string
+          stage_changed_at?: string | null
+          updated_at?: string
+          value_monthly_mxn?: number | null
+          volume_note?: string | null
+        }
+        Update: {
+          aduana?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_title?: string | null
+          created_at?: string
+          firm_name?: string
+          id?: string
+          industry?: string | null
+          last_contact_at?: string | null
+          next_action_at?: string | null
+          next_action_note?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          priority?: string | null
+          rfc?: string | null
+          source?: string
+          source_campaign?: string | null
+          source_url?: string | null
+          stage?: string
+          stage_changed_at?: string | null
+          updated_at?: string
+          value_monthly_mxn?: number | null
+          volume_note?: string | null
+        }
+        Relationships: []
+      }
       learned_patterns: {
         Row: {
           active: boolean | null
@@ -7238,7 +7319,7 @@ export type Database = {
       operator_actions: {
         Row: {
           action_type: string
-          company_id: string | null
+          company_id: string
           created_at: string
           duration_ms: number | null
           id: number
@@ -7251,7 +7332,7 @@ export type Database = {
         }
         Insert: {
           action_type: string
-          company_id?: string | null
+          company_id: string
           created_at?: string
           duration_ms?: number | null
           id?: number
@@ -7264,7 +7345,7 @@ export type Database = {
         }
         Update: {
           action_type?: string
-          company_id?: string | null
+          company_id?: string
           created_at?: string
           duration_ms?: number | null
           id?: number
@@ -7450,7 +7531,7 @@ export type Database = {
       }
       pedimento_drafts: {
         Row: {
-          company_id: string | null
+          company_id: string
           created_at: string | null
           created_by: string | null
           draft_data: Json | null
@@ -7464,7 +7545,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          company_id?: string | null
+          company_id: string
           created_at?: string | null
           created_by?: string | null
           draft_data?: Json | null
@@ -7478,7 +7559,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          company_id?: string | null
+          company_id?: string
           created_at?: string | null
           created_by?: string | null
           draft_data?: Json | null

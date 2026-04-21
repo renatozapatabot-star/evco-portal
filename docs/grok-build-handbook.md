@@ -819,7 +819,344 @@ Demo assets for operator-led walkthrough:
 
 ---
 
+## 21. Primitive deep-dive (top 8 Grok will use daily)
+
+The aguila library has 30+ primitives; most compose from the first 8.
+Prop signatures + one use example each.
+
+### 21.1 — `<GlassCard>` — the base surface
+
+```ts
+interface GlassCardProps {
+  tier?: 'hero' | 'secondary' | 'tertiary' | 'ghost'
+  padding?: number | string      // default 16
+  href?: string                   // if set, renders a Link with hover state
+  style?: React.CSSProperties     // escape hatch — avoid hex
+  children: React.ReactNode
+}
+```
+
+Rule: **never write `background: rgba(0,0,0,0.4)` by hand.** Compose.
+
+```tsx
+<GlassCard tier="hero" padding={20}>
+  {/* Content */}
+</GlassCard>
+```
+
+When to extend: you probably shouldn't. `tier="hero"` + `style`
+covers 99% of cases. If you need a new tier, add it to the
+primitive's enum — don't create `<AdminCard>`.
+
+### 21.2 — `<PageShell>` — every route's outer wrapper
+
+```ts
+interface PageShellProps {
+  title: string
+  subtitle?: string
+  maxWidth?: number              // default 1100
+  brandHeader?: React.ReactNode  // CockpitBanner slot
+  liveTimestamp?: React.ReactNode
+  systemStatus?: React.ReactNode
+  freshnessSlot?: React.ReactNode
+  children: React.ReactNode
+}
+```
+
+Every admin + client page starts with `<PageShell title="…">`. Never
+render the `<main>` + `<h1>` manually.
+
+### 21.3 — `<AguilaDataTable>` — the generic row list
+
+```ts
+interface AguilaDataTableProps<T extends Record<string, unknown>> {
+  ariaLabel: string
+  columns: Array<{
+    key: string
+    label: string
+    type?: 'text' | 'num' | 'mono'
+    render?: (row: T) => React.ReactNode
+  }>
+  rows: T[]
+  keyFor: (row: T) => string
+  rowHref?: (row: T) => string   // makes each row a Link
+  emptyState?: React.ReactNode
+}
+```
+
+Renders with `minWidth: 720` wrapped in `overflowX: auto` for
+mobile. Columns with `type: 'mono'` auto-apply `.portal-num`.
+
+### 21.4 — `<AguilaMetric>` — single-KPI tile
+
+```ts
+interface AguilaMetricProps {
+  label: string
+  value: string | number
+  unit?: string
+  tone?: 'neutral' | 'positive' | 'negative' | 'attention'
+  sub?: string
+  mono?: boolean                 // default true — numbers in Geist Mono
+  href?: string                  // renders as Link
+  icon?: React.ReactNode
+}
+```
+
+The `tone` prop handles color — never set color by hand. 4 tones
+cover every case: calm (neutral), win (positive), loss (negative),
+needs-eyes (attention).
+
+### 21.5 — `<AguilaStagePills>` — discrete-stage pill row
+
+```ts
+interface AguilaStagePillsProps<T extends string> {
+  stages: Array<{ value: T; label: string; sub?: string }>
+  current: T
+  onChange: (next: T) => void
+  saving?: T | null              // shows clock icon on that pill
+  disabled?: boolean
+  overflow?: 'wrap' | 'scroll'   // mobile overflow behavior
+}
+```
+
+Extracted M4 from the LeadDetailClient inline block. Reusable for
+OCA status, approval workflow, onboarding — any discrete-stage
+transition UI.
+
+### 21.6 — `<SemaforoPill>` — customs semáforo chip
+
+```ts
+interface SemaforoPillProps {
+  value: 0 | 1 | 2 | null        // 0 verde · 1 amarillo · 2 rojo · null unknown
+}
+```
+
+Tiny but load-bearing. Never render raw `semaforo: 0` anywhere —
+always compose this.
+
+### 21.7 — `<FreshnessBanner>` — sync-contract signal
+
+```ts
+interface FreshnessBannerProps {
+  reading: FreshnessReading       // from readFreshness(supabase, companyId)
+  stale?: boolean                 // override — force stale banner
+}
+```
+
+Wire via `const freshness = await readFreshness(supabase, session.companyId)`
+then `<FreshnessBanner reading={freshness} />`. See
+`.claude/rules/sync-contract.md` for the 30-min cadence + 90-min
+stale threshold.
+
+### 21.8 — `<CockpitErrorCard>` / `<CockpitSkeleton>` — boundary pair
+
+```ts
+// error.tsx
+'use client'
+import { CockpitErrorCard } from '@/components/aguila/CockpitErrorCard'
+export default function RouteError({ error, reset }: { error: Error; reset: () => void }) {
+  return <CockpitErrorCard message={error.message} onRetry={reset} />
+}
+
+// loading.tsx
+import { CockpitSkeleton } from '@/components/aguila/CockpitSkeleton'
+export default function RouteLoading() { return <CockpitSkeleton /> }
+```
+
+Every server-data route needs both files (see pattern 18.4). The
+two primitives handle the glass chemistry so every fallback looks
+native, not like a crash page.
+
+---
+
+## 22. API endpoint inventory (grep-ready)
+
+Every `/api/*` route + auth + CSRF. Grok scans this before adding
+a new endpoint to understand the prior art.
+
+### Public (no auth)
+
+| Route | Method | CSRF | Why public |
+|---|---|---|---|
+| `/api/auth` | POST | exempt | Login — no session exists yet |
+| `/api/leads` | POST | exempt | Prospect lead capture from `/pitch` |
+| `/api/pitch-pdf` | GET | N/A | 1-pager download |
+| `/api/demo-*` | GET | N/A | Demo-session anon helpers |
+| `/api/health/*` | GET | N/A | Data-integrity probes |
+| `/api/telegram-webhook`, `/api/vapi/*`, `/api/whatsapp/webhook` | POST | exempt | External webhooks (auth via shared secret) |
+| `/api/routines/*` | POST | exempt | Anthropic Claude Routines (x-routine-secret) |
+| `/api/telemetry` | POST | exempt | `sendBeacon` — can't set headers |
+
+### Authenticated (any signed-in session)
+
+Use `requireAnySession()` from `@/lib/auth/session-guards`.
+
+### Admin/broker only
+
+Use `requireAdminSession()`. Current surfaces:
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/leads/[id]` | GET, PATCH | Lead detail + edit |
+| `/api/leads/[id]/activities` | GET, POST | Activity timeline |
+| `/api/leads/[id]/convert` | POST | Lead → client (creates tenant) |
+| `/api/leads/export` | GET | Pipeline CSV download |
+| `/api/broker/*` | varies | Broker dashboard |
+| `/api/data/*` | varies | Admin tenant overrides |
+
+### Client-only (rare)
+
+Use `requireClientSession()`. The `/mi-cuenta` A/R surface is the
+primary example — operator/broker sessions should see the aggregate
+dashboard, not a specific tenant's detail.
+
+### Response-code contract (every route)
+
+```json
+{ "data": T | null, "error": { "code": "...", "message": "..." } | null }
+```
+
+See `src/lib/api/response.ts` for the helpers (M9). Prefer those
+over hand-rolled `NextResponse.json({ data, error: {...} })`.
+
+---
+
+## 23. V2 architecture notes (plug-in points for autonomous agents, etc.)
+
+These sections are deliberately brief — they're pointers, not specs.
+When a V2 feature lands, expand the relevant section with a real
+design doc in `.planning/`.
+
+### 23.1 — Autonomous agent layer
+
+**Contract:** agent actions MUST route through human approval until
+the approval-gate invariant is formally relaxed (see
+`.claude/rules/founder-overrides.md`).
+
+**Plug-in points already in place:**
+
+- `src/lib/aguila/tools.ts` — Anthropic tool definitions. Every new
+  agent tool adds a `resolveClientScope` guard (throws
+  `AguilaForbiddenError('scope:unknown_client')` on cross-tenant)
+- `operational_decisions` table — agent-decision audit log
+- `workflow_events` table — event-sourced state machine
+- `5-second cancellation window` — documented in CLAUDE.md
+  approval-gate clause
+
+**Where V2 plugs in:**
+
+- New agent = new `tools.ts` entry + new Supabase migration for any
+  specialized state
+- Autonomy levels 0-3 already enumerated in CLAUDE.md (sense →
+  think → act → learn)
+- Every new action writes `audit_log` + `operational_decisions`
+
+### 23.2 — Intelligence layer (predictions, patterns, cross-client)
+
+**Contract:** all prediction work is tenant-scoped (`company_id` on
+every row, always). Cross-client aggregates run through the
+anonymized pipeline path — no raw tenant data escapes its scope.
+
+**Plug-in points:**
+
+- `learned_patterns` table — accumulating pattern store
+- `classification_log` — ground truth from Tito for supertito-agree
+  tracking
+- `api_cost_log` — per-call cost tracking (Sonnet/Haiku/Opus)
+- `cruz_memory` table — agent long-term memory (163 patterns at M9)
+
+**Where V2 plugs in:**
+
+- New prediction model → new cron in `scripts/` + new table if
+  needed. Wire via the `withCostTracking` wrapper (CLAUDE.md §4) so
+  budget is visible.
+- Cross-client insights surface only on owner cockpits
+  (`/admin/eagle` — `session.companyId === 'admin'` bypasses the
+  tenant filter intentionally per core-invariant #31)
+
+### 23.3 — White-label (multi-tenant theming)
+
+**Contract:** every tenant-scoped row has `company_id`. Every branded
+surface reads tenant config from `companies.*` columns (branding
+slot columns exist: `language`, `patente`, `aduana`).
+
+**Plug-in points:**
+
+- `companies` table — expand with `branding` JSON column when needed
+  (theme, logo URL, custom domain, feature flags)
+- Middleware — already reads session + tenant; extend to resolve
+  tenant from custom domain in addition to slug
+- Design system tokens — all `--portal-*` vars are overridable via
+  `<html data-theme="…">` attribute (see
+  `.claude/rules/portal-design-system.md` §theme-swap)
+
+**Where V2 plugs in:**
+
+- New tenant = new row in `companies` (see conversion flow §12)
+- Custom domain = Vercel alias + middleware branch on `request.headers.host`
+- Custom theme = new `data-theme` value + CSS-var override block
+
+### 23.4 — Modularity contract (the V2 refactor must preserve)
+
+These are HARD invariants even for V2:
+
+1. **No business logic in route handlers.** Handlers are HTTP
+   adapters (auth → parse → call lib/ → return). See §9 template.
+2. **Pure utilities in `lib/` never query.** DB access lives in
+   `lib/queries/*`, `lib/cockpit/*`, or the route handler. Pure
+   `.ts` files under `lib/` are unit-testable without a DB.
+3. **Primitives in `src/components/aguila/` compose, not copy.**
+   Inline glass chemistry is banned (core-invariant #26).
+4. **Ratchet-gated consistency.** Every new class of violation
+   prevented by adding a ratchet to `scripts/gsd-verify.sh` — not
+   by hoping future authors remember.
+5. **Tests lock contracts.** Migration-shape tests grep the SQL.
+   API tests mock Supabase through a chain. UI tests render +
+   assert user-visible text.
+
+V2 that respects these stays fast. V2 that breaks them drifts.
+
+---
+
+## 24. Module reference — where everything lives
+
+```
+src/lib/
+  auth/
+    session-guards.ts      ⭐ M9 — requireAdminSession + helpers
+  api/
+    response.ts            ⭐ M9 — ok(), notFound(), ApiResponse<T>
+  leads/
+    types.ts               Stage/source enums + LeadRow shape
+    activities.ts          Activity timeline helpers + diff logic
+  catalogo/
+    products.ts            Catálogo aggregation + Anexo 24 overlay
+    (M8 crossings enrichment inline in getCatalogo)
+  cockpit/
+    safe-query.ts          softCount/softData/softFirst — resilient SSR
+    freshness.ts           readFreshness + FreshnessReading contract
+    fetch.ts               bucketDailySeries, sumRange helpers
+    quiet-season.ts        Adaptive hero KPI builder
+  queries/
+    latest-crossing.ts     ⭐ M8 enriched with semaforo
+  aguila/
+    tools.ts               Anthropic MCP tool definitions (50+)
+  design-system.ts         Canonical color + glass + motion tokens
+  rates.ts                 getDTARates + getExchangeRate (system_config)
+  session.ts               HMAC session sign/verify + PortalRole
+  csrf.ts                  Double-submit cookie validator
+  supabase-server.ts       Service-role client factory
+  format/
+    pedimento.ts           DD AD PPPP SSSSSSS helper
+    fraccion.ts            XXXX.XX.XX helper
+    company-name.ts        Legal-suffix stripping + title-case
+```
+
+---
+
 *If you're Grok reading this: welcome. The primitives are in
 `src/components/aguila/`. The invariants are in
-`.claude/rules/core-invariants.md`. Build, don't reinvent. When
-confused, read `CLAUDE.md`. When still confused, grep for it.*
+`.claude/rules/core-invariants.md`. API helpers are in
+`src/lib/api/response.ts` + `src/lib/auth/session-guards.ts`.
+Build, don't reinvent. When confused, read `CLAUDE.md`. When
+still confused, grep for it.*

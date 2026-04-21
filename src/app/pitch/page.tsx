@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight } from 'lucide-react'
 import {
@@ -6,6 +5,7 @@ import {
   AguilaMetric,
   AguilaBeforeAfter,
   AguilaTestimonial,
+  AguilaCTA,
 } from '@/components/aguila'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 
@@ -227,67 +227,20 @@ export default function PitchPage() {
         </section>
 
         {/* ── CTA block ──────────────────────────────────────── */}
-        <section style={{ textAlign: 'center', paddingTop: 8 }}>
-          <div
-            style={{
-              fontFamily: 'var(--portal-font-display)',
-              fontSize: 'var(--portal-fs-xl)',
-              color: 'var(--portal-fg-1)',
-              marginBottom: 10,
-              letterSpacing: '-0.01em',
+        <section style={{ paddingTop: 8 }}>
+          <AguilaCTA
+            title="Dale un vistazo antes de decidir."
+            subtitle="Abre el demo público. Mismo cockpit. Datos ficticios de una empresa llamada DEMO PLASTICS. Sin registro. Sin email. Zero compromiso."
+            primary={{
+              label: 'Ver demo en vivo',
+              href: '/demo/live',
+              icon: <ArrowRight size={18} strokeWidth={2} />,
             }}
-          >
-            Dale un vistazo antes de decidir.
-          </div>
-          <p
-            style={{
-              fontSize: 'var(--portal-fs-sm)',
-              color: 'var(--portal-fg-4)',
-              margin: '0 auto 20px',
-              maxWidth: 520,
-              lineHeight: 1.5,
+            secondary={{
+              label: 'Solicitar acceso',
+              href: '/demo/request-access',
             }}
-          >
-            Abre el demo público. Mismo cockpit. Datos ficticios de una empresa
-            llamada DEMO PLASTICS. Sin registro. Sin email. Zero compromiso.
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <Link
-              href="/demo/live"
-              className="portal-btn portal-btn--primary portal-btn--lg"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                textDecoration: 'none',
-                minWidth: 220,
-                justifyContent: 'center',
-              }}
-            >
-              Ver demo en vivo
-              <ArrowRight size={18} strokeWidth={2} />
-            </Link>
-            <Link
-              href="/demo/request-access"
-              className="portal-btn portal-btn--ghost portal-btn--lg"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                textDecoration: 'none',
-                minWidth: 220,
-                justifyContent: 'center',
-              }}
-            >
-              Solicitar acceso
-            </Link>
-          </div>
+          />
         </section>
 
         {/* ── Footer ─────────────────────────────────────────── */}

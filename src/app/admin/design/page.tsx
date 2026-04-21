@@ -31,6 +31,11 @@ import {
   VizDonut,
 } from '@/components/portal'
 import { PortalLoginBackgroundLineMap, PortalLoginLiveWire } from '@/components/portal'
+import {
+  AguilaMetric,
+  AguilaBeforeAfter,
+  AguilaTestimonial,
+} from '@/components/aguila'
 
 /**
  * Living design-system gallery for every PORTAL primitive. Admin-only.
@@ -380,6 +385,79 @@ export default function DesignGalleryPage() {
         </PortalCard>
         <div style={{ marginTop: 20 }}>
           <PortalLoginLiveWire />
+        </div>
+      </PortalSection>
+
+      {/* ── Sales assets — reusable for /pitch, /demo, marketing ────────── */}
+      <PortalSection
+        title="Sales assets"
+        eyebrow="for /pitch, /demo, marketing landings"
+      >
+        <div style={{ display: 'grid', gap: 20 }}>
+          {/* Metric row — tone variants */}
+          <div>
+            <p className="portal-meta" style={{ marginBottom: 8 }}>
+              &lt;AguilaMetric&gt; · 4 tone variants (neutral / positive / negative / attention)
+            </p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 14,
+              }}
+            >
+              <AguilaMetric
+                label="Patente"
+                value="3596"
+                sub="Aduana 240 · Nuevo Laredo"
+              />
+              <AguilaMetric
+                label="Liberación"
+                value="98"
+                unit="%"
+                tone="positive"
+                sub="Semáforo verde · 90 días"
+              />
+              <AguilaMetric
+                label="Atrasados"
+                value="3"
+                tone="negative"
+                sub="requieren acción"
+              />
+              <AguilaMetric
+                label="Pendientes"
+                value="12"
+                tone="attention"
+                sub="revisar hoy"
+              />
+            </div>
+          </div>
+
+          {/* Before/after strip */}
+          <div>
+            <p className="portal-meta" style={{ marginBottom: 8 }}>
+              &lt;AguilaBeforeAfter&gt; · delta strip for landings + decks
+            </p>
+            <AguilaBeforeAfter
+              title="Impacto medible"
+              before="22 min"
+              beforeLabel="Proceso manual"
+              after="2 min"
+              afterLabel="Con PORTAL"
+            />
+          </div>
+
+          {/* Testimonial */}
+          <div>
+            <p className="portal-meta" style={{ marginBottom: 8 }}>
+              &lt;AguilaTestimonial&gt; · quote + attribution + optional avatar
+            </p>
+            <AguilaTestimonial
+              quote="Abro el portal a las 11 PM, veo todo en una pantalla, y me voy a dormir. Esto no existía antes."
+              attribution="Ursula Banda"
+              role="Dir. de Operaciones · EVCO Plastics"
+            />
+          </div>
         </div>
       </PortalSection>
     </div>

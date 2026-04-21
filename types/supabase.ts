@@ -2281,12 +2281,14 @@ export type Database = {
         Row: {
           active: boolean | null
           aduana: string | null
+          branding: Json | null
           clave_cliente: string | null
           company_id: string
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string | null
+          features: Json | null
           first_login_at: string | null
           first_question_at: string | null
           globalpc_clave: string | null
@@ -2311,12 +2313,14 @@ export type Database = {
         Insert: {
           active?: boolean | null
           aduana?: string | null
+          branding?: Json | null
           clave_cliente?: string | null
           company_id: string
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          features?: Json | null
           first_login_at?: string | null
           first_question_at?: string | null
           globalpc_clave?: string | null
@@ -2341,12 +2345,14 @@ export type Database = {
         Update: {
           active?: boolean | null
           aduana?: string | null
+          branding?: Json | null
           clave_cliente?: string | null
           company_id?: string
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          features?: Json | null
           first_login_at?: string | null
           first_question_at?: string | null
           globalpc_clave?: string | null

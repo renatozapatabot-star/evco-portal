@@ -28,6 +28,11 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/demo')) return NextResponse.next()
   if (pathname.startsWith('/pitch')) return NextResponse.next()
 
+  // SEO crawlers — always public
+  if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+    return NextResponse.next()
+  }
+
   // Login page: redirect authenticated users to dashboard
   if (PUBLIC_PATHS.includes(pathname)) {
     const existingSession = request.cookies.get('portal_session')?.value || ''

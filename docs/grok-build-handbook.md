@@ -1154,9 +1154,110 @@ src/lib/
 
 ---
 
+## 25. V2 intelligence layer (M10 shipping)
+
+First net-new V2 feature set. Lives in `src/lib/intelligence/` +
+`src/app/api/intelligence/` + `src/app/admin/intelligence/`.
+
+### 25.1 — The contract
+
+Three aggregators return rule-based signals for a tenant:
+
+1. **`computePartStreaks`** — per-SKU current + longest verde streaks,
+   plus a `just_broke_streak` flag for streaks broken in the last 30
+   days.
+2. **`computeProveedorHealth`** — per-proveedor verde rate (counts
+   + pct_verde).
+3. **`detectAnomalies`** — rule-based flags:
+   - `proveedor_slip`: verde rate dropped ≥ 10 pp week-over-week
+     (requires ≥ 3 crossings each window, prior rate ≥ 70%)
+   - `streak_break`: long (≥ 5) verde streak just broke
+
+All three are pure — unit-testable with fixture streams, no DB
+dependency. The DB-facing orchestrator `getCrossingInsights`
+does the partidas → traficos join + calls the pure fns.
+
+### 25.2 — How to add a new anomaly rule
+
+1. Add the new `kind` string to `Anomaly['kind']` union
+2. Add the detection logic inside `detectAnomalies`
+3. Add a unit test in `crossing-insights.test.ts`
+4. If the UI needs a new tone, extend `AguilaInsightCard`'s
+   `InsightTone`; otherwise reuse `opportunity` / `watch` / `anomaly`
+5. The `/admin/intelligence` surface will auto-render the new
+   kind — no UI changes needed for the feed
+
+### 25.3 — The two new primitives
+
+- **`<AguilaStreakBar>`** — row of colored dots (verde/amarillo/rojo)
+  visualizing the last N semáforo results. Used in parte detail +
+  broken-streak cards.
+- **`<AguilaInsightCard>`** — GlassCard variant for one signal.
+  Three tones: `opportunity`, `watch`, `anomaly` — sets the ring
+  color; background stays calm glass.
+
+### 25.4 — Tenant config (white-label foundation)
+
+`src/lib/tenant/config.ts` — `readTenantConfig(supabase, companyId)`
+returns a shaped `TenantConfig` with:
+- Identity (company_id, name, clave_cliente, rfc, patente, aduana)
+- Language (es/en)
+- Branding (wordmark, logo_url, accent_token — tokens-only)
+- Features (mensajeria_client, cruz_ai, mi_cuenta,
+  white_label_surfaces)
+
+Forward-compatible — `branding` + `features` are jsonb columns
+not yet in the companies migration. Parser tolerates absence and
+returns defaults. `accent_token` is validated against the
+`--portal-*` namespace — hex values are rejected.
+
+**When V2 needs to brand a surface for MAFESA:**
+
+```ts
+const tenant = await readTenantConfig(supabase, companyId)
+const wordmark = tenant.branding.wordmark ?? tenant.name
+// ... render with wordmark
+```
+
+**When a feature gate is needed:**
+
+```ts
+if (await hasFeature(supabase, companyId, 'white_label_surfaces')) {
+  return <WhiteLabelDashboard />
+}
+return <StandardDashboard />
+```
+
+### 25.5 — M10 file inventory
+
+```
+src/lib/intelligence/
+  crossing-insights.ts          ⭐ pure aggregators + orchestrator
+  __tests__/crossing-insights.test.ts  (16 tests)
+
+src/lib/tenant/
+  config.ts                     ⭐ readTenantConfig + parsers
+  __tests__/config.test.ts      (11 tests)
+
+src/app/api/intelligence/
+  insights/route.ts             ⭐ GET — uses M9 session-guards + ApiResponse
+
+src/app/admin/intelligence/
+  page.tsx                      ⭐ operator-only dashboard
+  loading.tsx
+  error.tsx
+
+src/components/aguila/
+  AguilaStreakBar.tsx           ⭐ new primitive
+  AguilaInsightCard.tsx         ⭐ new primitive
+```
+
+---
+
 *If you're Grok reading this: welcome. The primitives are in
 `src/components/aguila/`. The invariants are in
 `.claude/rules/core-invariants.md`. API helpers are in
 `src/lib/api/response.ts` + `src/lib/auth/session-guards.ts`.
-Build, don't reinvent. When confused, read `CLAUDE.md`. When
-still confused, grep for it.*
+V2 intelligence layer starts in `src/lib/intelligence/`. White-label
+foundation is `src/lib/tenant/config.ts`. Build, don't reinvent.
+When confused, read `CLAUDE.md`. When still confused, grep for it.*

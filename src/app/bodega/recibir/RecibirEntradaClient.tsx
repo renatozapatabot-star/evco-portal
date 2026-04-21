@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Camera, Loader2, ScanLine, CheckCircle2, AlertTriangle, PackageCheck, Printer } from 'lucide-react'
 import { DOCK_OPTIONS } from '@/lib/warehouse-entries'
 import { BG_ELEVATED } from '@/lib/design-system'
+import { AguilaTextarea } from '@/components/aguila'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 type PrintStatus = 'idle' | 'submitting' | 'queued' | 'error'
@@ -584,27 +585,14 @@ export function RecibirEntradaClient() {
       </label>
 
       {/* Notes */}
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 'var(--aguila-fs-meta)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)' }}>
-          Notas (opcional)
-        </span>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          placeholder="Daño, observaciones, sellos…"
-          style={{
-            padding: 12,
-            borderRadius: 12,
-            border: '1px solid rgba(192,197,206,0.18)',
-            background: BG_ELEVATED,
-            color: 'var(--portal-fg-1)',
-            fontSize: 15,
-            resize: 'vertical',
-          }}
-          aria-label="Notas de recepción"
-        />
-      </label>
+      <AguilaTextarea
+        label="Notas (opcional)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={3}
+        placeholder="Daño, observaciones, sellos…"
+        aria-label="Notas de recepción"
+      />
 
       {status === 'error' && errorMsg && (
         <div

@@ -550,7 +550,7 @@ fi
 #   as the hex ratchet PDF exclusion above). The 7 api/*-pdf/
 #   pdf-document.tsx + lib PDF files restored from 2d4f196^ have
 #   numeric fontSize by necessity.
-INVARIANT_27_BASELINE=302
+INVARIANT_27_BASELINE=301
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
@@ -808,7 +808,7 @@ fi
 
 # R10 — Aguila form primitive adoption (positive direction).
 header "theme/v6 · Aguila form primitives adoption (target ↑)"
-AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-81}
+AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-84}
 AGUILA_FORM_COUNT=$(set +eo pipefail;{ grep -rnE "<(AguilaInput|AguilaSelect|AguilaCheckbox|AguilaTextarea|AguilaPasswordInput)" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$AGUILA_FORM_COUNT" -lt "$AGUILA_FORM_BASELINE" ]; then
   fail "Aguila form primitives usage regressed: $AGUILA_FORM_COUNT (was $AGUILA_FORM_BASELINE)."

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { AguilaTextarea } from '@/components/aguila'
 import {
   resolveClassification,
   approveSolicitation,
@@ -65,26 +66,12 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
             </p>
           </div>
 
-          <label style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: 600 }}>
-            Nota para el broker
-          </label>
-          <textarea
+          <AguilaTextarea
+            label="Nota para el broker"
             value={escalateNote}
             onChange={(e) => setEscalateNote(e.target.value)}
             placeholder="Describe el problema y contexto..."
             rows={3}
-            style={{
-              width: '100%',
-              padding: 12,
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 12,
-              color: 'var(--portal-fg-1)',
-              fontSize: 'var(--aguila-fs-section)',
-              resize: 'vertical',
-              outline: 'none',
-              fontFamily: 'inherit',
-            }}
           />
 
           {error && <p style={{ color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
@@ -486,24 +473,13 @@ export function ExceptionModal({ event, onClose, onResolved }: ExceptionModalPro
           </p>
         )}
 
-        <div>
-          <label style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-            Notas (opcional)
-          </label>
-          <textarea
-            value={completenessNotes}
-            onChange={(e) => setCompletenessNotes(e.target.value)}
-            placeholder="Observaciones sobre los documentos..."
-            rows={2}
-            style={{
-              width: '100%', padding: 12,
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 12, color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)',
-              resize: 'vertical', outline: 'none', fontFamily: 'inherit',
-            }}
-          />
-        </div>
+        <AguilaTextarea
+          label="Notas (opcional)"
+          value={completenessNotes}
+          onChange={(e) => setCompletenessNotes(e.target.value)}
+          placeholder="Observaciones sobre los documentos..."
+          rows={2}
+        />
 
         {error && <p style={{ color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-body)', margin: 0 }}>{error}</p>}
 

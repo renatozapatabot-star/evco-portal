@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { AguilaInput } from '@/components/aguila'
 
 export default function RequestAccessPage() {
   const isMobile = useIsMobile()
@@ -71,11 +72,11 @@ export default function RequestAccessPage() {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <Field label="Nombre completo *" value={form.full_name} onChange={v => setForm(f => ({ ...f, full_name: v }))} />
-          <Field label="Nombre de la firma *" value={form.firm_name} onChange={v => setForm(f => ({ ...f, firm_name: v }))} placeholder="Ej: Agencia Aduanal García" />
-          <Field label="Patente (opcional)" value={form.patente} onChange={v => setForm(f => ({ ...f, patente: v }))} placeholder="Ej: 3596" />
-          <Field label="WhatsApp *" value={form.phone} onChange={v => setForm(f => ({ ...f, phone: v }))} placeholder="+52 956 123 4567" type="tel" />
-          <Field label="Correo electrónico (opcional)" value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))} type="email" />
+          <AguilaInput label="Nombre completo" required value={form.full_name} onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))} />
+          <AguilaInput label="Nombre de la firma" required placeholder="Ej: Agencia Aduanal García" value={form.firm_name} onChange={(e) => setForm((f) => ({ ...f, firm_name: e.target.value }))} />
+          <AguilaInput label="Patente (opcional)" placeholder="Ej: 3596" mono value={form.patente} onChange={(e) => setForm((f) => ({ ...f, patente: e.target.value }))} />
+          <AguilaInput label="WhatsApp" required type="tel" placeholder="+52 956 123 4567" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+          <AguilaInput label="Correo electrónico (opcional)" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
           <div>
             <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>
               ¿Qué te interesó del Portal? (opcional)
@@ -107,17 +108,3 @@ export default function RequestAccessPage() {
   )
 }
 
-function Field({ label, value, onChange, placeholder, type = 'text' }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string
-}) {
-  return (
-    <div>
-      <label style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: 4 }}>{label}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{
-        width: '100%', padding: '10px 14px', borderRadius: 8,
-        background: '#222', border: '1px solid rgba(255,255,255,0.1)',
-        color: '#FFF', fontSize: 'var(--aguila-fs-section)', boxSizing: 'border-box',
-      }} />
-    </div>
-  )
-}

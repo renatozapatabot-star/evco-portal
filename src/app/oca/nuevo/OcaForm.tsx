@@ -2,36 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { GlassCard } from '@/components/aguila'
-import { TEXT_PRIMARY, TEXT_MUTED, SILVER_GRADIENT } from '@/lib/design-system'
+import { GlassCard, AguilaInput, AguilaTextarea } from '@/components/aguila'
+import { TEXT_MUTED, SILVER_GRADIENT } from '@/lib/design-system'
 import type { OcaRow } from '@/lib/oca/types'
 
 interface GenerateResponse {
   data: { opinion: OcaRow; razonamiento: string } | null
   error: { code: string; message: string } | null
-}
-
-const inputStyle = {
-  width: '100%',
-  minHeight: 48,
-  padding: '12px 14px',
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 10,
-  color: TEXT_PRIMARY,
-  fontSize: 'var(--aguila-fs-section)',
-  fontFamily: 'inherit',
-  outline: 'none',
-} as const
-
-const labelStyle = {
-  display: 'block',
-  fontSize: 'var(--aguila-fs-meta)',
-  fontWeight: 700,
-  color: TEXT_MUTED,
-  textTransform: 'uppercase' as const,
-  letterSpacing: 0.8,
-  marginBottom: 6,
 }
 
 export function OcaForm() {
@@ -76,51 +53,50 @@ export function OcaForm() {
     <form onSubmit={handleSubmit} style={{ maxWidth: 720, display: 'grid', gap: 16 }}>
       <GlassCard>
         <div style={{ display: 'grid', gap: 16 }}>
-          <div>
-            <label htmlFor="product_description" style={labelStyle}>Descripción del producto *</label>
-            <textarea
-              id="product_description"
-              name="product_description"
-              required
-              minLength={10}
-              maxLength={2000}
-              rows={5}
-              placeholder="Ej. Resina de polietileno de alta densidad, virgen, en pellets, para moldeo por inyección automotriz."
-              style={{ ...inputStyle, resize: 'vertical', minHeight: 110 }}
-            />
-          </div>
+          <AguilaTextarea
+            id="product_description"
+            name="product_description"
+            label="Descripción del producto"
+            required
+            minLength={10}
+            maxLength={2000}
+            rows={5}
+            placeholder="Ej. Resina de polietileno de alta densidad, virgen, en pellets, para moldeo por inyección automotriz."
+            style={{ minHeight: 110 }}
+          />
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-            <div>
-              <label htmlFor="pais_origen" style={labelStyle}>País de origen *</label>
-              <input id="pais_origen" name="pais_origen" required placeholder="USA, China, Alemania…" style={inputStyle} />
-            </div>
-            <div>
-              <label htmlFor="fraccion_sugerida" style={labelStyle}>Fracción sugerida</label>
-              <input
-                id="fraccion_sugerida"
-                name="fraccion_sugerida"
-                placeholder="3901.20.01"
-                pattern="\d{4}\.\d{2}\.\d{2}"
-                style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="uso_final" style={labelStyle}>Uso final</label>
-            <input id="uso_final" name="uso_final" placeholder="Aplicación industrial específica" style={inputStyle} />
-          </div>
-
-          <div>
-            <label htmlFor="trafico_id" style={labelStyle}>Embarque (opcional)</label>
-            <input
-              id="trafico_id"
-              name="trafico_id"
-              placeholder="Vincular la opinión a un embarque"
-              style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+            <AguilaInput
+              id="pais_origen"
+              name="pais_origen"
+              label="País de origen"
+              required
+              placeholder="USA, China, Alemania…"
+            />
+            <AguilaInput
+              id="fraccion_sugerida"
+              name="fraccion_sugerida"
+              label="Fracción sugerida"
+              placeholder="3901.20.01"
+              pattern="\d{4}\.\d{2}\.\d{2}"
+              mono
             />
           </div>
+
+          <AguilaInput
+            id="uso_final"
+            name="uso_final"
+            label="Uso final"
+            placeholder="Aplicación industrial específica"
+          />
+
+          <AguilaInput
+            id="trafico_id"
+            name="trafico_id"
+            label="Embarque (opcional)"
+            placeholder="Vincular la opinión a un embarque"
+            mono
+          />
         </div>
       </GlassCard>
 

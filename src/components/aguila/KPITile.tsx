@@ -1,6 +1,7 @@
 'use client'
 
 import { PortalCard } from '@/components/portal/PortalCard'
+import { formatFreshness } from '@/lib/cockpit/freshness'
 import { Sparkline, type SparklineTone } from './Sparkline'
 import { DeltaIndicator } from './DeltaIndicator'
 
@@ -19,6 +20,15 @@ interface Props {
   inverted?: boolean
   compact?: boolean
   ariaLabel?: string
+  /**
+   * Per-tile sync timestamp. When numeric-valued, renders a calm
+   * "Sincronizado hace N min" line below the sublabel using the
+   * shared formatFreshness() helper. Page-level FreshnessBanner
+   * stays the single source of truth for stale-banner behavior;
+   * this is only the inline microcopy cue. Prose-valued tiles
+   * ("Sin cruces aún", status phrases) skip it — calm tone.
+   */
+  updatedAt?: Date | string | number | null
 }
 
 /**
@@ -43,7 +53,7 @@ export function isNumericValue(value: number | string): boolean {
  */
 export function KPITile({
   label, value, sublabel, series, previous, current, href, onClick, buttonRef, tone = 'silver',
-  urgent = false, inverted = false, compact = false, ariaLabel,
+  urgent = false, inverted = false, compact = false, ariaLabel, updatedAt,
 }: Props) {
   const sparkSeries = series && series.length > 7 ? series.slice(-7) : series
   const numericValue = typeof value === 'number' ? value : current ?? 0
@@ -58,6 +68,19 @@ export function KPITile({
     ? 'var(--portal-font-mono)'
     : 'var(--portal-font-sans)'
   const numberColor = urgent ? 'var(--portal-red)' : 'var(--portal-fg-1)'
+
+  const freshnessLine = (() => {
+    if (updatedAt == null || !valueIsNumeric) return null
+    const ts = typeof updatedAt === 'number' ? updatedAt : new Date(updatedAt).getTime()
+    if (!Number.isFinite(ts)) return null
+    const minutesAgo = Math.max(0, Math.floor((Date.now() - ts) / 60_000))
+    return formatFreshness({
+      minutesAgo,
+      lastSyncedAt: new Date(ts).toISOString(),
+      isStale: minutesAgo > 90,
+      hasData: true,
+    })
+  })()
 
   const card = (
     <PortalCard
@@ -138,6 +161,24 @@ export function KPITile({
           title={sublabel}
         >
           {sublabel}
+        </div>
+      )}
+
+      {freshnessLine && (
+        <div
+          style={{
+            fontSize: 'var(--aguila-fs-meta, 11px)',
+            color: 'var(--portal-ink-3)',
+            fontFamily: 'var(--portal-font-mono)',
+            fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '0.02em',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          title={freshnessLine}
+        >
+          {freshnessLine}
         </div>
       )}
 

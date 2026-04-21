@@ -260,7 +260,7 @@ export function LeadConvertCard({ lead, onConverted }: Props) {
             onChange={(e) =>
               setClaveCliente(e.target.value.replace(/\D/g, '').slice(0, 10))
             }
-            placeholder="9254"
+            placeholder="1234"
             aria-invalid={!claveValid}
           />
           <AguilaSelect

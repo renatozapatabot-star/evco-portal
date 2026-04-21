@@ -8,6 +8,7 @@ import {
   AguilaCTA,
 } from '@/components/aguila'
 import { AguilaMark } from '@/components/brand/AguilaMark'
+import { PitchLeadForm } from './PitchLeadForm'
 
 export const metadata: Metadata = {
   title: 'PORTAL — Inteligencia Aduanera · Patente 3596',
@@ -236,11 +237,12 @@ export default function PitchPage() {
               href: '/demo/live',
               icon: <ArrowRight size={18} strokeWidth={2} />,
             }}
-            secondary={{
-              label: 'Solicitar acceso',
-              href: '/demo/request-access',
-            }}
           />
+        </section>
+
+        {/* ── Inline lead capture ────────────────────────────── */}
+        <section>
+          <PitchLeadForm />
         </section>
 
         {/* ── Footer ─────────────────────────────────────────── */}

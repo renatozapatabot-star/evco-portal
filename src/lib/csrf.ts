@@ -47,6 +47,11 @@ export function validateCsrf(req: NextRequest): NextResponse | null {
   if (path.startsWith('/api/telemetry')) return null
   // Login sets the token — can't require it before it exists
   if (path === '/api/auth' && method === 'POST') return null
+  // Public lead capture (from /pitch, /demo marketing pages) —
+  // prospect has no session + no csrf_token cookie. Spam is mitigated
+  // app-side: firm_name required, sanitized max-length, single INSERT
+  // (no enumeration), and the table is RLS deny-all.
+  if (path === '/api/leads' && method === 'POST') return null
 
   const cookieToken = req.cookies.get('csrf_token')?.value
   const headerToken = req.headers.get('x-csrf-token')

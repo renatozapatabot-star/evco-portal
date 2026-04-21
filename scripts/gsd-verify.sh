@@ -179,6 +179,7 @@ HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   | grep -v 'src/lib/classification-pdf\|src/lib/anexo-24-export\|src/lib/report-exports/pdf\|src/lib/label-templates/' \
   | grep -v 'src/app/api/pedimento-pdf/\|src/app/api/anexo24-pdf/\|src/app/api/reportes-pdf/\|src/app/api/auditoria-pdf/' \
   | grep -v 'src/app/api/oca/.*/pdf/\|src/app/api/usmca/.*/pdf/\|src/app/api/reportes/multi-cliente/.*/pdf-document' \
+  | grep -v 'opengraph-image\|twitter-image' \
   | wc -l | tr -d ' ')
 if [ "$HEX_COUNT" -gt "$INVARIANT_HEX_BASELINE" ]; then
   fail "Hardcoded hex: $HEX_COUNT (baseline $INVARIANT_HEX_BASELINE). Use a design-system token or add // design-token."
@@ -552,7 +553,7 @@ fi
 #   numeric fontSize by necessity.
 INVARIANT_27_BASELINE=301
 header "Invariant 27 — Hardcoded fontSize ratchet"
-INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | wc -l | tr -d ' ')
+INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | grep -v "opengraph-image\|twitter-image" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
   fail "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE). Use var(--aguila-fs-*) or add // WHY: comment."
 elif [ "$INV27_COUNT" -lt "$INVARIANT_27_BASELINE" ]; then

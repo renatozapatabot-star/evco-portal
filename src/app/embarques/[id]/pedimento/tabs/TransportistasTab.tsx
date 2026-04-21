@@ -17,6 +17,7 @@ import {
   TEXT_PRIMARY,
   TEXT_MUTED,
 } from '@/lib/design-system'
+import { GlassCard } from '@/components/aguila'
 import type { TransportistaRow, CarrierType } from '@/lib/pedimento-types'
 import { useAutosaveChildRow } from '@/lib/hooks/useAutosaveChildRow'
 import { AutosaveIndicator } from '@/components/pedimento/AutosaveIndicator'
@@ -139,20 +140,17 @@ export function TransportistasTab({ rows }: TransportistasTabProps) {
       )}
 
       {rows.length === 0 ? (
-        <div
+        <GlassCard
+          tier="hero"
+          padding={32}
           style={{
-            padding: 32,
             textAlign: 'center',
-            borderRadius: 20,
-            background: 'rgba(255,255,255,0.045)',
-            border: `1px solid ${BORDER_SILVER}`,
-            backdropFilter: 'blur(20px)',
             color: TEXT_MUTED,
             fontSize: 'var(--aguila-fs-body)',
           }}
         >
           Sin transportistas registrados.
-        </div>
+        </GlassCard>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {rows.map((row, index) => (
@@ -215,15 +213,7 @@ function TransportistaRowCard({
   }
 
   return (
-    <div
-      style={{
-        padding: 20,
-        borderRadius: 20,
-        background: 'rgba(255,255,255,0.045)',
-        border: `1px solid ${BORDER_SILVER}`,
-        backdropFilter: 'blur(20px)',
-      }}
-    >
+    <GlassCard tier="hero" padding={20}>
       <div
         style={{
           display: 'flex',
@@ -329,6 +319,6 @@ function TransportistaRowCard({
           />
         </div>
       </div>
-    </div>
+    </GlassCard>
   )
 }

@@ -5,6 +5,7 @@
 export type LeadStage =
   | 'new'
   | 'contacted'
+  | 'qualified'
   | 'demo-booked'
   | 'demo-viewed'
   | 'negotiating'
@@ -25,6 +26,7 @@ export type LeadPriority = 'high' | 'normal' | 'low'
 export const LEAD_STAGES: readonly LeadStage[] = [
   'new',
   'contacted',
+  'qualified',
   'demo-booked',
   'demo-viewed',
   'negotiating',
@@ -36,6 +38,7 @@ export const LEAD_STAGES: readonly LeadStage[] = [
 export const LEAD_STAGE_LABELS: Record<LeadStage, string> = {
   'new': 'Nuevo',
   'contacted': 'Contactado',
+  'qualified': 'Calificado',
   'demo-booked': 'Demo agendado',
   'demo-viewed': 'Demo visto',
   'negotiating': 'Negociando',
@@ -87,6 +90,8 @@ export interface LeadRow {
   owner_user_id: string | null
   created_at: string
   updated_at: string
+  client_code_assigned: string | null
+  converted_at: string | null
 }
 
 // ── Lead activities (timeline) ──────────────────────────────────────

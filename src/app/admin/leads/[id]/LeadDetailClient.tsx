@@ -2,13 +2,15 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Clock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import {
   GlassCard,
   AguilaInput,
   AguilaTextarea,
   AguilaSelect,
   AguilaMetric,
+  AguilaStagePills,
+  type AguilaStageOption,
 } from '@/components/aguila'
 import {
   LEAD_STAGES,
@@ -20,6 +22,7 @@ import {
   type LeadSource,
 } from '@/lib/leads/types'
 import { LeadActivityTimeline } from './LeadActivityTimeline'
+import { LeadConvertCard } from './LeadConvertCard'
 
 interface Props {
   initialLead: LeadRow
@@ -206,6 +209,10 @@ export function LeadDetailClient({
         </GlassCard>
       ) : null}
 
+      {/* Conversion card — renders when stage='won' or already converted */}
+      <LeadConvertCard lead={lead} onConverted={setLead} />
+
+
       {/* Stage transition buttons */}
       <GlassCard tier="hero" padding={20}>
         <div
@@ -221,40 +228,19 @@ export function LeadDetailClient({
         >
           Cambiar etapa
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {LEAD_STAGES.map((s) => {
-            const active = s === lead.stage
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => patch({ stage: s }, `stage:${s}`)}
-                disabled={saving === `stage:${s}`}
-                className={
-                  active
-                    ? 'portal-btn portal-btn--primary'
-                    : 'portal-btn portal-btn--ghost'
-                }
-                style={{
-                  minHeight: 44,
-                  padding: '0 14px',
-                  fontSize: 'var(--portal-fs-sm)',
-                  opacity: saving === `stage:${s}` ? 0.6 : 1,
-                }}
-              >
-                {LEAD_STAGE_LABELS[s]}
-                {saving === `stage:${s}` ? (
-                  <Clock
-                    size={14}
-                    strokeWidth={2.2}
-                    aria-label="Guardando"
-                    style={{ marginLeft: 6, opacity: 0.6 }}
-                  />
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
+        <AguilaStagePills
+          stages={LEAD_STAGES.map<AguilaStageOption<LeadStage>>((s) => ({
+            value: s,
+            label: LEAD_STAGE_LABELS[s],
+          }))}
+          current={lead.stage}
+          onChange={(next) => patch({ stage: next }, `stage:${next}`)}
+          saving={
+            saving?.startsWith('stage:')
+              ? (saving.slice('stage:'.length) as LeadStage)
+              : null
+          }
+        />
       </GlassCard>
 
       {/* Next action */}

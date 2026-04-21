@@ -27,6 +27,8 @@ const base: LeadRow = {
   owner_user_id: null,
   created_at: '2026-04-21T00:00:00Z',
   updated_at: '2026-04-21T00:00:00Z',
+  client_code_assigned: null,
+  converted_at: null,
 }
 
 const actor = { userId: null, name: 'admin' as string | null }

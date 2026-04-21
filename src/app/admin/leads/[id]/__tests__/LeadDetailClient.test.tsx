@@ -36,6 +36,8 @@ const baseLead: LeadRow = {
   owner_user_id: null,
   created_at: '2026-04-21T00:00:00Z',
   updated_at: '2026-04-21T00:00:00Z',
+  client_code_assigned: null,
+  converted_at: null,
 }
 
 beforeEach(() => {
@@ -60,16 +62,16 @@ afterEach(() => {
 describe('LeadDetailClient', () => {
   it('renders the current stage pill as active (primary variant)', () => {
     const { getByRole } = render(<LeadDetailClient initialLead={baseLead} />)
-    const newPill = getByRole('button', { name: /^Nuevo$/ })
+    const newPill = getByRole('radio', { name: /^Nuevo$/ })
     expect(newPill.className).toMatch(/portal-btn--primary/)
 
-    const contactedPill = getByRole('button', { name: /^Contactado$/ })
+    const contactedPill = getByRole('radio', { name: /^Contactado$/ })
     expect(contactedPill.className).toMatch(/portal-btn--ghost/)
   })
 
   it('patches the stage when a pill is clicked', async () => {
     const { getByRole } = render(<LeadDetailClient initialLead={baseLead} />)
-    fireEvent.click(getByRole('button', { name: /Demo visto/ }))
+    fireEvent.click(getByRole('radio', { name: /Demo visto/ }))
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled())
     const [url, init] = fetchMock.mock.calls[0]
@@ -135,14 +137,14 @@ describe('LeadDetailClient', () => {
       }),
     }))
     const { getByRole, findByText } = render(<LeadDetailClient initialLead={baseLead} />)
-    fireEvent.click(getByRole('button', { name: /Demo visto/ }))
+    fireEvent.click(getByRole('radio', { name: /Demo visto/ }))
     const err = await findByText(/Error: update_failed/)
     expect(err).toBeTruthy()
   })
 
   it('calls router.refresh after successful PATCH', async () => {
     const { getByRole } = render(<LeadDetailClient initialLead={baseLead} />)
-    fireEvent.click(getByRole('button', { name: /Demo visto/ }))
+    fireEvent.click(getByRole('radio', { name: /Demo visto/ }))
     await waitFor(() => expect(refreshMock).toHaveBeenCalled())
   })
 

@@ -6472,10 +6472,12 @@ export type Database = {
       leads: {
         Row: {
           aduana: string | null
+          client_code_assigned: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           contact_title: string | null
+          converted_at: string | null
           created_at: string
           firm_name: string
           id: string
@@ -6498,10 +6500,12 @@ export type Database = {
         }
         Insert: {
           aduana?: string | null
+          client_code_assigned?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           contact_title?: string | null
+          converted_at?: string | null
           created_at?: string
           firm_name: string
           id?: string
@@ -6524,10 +6528,12 @@ export type Database = {
         }
         Update: {
           aduana?: string | null
+          client_code_assigned?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           contact_title?: string | null
+          converted_at?: string | null
           created_at?: string
           firm_name?: string
           id?: string

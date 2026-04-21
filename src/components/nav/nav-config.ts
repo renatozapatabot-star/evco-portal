@@ -4,6 +4,7 @@ import {
   Shield, Settings, Package,
   Warehouse, TrendingUp, Radio, Brain,
   FileSpreadsheet, ScanLine, Eye, Play, History,
+  Target,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -100,6 +101,15 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     roles: ['admin', 'broker'],
     children: [
       { href: '/admin/operadores', label: 'Desempeño operadores', icon: Users2, roles: ['admin', 'broker'] },
+    ],
+  },
+  {
+    key: 'ventas',
+    label: 'Ventas',
+    icon: Target,
+    roles: ['admin', 'broker'],
+    children: [
+      { href: '/admin/leads', label: 'Pipeline de leads', icon: Target, roles: ['admin', 'broker'] },
     ],
   },
   {

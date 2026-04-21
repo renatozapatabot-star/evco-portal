@@ -19,13 +19,12 @@
 
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ClipboardList, FileText, ExternalLink, ArrowLeft, Package } from 'lucide-react'
+import { ClipboardList, FileText, ExternalLink, Package } from 'lucide-react'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { ParteDetailClient, type DetailPayload } from '@/app/catalogo/partes/[cveProducto]/ParteDetailClient'
-import { GlassCard, PageShell } from '@/components/aguila'
+import { GlassCard, DetailPageShell } from '@/components/aguila'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -191,34 +190,15 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
   const clientName = decodeURIComponent(cookieStore.get('company_name')?.value ?? 'Cliente')
 
   return (
-    <PageShell
+    <DetailPageShell
+      breadcrumb={[
+        { label: 'Anexo 24', href: '/anexo-24' },
+        { label: data.parte.cve_producto || 'SKU' },
+      ]}
       title={data.parte.descripcion || data.parte.cve_producto || 'SKU'}
       subtitle={`Anexo 24 · ${clientName} · Patente 3596`}
       maxWidth={1100}
     >
-      {/* Breadcrumb — click-back to main Anexo 24 surface */}
-      <nav
-        aria-label="Breadcrumb"
-        style={{ marginBottom: 20 }}
-      >
-        <Link
-          href="/anexo-24"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            minHeight: 44,
-            fontSize: 'var(--aguila-fs-body, 13px)',
-            color: 'rgba(192,197,206,0.75)',
-            textDecoration: 'none',
-            letterSpacing: '0.04em',
-          }}
-        >
-          <ArrowLeft size={14} strokeWidth={1.8} />
-          Volver a Anexo 24
-        </Link>
-      </nav>
-
       {/* Context strip — reframes the SKU as "part of the official Anexo 24" */}
       <div
         style={{
@@ -408,7 +388,7 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
 
       {/* 4-tab detail — reuses the Sunday-build client component */}
       <ParteDetailClient data={data} role={role} formattedFraccion={formattedFraccion} />
-    </PageShell>
+    </DetailPageShell>
   )
 }
 

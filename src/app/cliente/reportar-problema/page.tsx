@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { playSound } from '@/lib/sounds'
 import { haptic } from '@/hooks/use-haptic'
+import { AguilaInput, AguilaTextarea } from '@/components/aguila'
 
 const CATEGORIAS = [
   { value: 'documento_faltante', label: 'Documento faltante' },
@@ -120,26 +121,26 @@ export default function ReportarProblemaPage() {
 
         {/* Title */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-4)', display: 'block', marginBottom: 4 }}>
-            Título del problema *
-          </label>
-          <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Ej: Falta factura del embarque de marzo" style={{
-            width: '100%', padding: '12px 14px', borderRadius: 8,
-            background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-            color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', boxSizing: 'border-box', minHeight: 48,
-          }} />
+          <AguilaInput
+            label="Título del problema"
+            required
+            placeholder="Ej: Falta factura del embarque de marzo"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
         </div>
 
         {/* Description */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--portal-fg-4)', display: 'block', marginBottom: 4 }}>
-            Descripción *
-          </label>
-          <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe el problema con detalle..." rows={4} style={{
-            width: '100%', padding: '12px 14px', borderRadius: 8,
-            background: '#222', border: '1px solid rgba(255,255,255,0.12)',
-            color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'vertical', boxSizing: 'border-box', minHeight: 100,
-          }} />
+          <AguilaTextarea
+            label="Descripción"
+            required
+            placeholder="Describe el problema con detalle..."
+            rows={4}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            style={{ minHeight: 100 }}
+          />
         </div>
 
         <button onClick={handleSubmit} disabled={loading || !form.title || !form.description} style={{

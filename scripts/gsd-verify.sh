@@ -808,7 +808,7 @@ fi
 
 # R10 — Aguila form primitive adoption (positive direction).
 header "theme/v6 · AguilaInput/Select/Checkbox/Textarea adoption (target ↑)"
-AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-46}
+AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-48}
 AGUILA_FORM_COUNT=$(set +eo pipefail;{ grep -rnE "<(AguilaInput|AguilaSelect|AguilaCheckbox|AguilaTextarea)" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$AGUILA_FORM_COUNT" -lt "$AGUILA_FORM_BASELINE" ]; then
   fail "Aguila form primitives usage regressed: $AGUILA_FORM_COUNT (was $AGUILA_FORM_BASELINE)."

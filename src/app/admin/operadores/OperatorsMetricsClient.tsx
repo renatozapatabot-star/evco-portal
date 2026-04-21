@@ -350,17 +350,7 @@ function cellMono(align: 'left' | 'right'): React.CSSProperties {
 
 function EmptyState() {
   return (
-    <section
-      style={{
-        background: 'rgba(255,255,255,0.045)',
-        backdropFilter: 'blur(20px)',
-        border: `1px solid ${BORDER}`,
-        borderRadius: 20,
-        padding: 40,
-        boxShadow: GLASS_SHADOW,
-        textAlign: 'center',
-      }}
-    >
+    <GlassCard tier="hero" padding={40} style={{ textAlign: 'center' }}>
       <div style={{ fontSize: 'var(--aguila-fs-kpi-large)', marginBottom: 12, opacity: 0.5 }}>○</div>
       <h2 style={{ fontFamily: SANS, fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, margin: 0 }}>
         Sin actividad en el rango seleccionado.
@@ -368,6 +358,6 @@ function EmptyState() {
       <p style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)', marginTop: 8 }}>
         Ajusta las fechas o verifica que tu equipo esté registrando acciones.
       </p>
-    </section>
+    </GlassCard>
   )
 }

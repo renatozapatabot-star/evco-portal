@@ -54,35 +54,39 @@ export function PortalModuleCard({
   const inner = (
     <>
       {accent && <div className="portal-card__rail" style={{ opacity: 1 }} aria-hidden />}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48 }}>
         <div
           aria-hidden
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 'var(--portal-r-2)',
+            width: 40,
+            height: 40,
+            borderRadius: 'var(--portal-r-3)',
             background: 'var(--portal-ink-3)',
             border: '1px solid var(--portal-line-1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'var(--portal-fg-2)',
+            flexShrink: 0,
           }}
         >
           {icon}
         </div>
-        <div
+        <h2
           style={{
             fontFamily: 'var(--portal-font-display)',
-            fontWeight: 400,
-            fontSize: 20,
+            fontWeight: 500,
+            // WHY: 18px font-medium is the unified header-row size
+            // across PortalModuleCard + SmartNavCard (Apr 2026 header pass).
+            fontSize: 18,
             color: 'var(--portal-fg-1)',
             letterSpacing: '-0.01em',
             flex: 1,
+            margin: 0,
           }}
         >
           {title}
-        </div>
+        </h2>
         {badge && <PortalBadge tone={badge.tone}>{badge.label}</PortalBadge>}
       </div>
 

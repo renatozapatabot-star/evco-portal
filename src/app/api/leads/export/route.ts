@@ -12,8 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifySession } from '@/lib/session'
+import { requireAdminSession } from '@/lib/auth/session-guards'
 import { createServerClient } from '@/lib/supabase-server'
 import {
   LEAD_STAGES,
@@ -26,14 +25,6 @@ import {
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-async function requireAdminSession() {
-  const cookieStore = await cookies()
-  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
-  if (!session) return null
-  if (!['admin', 'broker'].includes(session.role)) return null
-  return session
-}
 
 /** Escape a value for CSV: wrap in quotes, double internal quotes. */
 function esc(v: unknown): string {
@@ -75,13 +66,8 @@ const HEADERS = [
 ]
 
 export async function GET(req: NextRequest) {
-  const session = await requireAdminSession()
-  if (!session) {
-    return NextResponse.json(
-      { data: null, error: { code: 'UNAUTHORIZED', message: 'admin/broker only' } },
-      { status: 401 },
-    )
-  }
+  const { error: authError } = await requireAdminSession()
+  if (authError) return authError
 
   const stageParam = req.nextUrl.searchParams.get('stage') ?? ''
   const q = (req.nextUrl.searchParams.get('q') ?? '').trim().toLowerCase()

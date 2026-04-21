@@ -12,8 +12,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifySession } from '@/lib/session'
+import { requireAdminSession } from '@/lib/auth/session-guards'
 import { createServerClient } from '@/lib/supabase-server'
 import {
   LEAD_STAGES,
@@ -57,25 +56,12 @@ function sanitizeIsoDate(v: unknown): string | null | undefined {
   return d.toISOString()
 }
 
-async function requireAdminSession() {
-  const cookieStore = await cookies()
-  const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
-  if (!session) return null
-  if (!['admin', 'broker'].includes(session.role)) return null
-  return session
-}
-
 export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
-  const session = await requireAdminSession()
-  if (!session) {
-    return NextResponse.json(
-      { data: null, error: { code: 'UNAUTHORIZED', message: 'admin/broker only' } },
-      { status: 401 },
-    )
-  }
+  const { session, error: authError } = await requireAdminSession()
+  if (authError) return authError
   const { id } = await ctx.params
 
   const supabase = createServerClient()
@@ -105,13 +91,8 @@ export async function PATCH(
   req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
-  const session = await requireAdminSession()
-  if (!session) {
-    return NextResponse.json(
-      { data: null, error: { code: 'UNAUTHORIZED', message: 'admin/broker only' } },
-      { status: 401 },
-    )
-  }
+  const { session, error: authError } = await requireAdminSession()
+  if (authError) return authError
   const { id } = await ctx.params
 
   let body: Record<string, unknown>

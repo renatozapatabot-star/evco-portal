@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { FallbackLink, SectionHeader } from '@/components/aguila'
+import { FallbackLink, SectionHeader, GlassCard } from '@/components/aguila'
 import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  BORDER,
   TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
 } from '@/lib/design-system'
 
@@ -156,10 +156,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16 }}>
-        <div style={{
-          background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: 16,
-          overflow: 'hidden', backdropFilter: `blur(${GLASS_BLUR})`, boxShadow: GLASS_SHADOW,
-        }}>
+        <GlassCard tier="hero" padding={0} style={{ overflow: 'hidden' }}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'minmax(0, 2fr) 100px 100px 90px 60px',
@@ -223,12 +220,9 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
               </button>
             ))
           )}
-        </div>
+        </GlassCard>
 
-        <aside style={{
-          background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: 16,
-          padding: 20, backdropFilter: `blur(${GLASS_BLUR})`, boxShadow: GLASS_SHADOW,
-        }}>
+        <GlassCard tier="hero" padding={20} className="portal-transportistas-aside">
           {!selectedId ? (
             <div style={{ color: TEXT_MUTED, fontSize: 'var(--aguila-fs-body)' }}>
               Selecciona un transportista para ver su historial de 90 días.
@@ -287,7 +281,7 @@ export function TransportistasClient({ initialRows }: { initialRows: CarrierRow[
               )}
             </>
           )}
-        </aside>
+        </GlassCard>
       </div>
 
       <FallbackLink

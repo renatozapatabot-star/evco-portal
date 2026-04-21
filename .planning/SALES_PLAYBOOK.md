@@ -227,6 +227,62 @@ surfaces). Ready for any future sales / marketing / campaign page.
 
 ---
 
+## Post-demo follow-up cadence
+
+Every lead whose stage is `demo-viewed` triggers the sequence in
+`scripts/cold-outreach/post-demo-sequence.md`:
+
+| Day | Email | Purpose |
+|---|---|---|
+| T+0 | Thank-you + 3 value anchors | Anchor the demo memory, offer 20-min call with Tito |
+| T+3 | Pricing + booking link | Concrete numbers ($15K setup / $8K-from monthly), clear next step |
+| T+7 | Soft nudge + EVCO case study | Final touch, permission-to-not-respond, leaves door open |
+
+Manual send (Renato IV's inbox, not `ai@`) for the first 5 cycles.
+Automate via a scheduled job after 5 cycles prove the cadence.
+
+Stop the sequence on any reply — read the reply, match one of the
+5 shapes in `reply-templates.md`, update `/admin/leads` stage.
+
+## Funnel attribution tracking
+
+Every hit to `/demo/live` writes a row to the `leads` table with
+`firm_name='Demo visitor (anónimo)'` + `source='demo'`. The
+`/admin/leads` "demo vistos" metric counts these. Deduplicated
+1-hour window per referrer so a page refresh doesn't double-count.
+
+When a prospect later submits the `/pitch` inline form → separate
+named lead. Both rows coexist and tell the funnel story:
+- anon visit (T-n days ago, referrer: LinkedIn post)
+- named lead (today, firm_name: real, email: real)
+
+## Test coverage at the sales layer
+
+| File | Tests | What it locks |
+|---|---|---|
+| `src/lib/leads/__tests__/types.test.ts` | 6 | LEAD_STAGES · LEAD_SOURCES contract |
+| `src/app/api/leads/__tests__/route.test.ts` | 12 | POST path · sanitize · error shape · honeypot |
+| `src/components/aguila/__tests__/AguilaMetric.test.tsx` | 11 | metric primitive |
+| `src/components/aguila/__tests__/AguilaBeforeAfter.test.tsx` | 6 | delta strip primitive |
+| `src/components/aguila/__tests__/AguilaTestimonial.test.tsx` | 7 | testimonial primitive |
+| `src/components/aguila/__tests__/AguilaCTA.test.tsx` | 10 | CTA primitive · href/onClick/external/disabled |
+
+**Total: 52 sales-layer test assertions.**
+
+## OpenGraph social preview
+
+`/pitch/opengraph-image.tsx` renders a 1200×630 PNG at the edge. Any
+paste of `portal.renatozapata.com/pitch` on LinkedIn / Slack /
+WhatsApp / Twitter auto-unfurls with the silver-on-black hero image.
+
+Test the unfurl before campaign launch:
+1. Deploy preview via `vercel`
+2. Paste the URL into LinkedIn post composer (don't submit)
+3. Verify the preview card renders the hero correctly
+4. If it caches wrong → LinkedIn Post Inspector forces re-fetch
+
+---
+
 ## What's explicitly NOT automated (intentional · forever)
 
 - **Tito approval gate** — every signed contract goes through Tito.

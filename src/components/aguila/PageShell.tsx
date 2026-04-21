@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   COCKPIT_CANVAS, GREEN, AMBER, RED,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+  TEXT_PRIMARY, TEXT_MUTED,
+  ACCENT_SILVER_BRIGHT, ACCENT_SILVER_DIM,
 } from '@/lib/design-system'
 import { AguilaFooter } from './AguilaFooter'
 
@@ -149,19 +150,23 @@ export function PageShell({
               />
             ) : null}
             <div style={{ minWidth: 0 }}>
+              {/* V1 login-parity restraint: weight 600 (not 800), letter-spacing -0.01em
+                  (not --aguila-ls-tight's -0.03em display tracking), silver-bright
+                  instead of legacy TEXT_PRIMARY. Every cockpit + detail page that
+                  composes from PageShell inherits the same header rhythm as login. */}
               <h1 style={{
                 fontSize: 'var(--aguila-fs-title, 24px)',
-                fontWeight: 800,
-                color: TEXT_PRIMARY,
+                fontWeight: 600,
+                color: ACCENT_SILVER_BRIGHT,
                 margin: 0,
-                letterSpacing: 'var(--aguila-ls-tight, -0.03em)',
+                letterSpacing: '-0.01em',
               }}>
                 {title}
               </h1>
               {subtitle ? (
                 <p style={{
                   fontSize: 'var(--aguila-fs-body, 13px)',
-                  color: TEXT_SECONDARY,
+                  color: ACCENT_SILVER_DIM,
                   marginTop: 2, marginBottom: 0, fontWeight: 500,
                 }}>
                   {subtitle}

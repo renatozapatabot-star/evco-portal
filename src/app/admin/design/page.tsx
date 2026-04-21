@@ -28,7 +28,7 @@ import {
   VizDocs,
   VizCatalog,
   VizWarehouseDock,
-  VizRing,
+  VizDonut,
 } from '@/components/portal'
 import { PortalLoginBackgroundLineMap, PortalLoginLiveWire } from '@/components/portal'
 
@@ -350,15 +350,7 @@ export default function DesignGalleryPage() {
             desc="Padrón de SKUs con IMMEX vigente. Todos clasificados al día."
             badge={{ tone: 'warn', label: '3 POR REVISAR' }}
             viz={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <VizRing pct={98} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: 'var(--portal-fg-2)' }}>Clasificación al día</div>
-                  <div className="portal-meta" style={{ marginTop: 2 }}>
-                    242 DE 245 · <span className="portal-num">98.8%</span>
-                  </div>
-                </div>
-              </div>
+              <VizDonut greenPct={98.8} redPct={1.2} size={72} label="63% clasificado" />
             }
             metric="245"
             metricLabel="SKUs EN ANEXO"

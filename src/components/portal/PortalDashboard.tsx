@@ -6,6 +6,7 @@ import { Truck, FileText, FolderOpen, Book, Package, ClipboardList, Receipt } fr
 import { PortalTopBar } from './PortalTopBar'
 import { PortalGreeting } from './PortalGreeting'
 import { PortalModuleCard } from './PortalModuleCard'
+import { PortalCard } from './PortalCard'
 import { PortalAssistantFab } from './PortalAssistantFab'
 import { PortalCommandPalette } from './PortalCommandPalette'
 import { PortalWorldMesh } from './PortalWorldMesh'
@@ -18,7 +19,7 @@ import {
   VizDocs,
   VizCatalog,
   VizWarehouseDock,
-  VizRing,
+  VizDonut,
 } from './viz'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 
@@ -158,6 +159,91 @@ export function PortalDashboard({
         {freshnessSlot}
 
         <PortalGreeting name={greetingName} summary={summary} />
+
+        {/* Requiere tu atención — mock hero (demo copy; wire to real query post-launch) */}
+        <section
+          aria-label="Requiere tu atención"
+          style={{ marginTop: 24, marginBottom: 32 }}
+        >
+          <header
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                aria-hidden
+                className="portal-pulse"
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 999,
+                  background: 'var(--portal-status-red-fg)',
+                  boxShadow: '0 0 0 0 var(--portal-status-red-ring)',
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: 'var(--portal-fg-3)',
+                }}
+              >
+                Requiere tu atención
+              </span>
+            </div>
+            <span
+              className="portal-meta"
+              style={{ fontSize: 11, color: 'var(--portal-fg-5)' }}
+            >
+              3 items
+            </span>
+          </header>
+
+          <PortalCard href="/pedimentos" padding={16}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                gap: 16,
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 15, color: 'var(--portal-fg-1)' }}>
+                  Pedimento{' '}
+                  <span
+                    className="portal-num"
+                    style={{ color: 'var(--portal-green-3)' }}
+                  >
+                    26 24 3596 6500441
+                  </span>{' '}
+                  en firma
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--portal-fg-5)',
+                    marginTop: 2,
+                  }}
+                >
+                  Pendiente desde hace 2 días · Requiere tu firma
+                </div>
+              </div>
+              <span
+                className="portal-btn portal-btn--ghost portal-btn--sm"
+                style={{ flexShrink: 0 }}
+              >
+                Ver
+              </span>
+            </div>
+          </PortalCard>
+        </section>
 
         <div className="portal-modules-grid">
           {/* 1. Tráficos / Embarques */}
@@ -316,17 +402,7 @@ export function PortalDashboard({
                 : undefined
             }
             viz={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <VizRing pct={98} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: 'var(--portal-fg-2)' }}>
-                    Clasificación al día
-                  </div>
-                  <div className="portal-meta" style={{ color: 'var(--portal-fg-5)', marginTop: 2 }}>
-                    <span className="portal-num">98.8%</span>
-                  </div>
-                </div>
-              </div>
+              <VizDonut greenPct={98.8} redPct={1.2} size={72} label="63% clasificado" />
             }
             metric={fmt(navCounts.anexo24?.count ?? null, '0')}
             metricLabel="SKUs EN ANEXO"

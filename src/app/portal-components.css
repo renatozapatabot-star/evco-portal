@@ -43,15 +43,29 @@
 .portal-btn--lg { height: 52px; padding: 0 24px; font-size: var(--portal-fs-md); border-radius: var(--portal-r-3); }
 .portal-btn--icon { width: 36px; padding: 0; }
 
-/* —— Badges ———————————————————————————————— */
+/* —— Badges / metric chips ————————————————————————
+ * Canonical chip chemistry (2026-04-20 standardization pass):
+ *   default: bg-white/[0.04] border-white/10 rounded-full px-2.5 py-1
+ *            text-[10px] uppercase tracking-[0.12em] text-white/60
+ *   live:    bg-[#22c55e14] border-[#22c55e33] text-[#4ade80]
+ * Every "18 EN TRÁNSITO / 10 MES / 3 ABIERTAS" chip on the dashboard
+ * composes from <PortalBadge> → this class. Keep hex + rgba literal
+ * here so the single source of truth lives with the rule, not behind
+ * another token indirection. */
 .portal-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  height: 22px; padding: 0 8px; border-radius: var(--portal-r-pill);
-  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro);
+  padding: 4px 10px; border-radius: 9999px;
+  font-family: var(--portal-font-mono); font-size: 10px;
   font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
-  border: 1px solid var(--portal-line-2); color: var(--portal-fg-3);
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.6);
 }
-.portal-badge--live { color: var(--portal-green-1); border-color: var(--portal-green-5); background: color-mix(in oklch, var(--portal-green-2) 8%, transparent); }
+.portal-badge--live {
+  background: #22c55e14;
+  border-color: #22c55e33;
+  color: #4ade80;
+}
 .portal-badge--info { color: var(--portal-ice-1); border-color: color-mix(in oklch, var(--portal-ice-3) 40%, transparent); background: color-mix(in oklch, var(--portal-ice-2) 6%, transparent); }
 .portal-badge--warn { color: var(--portal-amber); border-color: color-mix(in oklch, var(--portal-amber) 40%, transparent); background: color-mix(in oklch, var(--portal-amber) 6%, transparent); }
 .portal-badge--alert { color: var(--portal-red); border-color: color-mix(in oklch, var(--portal-red) 40%, transparent); background: color-mix(in oklch, var(--portal-red) 6%, transparent); }
@@ -297,6 +311,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .portal-reveal-3 { animation-delay: 180ms; }
 .portal-reveal-4 { animation-delay: 240ms; }
 .portal-reveal-5 { animation-delay: 300ms; }
+
+/* /inicio module cards — staggered entrance.
+   400ms cubic-bezier(0.16,1,0.3,1), 40ms stagger. Reuses portalReveal
+   (opacity 0→1 + translateY(8px)→0). Reduced-motion + data-motion=off
+   neutralize globally. */
+.portal-modules-grid > * {
+  animation: portalReveal 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.portal-modules-grid > *:nth-child(1) { animation-delay: 0ms; }
+.portal-modules-grid > *:nth-child(2) { animation-delay: 40ms; }
+.portal-modules-grid > *:nth-child(3) { animation-delay: 80ms; }
+.portal-modules-grid > *:nth-child(4) { animation-delay: 120ms; }
+.portal-modules-grid > *:nth-child(5) { animation-delay: 160ms; }
+.portal-modules-grid > *:nth-child(6) { animation-delay: 200ms; }
 
 /* Reduced-motion respect */
 @media (prefers-reduced-motion: reduce) {

@@ -21,7 +21,7 @@ Grok Build can walk in tomorrow and ship on day one.
 
 ---
 
-## Commits shipped (5 commits · 4fb4e9e..189bcaa)
+## Commits shipped (8 commits · 4fb4e9e..2fe453f)
 
 | # | Commit | What |
 |---|---|---|
@@ -30,6 +30,9 @@ Grok Build can walk in tomorrow and ship on day one.
 | 3 | `77e0291` | Grok Build Handbook at `docs/grok-build-handbook.md` (646 lines) |
 | 4 | `fac478b` | 37 tests + gate updates for test-fixture exemption |
 | 5 | `189bcaa` | placeholder fix for multi-tenant isolation ratchet |
+| 6 | `7988e12` | marathon-4 handoff (this file) |
+| 7 | `df196e2` | recent activity feed + conversion hero metric + CSV export |
+| 8 | `2fe453f` | AguilaCTA + AguilaStagePills demos in /admin/design gallery |
 
 ---
 
@@ -165,6 +168,32 @@ enforce the order (qualified between contacted + demo-booked).
 **The handbook is the single doc a new builder reads to be
 productive on day one.** Updated as the repo evolves.
 
+### Addendum — operational dashboard polish (commits 7 + 8)
+
+Three surfaces added after the initial handoff that close daily-ops
+gaps:
+
+**Recent activity feed on `/admin/leads`** — `RecentActivityFeed.tsx`.
+Last 15 activities across ALL leads, joined with `firm_name`.
+Kind-iconed rows link to `/admin/leads/[id]`. Humanized relative time
+("hace 3 h", "hace 2 d", "hace un momento"). Morning standup view.
+
+**Conversion hero metric** — new `<AguilaMetric>` in the hero row:
+"Convertidos · N · NN% del total". Visible above-the-fold sales funnel
+health signal. Paired with existing Total / Acciones / Demo vistos /
+Ganados metrics.
+
+**CSV export** — `GET /api/leads/export` admin/broker-only. Streams 26
+columns (raw enum + human label + all context fields + conversion
+fields). Honors `?stage=` + `?q=` so "export current view" is one
+click. Filename `leads-{stage?}-{YYYY-MM-DD}.csv`. Board-reporting
+leverage + future-CRM migration insurance.
+
+**/admin/design gallery** — AguilaCTA + AguilaStagePills demos added.
+StagePillsDemo is an interactive island (`'use client'`) so the
+gallery can host callback-requiring primitives without becoming a
+full client component.
+
 ---
 
 ## Security posture (new surfaces)
@@ -172,6 +201,7 @@ productive on day one.** Updated as the repo evolves.
 | Surface | Auth | CSRF | RLS |
 |---|---|---|---|
 | `POST /api/leads/[id]/convert` | admin/broker 401 | cookie double-submit | service role (bypasses RLS) |
+| `GET /api/leads/export` | admin/broker 401 | N/A (GET) | service role (bypasses RLS) |
 
 Guardrails:
 - Slug must match `^[a-z0-9]+(?:-[a-z0-9]+)*$` — prevents SQL

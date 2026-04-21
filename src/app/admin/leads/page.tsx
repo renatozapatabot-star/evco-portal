@@ -18,6 +18,7 @@ import {
   AguilaDataTable,
   AguilaMetric,
 } from '@/components/aguila'
+import { NewLeadForm } from './NewLeadForm'
 import {
   LEAD_STAGES,
   LEAD_STAGE_LABELS,
@@ -119,6 +120,8 @@ export default async function AdminLeadsPage() {
           </div>
         </GlassCard>
       ) : null}
+
+      <NewLeadForm />
 
       {/* Hero metrics */}
       <div

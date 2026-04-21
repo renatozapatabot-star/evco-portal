@@ -35,7 +35,9 @@ import {
   AguilaMetric,
   AguilaBeforeAfter,
   AguilaTestimonial,
+  AguilaCTA,
 } from '@/components/aguila'
+import { StagePillsDemo } from './StagePillsDemo'
 
 /**
  * Living design-system gallery for every PORTAL primitive. Admin-only.
@@ -457,6 +459,33 @@ export default function DesignGalleryPage() {
               attribution="Ursula Banda"
               role="Dir. de Operaciones · EVCO Plastics"
             />
+          </div>
+
+          {/* CTA — paired actions */}
+          <div>
+            <p className="portal-meta" style={{ marginBottom: 8 }}>
+              &lt;AguilaCTA&gt; · paired primary + secondary action stack
+              (href / onClick / external / disabled)
+            </p>
+            <AguilaCTA
+              title="Dale un vistazo antes de decidir."
+              subtitle="Abre el demo público · sin registro · zero compromiso."
+              primary={{ label: 'Ver demo en vivo', href: '/demo/live' }}
+              secondary={{
+                label: 'Descargar 1-pager (PDF)',
+                href: '/api/pitch-pdf?download=1',
+              }}
+            />
+          </div>
+
+          {/* Stage pills — pipeline transitions */}
+          <div>
+            <p className="portal-meta" style={{ marginBottom: 8 }}>
+              &lt;AguilaStagePills&gt; · pill row for discrete stages ·
+              role=&quot;radiogroup&quot; + aria-checked · saving indicator
+              per pill
+            </p>
+            <StagePillsDemo />
           </div>
         </div>
       </PortalSection>

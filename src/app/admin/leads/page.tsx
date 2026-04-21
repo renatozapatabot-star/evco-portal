@@ -19,6 +19,7 @@ import {
   AguilaMetric,
 } from '@/components/aguila'
 import { NewLeadForm } from './NewLeadForm'
+import { LeadsFilterBar } from './LeadsFilterBar'
 import {
   LEAD_STAGES,
   LEAD_STAGE_LABELS,
@@ -29,6 +30,11 @@ import {
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 30
+
+interface SearchParams {
+  stage?: string
+  q?: string
+}
 
 type LeadsPageRow = Record<string, unknown> & {
   id: string
@@ -62,37 +68,64 @@ function fmtMXN(n: number | null): string {
   return `$${n.toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
 }
 
-export default async function AdminLeadsPage() {
+export default async function AdminLeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
   const cookieStore = await cookies()
   const session = await verifySession(cookieStore.get('portal_session')?.value ?? '')
   if (!session) redirect('/login')
   if (!['admin', 'broker'].includes(session.role)) redirect('/')
 
+  const params = await searchParams
+  const filterStage = (LEAD_STAGES as readonly string[]).includes(params.stage ?? '')
+    ? (params.stage as LeadStage)
+    : null
+  const filterQuery = (params.q ?? '').trim().toLowerCase()
+
   const supabase = createServerClient()
 
-  const { data: leads, error } = await supabase
+  const { data: allLeads, error } = await supabase
     .from('leads')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(500)
 
-  const rows: LeadsPageRow[] = ((leads ?? []) as LeadRow[]).map((r) => ({
+  const allRows: LeadsPageRow[] = ((allLeads ?? []) as LeadRow[]).map((r) => ({
     ...r,
   }))
 
-  // Group counts by stage
+  // Group counts by stage (ALL rows — chip badges always show global counts,
+  // independent of the current filter so the user can see what's elsewhere).
   const counts: Record<LeadStage, number> = Object.fromEntries(
     LEAD_STAGES.map((s) => [s, 0]),
   ) as Record<LeadStage, number>
-  for (const r of rows) {
+  for (const r of allRows) {
     const stage = r.stage as LeadStage
     if (stage in counts) counts[stage] += 1
   }
-  const total = rows.length
+  const total = allRows.length
 
-  // Next-action-due: items with next_action_at <= now
+  // Apply filters
+  const rows = allRows.filter((r) => {
+    if (filterStage && r.stage !== filterStage) return false
+    if (filterQuery) {
+      const firm = String(r.firm_name ?? '').toLowerCase()
+      const contact = String(r.contact_name ?? '').toLowerCase()
+      if (!firm.includes(filterQuery) && !contact.includes(filterQuery)) {
+        return false
+      }
+    }
+    return true
+  })
+  const filtered = rows.length
+  const isFiltered = filterStage !== null || filterQuery.length > 0
+
+  // Next-action-due: items with next_action_at <= now (unfiltered — you
+  // always want to see what's due, regardless of the current filter)
   const now = new Date()
-  const due = rows
+  const due = allRows
     .filter((r) => {
       if (!r.next_action_at) return false
       return new Date(r.next_action_at).getTime() <= now.getTime()
@@ -103,7 +136,7 @@ export default async function AdminLeadsPage() {
       return aDate - bDate
     })
 
-  const wonValue = rows
+  const wonValue = allRows
     .filter((r) => r.stage === 'won')
     .reduce((s, r) => s + (r.value_monthly_mxn ?? 0), 0)
 
@@ -221,8 +254,12 @@ export default async function AdminLeadsPage() {
             margin: '0 0 12px',
           }}
         >
-          Todos los leads · {total}
+          {isFiltered
+            ? `Leads filtrados · ${filtered} de ${total}`
+            : `Todos los leads · ${total}`}
         </h2>
+
+        <LeadsFilterBar counts={counts} total={total} />
 
         {rows.length === 0 ? (
           <div
@@ -233,8 +270,9 @@ export default async function AdminLeadsPage() {
               fontSize: 'var(--portal-fs-sm)',
             }}
           >
-            Aún no hay leads registrados. Los prospectos que lleguen vía{' '}
-            <code>/demo</code> o cold email se capturarán aquí.
+            {isFiltered
+              ? 'Ningún lead coincide con el filtro actual. Limpia los filtros para ver todo.'
+              : 'Aún no hay leads registrados. Los prospectos que lleguen vía /demo o cold email se capturarán aquí.'}
           </div>
         ) : (
           <AguilaDataTable
@@ -312,35 +350,6 @@ export default async function AdminLeadsPage() {
           />
         )}
       </GlassCard>
-
-      {/* Stage breakdown chips */}
-      <div
-        style={{
-          marginTop: 20,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 8,
-        }}
-      >
-        {LEAD_STAGES.map((s) => (
-          <div
-            key={s}
-            className="portal-badge"
-            style={{ gap: 6 }}
-          >
-            {LEAD_STAGE_LABELS[s]}
-            <span
-              className="portal-num"
-              style={{
-                color: counts[s] > 0 ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
-                fontWeight: 700,
-              }}
-            >
-              {counts[s]}
-            </span>
-          </div>
-        ))}
-      </div>
     </PageShell>
   )
 }

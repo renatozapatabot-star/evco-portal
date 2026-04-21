@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { GOLD, GREEN, RED } from '@/lib/design-system'
 import { getCookieValue, PORTAL_URL } from '@/lib/client-config'
+import { AguilaInput } from '@/components/aguila'
 
 const T = {
   bg: 'var(--bg-dark)', surface: 'var(--navy-900)', border: '#2A2A2A',
@@ -168,42 +169,50 @@ export default function OnboardPage() {
           <div>
             <h2 style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, margin: '0 0 20px' }}>Información del Cliente</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label style={labelStyle}>Razón Social *</label>
-                <input style={inputStyle} value={form.company_name}
-                  onChange={e => set('company_name', e.target.value)}
-                  placeholder="Empresa S.A. de C.V." />
-              </div>
+              <AguilaInput
+                label="Razón Social"
+                required
+                placeholder="Empresa S.A. de C.V."
+                value={form.company_name}
+                onChange={(e) => set('company_name', e.target.value)}
+              />
 
-              <div>
-                <label style={labelStyle}>Company ID (auto)</label>
-                <input style={{ ...inputStyle, color: T.muted, fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)' }}
-                  value={form.company_id}
-                  onChange={e => setForm(prev => ({ ...prev, company_id: e.target.value }))}
-                  placeholder="auto-generated-from-name" />
-              </div>
+              <AguilaInput
+                label="Company ID (auto)"
+                mono
+                placeholder="auto-generated-from-name"
+                value={form.company_id}
+                onChange={(e) => setForm((prev) => ({ ...prev, company_id: e.target.value }))}
+              />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={labelStyle}>Clave GlobalPC *</label>
-                  <input style={inputStyle} value={form.clave_cliente}
-                    onChange={e => set('clave_cliente', e.target.value)}
-                    placeholder="Ej: 1234" />
-                </div>
-                <div>
-                  <label style={labelStyle}>RFC *</label>
-                  <input style={inputStyle} value={form.rfc}
-                    onChange={e => set('rfc', e.target.value.toUpperCase())}
-                    placeholder="EPM160101XXX" maxLength={13} />
-                </div>
+                <AguilaInput
+                  label="Clave GlobalPC"
+                  required
+                  mono
+                  placeholder="Ej: 1234"
+                  value={form.clave_cliente}
+                  onChange={(e) => set('clave_cliente', e.target.value)}
+                />
+                <AguilaInput
+                  label="RFC"
+                  required
+                  mono
+                  placeholder="EPM160101XXX"
+                  maxLength={13}
+                  value={form.rfc}
+                  onChange={(e) => set('rfc', e.target.value.toUpperCase())}
+                />
               </div>
 
-              <div>
-                <label style={labelStyle}>Email Principal *</label>
-                <input style={inputStyle} type="email" value={form.primary_email}
-                  onChange={e => set('primary_email', e.target.value)}
-                  placeholder="contacto@empresa.com" />
-              </div>
+              <AguilaInput
+                label="Email Principal"
+                required
+                type="email"
+                placeholder="contacto@empresa.com"
+                value={form.primary_email}
+                onChange={(e) => set('primary_email', e.target.value)}
+              />
 
               <div>
                 <label style={labelStyle}>Contraseña de CRUZ</label>

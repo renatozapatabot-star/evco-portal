@@ -796,7 +796,7 @@ fi
 
 # R9 — DetailPageShell adoption (positive direction).
 header "theme/v6 · <DetailPageShell> adoption (target ↑)"
-DETAIL_SHELL_BASELINE=${DETAIL_SHELL_BASELINE:-2}
+DETAIL_SHELL_BASELINE=${DETAIL_SHELL_BASELINE:-3}
 DETAIL_SHELL_COUNT=$(set +eo pipefail;{ grep -rln "<DetailPageShell" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$DETAIL_SHELL_COUNT" -lt "$DETAIL_SHELL_BASELINE" ]; then
   fail "<DetailPageShell> usage regressed: $DETAIL_SHELL_COUNT (was $DETAIL_SHELL_BASELINE)."

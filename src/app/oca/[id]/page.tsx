@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers'
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
-import { PageShell, GlassCard, SectionHeader } from '@/components/aguila'
-import { TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, ACCENT_SILVER } from '@/lib/design-system'
+import { DetailPageShell, GlassCard, SectionHeader } from '@/components/aguila'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED } from '@/lib/design-system'
 import type { OcaRow } from '@/lib/oca/types'
 import { ApproveActions } from './ApproveActions'
 
@@ -60,18 +60,18 @@ export default async function OcaDetailPage({ params }: { params: Promise<{ id: 
   const isDraft = opinion.status === 'draft'
 
   return (
-    <PageShell
+    <DetailPageShell
+      breadcrumb={[
+        { label: 'Opiniones', href: '/oca' },
+        { label: opinion.opinion_number },
+      ]}
       title={opinion.opinion_number}
+      titleKind="id"
       subtitle={isDraft ? 'Borrador · pendiente de aprobación' : 'Aprobada · Patente 3596 honrada'}
-      systemStatus={isDraft ? 'warning' : 'healthy'}
+      status={<StatusBadge status={isDraft ? 'borrador' : 'cruzado'} />}
+      maxWidth={900}
     >
-      <div style={{ display: 'grid', gap: 20, maxWidth: 900 }}>
-        <div style={{ fontSize: 'var(--aguila-fs-body)' }}>
-          <Link href="/oca" style={{ color: ACCENT_SILVER, textDecoration: 'none' }}>
-            ← Todas las opiniones
-          </Link>
-        </div>
-
+      <div style={{ display: 'grid', gap: 20 }}>
         <GlassCard>
           <div style={{
             display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -136,6 +136,6 @@ export default async function OcaDetailPage({ params }: { params: Promise<{ id: 
           status={opinion.status}
         />
       </div>
-    </PageShell>
+    </DetailPageShell>
   )
 }

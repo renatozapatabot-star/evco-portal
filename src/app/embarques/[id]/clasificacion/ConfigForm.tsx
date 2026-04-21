@@ -7,6 +7,7 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/lib/design-system'
+import { AguilaTextarea } from '@/components/aguila'
 import {
   GROUPING_MODES,
   ORDERING_MODES,
@@ -238,18 +239,12 @@ export function ConfigForm({ traficoId: _traficoId, config, onChange }: Props) {
       ))}
 
       <SectionLabel>Destinatarios de correo</SectionLabel>
-      <textarea
+      <AguilaTextarea
         defaultValue={config.email_recipients.join(', ')}
         onBlur={(e) => setRecipients(e.target.value)}
         placeholder="correo@cliente.com, otro@cliente.com"
         rows={2}
-        style={{
-          ...selectStyle,
-          resize: 'vertical',
-          minHeight: 60,
-          fontFamily: 'var(--font-mono)',
-          fontSize: 'var(--aguila-fs-compact)',
-        }}
+        style={{ minHeight: 60, fontFamily: 'var(--font-mono)' }}
       />
       <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>
         Separa múltiples correos con coma o espacio.

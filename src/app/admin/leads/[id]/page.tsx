@@ -10,7 +10,7 @@ import { redirect, notFound } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { DetailPageShell } from '@/components/aguila'
-import type { LeadRow } from '@/lib/leads/types'
+import type { LeadActivityRow, LeadRow } from '@/lib/leads/types'
 import { LeadDetailClient } from './LeadDetailClient'
 
 export const dynamic = 'force-dynamic'
@@ -28,11 +28,15 @@ export default async function LeadDetailPage({
   if (!['admin', 'broker'].includes(session.role)) redirect('/')
 
   const supabase = createServerClient()
-  const { data: lead } = await supabase
-    .from('leads')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle<LeadRow>()
+  const [{ data: lead }, { data: activities }] = await Promise.all([
+    supabase.from('leads').select('*').eq('id', id).maybeSingle<LeadRow>(),
+    supabase
+      .from('lead_activities')
+      .select('*')
+      .eq('lead_id', id)
+      .order('occurred_at', { ascending: false })
+      .limit(200),
+  ])
 
   if (!lead) notFound()
 
@@ -46,7 +50,10 @@ export default async function LeadDetailPage({
       subtitle={lead.contact_name ?? 'Sin contacto asignado'}
       maxWidth={1000}
     >
-      <LeadDetailClient initialLead={lead} />
+      <LeadDetailClient
+        initialLead={lead}
+        initialActivities={(activities ?? []) as LeadActivityRow[]}
+      />
     </DetailPageShell>
   )
 }

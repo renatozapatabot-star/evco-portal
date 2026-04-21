@@ -14,13 +14,16 @@ import {
   LEAD_STAGES,
   LEAD_STAGE_LABELS,
   LEAD_SOURCE_LABELS,
+  type LeadActivityRow,
   type LeadRow,
   type LeadStage,
   type LeadSource,
 } from '@/lib/leads/types'
+import { LeadActivityTimeline } from './LeadActivityTimeline'
 
 interface Props {
   initialLead: LeadRow
+  initialActivities?: LeadActivityRow[]
 }
 
 function fmtDate(iso: string | null): string {
@@ -51,7 +54,10 @@ function toInputDateTime(iso: string | null): string {
   }
 }
 
-export function LeadDetailClient({ initialLead }: Props) {
+export function LeadDetailClient({
+  initialLead,
+  initialActivities = [],
+}: Props) {
   const router = useRouter()
   const [lead, setLead] = useState<LeadRow>(initialLead)
   const [saving, setSaving] = useState<string | null>(null)
@@ -453,6 +459,12 @@ export function LeadDetailClient({ initialLead }: Props) {
           placeholder="Contexto, últimas conversaciones, objeciones, stakeholders…"
         />
       </GlassCard>
+
+      {/* Activity timeline */}
+      <LeadActivityTimeline
+        leadId={lead.id}
+        initialActivities={initialActivities}
+      />
     </div>
   )
 }

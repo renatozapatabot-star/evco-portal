@@ -20,6 +20,7 @@ import {
   TEXT_SECONDARY,
 } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
+import { GlassCard } from '@/components/aguila'
 
 interface DemoStep {
   id: number
@@ -182,16 +183,7 @@ export function DemoRunnerClient() {
         }}
       >
         {/* Left — controls */}
-        <section
-          style={{
-            background: 'rgba(255,255,255,0.045)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${BORDER}`,
-            borderRadius: 20,
-            padding: 20,
-            boxShadow: GLASS_SHADOW,
-          }}
-        >
+        <GlassCard tier="hero" padding={20} className="portal-demo-runner-section">
           <h2
             style={{
               fontSize: 'var(--aguila-fs-meta)',
@@ -296,19 +288,10 @@ export function DemoRunnerClient() {
               </code>
             </div>
           )}
-        </section>
+        </GlassCard>
 
         {/* Right — progress */}
-        <section
-          style={{
-            background: 'rgba(255,255,255,0.045)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${BORDER}`,
-            borderRadius: 20,
-            padding: 20,
-            boxShadow: GLASS_SHADOW,
-          }}
-        >
+        <GlassCard tier="hero" padding={20}>
           <div
             style={{
               display: 'flex',
@@ -444,7 +427,7 @@ export function DemoRunnerClient() {
               Demo completado. Revisa /corredor y /embarques/{run?.traficoId}/trace.
             </p>
           )}
-        </section>
+        </GlassCard>
       </div>
     </div>
   )

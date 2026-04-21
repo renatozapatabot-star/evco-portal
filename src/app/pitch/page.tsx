@@ -237,6 +237,10 @@ export default function PitchPage() {
               href: '/demo/live',
               icon: <ArrowRight size={18} strokeWidth={2} />,
             }}
+            secondary={{
+              label: 'Descargar 1-pager (PDF)',
+              href: '/api/pitch-pdf?download=1',
+            }}
           />
         </section>
 

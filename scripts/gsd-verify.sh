@@ -165,7 +165,7 @@ fi
 #   and broke gradient rendering (null stop in PDFLinearGradient.stop).
 #   Exclusion prevents future codemod drift AND accounts for the legitimate
 #   hex restored in pdf/brand.tsx + the 4 doc/pedimento PDF files.
-INVARIANT_HEX_BASELINE=662
+INVARIANT_HEX_BASELINE=619
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \
@@ -276,7 +276,7 @@ fi
 # CRUZ_CHAT_FALLBACK), JSDoc comments, and real-world carrier business
 # names (AUTOEXPRESS CRUZ, TRANSPORTES JOSÉ CRUZ MACIAS) are excluded.
 header "Invariant Block-DD — CRUZ user-visible string ratchet"
-INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-218}
+INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-214}
 CRUZ_COUNT=$(grep -rn '\bCRUZ\b' src/app src/components \
   --include="*.ts" --include="*.tsx" \
   | grep -v 'node_modules' \
@@ -421,7 +421,7 @@ fi
 #   linked-docs fallback + /api/anexo-24/csv error path. Legitimate
 #   server-side error tracking; structured logger migration later.)
 # --------------------------------------------------------------------------
-CONSOLE_ERR_BASELINE=130
+CONSOLE_ERR_BASELINE=128
 header "Console.error/warn ratchet"
 CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | grep -v "/error\.tsx:" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then
@@ -491,7 +491,7 @@ fi
 #   underline hex #C9A84C retired; one more gold hex converted to
 #   var(--portal-gold-500) token).
 # --------------------------------------------------------------------------
-INVARIANT_2_BASELINE=12
+INVARIANT_2_BASELINE=11
 header "Invariant 2 — Gold decorative ratchet"
 INV2_COUNT=$(set +eo pipefail;{ grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$INV2_COUNT" -gt "$INVARIANT_2_BASELINE" ]; then
@@ -550,7 +550,7 @@ fi
 #   as the hex ratchet PDF exclusion above). The 7 api/*-pdf/
 #   pdf-document.tsx + lib PDF files restored from 2d4f196^ have
 #   numeric fontSize by necessity.
-INVARIANT_27_BASELINE=385
+INVARIANT_27_BASELINE=305
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
@@ -567,7 +567,7 @@ fi
 # portal-primitive imports UP. Each ratchet auto-promotes on improvement
 # (update the baseline inline when you see "improving ✓").
 # --------------------------------------------------------------------------
-PORTAL_INLINE_HERO_BASELINE=60
+PORTAL_INLINE_HERO_BASELINE=58
 header "PORTAL · inline hero-glass ratchet (target 0)"
 PORTAL_HERO_COUNT=$(set +eo pipefail;{ grep -rnE "rgba\(0, ?0, ?0, ?0\.(4|25|12)\)" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | grep -v "globals.css" | grep -v "portal-components.css" | grep -v "portal-tokens.css" | wc -l | tr -d ' ')
 if [ "$PORTAL_HERO_COUNT" -gt "$PORTAL_INLINE_HERO_BASELINE" ]; then

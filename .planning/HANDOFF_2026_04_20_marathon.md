@@ -163,5 +163,46 @@ exist yet, ~20 min to build + test).
 
 ---
 
+## Extension — continued after initial handoff (7 more commits)
+
+Appended: the marathon ran 7 more commits after the initial
+handoff at `3fe2cda`, following the "next block suggestion" in
+this doc. Final head: `7bdb0ba`.
+
+| Commit | Change | Ratchet impact |
+|---|---|---|
+| `b3d4eb9` | operador/InicioClient: 7 cards → GlassCard | backdropFilter 179→172 |
+| `128eaa0` | operador/RightRail: 2 cards → GlassCard | backdropFilter 172→170 |
+| `325dca7` | embarques/Cronologia: empty-state → GlassCard | backdropFilter 170→169 |
+| `cac5ba9` | cotizacion/QuoteForm: 8 fields → Aguila primitives | form 11→19 |
+| `6a1dc78` | usmca/CertForm: 17 fields → Aguila primitives | form 19→38 |
+| `e8400aa` | AguilaTextarea primitive (+10 tests) + migrate 3 textareas | form 38→41 (ratchet extended to include Textarea) |
+| `7bdb0ba` | oca/OcaForm: 4 fields + 1 textarea → Aguila primitives | form 41→46 |
+
+**New primitive:** `AguilaTextarea` ships with label + required +
+hint/error envelope matching AguilaInput's contract. Ratchet R9
+regex extended from `(AguilaInput|AguilaSelect|AguilaCheckbox)` to
+also match `AguilaTextarea` — textarea migrations now count toward
+form adoption.
+
+**Cumulative marathon state (on top of the 13 in the main table):**
+
+- **21 commits** on `main`
+- **970 tests passing** (was 941 at 3fe2cda · +29 this extension)
+- **13 ratchet baseline locks** total across the session:
+  - INVARIANT_HEX 662→619 · CRUZ 218→214 · fontSize 385→305 ·
+    console 130→128 · gold 11→12 · portal-rgba 60→58
+  - PORTAL_IMPORT 3→6 · TAILWIND_HEX 13→0
+  - AGUILA_DT 0→2 · AGUILA_FORM 0→46 · DETAIL_SHELL 1→3
+  - PORTAL_BACKDROP 179→169
+
+Forms migrated to Aguila primitives across 4 full pages:
+`/signup` · `/demo/request-access` · `/cotizacion` ·
+`/usmca/certificados/nuevo` · `/oca/nuevo`. Five local helper
+components (Input · Field · QuoteForm inputStyle · CertForm
+inputStyle · OcaForm inputStyle) deleted.
+
+---
+
 *Signed 2026-04-20 · Renato Zapata IV via autonomous delegation.*
 *Patente 3596 · Aduana 240 · Laredo, Texas · Est. 1941*

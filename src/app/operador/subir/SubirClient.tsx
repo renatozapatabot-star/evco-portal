@@ -11,11 +11,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Mail, Search } from 'lucide-react'
 import { DocUploader } from '@/components/docs/DocUploader'
+import { GlassCard } from '@/components/aguila'
 import {
   ACCENT_SILVER,
   BG_CARD,
   BORDER,
-  GLASS_BLUR,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
@@ -92,19 +92,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
       </div>
 
       {/* Embarque picker */}
-      <div
-        style={{
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: `blur(${GLASS_BLUR})`,
-          WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 20,
-          marginBottom: 16,
-          boxShadow:
-            '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-        }}
-      >
+      <GlassCard tier="hero" padding={20} style={{ marginBottom: 16 }}>
         <label
           htmlFor="subir-trafico"
           style={{
@@ -197,22 +185,10 @@ export function SubirClient({ traficos }: SubirClientProps) {
             No hay embarques activos. Crea uno desde la sección de embarques antes de subir documentos.
           </p>
         )}
-      </div>
+      </GlassCard>
 
       {/* Upload zone */}
-      <div
-        style={{
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: `blur(${GLASS_BLUR})`,
-          WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 20,
-          marginBottom: 16,
-          boxShadow:
-            '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-        }}
-      >
+      <GlassCard tier="hero" padding={20} style={{ marginBottom: 16 }}>
         <div
           style={{
             fontSize: 'var(--aguila-fs-label)',
@@ -269,17 +245,13 @@ export function SubirClient({ traficos }: SubirClientProps) {
             <span style={{ color: TEXT_SECONDARY }}>{selected.clienteName}</span>
           </div>
         )}
-      </div>
+      </GlassCard>
 
       {/* Email hint card */}
-      <div
+      <GlassCard
+        tier="hero"
+        padding={16}
         style={{
-          background: 'rgba(255,255,255,0.03)',
-          backdropFilter: `blur(${GLASS_BLUR})`,
-          WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 16,
           display: 'flex',
           alignItems: 'flex-start',
           gap: 12,
@@ -314,7 +286,7 @@ export function SubirClient({ traficos }: SubirClientProps) {
           </a>
           {' '}— llegarán automáticamente al embarque correcto.
         </div>
-      </div>
+      </GlassCard>
     </div>
   )
 }

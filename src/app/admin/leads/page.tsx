@@ -200,6 +200,7 @@ export default async function AdminLeadsPage() {
             ]}
             rows={due as Record<string, unknown>[]}
             keyFor={(r) => r.id as string}
+            rowHref={(r) => `/admin/leads/${r.id}`}
           />
         </GlassCard>
       )}
@@ -304,6 +305,7 @@ export default async function AdminLeadsPage() {
             ]}
             rows={rows as Record<string, unknown>[]}
             keyFor={(r) => r.id as string}
+            rowHref={(r) => `/admin/leads/${r.id}`}
           />
         )}
       </GlassCard>

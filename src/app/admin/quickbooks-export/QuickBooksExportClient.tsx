@@ -21,6 +21,7 @@ import {
   TEXT_SECONDARY,
 } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
+import { AguilaInput, AguilaSelect } from '@/components/aguila'
 
 interface ExportRow {
   id: string
@@ -203,56 +204,45 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
           gap: 16,
           marginBottom: 20,
         }}>
-          <div>
-            <label htmlFor="entity" style={labelStyle}>Entidad</label>
-            <select
-              id="entity"
-              value={entity}
-              onChange={e => setEntity(e.target.value)}
-              style={fieldStyle}
-            >
-              <option value="invoices">Facturas</option>
-              <option value="bills">Cuentas por pagar</option>
-              <option value="customers">Clientes</option>
-              <option value="vendors">Proveedores</option>
-              <option value="all">Todo</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="format" style={labelStyle}>Formato</label>
-            <select
-              id="format"
-              value={format}
-              onChange={e => setFormat(e.target.value)}
-              style={fieldStyle}
-            >
-              <option value="IIF">IIF (QuickBooks Desktop)</option>
-              <option value="CSV">CSV</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="dateFrom" style={labelStyle}>Desde</label>
-            <input
-              id="dateFrom"
-              type="date"
-              value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              style={{ ...fieldStyle, fontFamily: 'var(--font-jetbrains-mono)' }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="dateTo" style={labelStyle}>Hasta</label>
-            <input
-              id="dateTo"
-              type="date"
-              value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              style={{ ...fieldStyle, fontFamily: 'var(--font-jetbrains-mono)' }}
-            />
-          </div>
+          <AguilaSelect
+            id="entity"
+            label="Entidad"
+            value={entity}
+            onChange={(e) => setEntity(e.target.value)}
+            options={[
+              { value: 'invoices', label: 'Facturas' },
+              { value: 'bills', label: 'Cuentas por pagar' },
+              { value: 'customers', label: 'Clientes' },
+              { value: 'vendors', label: 'Proveedores' },
+              { value: 'all', label: 'Todo' },
+            ]}
+          />
+          <AguilaSelect
+            id="format"
+            label="Formato"
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
+            options={[
+              { value: 'IIF', label: 'IIF (QuickBooks Desktop)' },
+              { value: 'CSV', label: 'CSV' },
+            ]}
+          />
+          <AguilaInput
+            id="dateFrom"
+            label="Desde"
+            type="date"
+            mono
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+          <AguilaInput
+            id="dateTo"
+            label="Hasta"
+            type="date"
+            mono
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
         </div>
 
         <button

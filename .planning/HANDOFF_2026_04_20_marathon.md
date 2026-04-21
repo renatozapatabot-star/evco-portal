@@ -185,6 +185,60 @@ regex extended from `(AguilaInput|AguilaSelect|AguilaCheckbox)` to
 also match `AguilaTextarea` — textarea migrations now count toward
 form adoption.
 
+## Extension part 3 — third wind (9 more commits · 36 → 45 total)
+
+| Commit | Change | Impact |
+|---|---|---|
+| `cd4cee1` | ApprovalQueue + ActionEngine 2 textareas → AguilaTextarea | form 59→61 |
+| `64ea0e6` | AdminHeroStrip + AdminRightRail cards → GlassCard | backdrop 169→167 |
+| `cddec34` | /admin/shadow GlassShell + insufficient card → GlassCard | backdrop 167→165 |
+| `bf1ad25` | /admin/patentes card → GlassCard | backdrop 165→164 |
+| `12b1f3c` | /admin/notificaciones Activa toggle → AguilaCheckbox | form 61→62 |
+| `0df3d1f` | /admin/carriers 8 fields → Aguila primitives | form 62→70 |
+| `1088628` | /admin/auditoria 5 filter fields → Aguila primitives | form 70→75 |
+| `9e67000` | /admin/quickbooks-export 4 fields → Aguila primitives | form 75→79 |
+| `5523774` | /upload/[token] supplier recommend → AguilaInput | form 79→81 |
+| `7fe2b30` | /anexo-24/[cveProducto] → DetailPageShell | DetailPageShell 3→4 |
+| `42dbfd8` | /admin/demo DemoRunner 2 sections → GlassCard | backdrop 164→162 |
+| `04a876b` | /monitor filter + table card → GlassCard | backdrop 162→160 |
+| `9413858` | PagoPece form wrapper → GlassCard | backdrop 160→159 |
+| `a73d995` | /transportistas list + aside → GlassCard | backdrop 159→157 |
+| `52567ba` | /kpis GlassPanel helper → GlassCard | backdrop 157→156 |
+| `7ab018d` | ConfigEditor completeness panel → GlassCard | backdrop 156→155 |
+
+**Cumulative marathon state (final):**
+
+- **45 commits** on `main`
+- **980 tests passing** (667 → 980 over the session · +313)
+- **15 ratchet baseline locks** total across the session:
+  - INVARIANT_HEX 662→619 · CRUZ 218→214 · fontSize 385→302 ·
+    console 130→128 · gold 12→11 · portal-rgba 60→57
+  - PORTAL_IMPORT 3→6 · TAILWIND_HEX 13→0
+  - AGUILA_DT 0→2 · AGUILA_FORM **0→81** · DETAIL_SHELL 1→4
+  - PORTAL_BACKDROP **179→155**
+
+**Forms migrated to Aguila primitives across 13 pages:**
+`/signup` · `/demo/request-access` · `/cotizacion` ·
+`/usmca/certificados/nuevo` · `/oca/nuevo` · `/cliente/reportar-problema` ·
+`/cambiar-contrasena` · `/admin/onboard` · `/admin/aprobaciones` ·
+`/admin/aprobar` · `/admin/_components/ActionEngine` · `/admin/auditoria` ·
+`/admin/quickbooks-export` · `/admin/carriers` · `/admin/notificaciones` ·
+`/mve/alerts` · `/upload/[token]`.
+
+**GlassCard migrations across 12 admin + operational surfaces** — removed
+24 inline backdropFilter references from the codebase via primitive
+composition (rather than just muting them).
+
+**DetailPageShell migrations across 4 detail routes:** `/embarques/[id]` ·
+`/catalogo/fraccion/[code]` · `/oca/[id]` · `/anexo-24/[cveProducto]`.
+
+**Three primitives shipped this session:**
+- `AguilaTextarea` (+10 tests)
+- `AguilaPasswordInput` (+10 tests) with eye-toggle
+- `ratchet-bump-advisor.sh` (automation — used 17× this session)
+
+---
+
 ## Extension part 2 — continued further (5 more commits)
 
 | Commit | Change | Impact |

@@ -88,16 +88,19 @@ const PRIORITY_LABELS: Record<string, string> = {
   low: 'Baja',
 }
 
-const FORMAT_MXN = new Intl.NumberFormat('es-MX', {
-  style: 'currency',
-  currency: 'MXN',
-  maximumFractionDigits: 0,
-})
+// Consistent currency formatting across Node (small ICU) + browser (full ICU).
+// Using Intl.NumberFormat with currency:'MXN' differs by environment, which
+// makes audit trails drift. A manual formatter keeps summaries stable.
+function formatMXN(n: number): string {
+  const rounded = Math.round(n)
+  const withCommas = rounded.toLocaleString('en-US')
+  return `$${withCommas} MXN`
+}
 
 function formatFieldValue(field: string, value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
   if (field === 'value_monthly_mxn' && typeof value === 'number') {
-    return FORMAT_MXN.format(value)
+    return formatMXN(value)
   }
   if (field === 'priority' && typeof value === 'string') {
     return PRIORITY_LABELS[value] ?? value

@@ -9,6 +9,7 @@
 
 import { useMemo, useState } from 'react'
 import { Plus, X, Pencil } from 'lucide-react'
+import { AguilaInput, AguilaSelect, AguilaTextarea, AguilaCheckbox } from '@/components/aguila'
 import {
   type CarrierFull,
   type CarrierType,
@@ -307,71 +308,52 @@ function CarrierEditModal({ carrier, onClose, onSaved }: ModalProps) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Field label="Nombre">
-            <input
-              value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-              style={input}
-            />
-          </Field>
-          <Field label="Tipo">
-            <select
-              value={form.carrier_type}
-              onChange={e =>
-                setForm({ ...form, carrier_type: e.target.value as CarrierType })
-              }
-              style={input}
-            >
-              {CARRIER_TYPES.map(t => (
-                <option key={t} value={t}>
-                  {t.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="RFC">
-            <input
-              value={form.rfc}
-              onChange={e => setForm({ ...form, rfc: e.target.value })}
-              style={{ ...input, fontFamily: 'var(--font-mono)' }}
-            />
-          </Field>
-          <Field label="SCT permit">
-            <input
-              value={form.sct_permit}
-              onChange={e => setForm({ ...form, sct_permit: e.target.value })}
-              style={{ ...input, fontFamily: 'var(--font-mono)' }}
-            />
-          </Field>
-          <Field label="DOT number">
-            <input
-              value={form.dot_number}
-              onChange={e => setForm({ ...form, dot_number: e.target.value })}
-              style={{ ...input, fontFamily: 'var(--font-mono)' }}
-            />
-          </Field>
-          <Field label="SCAC code">
-            <input
-              value={form.scac_code}
-              onChange={e => setForm({ ...form, scac_code: e.target.value })}
-              style={{ ...input, fontFamily: 'var(--font-mono)' }}
-            />
-          </Field>
-          <Field label="Notas">
-            <textarea
-              value={form.notes}
-              onChange={e => setForm({ ...form, notes: e.target.value })}
-              style={{ ...input, minHeight: 80, resize: 'vertical' }}
-            />
-          </Field>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--aguila-fs-body)' }}>
-            <input
-              type="checkbox"
-              checked={form.active}
-              onChange={e => setForm({ ...form, active: e.target.checked })}
-            />
-            Activo
-          </label>
+          <AguilaInput
+            label="Nombre"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+          <AguilaSelect
+            label="Tipo"
+            value={form.carrier_type}
+            onChange={(e) => setForm({ ...form, carrier_type: e.target.value as CarrierType })}
+            options={CARRIER_TYPES.map((t) => ({ value: t, label: t.toUpperCase() }))}
+          />
+          <AguilaInput
+            label="RFC"
+            mono
+            value={form.rfc}
+            onChange={(e) => setForm({ ...form, rfc: e.target.value })}
+          />
+          <AguilaInput
+            label="SCT permit"
+            mono
+            value={form.sct_permit}
+            onChange={(e) => setForm({ ...form, sct_permit: e.target.value })}
+          />
+          <AguilaInput
+            label="DOT number"
+            mono
+            value={form.dot_number}
+            onChange={(e) => setForm({ ...form, dot_number: e.target.value })}
+          />
+          <AguilaInput
+            label="SCAC code"
+            mono
+            value={form.scac_code}
+            onChange={(e) => setForm({ ...form, scac_code: e.target.value })}
+          />
+          <AguilaTextarea
+            label="Notas"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            style={{ minHeight: 80 }}
+          />
+          <AguilaCheckbox
+            label="Activo"
+            checked={form.active}
+            onChange={(e) => setForm({ ...form, active: e.target.checked })}
+          />
         </div>
 
         {error && (

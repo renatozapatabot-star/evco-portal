@@ -4,9 +4,9 @@ import { X } from 'lucide-react'
 
 const SHORTCUTS = [
   { section: 'Navegación', items: [
-    { keys: ['⌘','K'], desc: 'Abrir búsqueda global' },
+    { keys: ['Ctrl','K'], desc: 'Abrir búsqueda global' },
     { keys: ['g','d'], desc: 'Ir a Dashboard' },
-    { keys: ['g','t'], desc: 'Ir a Tráficos' },
+    { keys: ['g','t'], desc: 'Ir a Embarques' },
     { keys: ['g','e'], desc: 'Ir a Entradas' },
     { keys: ['g','p'], desc: 'Ir a Pedimentos' },
     { keys: ['g','x'], desc: 'Ir a Expedientes' },
@@ -49,7 +49,7 @@ export function ShortcutHelp() {
                     {item.keys.map((k, i) => (
                       <span key={i}>
                         <kbd className="shortcut-key">{k}</kbd>
-                        {i < item.keys.length-1 && <span style={{margin:'0 3px',color:'var(--n-300)',fontSize:10}}>+</span>}
+                        {i < item.keys.length-1 && <span style={{margin:'0 3px',color:'var(--n-300)',fontSize: 'var(--aguila-fs-label)'}}>+</span>}
                       </span>
                     ))}
                   </div>

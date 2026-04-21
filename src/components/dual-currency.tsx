@@ -1,6 +1,6 @@
 import { fmtUSD, fmtMXN } from '@/lib/format-utils'
 
-export function DualCurrency({ usd, rate = 17.50 }: { usd: number | null | undefined; rate?: number }) {
+export function DualCurrency({ usd, rate }: { usd: number | null | undefined; rate: number }) {
   if (usd == null) return <span className="c-dim">—</span>
   return (
     <span className="dual-currency">

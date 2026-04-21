@@ -3,22 +3,30 @@ import { useState, useEffect, useRef, useDeferredValue } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, LayoutDashboard, Truck, Package, FileText,
          FolderOpen, BarChart3, MessageSquare, Mic, Shield, Link2,
-         Building2, CreditCard, Table2, ArrowRight, Loader2 } from 'lucide-react'
+         Building2, CreditCard, Table2, ArrowRight, Loader2,
+         Tags, Warehouse, DollarSign } from 'lucide-react'
 
-interface NavItem { id: string; label: string; sublabel: string; icon: any; href: string; category: string }
+interface NavItem { id: string; label: string; sublabel: string; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; href: string; category: string }
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Dashboard',     sublabel: 'Inicio',        icon: LayoutDashboard, href: '/',            category: 'Navegación' },
-  { id: 'cruz',        label: 'CRUZ AI',       sublabel: 'Asistente inteligente', icon: MessageSquare, href: '/cruz',       category: 'Navegación' },
+  { id: 'cruz',        label: 'Asistente PORTAL', sublabel: 'Asistente inteligente', icon: MessageSquare, href: '__cruz_chat__',       category: 'Navegación' },
   { id: 'voz',         label: 'Modo Voz',      sublabel: 'Control por voz', icon: Mic,           href: '/voz',         category: 'Navegación' },
-  { id: 'traficos',    label: 'Tráficos',      sublabel: 'Operaciones',   icon: Truck,           href: '/traficos',    category: 'Navegación' },
+  { id: 'traficos',    label: 'Embarques',      sublabel: 'Operaciones',   icon: Truck,           href: '/embarques',    category: 'Navegación' },
   { id: 'entradas',    label: 'Entradas',       sublabel: 'Remesas bodega',icon: Package,         href: '/entradas',    category: 'Navegación' },
   { id: 'pedimentos',  label: 'Pedimentos',     sublabel: 'Despachados',   icon: FileText,        href: '/pedimentos',  category: 'Navegación' },
   { id: 'expedientes', label: 'Expedientes',    sublabel: 'Documentos',    icon: FolderOpen,      href: '/expedientes', category: 'Navegación' },
   { id: 'reportes',    label: 'Reportes',       sublabel: 'Análisis',      icon: BarChart3,       href: '/reportes',    category: 'Navegación' },
   { id: 'cumplimiento', label: 'Cumplimiento', sublabel: 'Calendario compliance', icon: Shield,   href: '/cumplimiento', category: 'Navegación' },
   { id: 'cuentas',     label: 'Cuentas',        sublabel: 'eConta',        icon: CreditCard,      href: '/cuentas',     category: 'Navegación' },
-  { id: 'anexo24',     label: 'Anexo 24',       sublabel: 'Fracciones',    icon: Table2,          href: '/anexo24',     category: 'Navegación' },
+  { id: 'anexo24',     label: 'Anexo 24',       sublabel: 'Control IMMEX',  icon: Table2,          href: '/anexo24',     category: 'Navegación' },
+  { id: 'catalogo',    label: 'Catálogo',       sublabel: 'Fracciones arancelarias', icon: Tags,  href: '/catalogo',    category: 'Navegación' },
+  { id: 'documentos',  label: 'Documentos',     sublabel: 'Archivo digital', icon: FileText,      href: '/documentos',  category: 'Navegación' },
+  { id: 'bodega',      label: 'Bodega',         sublabel: 'Inventario',    icon: Warehouse,       href: '/bodega',      category: 'Navegación' },
+  { id: 'financiero',  label: 'Financiero',     sublabel: 'Contabilidad',  icon: DollarSign,      href: '/financiero',  category: 'Navegación' },
+  { id: 'facturacion', label: 'Facturación',    sublabel: 'Mis facturas',  icon: CreditCard,      href: '/facturacion', category: 'Navegación' },
+  { id: 'inteligencia', label: 'Inteligencia',  sublabel: 'Corredor Laredo', icon: BarChart3,     href: '/inteligencia', category: 'Navegación' },
+  { id: 'fracciones',  label: 'Fracciones',     sublabel: 'Búsqueda AI',   icon: Search,          href: '/fracciones',  category: 'Navegación' },
 ]
 
 export function CommandPalette() {
@@ -32,12 +40,15 @@ export function CommandPalette() {
   const router = useRouter()
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen(p => !p); setQuery(''); setSelected(0); setSearchResults([]) }
+    const toggle = () => { setOpen(p => !p); setQuery(''); setSelected(0); setSearchResults([]) }
+    const keyHandler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); toggle() }
       if (e.key === 'Escape') setOpen(false)
     }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    const eventHandler = () => toggle()
+    document.addEventListener('keydown', keyHandler)
+    document.addEventListener('cruz:open-search', eventHandler)
+    return () => { document.removeEventListener('keydown', keyHandler); document.removeEventListener('cruz:open-search', eventHandler) }
   }, [])
 
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 50) }, [open])
@@ -52,16 +63,58 @@ export function CommandPalette() {
         const res = await fetch(`/api/search?q=${encodeURIComponent(deferredQuery)}`, { signal: controller.signal })
         const data = await res.json()
         if (controller.signal.aborted) return
+
+        // /api/search returns one of two shapes:
+        //   - 7-digit pedimento → { type: 'pedimento_chain', pedimento, trafico, entradas, docs }
+        //   - general          → { type: 'search_results', results: [{ type, id, title, sub, view }] }
         const results: NavItem[] = []
-        ;(data.traficos || []).slice(0, 5).forEach((t: any) => {
-          results.push({ id: `t-${t.trafico}`, label: t.trafico, sublabel: t.descripcion_mercancia?.slice(0, 40) || t.estatus || '', icon: Truck, href: `/traficos/${encodeURIComponent(t.trafico)}`, category: 'Tráficos' })
-        })
-        ;(data.pedimentos || []).slice(0, 3).forEach((p: any) => {
-          results.push({ id: `p-${p.pedimento || p.referencia}`, label: p.pedimento || p.referencia, sublabel: p.proveedor || '', icon: FileText, href: '/pedimentos', category: 'Pedimentos' })
-        })
-        ;(data.proveedores || []).slice(0, 3).forEach((s: any) => {
-          results.push({ id: `s-${s.nombre || s.proveedor}`, label: s.nombre || s.proveedor, sublabel: s.pais || '', icon: Building2, href: '/proveedores', category: 'Proveedores' })
-        })
+
+        if (data?.type === 'pedimento_chain') {
+          if (data.trafico?.trafico_id) {
+            results.push({
+              id: `t-${data.trafico.trafico_id}`,
+              label: data.trafico.trafico_id,
+              sublabel: data.trafico.descripcion?.slice(0, 40) || data.trafico.estatus || '',
+              icon: Truck,
+              href: `/embarques/${encodeURIComponent(data.trafico.trafico_id)}`,
+              category: 'Cadena',
+            })
+          }
+          if (data.pedimento?.num) {
+            results.push({
+              id: `p-${data.pedimento.num}`,
+              label: data.pedimento.num,
+              sublabel: data.pedimento.proveedor?.slice(0, 40) || '',
+              icon: FileText,
+              href: '/pedimentos',
+              category: 'Cadena',
+            })
+          }
+        } else if (Array.isArray(data?.results)) {
+          for (const r of data.results as Array<{ type: string; id: string; title: string; sub?: string; view?: string }>) {
+            if (!r.id || !r.title) continue
+            const cat =
+              r.type === 'trafico'   ? 'Embarques' :
+              r.type === 'entrada'   ? 'Entradas' :
+              r.type === 'factura'   ? 'Pedimentos' :
+              r.type === 'producto'  ? 'Productos' :
+              r.type === 'proveedor' ? 'Proveedores' :
+              r.type === 'partida'   ? 'Partidas' :
+              'Resultados'
+            const icon =
+              r.type === 'trafico'   ? Truck :
+              r.type === 'proveedor' ? Building2 :
+              FileText
+            const href =
+              r.type === 'trafico'   ? `/embarques/${encodeURIComponent(r.id)}` :
+              r.type === 'entrada'   ? `/entradas?q=${encodeURIComponent(r.id)}` :
+              r.type === 'factura'   ? `/pedimentos?q=${encodeURIComponent(r.id)}` :
+              r.type === 'producto'  ? `/catalogo?q=${encodeURIComponent(r.id)}` :
+              r.type === 'proveedor' ? `/proveedores?q=${encodeURIComponent(r.id)}` :
+              `/${r.view ?? 'embarques'}`
+            results.push({ id: `${r.type}-${r.id}`, label: r.title, sublabel: r.sub ?? '', icon, href, category: cat })
+          }
+        }
         setSearchResults(results)
       } catch { /* aborted */ }
       setSearching(false)
@@ -87,7 +140,9 @@ export function CommandPalette() {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(p => Math.min(p+1, flatItems.length-1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setSelected(p => Math.max(p-1, 0)) }
     else if (e.key === 'Enter' && flatItems[selected]) {
-      router.push(flatItems[selected].href); setOpen(false)
+      const href = flatItems[selected].href
+      if (href === '__cruz_chat__') { document.dispatchEvent(new CustomEvent('cruz:open-chat')) } else { router.push(href) }
+      setOpen(false)
     }
   }
 
@@ -98,10 +153,10 @@ export function CommandPalette() {
   return (
     <>
       <div className="cmd-overlay" onClick={() => setOpen(false)} aria-hidden />
-      <div className="cmd-palette" role="dialog" aria-label="Buscar en CRUZ" aria-modal="true">
+      <div className="cmd-palette" role="dialog" aria-label="Buscar en PORTAL" aria-modal="true">
         <div className="cmd-search-row">
           <Search size={16} style={{ color: 'var(--n-400)', flexShrink: 0 }} />
-          <input ref={inputRef} className="cmd-input" placeholder="Buscar tráfico, pedimento, página..." value={query} onChange={e => { setQuery(e.target.value); setSelected(0) }} onKeyDown={handleKey} />
+          <input ref={inputRef} className="cmd-input" placeholder="Buscar embarque, pedimento, página..." value={query} onChange={e => { setQuery(e.target.value); setSelected(0) }} onKeyDown={handleKey} />
           {searching && <Loader2 size={14} style={{ color: 'var(--n-400)', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />}
           <kbd className="cmd-esc">ESC</kbd>
         </div>
@@ -116,7 +171,7 @@ export function CommandPalette() {
                   itemIndex++
                   const idx = itemIndex
                   return (
-                    <button key={item.id} className={`cmd-item ${idx === selected ? 'selected' : ''}`} onClick={() => { router.push(item.href); setOpen(false) }} onMouseEnter={() => setSelected(idx)} role="option" aria-selected={idx === selected}>
+                    <button key={item.id} className={`cmd-item ${idx === selected ? 'selected' : ''}`} onClick={() => { if (item.href === '__cruz_chat__') { document.dispatchEvent(new CustomEvent('cruz:open-chat')) } else { router.push(item.href) }; setOpen(false) }} onMouseEnter={() => setSelected(idx)} role="option" aria-selected={idx === selected}>
                       <item.icon size={15} style={{ color: 'var(--n-400)', flexShrink: 0 }} />
                       <span className="cmd-item-label">{item.label}</span>
                       <span className="cmd-item-sub">{item.sublabel}</span>
@@ -130,7 +185,7 @@ export function CommandPalette() {
         </div>
         <div className="cmd-footer">
           <span>↑↓ navegar</span><span>↵ abrir</span><span>esc cerrar</span>
-          <span style={{ marginLeft: 'auto', opacity: 0.6 }}>g+t tráficos · g+e entradas</span>
+          <span style={{ marginLeft: 'auto', opacity: 0.6 }}>g+t embarques · g+e entradas</span>
         </div>
       </div>
     </>

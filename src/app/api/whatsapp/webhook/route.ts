@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getErrorMessage } from '@/lib/errors'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,6 +17,7 @@ function twiml(message?: string): NextResponse {
 // POST: Twilio webhook for incoming WhatsApp messages
 export async function POST(request: NextRequest) {
   try {
+    const companyId = request.cookies.get('company_id')?.value ?? ''
     const formData = await request.formData()
     const from = formData.get('From') as string || ''
     const body = formData.get('Body') as string || ''
@@ -24,8 +25,6 @@ export async function POST(request: NextRequest) {
 
     const accountSid = process.env.TWILIO_ACCOUNT_SID
     const authToken = process.env.TWILIO_AUTH_TOKEN
-
-    console.log(`[WhatsApp Webhook] From: ${from}, Body: "${body}", NumMedia: ${numMedia}`)
 
     // Try to find the most recent trafico associated with this phone number
     const { data: convoMatch } = await supabase
@@ -104,20 +103,20 @@ export async function POST(request: NextRequest) {
             file_url: fileUrl,
             uploaded_by: `whatsapp:${sanitizedPhone}`,
             uploaded_at: new Date().toISOString(),
-            company_id: COMPANY_ID,
+            company_id: companyId,
           })
           if (docError) console.error(`[WhatsApp Webhook] DB insert error: ${docError.message}`)
 
           mediaResults.push(fileName)
-        } catch (mediaErr: any) {
-          console.error(`[WhatsApp Webhook] Media processing error: ${mediaErr.message}`)
+        } catch (mediaErr: unknown) {
+          console.error(`[WhatsApp Webhook] Media processing error: ${getErrorMessage(mediaErr)}`)
         }
       }
 
       // Log the inbound message with media
       const { error: mediaLogError } = await supabase.from('whatsapp_conversations').insert({
         trafico_id: traficoId,
-        company_id: COMPANY_ID,
+        company_id: companyId,
         supplier_phone: from,
         direction: 'inbound',
         message_body: body || `[${numMedia} archivo(s) recibido(s)]`,
@@ -126,15 +125,13 @@ export async function POST(request: NextRequest) {
       })
       if (mediaLogError) console.error('[WhatsApp Webhook] Media log error:', mediaLogError.message)
 
-      console.log(`[WhatsApp Webhook] Processed ${mediaResults.length}/${numMedia} media files for trafico ${traficoId}`)
-
       return twiml('Recibimos tu documento. Gracias!')
     }
 
     // No media -- just a text message
     const { error: textLogError } = await supabase.from('whatsapp_conversations').insert({
       trafico_id: traficoId,
-      company_id: COMPANY_ID,
+      company_id: companyId,
       supplier_phone: from,
       direction: 'inbound',
       message_body: body,
@@ -143,8 +140,8 @@ export async function POST(request: NextRequest) {
     if (textLogError) console.error('[WhatsApp Webhook] Text log error:', textLogError.message)
 
     return twiml('Recibimos tu mensaje. Si necesitas enviar documentos, adjuntalos como archivo o foto.')
-  } catch (error: any) {
-    console.error('[WhatsApp Webhook] Error:', error.message)
+  } catch (error: unknown) {
+    console.error('[WhatsApp Webhook] Error:', getErrorMessage(error))
     return twiml()
   }
 }

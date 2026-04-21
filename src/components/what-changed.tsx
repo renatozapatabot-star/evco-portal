@@ -15,11 +15,11 @@ export function WhatChanged({ newCrossings, newEntradas, statusChanges, newIncid
   }, [])
 
   const changes = [
-    newCrossings > 0 && { icon: TrendingUp, iconColor: 'var(--success)', main: `${newCrossings} tráfico${newCrossings > 1 ? 's' : ''} cruzaron`, detail: 'Despachados por aduana 240' },
+    newCrossings > 0 && { icon: TrendingUp, iconColor: 'var(--success)', main: `${newCrossings} embarque${newCrossings > 1 ? 's' : ''} cruzaron`, detail: 'Despachados por aduana 240' },
     newEntradas > 0 && { icon: Package, iconColor: 'var(--info)', main: `${newEntradas} entrada${newEntradas > 1 ? 's' : ''} nueva${newEntradas > 1 ? 's' : ''}`, detail: 'Registradas en bodega' },
-    statusChanges > 0 && { icon: FileCheck, iconColor: 'var(--gold-500)', main: `${statusChanges} cambio${statusChanges > 1 ? 's' : ''} de estado`, detail: 'Tráficos actualizados' },
+    statusChanges > 0 && { icon: FileCheck, iconColor: 'var(--gold-500)', main: `${statusChanges} cambio${statusChanges > 1 ? 's' : ''} de estado`, detail: 'Embarques actualizados' },
     newIncidencias > 0 && { icon: AlertTriangle, iconColor: 'var(--danger)', main: `${newIncidencias} incidencia${newIncidencias > 1 ? 's' : ''} nueva${newIncidencias > 1 ? 's' : ''}`, detail: 'Requiere revisión' },
-  ].filter(Boolean) as any[]
+  ].filter(Boolean) as { icon: typeof TrendingUp; iconColor: string; main: string; detail: string }[]
 
   if (changes.length === 0 || !visible) return null
 
@@ -30,7 +30,7 @@ export function WhatChanged({ newCrossings, newEntradas, statusChanges, newIncid
         <button className="wc-close" onClick={() => { setVisible(false); updateLastVisit() }} aria-label="Cerrar"><X size={14} /></button>
       </div>
       <div className="wc-items">
-        {changes.map((c: any, i: number) => (
+        {changes.map((c: { icon: typeof TrendingUp; iconColor: string; main: string; detail: string }, i: number) => (
           <div key={i} className="wc-item">
             <c.icon size={14} style={{ color: c.iconColor, flexShrink: 0 }} />
             <div className="wc-item-text">

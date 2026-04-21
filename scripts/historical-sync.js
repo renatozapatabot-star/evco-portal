@@ -218,7 +218,7 @@ async function syncAllHistoricalData() {
   console.log(`Completed: ${completedCount}/${totalCompanies} clients (${successRate}%)`)
 
   // Telegram notification
-  if (process.env.TELEGRAM_BOT_TOKEN) {
+  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_SILENT !== 'true') {
     await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

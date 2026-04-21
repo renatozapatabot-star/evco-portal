@@ -15,6 +15,7 @@ function fmtNum(n) { return Number(n || 0).toLocaleString('es-MX') }
 function fmtMXN(n) { return '$' + Number(n || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 }) + ' MXN' }
 
 async function sendTelegram(message) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(message); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',

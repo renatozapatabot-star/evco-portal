@@ -29,38 +29,38 @@ export default async function ConocimientoPage() {
     compliance: RED,
     carrier: GREEN,
     supplier: AMBER,
-    regulatory: '#3B82F6',
-    operational: '#9C9690',
+    regulatory: 'var(--info-500)',
+    operational: 'var(--portal-fg-4)',
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px' }}>Base de Conocimiento</h1>
-      <p style={{ color: '#666', fontSize: 13, margin: '0 0 24px' }}>
-        Memoria institucional de CRUZ &middot; {(knowledge || []).length} precedentes
+      <p style={{ color: '#666', fontSize: 'var(--aguila-fs-body)', margin: '0 0 24px' }}>
+        Memoria institucional de PORTAL &middot; {(knowledge || []).length} precedentes
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {(knowledge || []).map((k: any) => (
+        {(knowledge || []).map((k: { id: string; knowledge_type?: string; confidence?: number; title?: string; content?: string; tags?: string[] }) => (
           <div key={k.id} style={{
-            background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12,
-            padding: '16px 20px', borderLeft: `4px solid ${typeColors[k.knowledge_type] || '#666'}`
+            background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12,
+            padding: '16px 20px', borderLeft: `4px solid ${typeColors[k.knowledge_type || ''] || '#666'}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>{typeIcons[k.knowledge_type] || '📄'}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: typeColors[k.knowledge_type] || '#666' }}>
+                <span>{typeIcons[k.knowledge_type || ''] || '📄'}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: typeColors[k.knowledge_type || ''] || '#666' }}>
                   {k.knowledge_type}
                 </span>
               </div>
-              <span style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>{k.confidence}% confianza</span>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>{k.confidence}% confianza</span>
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{k.title}</div>
-            <div style={{ fontSize: 13, color: '#9C9690', lineHeight: 1.5 }}>{k.content}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', lineHeight: 1.5 }}>{k.content}</div>
             {k.tags && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
                 {k.tags.map((tag: string) => (
-                  <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: '#1A1A1A', border: '1px solid #2A2A2A', color: '#9C9690' }}>{tag}</span>
+                  <span key={tag} style={{ fontSize: 'var(--aguila-fs-meta)', padding: '2px 8px', borderRadius: 4, background: 'var(--text-primary)', border: '1px solid #2A2A2A', color: 'var(--text-muted)' }}>{tag}</span>
                 ))}
               </div>
             )}
@@ -68,7 +68,7 @@ export default async function ConocimientoPage() {
         ))}
         {(!knowledge || knowledge.length === 0) && (
           <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📚</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>📚</div>
             <div>Base de conocimiento vacía. Ejecuta el seed SQL para poblar.</div>
           </div>
         )}

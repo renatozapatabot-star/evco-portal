@@ -17,6 +17,7 @@ const TABLES = [
 ]
 
 async function sendTelegram(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(msg); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }) })
 }

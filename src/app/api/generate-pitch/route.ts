@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getErrorMessage } from '@/lib/errors'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!
 const supabase = createClient(
@@ -8,6 +10,9 @@ const supabase = createClient(
 )
 
 export async function POST(req: NextRequest) {
+  const session = await verifySession(req.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const { rfc } = await req.json()
   if (!rfc) return NextResponse.json({ error: 'RFC required' }, { status: 400 })
 
@@ -40,8 +45,8 @@ EMPRESA PROSPECTO:
 - Usa IMMEX: ${prospect.uses_immex ? 'Sí' : 'No'}
 - T-MEC elegible: ${prospect.likely_tmec_eligible ? 'Sí' : 'No'}
 - Ahorro T-MEC estimado: $${Math.round(prospect.tmec_savings_opportunity_mxn || 0).toLocaleString()} MXN/año
-- Proveedores principales: ${prospect.top_proveedores?.map((p: any) => p.name).join(', ') || 'N/A'}
-- Operaciones recientes: ${sightings?.slice(0, 5).map((s: any) => `${s.pedimento} ($${Math.round(s.valor_usd || 0).toLocaleString()} USD, ${s.proveedor})`).join('; ') || 'N/A'}
+- Proveedores principales: ${prospect.top_proveedores?.map((p: { name?: string }) => p.name).join(', ') || 'N/A'}
+- Operaciones recientes: ${sightings?.slice(0, 5).map((s: { pedimento?: string; valor_usd?: number; proveedor?: string }) => `${s.pedimento} ($${Math.round(s.valor_usd || 0).toLocaleString()} USD, ${s.proveedor})`).join('; ') || 'N/A'}
 
 NUESTRA EMPRESA:
 - Renato Zapata & Company
@@ -59,7 +64,7 @@ ESTRUCTURA DE LA PROPUESTA:
    - Si T-MEC elegible: ahorro estimado en aranceles
    - Si alto volumen: eficiencia operativa
    - Si IMMEX: experiencia en régimen temporal
-4. Nuestra propuesta de valor (tecnología CRUZ, servicio personalizado)
+4. Nuestra propuesta de valor (tecnología ADUANA, servicio personalizado)
 5. Datos de contacto y siguiente paso sugerido
 
 Tono: profesional pero cercano, como un experto hablando con otro empresario.
@@ -98,7 +103,7 @@ Máximo 400 palabras. Directo al punto.`
         estimated_annual_fees_mxn: prospect.estimated_annual_fees_mxn,
       },
     })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 })
   }
 }

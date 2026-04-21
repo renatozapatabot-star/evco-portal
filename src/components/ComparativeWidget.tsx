@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { GOLD } from '@/lib/design-system'
-import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { getCompanyIdCookie, getClientNameCookie } from '@/lib/client-config'
 
 /* ── Types ── */
 interface BenchmarkRow {
@@ -29,7 +29,7 @@ const METRICS: MetricConfig[] = [
   { key: 'avg_crossing_time_hours', label: 'Tiempo de Cruce',       unit: 'hrs',  lowerIsBetter: true,  max: 80 },
   { key: 'doc_completeness_pct',    label: 'Completitud Docs',      unit: '%',    lowerIsBetter: false, max: 100 },
   { key: 'compliance_score',        label: 'Score Cumplimiento',    unit: 'pts',  lowerIsBetter: false, max: 100 },
-  { key: 'active_traficos',         label: 'Tráficos Activos',      unit: '',     lowerIsBetter: false, max: 200 },
+  { key: 'active_traficos',         label: 'Embarques Activos',      unit: '',     lowerIsBetter: false, max: 200 },
 ]
 
 const GRAY   = '#555'
@@ -37,14 +37,14 @@ const BG     = '#1a1a2e'
 const CARD   = '#16213e'
 const TEXT   = '#e0e0e0'
 const MUTED  = '#888'
-const GREEN  = '#4ade80'
-const RED    = '#f87171'
+const GREEN  = 'var(--portal-status-green-fg)'
+const RED    = 'var(--portal-status-red-fg)'
 
 /* ── Insight Generator ── */
-function generateInsights(evco: Record<string, BenchmarkRow>, fleet: Record<string, BenchmarkRow>): string[] {
+function generateInsights(client: Record<string, BenchmarkRow>, fleet: Record<string, BenchmarkRow>): string[] {
   const tips: string[] = []
 
-  const crossing   = evco['avg_crossing_time_hours']
+  const crossing   = client['avg_crossing_time_hours']
   const fleetCross = fleet['avg_crossing_time_hours']
   if (crossing && fleetCross?.fleet_average) {
     const diff = ((fleetCross.fleet_average - crossing.metric_value) / fleetCross.fleet_average * 100).toFixed(0)
@@ -55,13 +55,13 @@ function generateInsights(evco: Record<string, BenchmarkRow>, fleet: Record<stri
     }
   }
 
-  const docs      = evco['doc_completeness_pct']
+  const docs      = client['doc_completeness_pct']
   const fleetDocs = fleet['doc_completeness_pct']
   if (docs && fleetDocs?.top_quartile && docs.metric_value < fleetDocs.top_quartile) {
-    tips.push('Subir completitud documental al top 25% reduciría demoras en aduana')
+    tips.push('Subir completitud de documentos al top 25% reduciría demoras en aduana')
   }
 
-  const compliance      = evco['compliance_score']
+  const compliance      = client['compliance_score']
   const fleetCompliance = fleet['compliance_score']
   if (compliance && fleetCompliance?.fleet_average) {
     if (compliance.metric_value > fleetCompliance.fleet_average) {
@@ -106,8 +106,8 @@ function MetricBar({ config, clientRow, fleetRow }: {
     <div style={{ marginBottom: 18 }}>
       {/* Label row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: TEXT, fontSize: 13, fontWeight: 500 }}>{config.label}</span>
-        <span style={{ color: deltaColor, fontSize: 12, fontWeight: 600 }}>{deltaText}</span>
+        <span style={{ color: TEXT, fontSize: 'var(--aguila-fs-body)', fontWeight: 500 }}>{config.label}</span>
+        <span style={{ color: deltaColor, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600 }}>{deltaText}</span>
       </div>
 
       {/* Client bar */}
@@ -121,7 +121,7 @@ function MetricBar({ config, clientRow, fleetRow }: {
         }} />
         <span style={{
           position: 'absolute', right: 6, top: 1,
-          fontSize: 11, color: TEXT, fontWeight: 600,
+          fontSize: 'var(--aguila-fs-meta)', color: TEXT, fontWeight: 600,
         }}>
           {clientVal.toFixed(config.unit === '%' ? 1 : 0)} {config.unit}
         </span>
@@ -174,8 +174,9 @@ export default function ComparativeWidget() {
   useEffect(() => {
     async function load() {
       try {
+        const companyId = getCompanyIdCookie()
         const [clientRes, fleetRes] = await Promise.all([
-          fetch(`/api/data?table=client_benchmarks&company_id=${COMPANY_ID}`),
+          fetch(`/api/data?table=client_benchmarks&company_id=${companyId}`),
           fetch('/api/data?table=client_benchmarks&company_id=fleet'),
         ])
         const client  = await clientRes.json()
@@ -209,18 +210,18 @@ export default function ComparativeWidget() {
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>&#x1F4CA;</span>
+        <span style={{ fontSize: 'var(--aguila-fs-headline)' }}>&#x1F4CA;</span>
         <div>
           <h3 style={{ margin: 0, color: GOLD, fontSize: 15, fontWeight: 700, letterSpacing: 0.5 }}>
             ¿CÓMO TE COMPARAS?
           </h3>
-          <span style={{ fontSize: 11, color: MUTED }}>{CLIENT_NAME.split(' ')[0]} vs. Portafolio Completo</span>
+          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED }}>{getClientNameCookie().split(' ')[0]} vs. Portafolio Completo</span>
         </div>
       </div>
 
       {/* Loading state */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: 24, color: MUTED, fontSize: 13 }}>
+        <div style={{ textAlign: 'center', padding: 24, color: MUTED, fontSize: 'var(--aguila-fs-body)' }}>
           Cargando benchmarks...
         </div>
       )}
@@ -244,12 +245,12 @@ export default function ComparativeWidget() {
           borderRadius: 8,
           borderLeft: `3px solid ${GOLD}`,
         }}>
-          <div style={{ fontSize: 11, color: GOLD, fontWeight: 600, marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-meta)', color: GOLD, fontWeight: 600, marginBottom: 6 }}>
             INSIGHTS
           </div>
           {insights.map((tip, i) => (
             <div key={i} style={{
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               color: TEXT,
               marginBottom: i < insights.length - 1 ? 6 : 0,
               lineHeight: 1.4,
@@ -263,9 +264,9 @@ export default function ComparativeWidget() {
       {/* Legend */}
       <div style={{
         display: 'flex', gap: 16, marginTop: 14,
-        fontSize: 10, color: MUTED,
+        fontSize: 'var(--aguila-fs-label)', color: MUTED,
       }}>
-        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />{CLIENT_NAME.split(' ')[0]}</span>
+        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GOLD, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />{getClientNameCookie().split(' ')[0]}</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: GRAY, borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />Flota</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 0, borderTop: `2px dashed ${MUTED}`, marginRight: 4, verticalAlign: 'middle' }} />Top 25%</span>
       </div>

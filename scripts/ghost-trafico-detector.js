@@ -1,208 +1,199 @@
 #!/usr/bin/env node
 /**
- * CRUZ Ghost Tráfico Detector
- * Runs nightly via cron
+ * CRUZ Ghost Tráfico Detector — cross-client fraud detection
  *
- * Purpose:
- *   Finds suppliers with regular import patterns who haven't shipped
- *   in 2x their average interval. These "ghosts" signal potential
- *   supply chain disruptions before they become urgent.
+ * 4 integrity checks across ALL clients:
+ * 1. Duplicate invoices (same supplier+value+date, different client)
+ * 2. Pedimento number reuse (NEVER valid — critical alert)
+ * 3. Value manipulation (same product, >30% value difference)
+ * 4. Carrier double-booking (same carrier, same time, same bridge)
  *
- * Logic:
- *   1. Groups traficos by supplier, calculates avg interval
- *   2. Flags suppliers where days_since_last > 2 * avg_interval
- *   3. Inserts predictions to ghost_traficos table
- *   4. Telegrams if > 5 ghosts detected
- *
- * On failure: red Telegram alert with error
- *
- * — CRUZ 🦀
+ * Cron: 30 2 * * * (daily after nightly sync)
  */
 
-const { createClient } = require('@supabase/supabase-js')
 const path = require('path')
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
+const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+const DRY_RUN = process.argv.includes('--dry-run')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
-const SCRIPT_NAME = 'ghost-trafico-detector.js'
-const COMPANY_ID = 'evco' // Scripts are exempt from hardcode rule per CLAUDE.md
-const MIN_SHIPMENTS = 3   // Minimum historical shipments to establish a pattern
-const GHOST_MULTIPLIER = 2 // Flag if days_since_last > multiplier * avg_interval
 
-function nowCST() {
-  return new Date().toLocaleString('es-MX', {
-    timeZone: 'America/Chicago',
-    day: '2-digit', month: 'short',
-    hour: '2-digit', minute: '2-digit'
-  })
+async function tg(msg) {
+  if (DRY_RUN || process.env.TELEGRAM_SILENT === 'true' || !TELEGRAM_TOKEN) {
+    console.log('[TG]', msg.replace(/<[^>]+>/g, ''))
+    return
+  }
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
+  }).catch(() => {})
 }
 
-async function sendTelegram(message) {
-  if (process.env.TELEGRAM_SILENT === 'true') return
-  if (!TELEGRAM_TOKEN) { console.log('[TG]', message.replace(/<[^>]+>/g, '')); return }
-  try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: message, parse_mode: 'HTML' })
-    })
-  } catch (e) {
-    console.error('Telegram send error:', e.message)
+async function logDetection(checkType, severity, description, traficos, companies) {
+  console.log(`  ${severity === 'critical' ? '🔴' : severity === 'high' ? '🟠' : '🟡'} [${checkType}] ${description}`)
+  if (!DRY_RUN) {
+    await supabase.from('ghost_detections').insert({
+      check_type: checkType,
+      severity,
+      description,
+      traficos: JSON.stringify(traficos),
+      companies: JSON.stringify(companies),
+    }).catch(() => {})
   }
 }
 
-function daysBetween(dateA, dateB) {
-  const msPerDay = 86400000
-  return Math.abs(new Date(dateA).getTime() - new Date(dateB).getTime()) / msPerDay
-}
+async function main() {
+  console.log(`🔍 Ghost Tráfico Detector — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
+  const alerts = []
 
-function daysSince(date) {
-  const msPerDay = 86400000
-  return (Date.now() - new Date(date).getTime()) / msPerDay
-}
+  // Load recent tráficos across ALL clients
+  const allTraficos = await fetchAll(supabase.from('traficos')
+    .select('trafico, company_id, proveedores, importe_total, pedimento, fecha_llegada, transportista_mexicano, descripcion_mercancia, fecha_cruce')
+    .gte('fecha_llegada', '2024-01-01'))
 
-async function run() {
-  const timestamp = nowCST()
-  console.log(`👻 CRUZ Ghost Tráfico Detector — ${timestamp}`)
+  const traficos = allTraficos || []
+  console.log(`  ${traficos.length} tráficos loaded for analysis`)
 
-  // Step 1: Fetch all traficos with supplier and arrival date
-  const { data: traficos, error: fetchErr } = await supabase
-    .from('traficos')
-    .select('id, proveedor, fecha_llegada')
-    .eq('company_id', COMPANY_ID)
-    .not('proveedor', 'is', null)
-    .not('fecha_llegada', 'is', null)
-    .order('fecha_llegada', { ascending: true })
-
-  if (fetchErr) throw new Error(`Failed to query traficos: ${fetchErr.message}`)
-
-  if (!traficos || traficos.length === 0) {
-    console.log('  No traficos with supplier + arrival date found. Skipping.')
-    await supabase.from('heartbeat_log').insert({
-      all_ok: true,
-      details: { script: SCRIPT_NAME, message: 'No qualifying traficos', timestamp }
-    })
-    process.exit(0)
-  }
-
-  // Step 2: Group by supplier
-  const supplierMap = {}
+  // ── CHECK 1: Duplicate Invoices ──
+  console.log('\n── CHECK 1: Duplicate Invoices ──')
+  const invoiceKeys = {}
   for (const t of traficos) {
-    const supplier = t.proveedor.trim()
-    if (!supplierMap[supplier]) supplierMap[supplier] = []
-    supplierMap[supplier].push(t.fecha_llegada)
+    const supplier = (t.proveedores || '').split(',')[0]?.trim()
+    const value = Number(t.importe_total) || 0
+    const date = (t.fecha_llegada || '').split('T')[0]
+    if (!supplier || value === 0 || !date) continue
+
+    const key = `${supplier.substring(0, 20).toLowerCase()}|${value}|${date}`
+    if (!invoiceKeys[key]) invoiceKeys[key] = []
+    invoiceKeys[key].push(t)
   }
 
-  console.log(`  Suppliers found: ${Object.keys(supplierMap).length}`)
-
-  // Step 3: For each supplier with >= MIN_SHIPMENTS, calculate avg interval
-  const ghosts = []
-  const now = new Date()
-
-  for (const [supplier, dates] of Object.entries(supplierMap)) {
-    if (dates.length < MIN_SHIPMENTS) continue
-
-    // Dates are already sorted ascending from the query
-    const intervals = []
-    for (let i = 1; i < dates.length; i++) {
-      intervals.push(daysBetween(dates[i - 1], dates[i]))
-    }
-
-    const avgInterval = intervals.reduce((sum, d) => sum + d, 0) / intervals.length
-    const lastShipmentDate = dates[dates.length - 1]
-    const daysSinceLast = daysSince(lastShipmentDate)
-
-    // Flag as ghost if overdue by 2x average interval
-    if (daysSinceLast > GHOST_MULTIPLIER * avgInterval && avgInterval > 0) {
-      ghosts.push({
-        supplier_name: supplier,
-        avg_interval_days: Math.round(avgInterval * 10) / 10,
-        days_since_last: Math.round(daysSinceLast * 10) / 10,
-        last_shipment_date: lastShipmentDate,
-        detected_at: now.toISOString(),
-        status: 'pending'
-      })
+  for (const [key, matches] of Object.entries(invoiceKeys)) {
+    const uniqueCompanies = new Set(matches.map(m => m.company_id))
+    if (uniqueCompanies.size >= 2) {
+      const [supplier, value, date] = key.split('|')
+      const desc = `${supplier} facturó $${Number(value).toLocaleString()} el ${date} a ${uniqueCompanies.size} clientes distintos`
+      await logDetection('duplicate_invoice', 'high', desc,
+        matches.map(m => m.trafico),
+        [...uniqueCompanies]
+      )
+      alerts.push({ severity: 'high', desc })
     }
   }
 
-  console.log(`  Ghost suppliers detected: ${ghosts.length}`)
+  // ── CHECK 2: Pedimento Number Reuse ──
+  console.log('\n── CHECK 2: Pedimento Reuse ──')
+  const pedimentoMap = {}
+  for (const t of traficos) {
+    if (!t.pedimento) continue
+    if (!pedimentoMap[t.pedimento]) pedimentoMap[t.pedimento] = []
+    pedimentoMap[t.pedimento].push(t)
+  }
 
-  // Step 4: Insert ghosts into ghost_traficos table
-  if (ghosts.length > 0) {
-    const { error: insertErr } = await supabase
-      .from('ghost_traficos')
-      .insert(ghosts)
+  for (const [ped, matches] of Object.entries(pedimentoMap)) {
+    const uniqueCompanies = new Set(matches.map(m => m.company_id))
+    if (uniqueCompanies.size >= 2) {
+      const desc = `Pedimento ${ped} usado por ${uniqueCompanies.size} clientes distintos — NUNCA debe ocurrir`
+      await logDetection('pedimento_reuse', 'critical', desc,
+        matches.map(m => m.trafico),
+        [...uniqueCompanies]
+      )
+      alerts.push({ severity: 'critical', desc })
 
-    if (insertErr) {
-      console.warn('  Failed to insert ghosts:', insertErr.message)
-    } else {
-      console.log(`  ✅ ${ghosts.length} ghost(s) inserted into ghost_traficos`)
-    }
-
-    // Log each ghost to console
-    for (const g of ghosts) {
-      console.log(`    👻 ${g.supplier_name}: ${g.days_since_last}d since last (avg ${g.avg_interval_days}d)`)
+      await tg(
+        `🚨🚨🚨 <b>PEDIMENTO DUPLICADO</b>\n\n` +
+        `Pedimento ${ped} asignado a ${uniqueCompanies.size} clientes:\n` +
+        matches.map(m => `  • ${m.trafico} (${m.company_id})`).join('\n') + `\n\n` +
+        `Acción inmediata requerida.\n— CRUZ 🔍`
+      )
     }
   }
 
-  // Step 5: Telegram alert if > 5 ghosts
-  if (ghosts.length > 5) {
-    const topGhosts = ghosts
-      .sort((a, b) => b.days_since_last - a.days_since_last)
-      .slice(0, 5)
+  // ── CHECK 3: Value Manipulation ──
+  console.log('\n── CHECK 3: Value Manipulation ──')
+  const supplierProductValues = {}
+  for (const t of traficos) {
+    const supplier = (t.proveedores || '').split(',')[0]?.trim()
+    const desc = (t.descripcion_mercancia || '').substring(0, 30).toLowerCase().trim()
+    const value = Number(t.importe_total) || 0
+    if (!supplier || !desc || value === 0) continue
 
-    const ghostLines = topGhosts.map(g =>
-      `• <b>${g.supplier_name}</b>: ${g.days_since_last}d (avg ${g.avg_interval_days}d)`
+    const key = `${supplier.substring(0, 20).toLowerCase()}|${desc}`
+    if (!supplierProductValues[key]) supplierProductValues[key] = []
+    supplierProductValues[key].push({ trafico: t.trafico, company_id: t.company_id, value })
+  }
+
+  for (const [key, entries] of Object.entries(supplierProductValues)) {
+    if (entries.length < 3) continue
+    const values = entries.map(e => e.value)
+    const avg = values.reduce((a, b) => a + b, 0) / values.length
+
+    for (const e of entries) {
+      const deviation = Math.abs(e.value - avg) / avg
+      if (deviation > 0.30) {
+        const [supplier, product] = key.split('|')
+        const direction = e.value < avg ? 'bajo' : 'alto'
+        const desc = `${supplier}/${product}: ${e.trafico} (${e.company_id}) declara $${e.value.toLocaleString()} — ${Math.round(deviation * 100)}% ${direction} vs promedio $${Math.round(avg).toLocaleString()}`
+        await logDetection('value_manipulation', 'medium', desc,
+          [e.trafico],
+          [e.company_id]
+        )
+        alerts.push({ severity: 'medium', desc })
+      }
+    }
+  }
+
+  // ── CHECK 4: Carrier Double-Booking ──
+  console.log('\n── CHECK 4: Carrier Double-Booking ──')
+  const carrierCrossings = {}
+  for (const t of traficos) {
+    if (!t.transportista_mexicano || !t.fecha_cruce) continue
+    const carrier = t.transportista_mexicano.trim().toLowerCase()
+    const crossDate = t.fecha_cruce.split('T')[0]
+    const key = `${carrier}|${crossDate}`
+    if (!carrierCrossings[key]) carrierCrossings[key] = []
+    carrierCrossings[key].push(t)
+  }
+
+  for (const [key, matches] of Object.entries(carrierCrossings)) {
+    if (matches.length >= 3) {
+      const [carrier, date] = key.split('|')
+      const uniqueCompanies = new Set(matches.map(m => m.company_id))
+      const desc = `${carrier} cruzó ${matches.length} embarques el ${date} — verificar capacidad`
+      await logDetection('carrier_double_booking', 'low', desc,
+        matches.map(m => m.trafico),
+        [...uniqueCompanies]
+      )
+      alerts.push({ severity: 'low', desc })
+    }
+  }
+
+  // ── Summary ──
+  const critical = alerts.filter(a => a.severity === 'critical').length
+  const high = alerts.filter(a => a.severity === 'high').length
+  const medium = alerts.filter(a => a.severity === 'medium').length
+  const low = alerts.filter(a => a.severity === 'low').length
+
+  if (alerts.length > 0 && (critical > 0 || high > 0)) {
+    await tg(
+      `🔍 <b>Ghost Detector — Alertas</b>\n\n` +
+      (critical > 0 ? `🔴 ${critical} crítico(s)\n` : '') +
+      (high > 0 ? `🟠 ${high} alto(s)\n` : '') +
+      (medium > 0 ? `🟡 ${medium} medio(s)\n` : '') +
+      (low > 0 ? `⚪ ${low} bajo(s)\n` : '') +
+      `\n${alerts.length} detecciones totales\n— CRUZ 🔍`
     )
-
-    const msg = [
-      `👻 <b>GHOST TRÁFICO ALERT — ${ghosts.length} SUPPLIERS</b>`,
-      `${timestamp}`,
-      `━━━━━━━━━━━━━━━━━━━━`,
-      `${ghosts.length} suppliers overdue by 2x their avg interval.`,
-      ``,
-      `Top overdue:`,
-      ...ghostLines,
-      `━━━━━━━━━━━━━━━━━━━━`,
-      `— CRUZ 🦀`
-    ].join('\n')
-    await sendTelegram(msg)
-    console.log('  ⚠️  Ghost alert sent (> 5 detected)')
-  } else if (ghosts.length > 0) {
-    console.log(`  ℹ️  ${ghosts.length} ghost(s) detected — below alert threshold (> 5)`)
-  } else {
-    console.log('  ✅ No ghost suppliers detected')
   }
 
-  // Step 6: Log run to heartbeat_log
-  await supabase.from('heartbeat_log').insert({
-    all_ok: true,
-    details: {
-      script: SCRIPT_NAME,
-      ghosts_detected: ghosts.length,
-      suppliers_analyzed: Object.keys(supplierMap).length,
-      timestamp
-    }
-  })
-
-  console.log(`✅ ${SCRIPT_NAME} complete`)
-  process.exit(0)
+  console.log(`\n✅ ${alerts.length} detections: ${critical} critical · ${high} high · ${medium} medium · ${low} low`)
 }
 
-run().catch(async (err) => {
-  console.error(`Fatal ${SCRIPT_NAME} error:`, err)
-  try {
-    await sendTelegram(`🔴 <b>${SCRIPT_NAME} FATAL</b>\n${err.message}\n— CRUZ 🦀`)
-    await supabase.from('heartbeat_log').insert({
-      all_ok: false,
-      details: { script: SCRIPT_NAME, fatal: err.message }
-    })
-  } catch (_) { /* best effort */ }
-  process.exit(1)
-})
+main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })

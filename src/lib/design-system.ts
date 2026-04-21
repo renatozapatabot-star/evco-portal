@@ -1,23 +1,135 @@
-// design-system — CRUZ Design System v5.0 color tokens
-// Import these constants instead of hardcoding hex values.
-// For CSS/Tailwind contexts, use var(--gold-500) etc. instead.
+// design-system — CRUZ dual-accent tokens (April 2026 rebrand)
+// Platform lineage: CRUZ → ADUANA → CRUZ → ZAPATA. Silver remains the
+// chrome for data/information surfaces. Gold returns as the identity accent
+// for brand moments (mark, wordmark, primary CTAs, active nav indicator).
+// Gold for identity · silver for data. Never decorative color beyond these.
 // This file is excluded from the gsd-verify color check by path name.
 
-export const GOLD = '#C9A84C'
-export const GOLD_HOVER = '#A87A22'
-export const GOLD_GRADIENT = 'linear-gradient(135deg, #C9A84C, #A87A22)'
-export const GOLD_TEXT = '#8B6914'
+// ── CRUZ brand palette (April 2026 — primary tokens) ──
+export const BG_DEEP = '#0A0A0C'
+export const ACCENT_SILVER = '#C0C5CE'
+export const ACCENT_SILVER_BRIGHT = '#E8EAED'
+export const ACCENT_SILVER_DIM = '#7A7E86'
+export const SILVER_GRADIENT = 'linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%)'
+export const GLOW_SILVER = 'rgba(192,197,206,0.18)'
+export const GLOW_SILVER_SUBTLE = 'rgba(192,197,206,0.08)'
+export const TOPO_PATTERN_URL = '/brand/topo-hairline.svg'
 
-export const GREEN = '#16A34A'
-export const AMBER = '#D97706'
-export const RED = '#DC2626'
-export const Z_RED = '#CC1B2F'
+// ── Semantic status (kept for semantic signals — NOT brand accent) ──
+export const GREEN = '#22C55E'          // Success / live / healthy
+export const AMBER = '#FBBF24'          // Warning / alerts
+export const RED = '#EF4444'            // Danger / risk
+export const Z_RED = '#CC1B2F'          // Brand mark only
 
-export const BG_PRIMARY = '#FAFAF8'
-export const BG_DARK = '#0D0D0C'
-export const BG_CARD = '#FFFFFF'
-export const BORDER = '#E8E5E0'
+// ── CRUZ gold palette (April 2026 rebrand — identity surfaces) ──
+// Gold returns for brand moments only: mark, wordmark, primary CTAs,
+// active nav indicator. Silver still owns data/chrome (KPIs, borders, text).
+export const ZAPATA_GOLD_BASE = '#C9A74A'
+export const ZAPATA_GOLD_BRIGHT = '#F4D47A'
+export const ZAPATA_GOLD_DIM = '#8F7628'
+export const ZAPATA_GOLD_GRADIENT =
+  'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)'
+export const ZAPATA_GOLD_GLOW = 'rgba(201,167,74,0.28)'
+export const ZAPATA_GOLD_GLOW_SUBTLE = 'rgba(201,167,74,0.12)'
 
-export const TEXT_PRIMARY = '#1A1A1A'
-export const TEXT_SECONDARY = '#6B6B6B'
-export const TEXT_MUTED = '#999999'
+// ── GOLD tokens — restored to real gold for CRUZ brand surfaces ──
+// Prior (be416fc) aliased GOLD → silver when the brand went monochrome.
+// CRUZ rebrand restores gold for identity moments; consumers importing
+// GOLD* now render gold again — exactly what most of them historically meant.
+export const GOLD = ZAPATA_GOLD_BRIGHT
+export const GOLD_HOVER = ZAPATA_GOLD_BASE
+export const GOLD_GRADIENT = ZAPATA_GOLD_GRADIENT
+export const GOLD_TEXT = ZAPATA_GOLD_BRIGHT
+export const GLOW_GOLD = ZAPATA_GOLD_GLOW
+export const GLOW_GOLD_SUBTLE = ZAPATA_GOLD_GLOW_SUBTLE
+
+// ── Glass backgrounds ──
+export const BG_GRADIENT_START = '#030508'
+export const BG_GRADIENT_END = '#0D1525'
+export const BG_PRIMARY = '#05070B'
+export const BG_CARD = 'rgba(255,255,255,0.04)'
+
+/**
+ * Unified cockpit canvas — radial silver wash at 50% 20% over deep linear.
+ * Single source of truth: CockpitShell, /operador/inicio, /admin/eagle must
+ * all render on this exact backdrop. Do not inline alternative gradients.
+ */
+export const COCKPIT_CANVAS =
+  'radial-gradient(ellipse at 50% 20%, rgba(192,197,206,0.08) 0%, transparent 50%),' +
+  ` linear-gradient(180deg, ${BG_GRADIENT_START} 0%, ${BG_GRADIENT_END} 100%)`
+export const BG_ELEVATED = 'rgba(255,255,255,0.04)'
+export const BG_SURFACE = 'rgba(255,255,255,0.03)'
+export const BORDER = 'rgba(255,255,255,0.08)'
+
+// ── Glass system ──
+// April 2026 theme pass: backdrop saturate(1.2) added as a whisper of
+// chroma boost on bleed-through — the single trick that separates a
+// translucent div from a real glass panel. visionOS + Vercel dashboard
+// lean on this. GLASS_BLUR kept for back-compat (consumers still pass
+// it directly into blur(...)); new code should use GLASS_FILTER which
+// composes blur + saturate together.
+export const GLASS_BLUR = '20px'
+export const GLASS_SATURATE = '1.2'
+export const GLASS_FILTER = `blur(${GLASS_BLUR}) saturate(${GLASS_SATURATE})`
+// Inset edge-lighting bumped from 0.05 → 0.07. Reads as "top-lit brushed
+// metal" rather than "flat translucent rectangle." 2026 theme canonical.
+export const GLASS_SHADOW = '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)'
+
+// ── Motion tokens (April 2026 — canonical cadence) ──
+// Single brand ease used by every hover, focus fade, and card reveal so
+// the platform breathes on one curve. Durations cover the three
+// interaction tiers: fast (hover/tap), base (panel open), slow (page).
+export const EASE_BRAND = 'cubic-bezier(0.22, 1, 0.36, 1)'
+export const DUR_FAST = '150ms'
+export const DUR_BASE = '250ms'
+export const DUR_SLOW = '400ms'
+
+// ── V1 Glass tiers (April 2026) ──
+// Login is the visual North Star. Cockpit glass now matches login's weightier
+// chemistry: opaque-black bg with a visible silver border and a silver halo
+// shadow. Three tiers let the composition breathe without sacrificing depth.
+//   · hero       — rgba(0,0,0,0.4)   — KPI tiles, primary nav cards, asistente
+//   · secondary  — rgba(0,0,0,0.25)  — section cards, info panels
+//   · tertiary   — rgba(0,0,0,0.12)  — chips, inline containers, drawer interiors
+export const GLASS_HERO = 'rgba(0,0,0,0.4)'
+export const GLASS_SECONDARY = 'rgba(0,0,0,0.25)'
+export const GLASS_TERTIARY = 'rgba(0,0,0,0.12)'
+
+export const BORDER_SILVER = 'rgba(192,197,206,0.18)'
+export const BORDER_SILVER_HOVER = 'rgba(192,197,206,0.4)'
+
+/** Login-parity shadow: weighty drop + silver halo + top-lit edge.
+ *  April 2026 theme pass adds the inset 0 1px 0 rgba(255,255,255,0.07)
+ *  so hero cards catch ambient light on the top edge like brushed
+ *  metal. The login screen was already doing this; cockpit now matches. */
+export const SHADOW_HERO =
+  '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08), inset 0 1px 0 rgba(255,255,255,0.07)'
+/** Hover lift: brighter halo, deeper drop, brighter top edge.
+ *  Drop blur 40px → 48px + alpha 0.7 → 0.75 so lifted cards land
+ *  with visible weight. Inset 0.14 → 0.11 (corrected: always dimmer
+ *  than base so the edge catch stays subtle, not competing with the
+ *  halo glow). */
+export const SHADOW_HERO_HOVER =
+  '0 14px 48px rgba(0,0,0,0.75), 0 0 32px rgba(192,197,206,0.16), inset 0 1px 0 rgba(255,255,255,0.11)'
+
+// ── Atmospheric layers (mirror login's topo + halo + aura) ──
+export const ATMOSPHERE_HALO =
+  'radial-gradient(circle, rgba(192,197,206,0.10) 0%, transparent 70%)'
+export const ATMOSPHERE_AURA =
+  'radial-gradient(circle, rgba(192,197,206,0.08) 0%, transparent 65%)'
+
+// ── Typography tracking (match login's severity) ──
+export const LS_TAGLINE = '0.3em'       // one-word ceremonial captions
+export const LS_DRAMATIC = '0.15em'     // section labels, CÓDIGO DE ACCESO scale
+export const LS_FOOTER = '0.12em'       // identity footer monospace
+
+// ── Text ──
+export const TEXT_PRIMARY = '#E6EDF3'
+export const TEXT_SECONDARY = '#94a3b8'
+export const TEXT_MUTED = '#64748b'
+
+// ── CRUZ tokens (Block 2 · Unified Search, retained) ──
+// TEXT_TERTIARY is a semantic alias of TEXT_SECONDARY.
+export const ZAPATA_BG_ELEVATED = '#1c1c22'
+export const BORDER_HAIRLINE = 'rgba(255,255,255,0.06)'
+export const TEXT_TERTIARY = '#94a3b8'

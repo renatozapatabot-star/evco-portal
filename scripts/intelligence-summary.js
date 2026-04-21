@@ -28,6 +28,7 @@ async function summary() {
   ].filter(Boolean).join('\n')
 
   const token = process.env.TELEGRAM_BOT_TOKEN
+  if (process.env.TELEGRAM_SILENT === 'true') return
   const chatId = '-5085543275'
   await fetch(
     'https://api.telegram.org/bot' + token + '/sendMessage',

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-import { COMPANY_ID } from '@/lib/client-config'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,23 +9,42 @@ const supabase = createClient(
 )
 
 // GET — list subscriptions
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const getSessionToken = req.cookies.get('portal_session')?.value || ''
+  const getSession = await verifySession(getSessionToken)
+  if (!getSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (getSession.role !== 'broker' && getSession.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+  const companyId = getSession.companyId
+
   const { data } = await supabase.from('webhook_subscriptions')
     .select('id, company_id, url, events, active, created_at')
-    .eq('active', true).order('created_at', { ascending: false })
+    .eq('active', true).eq('company_id', companyId).order('created_at', { ascending: false })
   return NextResponse.json({ subscriptions: data || [] })
 }
 
 // POST — subscribe or deliver
 export async function POST(req: NextRequest) {
+  const postSessionToken = req.cookies.get('portal_session')?.value || ''
+  const postSession = await verifySession(postSessionToken)
+  if (!postSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (postSession.role !== 'broker' && postSession.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+  const companyId = postSession.companyId
   const body = await req.json()
 
   // Subscribe
   if (body.action === 'subscribe') {
-    const { url, events, secret, company_id } = body
+    const { url, events, secret } = body
     if (!url || !events?.length) return NextResponse.json({ error: 'url and events required' }, { status: 400 })
     const { data, error } = await supabase.from('webhook_subscriptions')
-      .insert({ company_id: company_id || COMPANY_ID, url, events, secret: secret || crypto.randomUUID() })
+      .insert({ company_id: companyId, url, events, secret: secret || crypto.randomUUID() })
       .select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ subscription: data })
@@ -70,8 +89,18 @@ export async function POST(req: NextRequest) {
 
 // DELETE — unsubscribe
 export async function DELETE(req: NextRequest) {
+  const delSessionToken = req.cookies.get('portal_session')?.value || ''
+  const delSession = await verifySession(delSessionToken)
+  if (!delSession) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (delSession.role !== 'broker' && delSession.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+  const companyId = delSession.companyId
+
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
-  await supabase.from('webhook_subscriptions').update({ active: false }).eq('id', id)
+  await supabase.from('webhook_subscriptions').update({ active: false }).eq('id', id).eq('company_id', companyId)
   return NextResponse.json({ ok: true })
 }

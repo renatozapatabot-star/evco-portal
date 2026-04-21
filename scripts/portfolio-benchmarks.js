@@ -5,6 +5,7 @@
 
 require('dotenv').config({ path: '.env.local' })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -15,11 +16,10 @@ async function calculateBenchmarks() {
   console.log('📊 Calculating portfolio benchmarks...')
 
   // Fetch all traficos grouped by company
-  const { data: traficos } = await supabase
+  const traficos = await fetchAll(supabase
     .from('traficos')
     .select('cve_cliente, estatus, fecha_llegada, importe_total, pedimento')
-    .order('fecha_llegada', { ascending: false })
-    .limit(5000)
+    .order('fecha_llegada', { ascending: false }))
 
   if (!traficos?.length) {
     console.log('No traficos found')

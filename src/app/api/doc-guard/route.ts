@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
+import { sanitizeFilter } from '@/lib/sanitize'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
@@ -14,13 +17,17 @@ const REQUIRED_DOCS = [
 ]
 
 export async function GET(req: NextRequest) {
+  const session = await verifySession(req.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const trafico = req.nextUrl.searchParams.get('trafico')
   if (!trafico) return NextResponse.json({ error: 'Missing trafico param' }, { status: 400 })
+  const safe = sanitizeFilter(trafico)
 
   const [docsRes, traficoRes, dupsRes] = await Promise.all([
-    supabase.from('documents').select('document_type, doc_type').or(`trafico_id.eq.${trafico},metadata->>trafico.eq.${trafico}`),
-    supabase.from('traficos').select('mve_folio, pedimento').eq('trafico', trafico).single(),
-    supabase.from('duplicates_detected').select('*').or(`trafico_id_1.eq.${trafico},trafico_id_2.eq.${trafico}`).eq('status', 'pending'),
+    supabase.from('documents').select('document_type, doc_type').or(`trafico_id.eq.${safe},metadata->>trafico.eq.${safe}`),
+    supabase.from('traficos').select('mve_folio, pedimento').eq('trafico', safe).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
+    supabase.from('duplicates_detected').select('*').or(`trafico_id_1.eq.${safe},trafico_id_2.eq.${safe}`).eq('status', 'pending'),
   ])
 
   const docs = docsRes.data || []

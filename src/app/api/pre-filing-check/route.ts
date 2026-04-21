@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
+import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,7 +36,7 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
 
   // 2. MVE folio
   const { data: trafico } = await supabase
-    .from('traficos').select('*').eq('trafico', traficoId).single()
+    .from('traficos').select('*').eq('trafico', traficoId).gte('fecha_llegada', PORTAL_DATE_FROM).single()
   const nowLaredo = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
   const mveMandatory = nowLaredo >= new Date('2026-03-31T00:00:00-05:00')
   checks.push({
@@ -124,10 +125,14 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const { trafico_id, company_id } = await request.json()
   if (!trafico_id) {
     return NextResponse.json({ error: 'trafico_id required' }, { status: 400 })
   }
-  const result = await runPreFilingCheck(trafico_id, company_id || COMPANY_ID)
+  const result = await runPreFilingCheck(trafico_id, company_id || companyId)
   return NextResponse.json(result)
 }

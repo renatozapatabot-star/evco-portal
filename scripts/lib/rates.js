@@ -64,12 +64,16 @@ async function getExchangeRate() {
 async function getIVARate() {
   const { data, error } = await supabase
     .from('system_config')
-    .select('value')
+    .select('value, valid_to')
     .eq('key', 'iva_rate')
     .single()
 
   if (error || !data) {
-    return { rate: 0.16 } // IVA is statutory — 16% fallback is safe
+    throw new Error(`getIVARate failed: ${error?.message || 'no config found'} — IVA rate MUST come from system_config`)
+  }
+
+  if (data.valid_to && new Date(data.valid_to) < new Date()) {
+    throw new Error(`IVA rate expired on ${data.valid_to} — update system_config before proceeding`)
   }
 
   return data.value

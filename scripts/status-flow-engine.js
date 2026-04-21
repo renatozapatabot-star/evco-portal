@@ -8,6 +8,7 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { emitEvent } = require('./lib/workflow-emitter')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,6 +19,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) return
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -104,6 +106,18 @@ async function run() {
 
   console.log(`Advanced: ${updates.length} (${crossed.length} cruzados, ${paid.length} pagados)`)
   console.log(`Linked entradas: ${linked}`)
+
+  // Emit workflow events (CRUZ 2.0 orchestration)
+  for (const u of crossed) {
+    await emitEvent('post_op', 'crossing_complete', u.trafico, null, {
+      status: 'Cruzado',
+    })
+  }
+  for (const u of paid) {
+    await emitEvent('crossing', 'pedimento_paid', u.trafico, null, {
+      status: 'Pedimento Pagado',
+    })
+  }
 
   if (crossed.length > 0) {
     await tg(

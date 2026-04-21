@@ -1,0 +1,45 @@
+'use client'
+
+import { AlertTriangle, CheckCircle } from 'lucide-react'
+
+interface Props {
+  flags: string[]
+}
+
+export function ComplianceFlags({ flags }: Props) {
+  if (flags.length === 0) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '12px 16px',
+        background: 'var(--portal-status-green-bg)',
+        border: '1px solid rgba(34,197,94,0.15)',
+        borderRadius: 12,
+      }}>
+        <CheckCircle size={16} color="var(--portal-status-green-fg)" />
+        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-green-fg)', fontWeight: 600 }}>
+          Sin alertas de cumplimiento
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {flags.map((flag, i) => (
+        <div key={i} style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+          padding: '10px 12px',
+          borderLeft: '3px solid #FBBF24',
+          background: 'rgba(251,191,36,0.04)',
+          borderRadius: '0 8px 8px 0',
+        }}>
+          <AlertTriangle size={14} color="var(--portal-status-amber-fg)" style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-1)', lineHeight: 1.5 }}>
+            {flag}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}

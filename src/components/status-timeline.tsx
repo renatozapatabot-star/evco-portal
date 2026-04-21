@@ -4,7 +4,7 @@ import { fmtDate } from '@/lib/format-utils'
 
 interface Step { label: string; date?: string | null; status: 'complete' | 'current' | 'pending' }
 
-export function buildTimelineSteps(trafico: any): Step[] {
+export function buildTimelineSteps(trafico: { estatus?: string | null; pedimento?: string | null; fecha_llegada?: string | null; fecha_pago?: string | null; fecha_cruce?: string | null; mve_folio?: string | null; [key: string]: unknown }): Step[] {
   const isCruzado = (trafico.estatus || '').toLowerCase().includes('cruz')
   const hasPedimento = !!trafico.pedimento
   const hasPago = !!trafico.fecha_pago
@@ -25,7 +25,7 @@ export function buildTimelineSteps(trafico: any): Step[] {
   })
 }
 
-export function StatusTimeline({ trafico }: { trafico: any }) {
+export function StatusTimeline({ trafico }: { trafico: { estatus?: string | null; pedimento?: string | null; fecha_llegada?: string | null; fecha_pago?: string | null; fecha_cruce?: string | null; mve_folio?: string | null; [key: string]: unknown } }) {
   const steps = buildTimelineSteps(trafico)
 
   return (

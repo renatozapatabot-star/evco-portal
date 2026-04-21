@@ -1,0 +1,51 @@
+// AguilaMark — brand mark for PORTAL (April 2026 rebrand).
+// Renders the gold Z with circuit traces from /public/brand/z-mark.svg.
+// Filename preserved for import stability across 30+ call sites.
+
+'use client'
+
+import type { CSSProperties } from 'react'
+
+export type AguilaMarkTone = 'silver' | 'silver-bright' | 'gold' | 'mono'
+
+export interface AguilaMarkProps {
+  size?: number
+  /** @deprecated — PORTAL mark is gold by design; tone is accepted for
+   *  call-site compatibility but has no visual effect. */
+  tone?: AguilaMarkTone
+  className?: string
+  style?: CSSProperties
+  'aria-label'?: string
+}
+
+export function AguilaMark({
+  size = 48,
+  className,
+  style,
+  'aria-label': ariaLabel = 'PORTAL',
+}: AguilaMarkProps) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/brand/z-mark.svg"
+      alt=""
+      aria-label={ariaLabel}
+      role="img"
+      width={size}
+      height={size}
+      className={className}
+      style={{
+        display: 'block',
+        width: `${size}px`,
+        height: `${size}px`,
+        flexShrink: 0,
+        maxWidth: 'none',
+        ...style,
+      }}
+    />
+  )
+}
+
+export const ZapataMark = AguilaMark
+
+export default AguilaMark

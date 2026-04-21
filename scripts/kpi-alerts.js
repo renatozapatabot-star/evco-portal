@@ -5,6 +5,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN; const TELEGRAM_CHAT = '-5
 function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
 function getWeekStart(w = 0) { const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1 - w * 7); d.setHours(0, 0, 0, 0); return d.toISOString().split('T')[0] }
 async function sendTG(msg) { if (!TELEGRAM_TOKEN) { console.log(msg); return }; await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }) }) }
+  if (process.env.TELEGRAM_SILENT === 'true') return
 async function getWeek(s, e) { const [t, f] = await Promise.all([supabase.from('traficos').select('id', { count: 'exact', head: true }).eq('company_id', 'evco').gte('fecha_llegada', s).lte('fecha_llegada', e), supabase.from('aduanet_facturas').select('valor_usd').eq('clave_cliente', '9254').gte('fecha_pago', s).lte('fecha_pago', e)]); return { traficos: t.count || 0, valor: (f.data || []).reduce((s, x) => s + (x.valor_usd || 0), 0) } }
 async function run() {
   console.log('📈 Running KPI Trend Alerts...\n')

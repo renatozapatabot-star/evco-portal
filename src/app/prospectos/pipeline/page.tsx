@@ -20,7 +20,7 @@ interface Prospect {
 const COLUMNS = [
   { key: 'prospect', label: 'Prospecto', color: 'var(--gold-600)' },
   { key: 'contacted', label: 'Contactado', color: 'var(--info)' },
-  { key: 'meeting', label: 'Reunión', color: '#8B5CF6' },
+  { key: 'meeting', label: 'Reunión', color: 'var(--portal-fg-3)' },
   { key: 'proposal', label: 'Propuesta', color: 'var(--warning)' },
   { key: 'won', label: 'Ganado', color: 'var(--success)' },
   { key: 'lost', label: 'Perdido', color: 'var(--danger)' },
@@ -38,7 +38,7 @@ export default function PipelinePage() {
     fetch('/api/data?table=trade_prospects&limit=500&order_by=opportunity_score&order_dir=desc')
       .then(r => r.json())
       .then(d => setProspects((d.data ?? []).filter((p: Prospect) => !p.is_current_client)))
-      .catch(() => {})
+      .catch((err: unknown) => console.error('[pipeline] prospects fetch failed:', (err as Error).message))
       .finally(() => setLoading(false))
   }, [])
 
@@ -56,7 +56,7 @@ export default function PipelinePage() {
         updates: { status: newStatus, updated_at: new Date().toISOString() },
         match: { rfc }
       })
-    }).catch(() => {})
+    }).catch((err: unknown) => console.error('[pipeline] status update failed:', (err as Error).message))
 
     // Telegram notification for important moves
     if (newStatus === 'won' || newStatus === 'contacted') {
@@ -67,10 +67,10 @@ export default function PipelinePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: newStatus === 'won'
-              ? `🎉 Nuevo cliente ganado: ${p.razon_social || p.rfc}\nEst. honorarios: ${fmtMXN(p.estimated_annual_fees_mxn)} MXN/año\n— CRUZ 🦀`
-              : `📞 Prospecto contactado: ${p.razon_social || p.rfc}\nScore: ${p.opportunity_score}/100\n— CRUZ 🦀`
+              ? `🎉 Nuevo cliente ganado: ${p.razon_social || p.rfc}\nEst. honorarios: ${fmtMXN(p.estimated_annual_fees_mxn)} MXN/año\n— PORTAL 🦀`
+              : `📞 Prospecto contactado: ${p.razon_social || p.rfc}\nScore: ${p.opportunity_score}/100\n— PORTAL 🦀`
           })
-        }).catch(() => {})
+        }).catch((err: unknown) => console.error('[pipeline] telegram notify failed:', (err as Error).message))
       }
     }
   }
@@ -136,18 +136,18 @@ export default function PipelinePage() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {col.label}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2 }}>
-                    {stats.count} · {fmtMXN(stats.value)}/año
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 2 }}>
+                    {stats.count} · <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(stats.value)}</span>/año
                   </div>
                 </div>
                 <span style={{
                   width: 22, height: 22, borderRadius: '50%',
-                  background: col.color, color: '#fff', display: 'flex',
+                  background: col.color, color: 'rgba(255,255,255,0.045)', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700,
+                  fontSize: 'var(--aguila-fs-meta)', fontWeight: 700,
                 }}>
                   {stats.count}
                 </span>
@@ -171,22 +171,22 @@ export default function PipelinePage() {
                     transition: 'opacity 0.15s, box-shadow 0.15s',
                   }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                       {(p.razon_social || p.rfc).substring(0, 25)}
                     </div>
                     <span style={{
-                      fontSize: 10, fontWeight: 700, color: p.opportunity_score >= 70 ? 'var(--gold-600)' : 'var(--n-400)',
-                      fontFamily: 'var(--font-data)',
+                      fontSize: 'var(--aguila-fs-label)', fontWeight: 700, color: p.opportunity_score >= 70 ? 'var(--gold-600)' : 'var(--n-400)',
+                      fontFamily: 'var(--font-jetbrains-mono)',
                     }}>
                       {p.opportunity_score}
                     </span>
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--n-400)', display: 'flex', gap: 8 }}>
-                    <span>{fmtUSD(p.total_valor_usd)} USD</span>
-                    <span style={{ color: 'var(--success)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/yr</span>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', display: 'flex', gap: 8 }}>
+                    <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtUSD(p.total_valor_usd)} USD</span>
+                    <span style={{ color: 'var(--success)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtMXN(p.estimated_annual_fees_mxn)}/yr</span>
                   </div>
                   {p.next_follow_up && (
-                    <div style={{ fontSize: 10, color: 'var(--warning)', marginTop: 4 }}>
+                    <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--warning)', marginTop: 4 }}>
                       Seguimiento: {p.next_follow_up}
                     </div>
                   )}
@@ -201,7 +201,7 @@ export default function PipelinePage() {
                             style={{
                               flex: 1, padding: '4px 0', borderRadius: 3,
                               border: '1px solid var(--border-light)',
-                              background: 'none', fontSize: 10, cursor: 'pointer',
+                              background: 'none', fontSize: 'var(--aguila-fs-label)', cursor: 'pointer',
                               color: nextCol.color,
                             }}>
                             → {nextCol.label}
@@ -216,7 +216,7 @@ export default function PipelinePage() {
               {!loading && colProspects.length === 0 && (
                 <div style={{
                   textAlign: 'center', padding: '24px 12px',
-                  color: 'var(--n-300)', fontSize: 12,
+                  color: 'var(--n-300)', fontSize: 'var(--aguila-fs-compact)',
                   border: '1px dashed var(--border-light)',
                   borderRadius: 6,
                 }}>

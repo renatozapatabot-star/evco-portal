@@ -7,6 +7,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const CALLS_DIR = path.join(process.env.HOME, 'Desktop', 'CALLS')
 const PROCESSED_DIR = path.join(CALLS_DIR, 'processed')
 const TRANSCRIPTS_DIR = path.join(CALLS_DIR, 'transcripts')
+const { llmCall } = require('./lib/llm')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN; const TELEGRAM_CHAT = '-5085543275'
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 const AUDIO_EXT = ['.mp3', '.m4a', '.wav', '.ogg', '.mp4', '.webm']
@@ -21,6 +22,7 @@ const supabase = createClient(
 
 function log(msg) { console.log(`[${new Date().toLocaleTimeString('es-MX')}] ${msg}`) }
 async function sendTG(msg) { if (!TELEGRAM_TOKEN) { log(msg); return }; await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }) }) }
+  if (process.env.TELEGRAM_SILENT === 'true') return
 function hasWhisper() { try { execSync('which whisper', { stdio: 'pipe' }); return true } catch { return false } }
 
 function transcribe(audioPath) {
@@ -33,8 +35,8 @@ function transcribe(audioPath) {
 async function extractActions(transcript) {
   if (!ANTHROPIC_KEY) return null
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' }, body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
+    const result = await llmCall({
+      modelClass: 'smart',
       messages: [{ role: 'user', content: `Analiza esta transcripción de llamada de operaciones aduanales (Renato Zapata & Company, Laredo TX).
 
 Extrae:
@@ -48,9 +50,21 @@ Responde en JSON:
 {"resumen":"...","acciones":[{"tarea":"...","responsable":"...","urgente":false}],"traficos_mencionados":[],"urgente":false,"follow_up_email":"...","idioma":"es"}
 
 Transcripción:
-${transcript.substring(0, 4000)}` }]
-    }) })
-    const data = await res.json(); const m = data.content?.[0]?.text?.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null
+${transcript.substring(0, 4000)}` }],
+      maxTokens: 1200,
+      callerName: 'whisper-watcher',
+    })
+    // Cost tracking
+    supabase.from('api_cost_log').insert({
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
+      cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
+      action: 'whisper_call_analysis',
+      client_code: 'system',
+      latency_ms: result.durationMs,
+    }).then(() => {}, () => {})
+    const m = result.text?.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null
   } catch { return null }
 }
 

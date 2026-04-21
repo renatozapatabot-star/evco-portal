@@ -1,0 +1,67 @@
+'use client'
+
+import { fmtMXNCompact, fmtDelta } from '../shared/formatters'
+import type { ClientData } from '../shared/fetchCockpitData'
+import { IfThenCard } from '../shared/IfThenCard'
+import { AduanaRecommendation } from '../shared/CruzRecommendation'
+import { computeFinancialState } from '../shared/cardStates'
+
+interface Props {
+  financial: ClientData['financial']
+}
+
+export function FinancialPanel({ financial }: Props) {
+  const facturadoDelta = fmtDelta(financial.facturadoThisMonth, financial.facturadoLastMonth)
+  const arancelesDelta = fmtDelta(financial.arancelesThisMonth, financial.arancelesLastMonth)
+  const cardState = computeFinancialState(financial.facturadoThisMonth, financial.facturadoLastMonth)
+
+  return (
+    <IfThenCard
+      id="client-financial"
+      state={cardState.state}
+      title="Financiero"
+      activeCondition={cardState.activeCondition}
+      activeAction={cardState.activeAction}
+      urgentCondition={cardState.urgentCondition}
+      urgentAction={cardState.urgentAction}
+      actionHref="/financiero"
+      quietContent={
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+          <div>
+            <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)', lineHeight: 1 }}>
+              {fmtMXNCompact(financial.facturadoThisMonth) || '$0 MXN'}
+            </div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 4 }}>facturado este mes</div>
+            <div className="font-mono" style={{
+              fontSize: 'var(--aguila-fs-body)', marginTop: 2,
+              color: facturadoDelta.startsWith('▲') ? 'var(--portal-status-green-fg)' : facturadoDelta.startsWith('▼') ? 'var(--portal-status-red-fg)' : 'var(--portal-fg-4)',
+            }}>
+              {facturadoDelta} vs mes anterior
+            </div>
+          </div>
+          <div>
+            <div className="font-mono" style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: 'var(--portal-fg-1)', lineHeight: 1 }}>
+              {fmtMXNCompact(financial.arancelesThisMonth) || '$0 MXN'}
+            </div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 4 }}>aranceles pagados</div>
+            <div className="font-mono" style={{
+              fontSize: 'var(--aguila-fs-body)', marginTop: 2,
+              color: arancelesDelta.startsWith('▲') ? 'var(--portal-status-red-fg)' : arancelesDelta.startsWith('▼') ? 'var(--portal-status-green-fg)' : 'var(--portal-fg-4)',
+            }}>
+              {arancelesDelta} vs mes anterior
+            </div>
+          </div>
+        </div>
+      }
+      footer={financial.facturadoThisMonth > 0 ? (
+        <AduanaRecommendation
+          compact
+          recommendation="PORTAL monitorea tus costos y detecta oportunidades de ahorro"
+          confidence={92}
+          approveLabel="Ver detalle"
+          approveHref="/financiero"
+        />
+      ) : undefined}
+    />
+  )
+}

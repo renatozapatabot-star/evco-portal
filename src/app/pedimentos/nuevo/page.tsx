@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Search, FileText, Download, Save, Check, AlertTriangle } from 'lucide-react'
-import { CLIENT_RFC, CLIENT_CLAVE, CLIENT_NAME } from '@/lib/client-config'
+import { getClientClaveCookie, getClientNameCookie, getClientRfcCookie } from '@/lib/client-config'
+import { fmtUSD as fmtUSDLib, fmtMXN as fmtMXNLib } from '@/lib/format-utils'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,10 +24,10 @@ interface PedimentoDraft {
   tipo_cambio: number
   regimen: string
   tmec_eligible: boolean
-  dta_estimado: number
-  igi_estimado: number
-  iva_estimado: number
-  total_contribuciones: number
+  dta_estimado: number | null
+  igi_estimado: number | null
+  iva_estimado: number | null
+  total_contribuciones: number | null
   documentos_requeridos: string[]
   partidas: Array<{ fraccion: string; descripcion: string; cantidad: number; valor: number }>
 }
@@ -35,8 +36,8 @@ const REQUIRED_DOCS = [
   'Factura Comercial',
   'Packing List',
   'Bill of Lading / Carta Porte',
-  'COVE (Comprobante de Valor Electronico)',
-  'MVE (Manifestacion de Valor)',
+  'COVE (Comprobante de Valor Electrónico)',
+  'MVE (Manifestación de Valor)',
   'Pedimento de Importación',
   'Certificado T-MEC / USMCA (si aplica)',
   'CFDI / XML',
@@ -51,14 +52,21 @@ export default function NuevoPedimentoPage() {
   const [tipoCambio, setTipoCambio] = useState(0)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [sysRates, setSysRates] = useState<{ dta: number; iva: number; tc: number } | null>(null)
   const [error, setError] = useState('')
 
-  // Fetch live Banxico tipo de cambio on mount
+  // Fetch live rates on mount
   useEffect(() => {
-    fetch('/api/tipo-cambio')
-      .then(r => r.json())
-      .then(d => { if (d.rate) setTipoCambio(Number(d.rate)) })
-      .catch(() => setTipoCambio(20.50))
+    fetch('/api/rates').then(r => r.json()).then(d => {
+      if (!d.error && d.dta?.rate && d.iva?.rate && d.tc?.rate) {
+        setSysRates({ dta: d.dta.rate, iva: d.iva.rate, tc: d.tc.rate })
+        setTipoCambio(d.tc.rate)
+      } else {
+        setError('No se pudieron cargar las tasas actuales. Verifica system_config.')
+      }
+    }).catch(() => {
+      setError('Error de conexión al cargar tasas. Intenta de nuevo.')
+    })
   }, [])
 
   async function loadTrafico() {
@@ -68,7 +76,8 @@ export default function NuevoPedimentoPage() {
     setDraft(null)
     setSaved(false)
 
-    const trafico = traficoInput.includes('-') ? traficoInput : `${CLIENT_CLAVE}-${traficoInput}`
+    const clientClave = getClientClaveCookie()
+    const trafico = traficoInput.includes('-') ? traficoInput : `${clientClave}-${traficoInput}`
 
     try {
       // 1. Fetch facturas
@@ -105,26 +114,32 @@ export default function NuevoPedimentoPage() {
       const firstFraccion = partidas?.[0]?.fraccion_arancelaria || ''
       const { data: historical } = firstFraccion ? await supabase.from('aduanet_facturas')
         .select('igi, dta, iva, valor_usd')
-        .eq('clave_cliente', CLIENT_CLAVE)
+        .eq('clave_cliente', clientClave)
         .limit(10) : { data: [] }
 
       // Calculate estimates
       const valorUSD = Number(factura.valor_comercial) || 0
-      const tc = tipoCambio || 20.50
+      if (!tipoCambio) {
+        setError('Tipo de cambio no disponible. Verifica la conexión a Banxico/system_config.')
+        setLoading(false)
+        return
+      }
+      const tc = tipoCambio
       const valorMXN = valorUSD * tc
       const tmecEligible = supplierContact?.[0]?.usmca_eligible ?? false
 
       // Estimate contributions
       const igiRate = tmecEligible ? 0 : 0.05 // 5% default, 0% T-MEC
-      const dtaRate = 0.008 // 8 al millar
-      const ivaRate = 0.16
+      const dtaRate = sysRates?.dta ?? null
+      const ivaRate = sysRates?.iva ?? null
 
-      const dta = valorMXN * dtaRate
-      const igi = valorMXN * igiRate
-      const iva = (valorMXN + igi + dta) * ivaRate
+      const ratesAvailable = dtaRate !== null && ivaRate !== null
+      const dta = ratesAvailable ? valorMXN * dtaRate : null
+      const igi = ratesAvailable ? valorMXN * igiRate : null
+      const iva = ratesAvailable && dta !== null && igi !== null ? (valorMXN + igi + dta) * ivaRate : null
 
       const prov = proveedores?.[0]
-      const partidasList = (partidas || []).map((p: any) => ({
+      const partidasList = (partidas || []).map((p: { fraccion_arancelaria?: string; fraccion?: string; descripcion?: string; descripcion_mercancia?: string; cantidad?: number; valor_comercial?: number; precio_unitario?: number }) => ({
         fraccion: p.fraccion_arancelaria || p.fraccion || '',
         descripcion: p.descripcion || p.descripcion_mercancia || '',
         cantidad: Number(p.cantidad) || 0,
@@ -135,8 +150,8 @@ export default function NuevoPedimentoPage() {
       const regimen = 'A1 — Importación Definitiva' // most common
 
       setDraft({
-        importador_rfc: CLIENT_RFC,
-        importador_nombre: CLIENT_NAME.toUpperCase(),
+        importador_rfc: getClientRfcCookie(),
+        importador_nombre: getClientNameCookie().toUpperCase(),
         proveedor: prov?.nombre || factura.cve_proveedor || '',
         proveedor_pais: prov?.pais || 'US',
         valor_comercial: valorUSD,
@@ -147,15 +162,15 @@ export default function NuevoPedimentoPage() {
         tipo_cambio: tc,
         regimen,
         tmec_eligible: tmecEligible,
-        dta_estimado: Math.round(dta * 100) / 100,
-        igi_estimado: Math.round(igi * 100) / 100,
-        iva_estimado: Math.round(iva * 100) / 100,
-        total_contribuciones: Math.round((dta + igi + iva) * 100) / 100,
+        dta_estimado: dta !== null ? Math.round(dta * 100) / 100 : null,
+        igi_estimado: igi !== null ? Math.round(igi * 100) / 100 : null,
+        iva_estimado: iva !== null ? Math.round(iva * 100) / 100 : null,
+        total_contribuciones: dta !== null && igi !== null && iva !== null ? Math.round((dta + igi + iva) * 100) / 100 : null,
         documentos_requeridos: REQUIRED_DOCS,
         partidas: partidasList,
       })
-    } catch (e: any) {
-      setError(`Error: ${e.message}`)
+    } catch (e: unknown) {
+      setError(`Error: ${e instanceof Error ? e.message : String(e)}`)
     }
     setLoading(false)
   }
@@ -164,7 +179,7 @@ export default function NuevoPedimentoPage() {
     if (!draft) return
     setSaving(true)
     const { error } = await supabase.from('pedimento_drafts').insert({
-      trafico_id: traficoInput.includes('-') ? traficoInput : `${CLIENT_CLAVE}-${traficoInput}`,
+      trafico_id: traficoInput.includes('-') ? traficoInput : `${getClientClaveCookie()}-${traficoInput}`,
       draft_data: draft,
       status: 'draft',
       created_by: 'CRUZ',
@@ -173,8 +188,8 @@ export default function NuevoPedimentoPage() {
     if (!error) setSaved(true)
   }
 
-  function fmtMXN(n: number) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-  function fmtUSD(n: number) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' }
+  const fmtMXN = (n: number) => fmtMXNLib(n)
+  const fmtUSD = (n: number) => `${fmtUSDLib(n)} USD`
 
   return (
     <div className="p-6">
@@ -192,13 +207,13 @@ export default function NuevoPedimentoPage() {
           value={traficoInput}
           onChange={e => setTraficoInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && loadTrafico()}
-          placeholder="Numero de trafico (ej: Y4457 o 9254-Y4457)"
+          placeholder="Número de embarque (ej: Y4457 o {clave}-Y0000)"
           className="flex-1 bg-transparent outline-none text-[14px]"
           style={{ color: 'var(--text-primary)' }}
         />
         <button onClick={loadTrafico} disabled={loading}
           className="px-4 py-2 rounded-[6px] text-[13px] font-semibold"
-          style={{ background: 'var(--amber-600)', color: '#fff', border: 'none', cursor: 'pointer', opacity: loading ? 0.6 : 1 }}>
+          style={{ background: 'var(--amber-600)', color: 'rgba(255,255,255,0.045)', border: 'none', cursor: 'pointer', opacity: loading ? 0.6 : 1 }}>
           {loading ? 'Buscando...' : 'Cargar Datos'}
         </button>
       </div>
@@ -246,10 +261,10 @@ export default function NuevoPedimentoPage() {
                 </div>
               </div>
 
-              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Regimen / T-MEC</div>
+              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Régimen / T-MEC</div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Regimen</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Régimen</span>
                   <span className="text-[12.5px] font-medium" style={{ color: 'var(--text-primary)' }}>{draft.regimen}</span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -284,32 +299,32 @@ export default function NuevoPedimentoPage() {
               <div className="space-y-2 mb-4" style={{ padding: 12, background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-light)' }}>
                 <div className="flex justify-between">
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>DTA (8 al millar)</span>
-                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(draft.dta_estimado)} MXN</span>
+                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{draft.dta_estimado !== null ? `${fmtMXN(draft.dta_estimado)} MXN` : '—'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>IGI {draft.tmec_eligible ? '(T-MEC 0%)' : '(5%)'}</span>
                   <span className="mono text-[12.5px]" style={{ color: draft.tmec_eligible ? 'var(--green)' : 'var(--text-secondary)' }}>
-                    {draft.tmec_eligible ? '$0.00' : fmtMXN(draft.igi_estimado)} MXN
+                    {draft.igi_estimado !== null ? (draft.tmec_eligible ? '$0.00 MXN' : `${fmtMXN(draft.igi_estimado)} MXN`) : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>IVA (16%)</span>
-                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{fmtMXN(draft.iva_estimado)} MXN</span>
+                  <span className="mono text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>{draft.iva_estimado !== null ? `${fmtMXN(draft.iva_estimado)} MXN` : '—'}</span>
                 </div>
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4 }} className="flex justify-between">
                   <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Total</span>
-                  <span className="mono text-[15px] font-bold" style={{ color: 'var(--amber-600)' }}>{fmtMXN(draft.total_contribuciones)} MXN</span>
+                  <span className="mono text-[15px] font-bold" style={{ color: 'var(--amber-600)' }}>{draft.total_contribuciones !== null ? `${fmtMXN(draft.total_contribuciones)} MXN` : '—'}</span>
                 </div>
               </div>
 
-              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Fraccion</div>
+              <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] mb-3" style={{ color: 'var(--text-muted)' }}>Fracción</div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Fraccion Arancelaria</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Fracción Arancelaria</span>
                   <span className="mono text-[12.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>{draft.fraccion_arancelaria || ''}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Descripcion</span>
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Mercancía</span>
                   <span className="text-[12px]" style={{ color: 'var(--text-secondary)', maxWidth: 200, textAlign: 'right' }}>{draft.descripcion_mercancia.substring(0, 60)}</span>
                 </div>
               </div>
@@ -328,8 +343,8 @@ export default function NuevoPedimentoPage() {
                 <thead>
                   <tr>
                     <th style={{ width: 40 }}>#</th>
-                    <th>Fraccion</th>
-                    <th>Descripcion</th>
+                    <th>Fracción</th>
+                    <th>Mercancía</th>
                     <th style={{ textAlign: 'right' }}>Cantidad</th>
                     <th style={{ textAlign: 'right' }}>Valor</th>
                   </tr>
@@ -369,7 +384,7 @@ export default function NuevoPedimentoPage() {
           <div className="flex items-center gap-3">
             <button onClick={saveDraft} disabled={saving || saved}
               className="flex items-center gap-2 px-4 py-2.5 rounded-[6px] text-[13px] font-semibold"
-              style={{ background: saved ? 'var(--green-bg)' : 'var(--amber-600)', color: saved ? 'var(--green-text)' : '#fff', border: 'none', cursor: 'pointer' }}>
+              style={{ background: saved ? 'var(--green-bg)' : 'var(--amber-600)', color: saved ? 'var(--green-text)' : 'rgba(255,255,255,0.045)', border: 'none', cursor: 'pointer' }}>
               {saved ? <><Check size={14} /> Guardado</> : <><Save size={14} /> {saving ? 'Guardando...' : 'Guardar Borrador'}</>}
             </button>
             <button onClick={() => window.print()}

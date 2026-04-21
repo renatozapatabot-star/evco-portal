@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" fill="none">
+  <defs>
+    <linearGradient id="corridor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E8EAED" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#C0C5CE" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7A7E86" stop-opacity="0.15"/>
+    </linearGradient>
+    <radialGradient id="nodeUS" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E8EAED" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#C0C5CE" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#C0C5CE" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nodeMX" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E8EAED" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#C0C5CE" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#C0C5CE" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Hairline grid -->
+  <g stroke="#FFFFFF" stroke-opacity="0.025" stroke-width="1">
+    <path d="M0 150 H1600 M0 300 H1600 M0 450 H1600 M0 600 H1600 M0 750 H1600"/>
+    <path d="M200 0 V900 M400 0 V900 M600 0 V900 M800 0 V900 M1000 0 V900 M1200 0 V900 M1400 0 V900"/>
+  </g>
+
+  <!-- Simplified continental outlines (north/central america corridor context) -->
+  <g stroke="#C0C5CE" stroke-opacity="0.12" stroke-width="1.2" fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <!-- North America outline -->
+    <path d="M280 180 C 360 150 460 160 540 200 C 620 240 700 230 780 260 C 860 285 900 320 920 380 C 935 430 900 470 860 490 C 810 515 760 510 720 500 C 690 495 660 520 640 560 C 615 610 580 640 540 650"/>
+    <!-- Mexico + central -->
+    <path d="M540 650 C 580 680 620 700 660 720 C 700 740 740 760 780 770 C 810 778 830 790 820 810"/>
+    <!-- Baja hint -->
+    <path d="M520 650 C 510 680 500 710 495 745 C 492 770 498 790 510 805"/>
+  </g>
+
+  <!-- Corridor route (Laredo → Monterrey → Mexico City arc) -->
+  <g>
+    <!-- Idle route (dotted hairline) -->
+    <path d="M660 560 Q 700 620 740 680 T 820 790"
+          stroke="#C0C5CE" stroke-opacity="0.2" stroke-width="1" stroke-dasharray="3 6" fill="none"/>
+    <!-- Active corridor gradient stroke -->
+    <path d="M660 560 Q 700 620 740 680 T 820 790"
+          stroke="url(#corridor)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Node halos -->
+  <circle cx="660" cy="560" r="60" fill="url(#nodeUS)"/>
+  <circle cx="820" cy="790" r="50" fill="url(#nodeMX)"/>
+
+  <!-- Node cores -->
+  <circle cx="660" cy="560" r="3" fill="#E8EAED" fill-opacity="0.9"/>
+  <circle cx="820" cy="790" r="3" fill="#E8EAED" fill-opacity="0.85"/>
+</svg>

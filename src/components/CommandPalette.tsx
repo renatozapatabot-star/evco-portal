@@ -1,152 +1,293 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  UniversalSearchHit,
+  UniversalSearchResponse,
+} from '@/lib/search/types'
+import { SEARCH_ENTITIES, ZAPATA } from '@/lib/search-registry'
+import { useTrack } from '@/lib/telemetry/useTrack'
+import { SearchResultGroup } from './search/SearchResultGroup'
+import { SmartSuggestions, pushRecent } from './search/SmartSuggestions'
+import { AdvancedSearchModal } from './search/AdvancedSearchModal'
+import type { EntityId } from '@/types/search'
 
-type Result = { type: string; id: string; title: string; sub: string; date?: string; href: string }
-const TYPE_ICONS: Record<string, string> = { trafico: '🚢', entrada: '📦', factura: '📄' }
+const VISIBLE_PER_GROUP = 3
+const TOTAL_HIT_CAP = 15
 
-export function CommandPalette() {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Result[]>([])
-  const [selected, setSelected] = useState(-1)
-  const [loading, setLoading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+interface Props {
+  open: boolean
+  onClose: () => void
+  initialMode?: 'quick' | 'advanced'
+}
+
+type ApiResponse = { data: UniversalSearchResponse | null; error: { code: string; message: string } | null }
+
+export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) {
   const router = useRouter()
+  const track = useTrack()
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<UniversalSearchResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [advancedOpen, setAdvancedOpen] = useState(initialMode === 'advanced')
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+  const settledRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen(o => !o) }
-      if (e.key === 'Escape') { setOpen(false); setQuery(''); setResults([]) }
+    if (open) {
+      setQuery('')
+      setResults(null)
+      setActiveIdx(0)
+      settledRef.current = new Set()
+      setAdvancedOpen(initialMode === 'advanced')
+      track('page_view', {
+        metadata: { event: 'search_palette_opened', mode: initialMode },
+      })
+      setTimeout(() => inputRef.current?.focus(), 30)
     }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [])
+  }, [open, initialMode, track])
 
-  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 50) }, [open])
-
-  const search = useCallback(async (q: string) => {
-    if (q.length < 2) { setResults([]); return }
+  useEffect(() => {
+    if (!open) return
+    if (query.trim().length < 2) {
+      setResults(null)
+      setLoading(false)
+      return
+    }
+    const ctrl = new AbortController()
+    abortRef.current?.abort()
+    abortRef.current = ctrl
     setLoading(true)
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`)
-      const data = await res.json()
-      setResults((data.results || []).map((r: any) => ({
-        ...r, href: `/${r.view || 'traficos'}`,
-      })))
-    } catch { setResults([]) }
-    setLoading(false)
-  }, [])
+    const t = setTimeout(() => {
+      fetch(`/api/search/universal?q=${encodeURIComponent(query.trim())}`, { signal: ctrl.signal })
+        .then(r => r.json() as Promise<ApiResponse>)
+        .then(r => {
+          if (ctrl.signal.aborted) return
+          setResults(r.data)
+          setActiveIdx(0)
+        })
+        .catch(() => { /* aborted or network — ignore */ })
+        .finally(() => { if (!ctrl.signal.aborted) setLoading(false) })
+    }, 300)
 
-  useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => search(query), 200)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [query, search])
+    // Settled-query telemetry: 500ms after stop typing, deduped per open session.
+    const settleTimer = setTimeout(() => {
+      const q = query.trim()
+      if (q.length >= 3 && !settledRef.current.has(q)) {
+        settledRef.current.add(q)
+        track('page_view', {
+          metadata: { event: 'search_query_settled', query: q },
+        })
+      }
+    }, 500)
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => Math.min(s + 1, results.length - 1)) }
-    if (e.key === 'ArrowUp') { e.preventDefault(); setSelected(s => Math.max(s - 1, -1)) }
-    if (e.key === 'Enter' && selected >= 0 && results[selected]) {
-      router.push(results[selected].href)
-      setOpen(false); setQuery(''); setResults([])
+    return () => { clearTimeout(t); clearTimeout(settleTimer); ctrl.abort() }
+  }, [query, open, track])
+
+  const flat = useMemo<UniversalSearchHit[]>(() => {
+    if (!results) return []
+    const out: UniversalSearchHit[] = []
+    for (const e of SEARCH_ENTITIES) {
+      if (e.scope === 'stub') continue
+      const rows = (results[e.id as keyof UniversalSearchResponse] as UniversalSearchHit[] | undefined) ?? []
+      out.push(...rows.slice(0, VISIBLE_PER_GROUP))
+      if (out.length >= TOTAL_HIT_CAP) break
     }
-  }
+    return out.slice(0, TOTAL_HIT_CAP)
+  }, [results])
 
-  function selectResult(r: Result) {
-    router.push(r.href)
-    setOpen(false); setQuery(''); setResults([])
-  }
+  const navigate = useCallback((hit: UniversalSearchHit) => {
+    pushRecent(query)
+    const pos = flat.findIndex(h => h.id === hit.id && h.kind === hit.kind)
+    track('page_view', {
+      metadata: {
+        event: 'search_result_clicked',
+        entity_id: hit.kind,
+        query: query.trim(),
+        position: pos,
+      },
+    })
+    onClose()
+    router.push(hit.href)
+  }, [onClose, router, query, flat, track])
 
-  function fmtDate(d?: string) {
-    if (!d) return ''
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) } catch { return '' }
-  }
+  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') { e.preventDefault(); onClose(); return }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIdx(i => Math.min(i + 1, Math.max(flat.length - 1, 0)))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIdx(i => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const hit = flat[activeIdx]
+      if (hit) navigate(hit)
+    }
+  }, [flat, activeIdx, navigate, onClose])
 
   if (!open) return null
 
+  if (advancedOpen) {
+    return (
+      <AdvancedSearchModal
+        open={advancedOpen}
+        onClose={() => { setAdvancedOpen(false); onClose() }}
+      />
+    )
+  }
+
+  const totalHits = flat.length
+  let runningBase = 0
+
   return (
-    <>
-      <div onClick={() => { setOpen(false); setQuery(''); setResults([]) }}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', zIndex: 300 }} />
-      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
-        width: 520, background: 'var(--bg-surface)', border: '1px solid var(--border)',
-        borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.25)', zIndex: 301, overflow: 'hidden' }}>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: 16 }}>🔍</span>
-          <input ref={inputRef} value={query}
-            onChange={e => { setQuery(e.target.value); setSelected(-1) }}
-            onKeyDown={handleKeyDown}
-            placeholder="Buscar tráfico, pedimento, proveedor..."
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              color: 'var(--text-primary)', fontSize: 15, fontFamily: 'inherit' }} />
-          <kbd style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-            borderRadius: 4, padding: '2px 6px', fontSize: 10, color: 'var(--text-muted)', fontFamily: 'inherit' }}>ESC</kbd>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Búsqueda universal"
+      onKeyDown={onKeyDown}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10000,
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        paddingTop: 'max(10vh, 24px)',
+        background: 'rgba(3, 5, 8, 0.6)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: 'min(680px, calc(100vw - 24px))',
+          maxHeight: 'min(70vh, 640px)',
+          display: 'flex', flexDirection: 'column',
+          background: ZAPATA.BG_ELEVATED,
+          border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
+          borderRadius: 20,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+          overflow: 'hidden',
+          fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
+          color: 'var(--portal-fg-1)',
+        }}
+      >
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '16px 20px',
+          borderBottom: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
+        }}>
+          <span aria-hidden style={{ color: ZAPATA.ACCENT_SILVER, fontSize: 'var(--aguila-fs-kpi-small)' }}>⌕</span>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Buscar embarques, pedimentos, proveedores…"
+            aria-label="Buscar"
+            style={{
+              flex: 1, minWidth: 0, minHeight: 32,
+              background: 'transparent', border: 'none', outline: 'none',
+              color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-body-lg)',
+              fontFamily: 'var(--font-geist-sans), Inter, system-ui, sans-serif',
+            }}
+          />
+          <kbd style={{
+            fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace', fontSize: 'var(--aguila-fs-meta)',
+            color: ZAPATA.TEXT_TERTIARY, border: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
+            borderRadius: 6, padding: '2px 8px',
+          }}>Esc</kbd>
         </div>
 
-        <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+        <div style={{ overflowY: 'auto', padding: '8px 0', flex: 1 }}>
           {loading && (
-            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Buscando...</div>
+            <div style={{ padding: '20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 'var(--aguila-fs-body)' }}>Cargando…</div>
           )}
-
-          {!loading && query.length >= 2 && results.length === 0 && (
-            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-              Sin resultados para &ldquo;{query}&rdquo;
+          {!loading && query.trim().length < 2 && (
+            <SmartSuggestions
+              onPick={(q) => setQuery(q)}
+              onSuggestionClick={(type) => {
+                track('page_view', {
+                  metadata: {
+                    event: type === 'recent' ? 'search_recent_clicked' : 'search_suggestion_clicked',
+                    suggestion_type: type,
+                  },
+                })
+              }}
+            />
+          )}
+          {!loading && query.trim().length >= 2 && totalHits === 0 && (
+            <div style={{ padding: '24px 20px', color: ZAPATA.TEXT_TERTIARY, fontSize: 'var(--aguila-fs-body)' }}>
+              Sin resultados para &ldquo;{query.trim()}&rdquo;.
             </div>
           )}
 
-          {!loading && results.length > 0 && results.map((r, i) => (
-            <div key={`${r.type}-${r.id}-${i}`}
-              onClick={() => selectResult(r)}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px',
-                background: i === selected ? 'var(--bg-elevated)' : 'transparent',
-                cursor: 'pointer', borderBottom: '1px solid var(--border-soft)' }}
-              onMouseEnter={() => setSelected(i)}>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>{TYPE_ICONS[r.type] || '📋'}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{r.title}</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                {r.date && <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{fmtDate(r.date)}</span>}
-                <span style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border)',
-                  borderRadius: 4, padding: '1px 6px', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{r.type}</span>
-              </div>
-            </div>
-          ))}
-
-          {query.length < 2 && !loading && (
-            <div style={{ padding: '16px' }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Accesos rápidos</div>
-              {[
-                { label: 'Tráficos', href: '/traficos', icon: '🚢' },
-                { label: 'Pedimentos', href: '/pedimentos', icon: '📄' },
-                { label: 'Entradas', href: '/entradas', icon: '📦' },
-                { label: 'Reportes', href: '/reportes', icon: '📊' },
-                { label: 'OCA Generator', href: '/oca', icon: '⚖️' },
-                { label: 'Cotización', href: '/cotizacion', icon: '💰' },
-              ].map(link => (
-                <div key={link.href} onClick={() => { router.push(link.href); setOpen(false) }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px',
-                    cursor: 'pointer', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 13 }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span>{link.icon}</span> {link.label}
-                </div>
-              ))}
-            </div>
-          )}
+          {!loading && totalHits > 0 && SEARCH_ENTITIES.map(cfg => {
+            const rows = (results?.[cfg.id as keyof UniversalSearchResponse] as UniversalSearchHit[] | undefined) ?? []
+            if (cfg.scope !== 'stub' && rows.length === 0) return null
+            const baseIdx = runningBase
+            if (cfg.scope !== 'stub') runningBase += Math.min(rows.length, VISIBLE_PER_GROUP)
+            return (
+              <SearchResultGroup
+                key={cfg.id}
+                config={cfg}
+                rows={rows}
+                visibleCount={VISIBLE_PER_GROUP}
+                activeGlobalIdx={activeIdx}
+                baseIdx={baseIdx}
+                onActivate={setActiveIdx}
+                onNavigate={navigate}
+                onMoreClick={() => {
+                  track('page_view', {
+                    metadata: { event: 'search_group_more_clicked', entity_id: cfg.id as EntityId, query: query.trim() },
+                  })
+                  onClose()
+                  router.push(`${cfg.listHref}?q=${encodeURIComponent(query.trim())}`)
+                }}
+              />
+            )
+          })}
         </div>
 
-        <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: 12 }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>↑↓ navegar</span>
-          <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>↵ seleccionar</span>
-          <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>esc cerrar</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 8, padding: '10px 20px',
+          borderTop: `1px solid ${ZAPATA.BORDER_HAIRLINE}`,
+          fontSize: 'var(--aguila-fs-meta)', color: ZAPATA.TEXT_TERTIARY,
+          fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
+        }}>
+          <span>↑↓ navegar · ⏎ abrir · esc cerrar</span>
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen(true)}
+            style={{
+              background: 'transparent', border: 'none',
+              color: ZAPATA.TEXT_TERTIARY, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 'var(--aguila-fs-meta)', padding: 0,
+            }}
+          >
+            Búsqueda avanzada · Shift+⌘K
+          </button>
         </div>
       </div>
-    </>
+
+      <style>{`
+        @media (max-width: 640px) {
+          [role="dialog"][aria-label="Búsqueda universal"] > div {
+            width: 100vw !important;
+            max-height: 100vh !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+          }
+          [role="dialog"][aria-label="Búsqueda universal"] {
+            padding-top: 0 !important;
+          }
+        }
+      `}</style>
+    </div>
   )
 }
+
+export default CommandPalette

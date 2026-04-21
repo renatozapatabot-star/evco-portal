@@ -1,0 +1,566 @@
+/**
+ * CRUZ · Eagle View (Tito) — v9 resilient aggregate cockpit.
+ *
+ * Every query soft-wrapped. Owner aggregates across ALL tenants (invariant 31).
+ * Actividad reciente = escalation-only audit_log feed.
+ * Escalated Mensajería threads surface as priority panel in estadoSections.
+ */
+
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
+import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
+import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
+import { fmtUSDCompact } from '@/lib/format-utils'
+import { bucketDailySeries, sumRange, daysAgo } from '@/lib/cockpit/fetch'
+import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
+import type { TimelineItem } from '@/components/aguila'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
+import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { PortalDashboard, PortalCrucesMap } from '@/components/portal'
+import { AsistenteButton } from '@/components/aguila/AsistenteButton'
+import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
+import { MonthSelector } from '@/components/admin/MonthSelector'
+import { AuditoriaShortcut } from '@/components/admin/AuditoriaShortcut'
+import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
+import { ArApTile } from '@/components/eagle/ArApTile'
+import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
+import { TopAtencionesTile } from '@/components/eagle/TopAtencionesTile'
+import { CorredorTile } from '@/components/eagle/CorredorTile'
+import { DecisionesPanel, type DecisionItem } from '@/components/eagle/DecisionesPanel'
+import type { NavCounts } from '@/lib/cockpit/nav-tiles'
+import type {
+  AtencionItem,
+  DormantClient,
+  TraficoStatusBucket,
+} from '@/app/api/eagle/overview/route'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// "Active" was previously defined as estatus ∈ MOTION_STATUSES but that
+// included Cruzado (already crossed) and missed embarques with NULL status.
+// Replaced 2026-04-15: active = fecha_cruce IS NULL. Constant kept as
+// reference for downstream tiles that still want a status-distribution view.
+const MOTION_STATUSES = ['En Proceso', 'Documentacion', 'En Aduana', 'Pedimento Pagado', 'Cruzado']
+void MOTION_STATUSES
+
+// Human-readable labels for operational_decisions feed. Unknown
+// decision_types fall through to a humanized version of the raw value.
+const DECISION_LABELS: Record<string, string> = {
+  solicitation_overdue: 'Documento sin respuesta',
+  doc_autoclassified: 'Documento clasificado',
+  doc_classify_failed: 'Clasificación manual',
+  draft_approved: 'Borrador aprobado',
+  draft_rejected: 'Borrador rechazado',
+  draft_created: 'Borrador creado',
+  compliance_escalated: 'Compliance escalado',
+  mve_critical: 'MVE crítico',
+  pedimento_rechazado: 'Pedimento rechazado',
+  oca_requested: 'OCA solicitada',
+  data_exported: 'Datos exportados',
+  payment_applied: 'Pago aplicado',
+  payment_released: 'Pago liberado',
+  email_routed: 'Correo enrutado',
+  email_classified: 'Correo clasificado',
+}
+
+function humanizeDecision(decisionType: string | null, decision: string | null): string {
+  if (decisionType && DECISION_LABELS[decisionType]) return DECISION_LABELS[decisionType]
+  if (decisionType) return decisionType.replace(/_/g, ' ')
+  return decision ?? 'Evento'
+}
+
+function daysSinceISO(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+}
+
+function withHardTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p).catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
+interface EaglePageProps {
+  searchParams?: Promise<{ month?: string | string[] }>
+}
+
+export default async function EaglePage({ searchParams }: EaglePageProps) {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('portal_session')?.value ?? ''
+  const session = await verifySession(token)
+  if (!session) redirect('/login')
+  if (!['admin', 'broker'].includes(session.role)) redirect('/')
+
+  // TITO in caps per audit 2026-04-15. Owner gets the uppercase wordmark
+  // treatment in the greeting; other roles continue with given casing.
+  const rawName = cookieStore.get('operator_name')?.value || 'Tito'
+  const opName = rawName.toUpperCase()
+  const resolved = (await searchParams) ?? {}
+  const rawMonth = Array.isArray(resolved.month) ? resolved.month[0] : resolved.month
+
+  return (
+    <Suspense fallback={<CockpitSkeleton />}>
+      <EagleContent opName={opName} rawMonth={rawMonth ?? null} />
+    </Suspense>
+  )
+}
+
+async function EagleContent({ opName, rawMonth }: { opName: string; rawMonth: string | null }) {
+  try {
+    return await renderEagle(opName, rawMonth)
+  } catch (err) {
+    return (
+      <div style={{ padding: 40, color: 'var(--portal-fg-1)', fontFamily: 'ui-monospace, monospace', fontSize: 'var(--aguila-fs-body)' }}>
+        No se pudo cargar Eagle View: {err instanceof Error ? err.message : String(err)}
+      </div>
+    )
+  }
+}
+
+async function renderEagle(opName: string, rawMonth: string | null) {
+  const sb = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+
+  const now = new Date()
+  const month = parseMonthParam(rawMonth, now)
+  const monthOptions = recentMonths(12, now)
+  // Prior month window for delta comparisons.
+  const prior = parseMonthParam(month.prev, now)
+  // Legacy sparkline windows — capped to 14 days but always ending at
+  // the end of the selected month so the KPITile trend lines stay
+  // coherent with the selected period.
+  const sparklineEnd = new Date(Math.min(new Date(month.monthEnd).getTime() - 1, now.getTime()))
+  const fourteenDaysAgoIso = daysAgo(14, sparklineEnd).toISOString()
+  const ninetyDaysAgoIso = daysAgo(90, now).toISOString()
+
+  const [
+    traficosRows,
+    ar,
+    ap,
+    recentForDormantRows,
+    companiesRows,
+    traficosActivosSeriesRows,
+    pedimentosSeriesRows,
+    expedientesSeriesRows,
+    expedientesCount,
+    entradasSeriesRows,
+    entradasMesCount,
+    clasificacionesSeriesRows,
+    clasificacionesCount,
+    pedimentosPendientesCount,
+    cruzadosMesCount,
+    pedimentosMesCount,
+    pedimentosPriorMesCount,
+    lastPedimento,
+    mveRows,
+    auditSuggestionsRows,
+    escalatedThreads,
+    decisionDraftsCount,
+    decisionRojoCount,
+    decisionRows,
+  ] = await Promise.all([
+    // traficosRows feeds the status-distribution tile; cap at 5k.
+    // headline activeTraficosTotal is computed below as a true count via the
+    // dedicated query, NOT the length of this row sample.
+    softData<{ estatus: string | null }>(
+      sb.from('traficos').select('estatus').is('fecha_cruce', null).limit(5000)
+    ),
+    withHardTimeout(computeARAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'MXN' as const }),
+    withHardTimeout(computeAPAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'USD' as const, sourceMissing: true }),
+    // Active-client scope = the selected month's window (not a rolling 14d).
+    softData<{ company_id: string | null; created_at: string }>(
+      sb.from('traficos').select('company_id, created_at').gte('created_at', month.monthStart).lt('created_at', month.monthEnd).limit(5000)
+    ),
+    softData<{ company_id: string; name: string | null; active: boolean | null }>(
+      sb.from('companies').select('company_id, name, active').eq('active', true).limit(500)
+    ),
+    // Activos sparkline — bucket by fecha_llegada (real arrival), not updated_at
+    // (sync touches every row, would inflate every bucket).
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
+    ),
+    // Pedimentos-pendientes sparkline — same window but for embarques whose
+    // pedimento is set and awaiting cruce.
+    softData<{ fecha_llegada: string }>(
+      sb.from('traficos').select('fecha_llegada').not('pedimento', 'is', null).is('fecha_cruce', null).gte('fecha_llegada', fourteenDaysAgoIso).limit(2000)
+    ),
+    // expediente_documentos uses `uploaded_at`, not `created_at`.
+    softData<{ uploaded_at: string }>(
+      sb.from('expediente_documentos').select('uploaded_at').gte('uploaded_at', fourteenDaysAgoIso).limit(2000)
+    ),
+    softCount(sb.from('expediente_documentos').select('id', { count: 'exact', head: true })),
+    softData<{ fecha_llegada_mercancia: string }>(
+      sb.from('entradas').select('fecha_llegada_mercancia').gte('fecha_llegada_mercancia', fourteenDaysAgoIso).limit(2000)
+    ),
+    softCount(sb.from('entradas').select('id', { count: 'exact', head: true }).gte('fecha_llegada_mercancia', month.monthStart).lt('fecha_llegada_mercancia', month.monthEnd)),
+    softData<{ fraccion_classified_at: string }>(
+      sb.from('globalpc_productos').select('fraccion_classified_at').not('fraccion_classified_at', 'is', null).gte('fraccion_classified_at', fourteenDaysAgoIso).limit(2000)
+    ),
+    softCount(sb.from('globalpc_productos').select('id', { count: 'exact', head: true }).not('fraccion_classified_at', 'is', null)),
+    // Pedimentos pendientes = estatus=Pedimento Pagado, no cruce, recent
+    // arrival (90d). Without recency, includes ~thousands of historical
+    // ghosts whose fecha_cruce was never backfilled by sync.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).eq('estatus', 'Pedimento Pagado').is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)),
+    // Cruces este mes = real fecha_cruce in selected month (NOT updated_at).
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', month.monthStart).lt('fecha_cruce', month.monthEnd)),
+    // "Pedimentos del mes" reinterpreted as cruces del mes (same source) for delta math.
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', month.monthStart).lt('fecha_cruce', month.monthEnd)),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).gte('fecha_cruce', prior.monthStart).lt('fecha_cruce', prior.monthEnd)),
+    softFirst<{ fecha_cruce: string }>(
+      sb.from('traficos').select('fecha_cruce').not('fecha_cruce', 'is', null).order('fecha_cruce', { ascending: false }).limit(1)
+    ),
+    softData<{ id: string; rule_code: string | null; trafico_id: string | null }>(
+      sb.from('mve_alerts').select('id, rule_code, trafico_id').eq('severity', 'critical').eq('resolved', false).limit(10)
+    ),
+    softData<{ id: string; title: string | null }>(
+      sb.from('audit_suggestions').select('id, title').eq('status', 'pending').limit(10)
+    ),
+    withHardTimeout(fetchEscalatedThreads(sb, 4), 3000, []),
+    // Decisiones counts for top-of-page action panel
+    softCount(sb.from('drafts').select('id', { count: 'exact', head: true }).in('status', ['draft', 'pending', 'review'])),
+    softCount(sb.from('traficos').select('trafico', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso).ilike('semaforo', '%rojo%')),
+    // Activity feed — operational_decisions has fresh data across all
+    // tenants. `audit_log` is canonical in the rulebook but empty in prod
+    // right now, so the feed falls back to op_decisions for visibility.
+    softData<{ id: string; decision_type: string | null; decision: string | null; company_id: string | null; created_at: string; trafico: string | null; reasoning: string | null }>(
+      sb.from('operational_decisions').select('id, decision_type, decision, company_id, created_at, trafico, reasoning').gte('created_at', month.monthStart).lt('created_at', month.monthEnd).order('created_at', { ascending: false }).limit(20)
+    ),
+  ])
+
+  // traficosByStatus tile feeds from the row sample (capped 5000).
+  const counts = new Map<string, number>()
+  for (const r of traficosRows) {
+    const s = r.estatus ?? 'Sin estado'
+    counts.set(s, (counts.get(s) ?? 0) + 1)
+  }
+  const traficosByStatus: TraficoStatusBucket[] = Array.from(counts.entries()).map(([status, count]) => ({ status, count }))
+  // Headline number: real count of pending-cruce embarques with recency
+  // filter (90d). Without it, count includes historical rows whose
+  // fecha_cruce was never backfilled by sync — not actually "in motion."
+  // softCount-wrapped so a schema hiccup can't crash the owner cockpit;
+  // falls back to the status-bucket sample count when the exact query errors.
+  const activeCountRaw = await softCount(
+    sb.from('traficos').select('id', { count: 'exact', head: true }).is('fecha_cruce', null).gte('fecha_llegada', ninetyDaysAgoIso)
+  )
+  const activeTraficosTotal = activeCountRaw || traficosByStatus.reduce((s, b) => s + b.count, 0)
+
+  // dormant (top 3) + activeClients
+  const activeIds = new Set<string>()
+  for (const r of recentForDormantRows) {
+    if (r.company_id) activeIds.add(r.company_id)
+  }
+  const activeClients = activeIds.size
+  const dormantCandidates = companiesRows
+    .filter((c) => !activeIds.has(c.company_id))
+    .slice(0, 3)
+
+  const dormantLasts = await Promise.all(
+    dormantCandidates.map((c) =>
+      softFirst<{ created_at: string | null; importe_total: number | null }>(
+        sb.from('traficos').select('created_at, importe_total').eq('company_id', c.company_id).order('created_at', { ascending: false }).limit(1)
+      )
+    )
+  )
+  const dormant: DormantClient[] = dormantCandidates.map((c, i) => {
+    const last = dormantLasts[i]
+    return {
+      companyId: c.company_id,
+      razonSocial: c.name ?? c.company_id,
+      diasSinMovimiento: last?.created_at ? daysSinceISO(last.created_at) : 999,
+      ultimoMonto: last?.importe_total ?? null,
+    }
+  })
+
+  // atenciones
+  const atenciones: AtencionItem[] = []
+  for (const a of mveRows) {
+    atenciones.push({
+      id: `mve-${a.id}`,
+      kind: 'mve_critical',
+      label: 'MVE crítico',
+      detail: a.rule_code ?? a.trafico_id ?? 'Alerta sin código',
+      href: '/mve/alerts',
+      severityRank: 0,
+    })
+  }
+  for (const s of auditSuggestionsRows) {
+    atenciones.push({
+      id: `sugg-${s.id}`,
+      kind: 'audit_suggestion',
+      label: 'Sugerencia de auditoría',
+      detail: s.title ?? 'Pendiente',
+      href: '/admin/inicio',
+      severityRank: 1,
+    })
+  }
+  for (const d of dormant) {
+    atenciones.push({
+      id: `dorm-${d.companyId}`,
+      kind: 'dormant',
+      label: 'Cliente dormido',
+      detail: `${d.razonSocial} · ${d.diasSinMovimiento}d`,
+      href: `/clientes/${d.companyId}`,
+      severityRank: 2,
+    })
+  }
+  atenciones.sort((a, b) => a.severityRank - b.severityRank)
+  const atencionesTop = atenciones.slice(0, 5)
+
+  // Activity feed from operational_decisions (month-scoped, cross-tenant).
+  const actividadItems: TimelineItem[] = decisionRows.map((r) => ({
+    id: String(r.id),
+    title: humanizeDecision(r.decision_type, r.decision),
+    subtitle: r.company_id
+      ? (r.trafico ? `${r.company_id} · ${r.trafico}` : r.company_id)
+      : (r.trafico ?? undefined),
+    timestamp: r.created_at,
+    href: r.trafico ? `/embarques/${encodeURIComponent(r.trafico)}` : undefined,
+  }))
+
+  // Series bucketing — use real timestamps (fecha_llegada / fecha_cruce),
+  // never updated_at (which fires every sync).
+  const traficosActivosSeries = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
+  const pedimentosPendSeries  = bucketDailySeries(pedimentosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
+  const expedientesSeries     = bucketDailySeries(expedientesSeriesRows as Array<Record<string, unknown>>, 'uploaded_at', 14, now)
+  const entradasSeries        = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
+  const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
+
+  const arTotal = ar.total ?? 0
+  const monthShort = month.label
+
+  const heroKPIs: CockpitHeroKPI[] = [
+    { key: 'traficos', label: 'Embarques en proceso', value: activeTraficosTotal, series: traficosActivosSeries, current: sumRange(traficosActivosSeries, 7, 14), previous: sumRange(traficosActivosSeries, 0, 7), href: '/embarques?estatus=En+Proceso', tone: 'silver' },
+    { key: 'clientes', label: 'Clientes activos', value: activeClients, tone: 'silver' },
+    { key: 'dormidos', label: 'Clientes dormidos', value: dormant.length, tone: 'silver', inverted: true },
+    // Swapped 2026-04-15 per Tito audit: CxC vencido moved to ArApTile in
+    // estado grid; hero now shows actionable cruces este mes.
+    { key: 'cruces', label: 'Cruces este mes', value: cruzadosMesCount, series: pedimentosPendSeries, current: cruzadosMesCount, previous: pedimentosPriorMesCount, href: '/embarques?cruzadoEn=mes', tone: 'silver' },
+  ]
+  void arTotal
+
+  const daysSinceLastCruce = lastPedimento?.fecha_cruce
+    ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)
+    : null
+
+  // Phase 5 — all-client aggregate CxC count for the Eagle View.
+  const cxcAbiertasCountEagle = await softCount(
+    sb.from('econta_cartera').select('id', { count: 'exact', head: true }).gt('saldo', 0),
+  )
+
+  const navCounts: NavCounts = {
+    traficos: {
+      count: activeTraficosTotal,
+      series: traficosActivosSeries,
+      microStatus: `${cruzadosMesCount} cruzaron en ${monthShort}`,
+    },
+    // 2026-04-19 override: Contabilidad tile #2. All-client aggregate CxC.
+    contabilidad: {
+      count: cxcAbiertasCountEagle,
+      series: [],
+      microStatus: cxcAbiertasCountEagle > 0
+        ? `${cxcAbiertasCountEagle.toLocaleString('es-MX')} saldos abiertos · patente completa`
+        : 'Sin saldos abiertos',
+    },
+    pedimentos: {
+      // Show actionable count (pedimentos awaiting cruce) — that's what
+      // moves the needle. Cruces-este-mes is the hero KPI separately.
+      count: pedimentosPendientesCount,
+      series: pedimentosPendSeries,
+      microStatus: daysSinceLastCruce != null
+        ? `${pedimentosMesCount} cruzaron en ${monthShort} · último hace ${daysSinceLastCruce}d`
+        : `${pedimentosMesCount} cruzaron en ${monthShort}`,
+    },
+    expedientes: {
+      count: expedientesCount,
+      series: expedientesSeries,
+      microStatus: `${pedimentosPendientesCount} pendiente${pedimentosPendientesCount === 1 ? '' : 's'} de documento`,
+      microStatusWarning: pedimentosPendientesCount > 0,
+    },
+    catalogo: {
+      count: clasificacionesCount,
+      series: [],
+      microStatus: clasificacionesCount > 0 ? `${clasificacionesCount.toLocaleString('es-MX')} fracciones clasificadas` : 'Sin clasificar',
+    },
+    entradas: {
+      count: entradasMesCount,
+      series: entradasSeries,
+      microStatus: `${entradasMesCount} recibida${entradasMesCount === 1 ? '' : 's'} en ${monthShort}`,
+    },
+    anexo24: {
+      count: null,
+      series: clasificacionesSeries,
+      microStatus: 'Control de inventario IMMEX multi-cliente',
+    },
+  }
+
+  const decisionItems: DecisionItem[] = [
+    {
+      key: 'drafts',
+      count: decisionDraftsCount,
+      label: 'Borradores por aprobar',
+      sublabel: 'Aprueba o rechaza · 1 click',
+      href: '/drafts',
+      icon: 'draft',
+      tone: 'silver',
+    },
+    {
+      key: 'mve',
+      count: mveRows.length,
+      label: 'MVE crítico',
+      sublabel: 'Compliance vence pronto',
+      href: '/mve/alerts',
+      icon: 'mve',
+      tone: 'red',
+    },
+    {
+      key: 'rojo',
+      count: decisionRojoCount,
+      label: 'Semáforo rojo',
+      sublabel: 'Embarques con incidencia',
+      href: '/embarques?semaforo=rojo',
+      icon: 'atrasado',
+      tone: 'red',
+    },
+    {
+      key: 'mensajeria',
+      count: escalatedThreads.length,
+      label: 'Hilos escalados',
+      sublabel: 'Operador pidió tu opinión',
+      href: '/mensajeria?status=escalated',
+      icon: 'mensajeria',
+      tone: 'amber',
+    },
+    {
+      key: 'pedimentos',
+      count: pedimentosPendientesCount,
+      label: 'Pedimentos esperando cruce',
+      sublabel: 'Pagados, sin cruzar',
+      href: '/pedimentos?estatus=Pedimento+Pagado',
+      icon: 'draft',
+      tone: 'silver',
+    },
+  ]
+
+  // Owner cockpit (2026-04-15 audit): dad's home shows only decisions +
+  // month context + priority threads. "Generar auditoría semanal",
+  // "Embarques del día", "AR/AP resumen", "Clientes dormidos",
+  // "Top 5 atenciones" and the Corredor tile are all reachable via the
+  // 6 nav tiles + Reportes + command palette — they cluttered the glance.
+  const estadoSections = (
+    <>
+      <DecisionesPanel items={decisionItems} />
+      <MonthSelector
+        ym={month.ym}
+        label={month.label}
+        prev={month.prev}
+        next={month.next}
+        options={monthOptions}
+      />
+      <PriorityThreadsPanel threads={escalatedThreads} />
+    </>
+  )
+
+  const summaryLine = atencionesTop.length > 0
+    ? `${atencionesTop.length} atencion${atencionesTop.length === 1 ? '' : 'es'} pendiente${atencionesTop.length === 1 ? '' : 's'} · vista ${month.label}.`
+    : `Vista de ${month.label} · ${activeClients} clientes activos.`
+
+  const inTransitCount = traficosByStatus
+    .filter(b => b.status !== 'Cruzado' && b.status !== 'Cerrado')
+    .reduce((s, b) => s + b.count, 0)
+
+  const actividadSlot = (
+    <TimelineFeed
+      items={actividadItems}
+      max={20}
+      emptyLabel={`Sin escalaciones en ${month.label}.`}
+    />
+  )
+
+  // v10 — ActividadStrip (owner: escalations + priority threads as chips)
+  const stripItems: ActividadStripItem[] = [
+    ...escalatedThreads.slice(0, 4).map((t) => ({
+      id: `thr-${t.id}`,
+      label: t.subject ?? 'Hilo escalado',
+      detail: t.last_message_preview ?? t.company_id ?? undefined,
+      timestamp: t.escalated_at ?? t.last_message_at ?? new Date().toISOString(),
+      href: `/mensajeria/${encodeURIComponent(t.id)}`,
+      tone: 'warning' as const,
+    })),
+    ...actividadItems.slice(0, 8).map((ti) => ({
+      id: ti.id,
+      label: ti.title,
+      detail: ti.subtitle,
+      timestamp: ti.timestamp,
+      href: ti.href,
+      tone: 'danger' as const,
+    })),
+  ]
+  const actividadStripSlot = (
+    <ActividadStrip items={stripItems} emptyLabel={`Sin actividad crítica en ${month.label}.`} title="Escalaciones + hilos" />
+  )
+
+  // Capability cards moved to LauncherTray (top-nav `+ TOOLS`). Cockpit
+  // stays focused on decisions + status. Empty counts → grid hides.
+  const capabilityCounts: CapabilityCounts = {}
+  const capabilitySlot = <CapabilityCardGrid counts={capabilityCounts} />
+
+  const ownerFirstName = opName.split(/\s+/)[0] || opName || 'Broker'
+
+  return (
+    <>
+      {/* Reference PORTAL band — TopBar · warm greeting · 6 module cards
+          broker-wide · AssistantFab · Cmd+K palette. Existing owner
+          surface (5 custom tiles + DecisionesPanel + PriorityThreadsPanel)
+          preserved below via the legacy CockpitInicio. */}
+      <PortalDashboard
+        role="owner"
+        greetingName={ownerFirstName}
+        summary={summaryLine}
+        navCounts={navCounts}
+        month={month.ym}
+        extraRow={
+          <>
+            <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
+              <PortalCrucesMap />
+            </div>
+            {/* WHY: no FreshnessBanner on Eagle — owner aggregates across
+                all tenants (invariant 31). readFreshness is per-tenant
+                (src/lib/cockpit/freshness.ts returns empty on null
+                companyId); a single "hace 5 min" row here would be
+                misleading. LiveTimestamp + StateOfDayStrip provide the
+                liveness signal. Per-sync-type health band planned
+                post-Ursula — see sync-contract.md §2.5. */}
+            <CockpitInicio
+              role="owner"
+              name={opName}
+              heroKPIs={heroKPIs}
+              navCounts={navCounts}
+              estadoSections={estadoSections}
+              actividadSlot={actividadSlot}
+              actividadStripSlot={actividadStripSlot}
+              capabilitySlot={capabilitySlot}
+              systemStatus={atencionesTop.length > 0 ? 'warning' : 'healthy'}
+              pulseSignal={inTransitCount > 0}
+              month={month.ym}
+              metaPills={[
+                ...(escalatedThreads.length > 0
+                  ? [{ label: 'ESCALADOS', value: escalatedThreads.length, tone: 'warning' as const }]
+                  : []),
+                { label: 'CRUCES MES', value: cruzadosMesCount, tone: 'silver' },
+                { label: 'PEND. PEDIMENTO', value: pedimentosPendientesCount, tone: pedimentosPendientesCount > 0 ? 'warning' : 'silver' },
+                { label: 'EN TRÁNSITO', value: inTransitCount, tone: 'silver' },
+              ]}
+            />
+          </>
+        }
+      />
+      <AsistenteButton roleTag="owner" />
+    </>
+  )
+}

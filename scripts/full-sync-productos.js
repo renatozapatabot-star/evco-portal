@@ -8,9 +8,14 @@ const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-const TG = process.env.TELEGRAM_BOT_TOKEN
-const CHAT = '-5085543275'
-async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
+const { safeInsert } = require('./lib/safe-write')
+const { withSyncLog } = require('./lib/sync-log')
+// Canonical Telegram helper — handles TELEGRAM_SILENT internally (skips
+// the fetch; does NOT exit the module). Previous local tg() + stray
+// top-level `return` made this script a silent no-op under
+// TELEGRAM_SILENT=true. Both fixed together 2026-04-20 along with the
+// Block-EE `|| 'unknown'` tenant fallback (replaced by skip-and-alert).
+const { sendTelegram: tg } = require('./lib/telegram')
 
 async function run() {
   console.log('\n📦 FULL PRODUCTOS SYNC (plain insert, no unique key)')
@@ -56,7 +61,8 @@ async function run() {
   await tg(`📦 <b>Productos full sync</b>\nCleared ${deleted.toLocaleString()} old rows\nInserting ${totalRows.toLocaleString()} from GlobalPC\n— CRUZ 🦀`)
 
   const BATCH = 5000
-  let offset = 0, total = 0, inserted = 0, errors = 0
+  let offset = 0, total = 0, inserted = 0, errors = 0, skippedRows = 0
+  const skippedClaves = new Set()
 
   while (true) {
     const [rows] = await conn.execute(`
@@ -67,24 +73,35 @@ async function run() {
     `)
     if (!rows.length) break
 
-    const batch = rows.map(r => ({
-      globalpc_folio: r.iFolio,
-      cve_cliente: r.sCveCliente,
-      cve_proveedor: r.sCveProveedor,
-      precio_unitario: r.iPrecioUnitarioProducto,
-      umt: String(r.sCveUMC || ''),
-      pais_origen: r.sCvePais,
-      marca: r.sMarca,
-      company_id: claveMap[r.sCveCliente] || r.sCveCliente || 'unknown'
-    }))
+    // Block EE: skip-and-alert on unknown cve_cliente instead of tagging 'unknown'.
+    const batch = rows.map(r => {
+      const companyId = claveMap[r.sCveCliente]
+      if (!companyId) {
+        skippedClaves.add(r.sCveCliente ?? '(null)')
+        skippedRows++
+        return null
+      }
+      return {
+        globalpc_folio: r.iFolio,
+        cve_cliente: r.sCveCliente,
+        cve_proveedor: r.sCveProveedor,
+        precio_unitario: r.iPrecioUnitarioProducto,
+        umt: String(r.sCveUMC || ''),
+        pais_origen: r.sCvePais,
+        marca: r.sMarca,
+        company_id: companyId,
+      }
+    }).filter(Boolean)
 
     for (let i = 0; i < batch.length; i += 200) {
-      const { error } = await supabase.from('globalpc_productos').insert(batch.slice(i, i + 200))
-      if (error) {
+      try {
+        const { count } = await safeInsert(supabase, 'globalpc_productos', batch.slice(i, i + 200), {
+          scriptName: 'full-sync-productos',
+        })
+        inserted += count
+      } catch (e) {
         errors++
-        if (errors <= 3) console.error('\n  Insert error:', error.message.substring(0, 100))
-      } else {
-        inserted += Math.min(200, batch.length - i)
+        if (errors <= 3) console.error('\n  Insert error:', e.message.substring(0, 100))
       }
     }
 
@@ -103,7 +120,18 @@ async function run() {
   await new Promise(r => setTimeout(r, 3000))
   const { count: after } = await supabase.from('globalpc_productos').select('*', { count: 'exact', head: true })
   console.log(`\n✅ Done. Inserted: ${inserted.toLocaleString()} · Errors: ${errors} · Supabase total: ${(after || 0).toLocaleString()}`)
-  await tg(`✅ <b>Productos complete</b>\n${(after || 0).toLocaleString()} rows in Supabase\n— CRUZ 🦀`)
+
+  if (skippedRows > 0) {
+    const sample = Array.from(skippedClaves).slice(0, 10).join(', ')
+    console.warn(`⚠ Skipped ${skippedRows} rows · ${skippedClaves.size} unknown cve_cliente: ${sample}`)
+    await tg(
+      `🟡 <b>Productos full-sync · skipped rows</b>\n` +
+      `${skippedRows.toLocaleString()} rows · ${skippedClaves.size} unknown cve_cliente\n` +
+      `<code>${sample}${skippedClaves.size > 10 ? `, …${skippedClaves.size - 10} more` : ''}</code>`
+    )
+  }
+  await tg(`✅ <b>Productos complete</b>\n${(after || 0).toLocaleString()} rows in Supabase${skippedRows > 0 ? ` · ${skippedRows} skipped` : ''}\n— PORTAL 🦀`)
+  return { rows_synced: inserted, skipped: skippedRows }
 }
 
-run().catch(e => { console.error(e); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'globalpc_productos_full', company_id: null }, run).catch(e => { console.error(e); process.exit(1) })

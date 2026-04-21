@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="ZAPATA AI">
+  <defs>
+    <linearGradient id="icon-chrome" x1="0" y1="82" x2="0" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E8EAED" />
+      <stop offset="0.5" stop-color="#C0C5CE" />
+      <stop offset="1" stop-color="#7A7E86" />
+    </linearGradient>
+    <linearGradient id="icon-sheen" x1="0" y1="82" x2="0" y2="125" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#0A0A0C"/>
+  <g fill="url(#icon-chrome)">
+    <polygon points="82,92 430,92 430,160 82,160" />
+    <polygon points="430,160 360,160 82,350 152,350" />
+    <polygon points="82,350 430,350 430,420 82,420" />
+  </g>
+  <polygon points="82,92 430,92 430,120 82,120" fill="url(#icon-sheen)" />
+</svg>

@@ -1,11 +1,18 @@
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
+import type { DateInput } from '@/types/database'
+
+// ── Number Formatting Rules ──
+// KPI cards / summaries: use compact format → fmtUSDCompact ("$2.6M USD")
+// Table cells / detail: use full precision → fmtUSD ("$276,603.31")
+// MXN duties/taxes: use integer → fmtMXNInt ("$48,000 MXN")
+// All monetary values MUST carry a currency suffix (USD or MXN)
 
 // Master currency formatter — use this EVERYWHERE
 export const fmtCurrency = (
   n: number | null | undefined,
   opts: { decimals?: number; compact?: boolean; currency?: string } = {}
 ): string => {
-  if (n == null) return ''
+  if (n == null) return '—'
   const { decimals = 2, compact = false, currency = 'USD' } = opts
 
   if (compact) {
@@ -73,40 +80,108 @@ export const fmtKg = (n: number | null | undefined): string => {
 }
 
 // Date — standardize to "27 mar 2026" everywhere
-export const fmtDate = (s: any): string => {
-  if (!s) return ''
+export const fmtDate = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
   try {
-    return new Date(s).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString('es-MX', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
+      timeZone: 'America/Chicago'
     })
-  } catch { return String(s) }
+  } catch { return '—' }
 }
 
 // Date with time — "27 mar 2026 · 04:31"
-export const fmtDateTime = (s: any): string => {
-  if (!s) return ''
+export const fmtDateTime = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
   try {
-    const d = new Date(s)
-    return `${d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} · ${d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`
-  } catch { return String(s) }
+    return new Date(date).toLocaleString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Chicago'
+    })
+  } catch { return '—' }
 }
 
-// Short date — "27 mar"
-export const fmtDateShort = (s: any): string => {
-  if (!s) return ''
-  try { return new Date(s).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) }
-  catch { return String(s) }
+// Short date — "27 mar 2026"
+export const fmtDateShort = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  try {
+    return new Date(date).toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'America/Chicago'
+    })
+  } catch { return '—' }
+}
+
+// Compact date — "27 mar 2026"
+export const fmtDateCompact = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  try {
+    return new Date(date).toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'America/Chicago'
+    })
+  } catch { return '—' }
+}
+
+/** Relative time — "hace 2h", "hace 3d". Only for actividad feed. All other pages use absolute dates. */
+export const fmtRelativeTime = (date: string | Date | null | undefined): string => {
+  if (!date) return '—'
+  try {
+    const now = new Date()
+    const then = new Date(date)
+    const diffMs = now.getTime() - then.getTime()
+    if (diffMs < 0) return fmtDateCompact(date)
+    const mins = Math.floor(diffMs / 60000)
+    if (mins < 1) return 'ahora'
+    if (mins < 60) return `hace ${mins} min`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `hace ${hours}h`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `hace ${days}d`
+    return fmtDateCompact(date)
+  } catch { return '—' }
 }
 
 // ID formatter — no em-dashes, client-prefix aware
 export const fmtId = (id: string | null | undefined): string => {
   if (!id) return ''
-  const prefix = `${CLIENT_CLAVE}-`
-  const clean = String(id).replace(/[\u2013\u2014\u2212\u2010\u2015\u2212]/g, '-').replace(new RegExp(`^${CLIENT_CLAVE}[-]?`), '')
-  return `${prefix}${clean}`
+  return String(id).replace(/[\u2013\u2014\u2212\u2010\u2015]/g, '-')
 }
+
+// Pedimento full format — always display with spaces: "XX XX XXXX XXXXXXX"
+// Input: "26 24 3596 5500017" → Output: "26 24 3596 5500017" (preserved)
+// Input: "6500247" → Output: "6500247" (can't reconstruct AD/patente from 7 digits alone)
+// Input: "26243596 6500247" or "2624 3596 6500247" → normalized to "26 24 3596 6500247"
+// Pedimento numbers are ALWAYS stored and displayed WITH spaces. Never strip.
+export const fmtPedimento = (ped: string | null | undefined): string => {
+  if (!ped) return ''
+  const s = String(ped).trim()
+
+  // Already in correct format "DD AD PPPP SSSSSSS"
+  if (/^\d{2}\s\d{2}\s\d{4}\s\d{7}$/.test(s)) return s
+
+  // Compact 16-digit format without spaces → insert spaces
+  const digits = s.replace(/\s/g, '')
+  if (/^\d{16}$/.test(digits)) {
+    return `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 8)} ${digits.slice(8)}`
+  }
+
+  // 7-digit sequential only — return as-is (cannot reconstruct full format)
+  return s
+}
+
+// Backwards compat alias — fmtPedimentoShort now returns full format
+export const fmtPedimentoShort = fmtPedimento
 
 // Title case descriptions
 export const fmtDesc = (s: string | null | undefined): string => {
@@ -117,26 +192,8 @@ export const fmtDesc = (s: string | null | undefined): string => {
   ).join(' ')
 }
 
-// Relative time — "hace 3d", "Ayer", "hace 2h"
-export const fmtRelative = (s: any): string => {
-  if (!s) return ''
-  try {
-    const d = new Date(s)
-    const diffMs  = Date.now() - d.getTime()
-    const diffMin = Math.floor(diffMs / 60000)
-    const diffHr  = Math.floor(diffMs / 3600000)
-    const diffDay = Math.floor(diffMs / 86400000)
-    if (diffMin < 1)   return 'Ahora'
-    if (diffMin < 60)  return `hace ${diffMin}m`
-    if (diffHr  < 24)  return `hace ${diffHr}h`
-    if (diffDay === 1) return 'Ayer'
-    if (diffDay < 7)   return `hace ${diffDay}d`
-    return fmtDate(d)
-  } catch { return String(s) }
-}
-
 // Priority scoring
-export const calcPriority = (row: any): number => {
+export const calcPriority = (row: { pedimento?: string | null; estatus?: string | null; fecha_llegada?: string | null; importe_total?: number | string | null }): number => {
   let score = 0
   if (!row.pedimento) score += 35
   if (row.estatus !== 'Cruzado' && row.fecha_llegada) {
@@ -162,7 +219,7 @@ export const priorityClass = (score: number): string => {
 
 const LAREDO_TZ = 'America/Chicago'
 
-export const fmtDateLocal = (s: any): string => {
+export const fmtDateLocal = (s: DateInput): string => {
   if (!s) return '—'
   try {
     return new Date(s).toLocaleDateString('es-MX', {
@@ -171,7 +228,7 @@ export const fmtDateLocal = (s: any): string => {
   } catch { return String(s) }
 }
 
-export const fmtDateTimeLocal = (s: any): string => {
+export const fmtDateTimeLocal = (s: DateInput): string => {
   if (!s) return '—'
   try {
     const d = new Date(s)
@@ -184,46 +241,25 @@ export const fmtDateTimeLocal = (s: any): string => {
 export const pluralize = (count: number, singular: string, plural: string): string =>
   count === 1 ? singular : plural
 
-// ── Relative time (enhanced with freshness class) ───
-
-export const formatRelativeTime = (date: string | Date | null | undefined): string => {
-  if (!date) return ''
+// v6.0 — Absolute ETA format. Never relative. es-MX locale with CST suffix.
+export const formatAbsoluteETA = (s: DateInput): string => {
+  if (!s) return '—'
   try {
-    const d = new Date(date)
-    const diffMs = Date.now() - d.getTime()
-    const diffMin = Math.floor(diffMs / 60000)
-    const diffHr = Math.floor(diffMs / 3600000)
-    const diffDay = Math.floor(diffMs / 86400000)
-    if (diffMin < 1) return 'ahora mismo'
-    if (diffMin < 60) return `hace ${diffMin}m`
-    if (diffHr < 24) return `hace ${diffHr}h`
-    if (diffDay === 1) return 'ayer'
-    if (diffDay < 7) return `hace ${diffDay}d`
-    return fmtDate(d)
-  } catch { return '' }
-}
-
-// v5.0 — Absolute ETA format. Never relative. "March 29, 2026 · 4:13 PM CST"
-export const formatAbsoluteETA = (s: any): string => {
-  if (!s) return ''
-  try {
-    const d = new Date(s)
-    return d.toLocaleString('en-US', {
+    return new Date(s).toLocaleString('es-MX', {
       timeZone: 'America/Chicago',
-      month: 'long', day: 'numeric', year: 'numeric',
-      hour: 'numeric', minute: '2-digit',
-      hour12: true,
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     }) + ' CST'
-  } catch { return String(s) }
+  } catch { return '—' }
 }
 
-// v5.0 — Absolute date only (no time). "March 29, 2026"
-export const formatAbsoluteDate = (s: any): string => {
-  if (!s) return ''
+// v6.0 — Absolute date only (no time). es-MX locale.
+export const formatAbsoluteDate = (s: DateInput): string => {
+  if (!s) return '—'
   try {
-    return new Date(s).toLocaleDateString('en-US', {
+    return new Date(s).toLocaleDateString('es-MX', {
       timeZone: 'America/Chicago',
-      month: 'long', day: 'numeric', year: 'numeric',
+      day: '2-digit', month: 'short', year: 'numeric',
     })
-  } catch { return String(s) }
+  } catch { return '—' }
 }

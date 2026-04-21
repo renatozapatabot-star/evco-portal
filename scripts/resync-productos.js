@@ -16,16 +16,36 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
+const { safeUpsert } = require('./lib/safe-write')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
-const TENANT_ID = '52762e3c-bd8a-49b8-9a32-296e526b7238'
-const CLIENT_CLAVE = '9254'  // EVCO-specific — not a multi-client pattern
-const COMPANY_ID = 'evco'
 const BATCH = 500
 
+// Parse command-line args
+const args = process.argv.slice(2).reduce((acc, a) => {
+  const m = a.match(/^--([^=]+)=(.*)$/)
+  if (m) acc[m[1]] = m[2]
+  return acc
+}, {})
+
+const TARGET_COMPANY_ID = args.client
+const DRY_RUN = args['dry-run'] === 'true'
+
+if (!TARGET_COMPANY_ID) {
+  console.error('Usage: node scripts/resync-productos.js --client=<company_id> [--dry-run=true]')
+  console.error('Example: node scripts/resync-productos.js --client=garlock --dry-run=true')
+  process.exit(1)
+}
+
+// These get populated from Supabase in main(), not at module load
+let TENANT_ID = null
+let CLIENT_CLAVE = null
+let COMPANY_ID = null
+
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TG) { console.log('[TG]', msg); return }
   await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -37,6 +57,60 @@ async function main() {
   const start = Date.now()
   console.log('\n📦 PRODUCTOS RE-SYNC — Fixing key mismatch')
   console.log('═'.repeat(50))
+
+  // ── Look up target company from Supabase (active=true only) ──
+  console.log('Target: --client=' + TARGET_COMPANY_ID + (DRY_RUN ? ' (DRY RUN)' : ''))
+
+  const { data: companies, error: cErr } = await supabase
+    .from('companies')
+    .select('id, company_id, clave_cliente, globalpc_clave, name, active')
+    .eq('company_id', TARGET_COMPANY_ID)
+    .eq('active', true)
+
+  if (cErr) {
+    console.error('❌ Company lookup failed: ' + cErr.message)
+    process.exit(1)
+  }
+
+  if (!companies || companies.length === 0) {
+    console.error('❌ No active company found with company_id=' + TARGET_COMPANY_ID)
+    console.error('   (Inactive duplicates do not count.)')
+    process.exit(1)
+  }
+
+  if (companies.length > 1) {
+    console.error('❌ Multiple active companies match — data hygiene issue:')
+    companies.forEach(c => console.error('   - id=' + c.id + ' name=' + c.name))
+    process.exit(1)
+  }
+
+  const company = companies[0]
+
+  // Check if a tenant record exists; fall back to companies.id
+  const { data: tenants } = await supabase
+    .from('tenants')
+    .select('id')
+    .eq('slug', company.company_id)
+    .eq('status', 'active')
+    .limit(1)
+
+  TENANT_ID = (tenants && tenants[0]) ? tenants[0].id : company.id
+  CLIENT_CLAVE = company.globalpc_clave || company.clave_cliente
+  COMPANY_ID = company.company_id
+
+  if (!CLIENT_CLAVE) {
+    console.error('❌ Company ' + COMPANY_ID + ' has no globalpc_clave or clave_cliente')
+    process.exit(1)
+  }
+
+  console.log('  Resolved company:')
+  console.log('    name:           ' + company.name)
+  console.log('    company_id:     ' + COMPANY_ID)
+  console.log('    tenant_id:      ' + TENANT_ID + (tenants && tenants[0] ? ' (from tenants table)' : ' (from companies.id)'))
+  console.log('    clave_cliente:  ' + company.clave_cliente)
+  console.log('    globalpc_clave: ' + (company.globalpc_clave || '(null)'))
+  console.log('    MySQL lookup:   sCveCliente = "' + CLIENT_CLAVE + '"')
+  console.log('')
 
   const conn = await mysql.createConnection({
     host: process.env.GLOBALPC_DB_HOST,
@@ -56,6 +130,49 @@ async function main() {
     [CLIENT_CLAVE]
   )
   console.log(`Catalog products in GlobalPC: ${catTotal.toLocaleString()}`)
+
+  if (DRY_RUN) {
+    // Also count description and fraccion coverage
+    const [[{ withDesc }]] = await conn.query(
+      "SELECT COUNT(*) as withDesc FROM cu_cliente_proveedor_producto WHERE sCveCliente = ? AND sDescripcionProductoEspanol IS NOT NULL AND sDescripcionProductoEspanol != ''",
+      [CLIENT_CLAVE]
+    )
+    const [[{ withFrac }]] = await conn.query(
+      "SELECT COUNT(*) as withFrac FROM cu_cliente_proveedor_producto WHERE sCveCliente = ? AND sCveFraccion IS NOT NULL AND sCveFraccion != ''",
+      [CLIENT_CLAVE]
+    )
+    const { count: existingCount } = await supabase
+      .from('globalpc_productos')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', COMPANY_ID)
+
+    console.log('  with descripcion: ' + withDesc.toLocaleString() + ' (' + (catTotal > 0 ? Math.round(withDesc/catTotal*100) : 0) + '%)')
+    console.log('  with fraccion:    ' + withFrac.toLocaleString() + ' (' + (catTotal > 0 ? Math.round(withFrac/catTotal*100) : 0) + '%)')
+    console.log('  existing in Supabase for ' + COMPANY_ID + ': ' + (existingCount || 0).toLocaleString())
+    console.log('')
+
+    // Sample 3 rows
+    const [sample] = await conn.query(
+      `SELECT sCveProveedor, sCveClienteProveedorProducto, sDescripcionProductoEspanol, sCveFraccion, sCvePais, sMarca
+       FROM cu_cliente_proveedor_producto WHERE sCveCliente = ? LIMIT 3`,
+      [CLIENT_CLAVE]
+    )
+    console.log('Sample rows:')
+    sample.forEach((r, i) => {
+      console.log('  Row ' + (i+1) + ':')
+      console.log('    cve_proveedor:  ' + r.sCveProveedor)
+      console.log('    cve_producto:   ' + (r.sCveClienteProveedorProducto || '').slice(0, 50))
+      console.log('    descripcion:    ' + (r.sDescripcionProductoEspanol || '<null>').slice(0, 60))
+      console.log('    fraccion:       ' + (r.sCveFraccion || '<null>'))
+      console.log('    pais_origen:    ' + (r.sCvePais || '<null>'))
+      console.log('    marca:          ' + (r.sMarca || '<null>'))
+    })
+
+    console.log('')
+    console.log('═══ DRY RUN — exiting before any writes ═══')
+    await conn.end()
+    process.exit(0)
+  }
 
   let offset = 0, synced = 0, errors = 0
 
@@ -95,16 +212,17 @@ async function main() {
       tenant_id: TENANT_ID,
     }))
 
-    const { error } = await supabase.from('globalpc_productos').upsert(mapped, {
-      onConflict: 'cve_producto,cve_cliente,cve_proveedor',
-      ignoreDuplicates: false,
-    })
-
-    if (error) {
-      console.error(`  ❌ Batch error at ${offset}: ${error.message}`)
-      errors += rows.length
-    } else {
+    try {
+      await safeUpsert(supabase, 'globalpc_productos', mapped, {
+        onConflict: 'cve_producto,cve_cliente,cve_proveedor',
+        ignoreDuplicates: false,
+        scriptName: 'resync-productos',
+      })
       synced += rows.length
+    } catch (e) {
+      // safeUpsert throws + fires Telegram — here we track the local
+      // batch counter + keep the loop moving so partial progress survives.
+      errors += rows.length
     }
 
     offset += rows.length

@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
+import { fmtDateTime, fmtDateTimeLocal } from '@/lib/format-utils'
+import { PORTAL_DATE_FROM } from '@/lib/data'
+import { requireRole } from '@/lib/route-guards'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,9 +19,7 @@ const SOURCES = [
 ]
 
 export default async function OperacionesPage() {
-  const cookieStore = await cookies()
-  const role = cookieStore.get('user_role')?.value
-  if (role !== 'admin') redirect('/login')
+  await requireRole(['admin'])
 
   // Get last runs per source
   const sourceData = await Promise.all(
@@ -54,54 +53,55 @@ export default async function OperacionesPage() {
     .from('traficos')
     .select('trafico, estatus, updated_at, company_id')
     .gte('updated_at', twoHoursAgo)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .order('updated_at', { ascending: false })
     .limit(20)
 
   const allHealthy = sourceData.every(s => !s.last || s.last.status === 'success')
-  const now = new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit' })
+  const now = fmtDateTimeLocal(new Date()).split(' · ')[1] || fmtDateTimeLocal(new Date())
 
   const statusColor = (status: string | undefined) => {
     if (!status) return '#666'
-    if (status === 'success') return '#16A34A'
-    if (status === 'running') return '#D97706'
-    return '#DC2626'
+    if (status === 'success') return 'var(--success)'
+    if (status === 'running') return 'var(--warning-500, #D97706)'
+    return 'var(--danger-500)'
   }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'var(--font-geist-sans)', color: '#E8E6E0' }}>
+    <div style={{ fontFamily: 'var(--font-geist-sans)', color: 'var(--border)' }} className="p-4 md:px-7 md:py-6">
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Operaciones Autónomas</h1>
-        <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>
-          CRUZ se observa solo &middot; {now} CST &middot;
-          <span style={{ color: allHealthy ? '#16A34A' : '#DC2626', fontWeight: 700, marginLeft: 6 }}>
+        <p style={{ color: '#666', fontSize: 'var(--aguila-fs-body)', margin: '4px 0 0' }}>
+          PORTAL se observa solo &middot; {now} CST &middot;
+          <span style={{ color: allHealthy ? 'var(--success)' : 'var(--danger-500)', fontWeight: 700, marginLeft: 6 }}>
             {allHealthy ? 'Todos los flujos activos' : 'Requiere atención'}
           </span>
         </p>
       </div>
 
       {/* Source Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {sourceData.map(src => (
           <div key={src.key} style={{
-            background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12,
+            background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12,
             padding: 16, borderTop: `3px solid ${statusColor(src.last?.status)}`
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: 20 }}>{src.icon}</span>
+              <span style={{ fontSize: 'var(--aguila-fs-headline)' }}>{src.icon}</span>
               <span style={{
                 width: 8, height: 8, borderRadius: '50%',
                 background: statusColor(src.last?.status)
               }} />
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{src.label}</div>
-            <div style={{ fontSize: 11, color: '#666', marginBottom: 12 }}>Cada {src.interval}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, marginBottom: 4 }}>{src.label}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: '#666', marginBottom: 12 }}>Cada {src.interval}</div>
 
-            <div style={{ fontSize: 24, fontWeight: 800, color: GOLD }}>
+            <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, color: GOLD }}>
               {src.totalNew24h.toLocaleString()}
-              <span style={{ fontSize: 11, fontWeight: 400, color: '#666', marginLeft: 4 }}>nuevos 24h</span>
+              <span style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 400, color: '#666', marginLeft: 4 }}>nuevos 24h</span>
             </div>
 
-            <div style={{ fontSize: 11, color: '#9C9690', marginTop: 8 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 8 }}>
               {src.minutesAgo !== null ? (
                 src.minutesAgo < 60
                   ? `Hace ${src.minutesAgo}m`
@@ -111,7 +111,7 @@ export default async function OperacionesPage() {
             </div>
 
             {src.last?.error_message && (
-              <div style={{ fontSize: 11, color: '#DC2626', marginTop: 4, lineHeight: 1.3 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--danger-500)', marginTop: 4, lineHeight: 1.3 }}>
                 {src.last.error_message.substring(0, 60)}
               </div>
             )}
@@ -120,10 +120,10 @@ export default async function OperacionesPage() {
       </div>
 
       {/* Recent Activity Feed */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, margin: 0, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Últimas Ejecuciones
             </h2>
           </div>
@@ -135,15 +135,15 @@ export default async function OperacionesPage() {
                 <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid #2A2A2A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <span style={{ marginRight: 6 }}>{r.sourceIcon}</span>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>{r.sourceLabel}</span>
-                    <span style={{ fontSize: 11, color: '#666', marginLeft: 8 }}>
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{r.sourceLabel}</span>
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#666', marginLeft: 8 }}>
                       {r.records_new > 0 ? `+${r.records_new} nuevos` : 'sin cambios'}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor(r.status) }} />
-                    <span style={{ fontSize: 11, color: '#666' }}>
-                      {new Date(r.started_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                      {fmtDateTimeLocal(r.started_at).split(' · ')[1] || fmtDateTimeLocal(r.started_at)}
                     </span>
                   </div>
                 </div>
@@ -151,28 +151,28 @@ export default async function OperacionesPage() {
           </div>
         </div>
 
-        <div style={{ background: '#161616', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--navy-900)', border: '1px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #2A2A2A' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#9C9690', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h2 style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, margin: 0, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Cambios de Estado (2h)
             </h2>
           </div>
           <div style={{ maxHeight: 400, overflowY: 'auto' }}>
             {(recentChanges || []).length === 0 && (
-              <div style={{ padding: 24, textAlign: 'center', color: '#666', fontSize: 13 }}>
+              <div style={{ padding: 24, textAlign: 'center', color: '#666', fontSize: 'var(--aguila-fs-body)' }}>
                 Sin cambios en las últimas 2 horas
               </div>
             )}
             {(recentChanges || []).map((c, i) => (
               <div key={i} style={{ padding: '10px 16px', borderBottom: '1px solid #2A2A2A', display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.trafico}</span>
-                  <span style={{ fontSize: 12, marginLeft: 8,
-                    color: c.estatus === 'Cruzado' ? '#16A34A' : c.estatus === 'Detenido' ? '#DC2626' : '#D97706'
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)' }}>{c.trafico}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-compact)', marginLeft: 8,
+                    color: c.estatus === 'Cruzado' ? 'var(--success)' : c.estatus === 'Detenido' ? 'var(--danger-500)' : 'var(--warning-500, #D97706)'
                   }}>{c.estatus}</span>
                 </div>
-                <span style={{ fontSize: 11, color: '#666' }}>
-                  {new Date(c.updated_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                <span style={{ fontSize: 'var(--aguila-fs-meta)', color: '#666', fontFamily: 'var(--font-jetbrains-mono)' }}>
+                  {fmtDateTimeLocal(c.updated_at).split(' · ')[1] || fmtDateTimeLocal(c.updated_at)}
                 </span>
               </div>
             ))}

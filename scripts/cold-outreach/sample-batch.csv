@@ -1,0 +1,4 @@
+email,company,first_name,industry,state,city,rfc,unsub_token,campaign_id
+carlos.example@example.com,Grupo Industrial Saltillo,Carlos,Automotive iron castings,Coahuila,Saltillo,,a1b2c3d4e5f6a7b8,sample-preview
+maria.example@example.com,Harman de México,María,Automotive infotainment,Querétaro,Querétaro,,b2c3d4e5f6a7b8c9,sample-preview
+ing.example@example.com,Kingfa Sci. & Tech. México,Ing. Rodriguez,Plastic injection,San Luis Potosí,SLP,,c3d4e5f6a7b8c9d0,sample-preview

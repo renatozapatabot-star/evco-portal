@@ -1,42 +1,80 @@
 'use client'
+
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Truck, BarChart3, FolderOpen } from 'lucide-react'
-import { GOLD_GRADIENT } from '@/lib/design-system'
+import { MOBILE_INTERNAL_TABS, MOBILE_CLIENT_TABS, type UserRole } from '@/components/nav/nav-config'
+import { AduanaAvatar } from '@/components/command-center/CruzAvatar'
+import { useStatusSentence } from '@/hooks/use-status-sentence'
+import { getMoodFromCounts } from '@/components/command-center/MissionHeader'
 
-const TABS = [
-  { href: '/',          label: 'Inicio',    icon: LayoutDashboard },
-  { href: '/traficos',  label: 'Tráficos',  icon: Truck },
-  { href: '/cruz',      label: 'CRUZ',      icon: null as any, center: true },
-  { href: '/reportes',  label: 'Reportes',  icon: BarChart3 },
-  { href: '/expedientes', label: 'Docs',     icon: FolderOpen },
-]
+export interface MobileBottomNavProps {
+  /** Resolved by the server layout from the verified session. Never
+   *  read role from a client-side cookie — when the cookie is missing
+   *  on a fresh mobile session the user silently gets the wrong nav. */
+  role?: UserRole
+}
 
-export function MobileBottomNav() {
+export function MobileBottomNav({ role = 'client' }: MobileBottomNavProps) {
   const pathname = usePathname()
+  const status = useStatusSentence()
+
+  const tabs = (role === 'admin' || role === 'broker') ? MOBILE_INTERNAL_TABS : MOBILE_CLIENT_TABS
+  const mood = getMoodFromCounts(status.enProceso, status.urgentes)
 
   return (
-    <nav className="m-nav" aria-label="Navegación móvil">
-      {TABS.map(tab => {
-        const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
-        const Icon = tab.icon
+    <nav className="mn-nav" aria-label="Navegacion movil">
+      {tabs.map(tab => {
+        const isCenter = !!tab.center
+        const isBuscar = tab.href === '#buscar'
+        const active = !isCenter && !isBuscar && (tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href))
+
+        if (isCenter) {
+          return (
+            <button
+              key="cruz-center"
+              type="button"
+              className="mn-tab mn-center"
+              onClick={() => document.dispatchEvent(new CustomEvent('cruz:open-chat'))}
+              aria-label="PORTAL"
+            >
+              <span className="mn-icon-wrap mn-center-ring">
+                <AduanaAvatar size={36} mood={mood} />
+              </span>
+              <span className="mn-label">PORTAL</span>
+            </button>
+          )
+        }
+
+        if (isBuscar) {
+          return (
+            <button
+              key="buscar"
+              type="button"
+              className={`mn-tab`}
+              onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
+              aria-label="Buscar"
+            >
+              <span className="mn-icon-wrap">
+                {tab.icon && <tab.icon size={20} strokeWidth={1.6} />}
+              </span>
+              {tab.label && <span className="mn-label">{tab.label}</span>}
+            </button>
+          )
+        }
 
         return (
-          <Link key={tab.href} href={tab.href} className={`m-nav-tab ${active ? 'active' : ''} ${tab.center ? 'm-nav-center' : ''}`}>
-            <span style={{ position: 'relative' }}>
-              {tab.center ? (
-                <div style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  background: GOLD_GRADIENT,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16, fontWeight: 700, fontFamily: 'Georgia, serif',
-                  color: '#1A1710',
-                }}>Z</div>
-              ) : (
-                <Icon size={20} strokeWidth={1.6} />
-              )}
+          <Link
+            key={tab.href}
+            href={tab.href}
+            className={`mn-tab ${active ? 'mn-active' : ''}`}
+          >
+            <span className="mn-icon-wrap">
+              {tab.icon ? (
+                <tab.icon size={20} strokeWidth={1.6} />
+              ) : null}
             </span>
-            <span className="m-nav-label">{tab.label}</span>
+            {tab.label && <span className="mn-label">{tab.label}</span>}
+            {active && <span className="mn-dot" />}
           </Link>
         )
       })}

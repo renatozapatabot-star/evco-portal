@@ -1,0 +1,63 @@
+name: ZAPATA AI PR Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Single source of truth: scripts/gsd-verify.sh --ratchets-only.
+# Adding a new ratchet there auto-flows here. No duplication.
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  ratchets:
+    runs-on: ubuntu-latest
+    name: Invariant ratchets (gsd-verify --ratchets-only)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run all ratchet gates
+        id: ratchets
+        run: |
+          set +e
+          bash scripts/gsd-verify.sh --ratchets-only > /tmp/ratchet-output.txt 2>&1
+          EXIT=$?
+          cat /tmp/ratchet-output.txt
+          echo "exit=$EXIT" >> $GITHUB_OUTPUT
+
+      - name: Comment summary on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const raw = fs.readFileSync('/tmp/ratchet-output.txt', 'utf8');
+            // Strip ANSI codes, keep just the result lines
+            const clean = raw
+              .replace(/\u001b\[[0-9;]*m/g, '')
+              .split('\n')
+              .filter(l => l.match(/PASS|FAIL|WARN|^\[/))
+              .slice(0, 80)
+              .join('\n');
+            const exit = '${{ steps.ratchets.outputs.exit }}';
+            const verdict = exit === '0'
+              ? '✓ All ratchet gates pass.'
+              : '❌ One or more ratchet gates failed — see details below.';
+            const body = `## ZAPATA AI PR Gate — Ratchets\n\n${verdict}\n\n\`\`\`\n${clean}\n\`\`\`\n\nFull suite (typecheck/lint/build/test) runs locally via \`bash scripts/gsd-verify.sh\` before deploy.`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Block merge on failure
+        if: steps.ratchets.outputs.exit != '0'
+        run: |
+          echo "Ratchet gates failed — see PR comment for details"
+          exit 1

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { GOLD } from '@/lib/design-system'
+import { fmtDate } from '@/lib/format-utils'
 
 type Step = {
   key: string
@@ -22,23 +23,23 @@ type TrackingData = {
   lastUpdated: string | null
 }
 
-const DARK = '#0F0F0D'
-const SURFACE = '#1A1A17'
-const MUTED = '#6B6B5E'
-const WHITE = '#F5F5F0'
+// Track page uses dark theme intentionally — external-facing, not part of portal shell
+const DARK = 'var(--navy-900, #0F0F0D)'
+const SURFACE = 'var(--navy-800, #1A1A17)'
+const MUTED = 'var(--text-muted, #6B6B5E)'
+const WHITE = 'var(--bg-primary, #F5F5F0)'
 
 const STATUS_COLORS: Record<string, string> = {
-  IN_TRANSIT: '#3B82F6',
-  CUSTOMS_CLEARANCE: '#F59E0B',
-  AT_BORDER: '#F59E0B',
-  CLEARED: '#10B981',
-  DELIVERED: '#10B981',
+  IN_TRANSIT: 'var(--info-500)',
+  CUSTOMS_CLEARANCE: 'var(--warning-500)',
+  AT_BORDER: 'var(--warning-500)',
+  CLEARED: 'var(--status-green)',
+  DELIVERED: 'var(--status-green)',
 }
 
 function formatDate(iso: string | null): string {
   if (!iso) return '--'
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+  return fmtDate(iso)
 }
 
 export default function TrackingPage() {
@@ -76,16 +77,16 @@ export default function TrackingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: `linear-gradient(135deg, ${GOLD}, #A88A3D)`,
+            background: `linear-gradient(135deg, ${GOLD}, var(--gold-700))`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14, fontWeight: 800, color: DARK,
+            fontSize: 'var(--aguila-fs-section)', fontWeight: 800, color: DARK,
           }}>C</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.05em' }}>CRUZ Tracking</div>
-            <div style={{ fontSize: 11, color: MUTED }}>Renato Zapata & Company</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, letterSpacing: '0.05em' }}>PORTAL Tracking</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED }}>Renato Zapata & Company</div>
           </div>
         </div>
-        <div style={{ fontSize: 11, color: MUTED }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED }}>
           Patente 3596
         </div>
       </header>
@@ -100,7 +101,7 @@ export default function TrackingPage() {
               animation: 'spin 0.8s linear infinite',
               margin: '0 auto 16px',
             }} />
-            <div style={{ fontSize: 13, color: MUTED }}>Cargando rastreo...</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: MUTED }}>Cargando rastreo...</div>
             <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
           </div>
         )}
@@ -109,9 +110,9 @@ export default function TrackingPage() {
           <div style={{
             textAlign: 'center', padding: '80px 20px',
           }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>&#128722;</div>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Enlace no disponible</div>
-            <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.6 }}>{error}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>&#128722;</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700, marginBottom: 8 }}>Enlace no disponible</div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: MUTED, lineHeight: 1.6 }}>{error}</div>
           </div>
         )}
 
@@ -119,20 +120,20 @@ export default function TrackingPage() {
           <>
             {/* Reference & Status */}
             <div style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: 11, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
                 Referencia
               </div>
-              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 12 }}>
                 {data.reference}
               </div>
               <div style={{
                 display: 'inline-block',
                 padding: '6px 16px',
                 borderRadius: 20,
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 fontWeight: 700,
                 backgroundColor: STATUS_COLORS[data.status] || MUTED,
-                color: '#fff',
+                color: 'rgba(255,255,255,0.045)',
               }}>
                 {data.statusLabel}
               </div>
@@ -147,8 +148,8 @@ export default function TrackingPage() {
                   backgroundColor: SURFACE,
                   borderRadius: 10,
                 }}>
-                  <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>Mercancia</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{data.description}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED, marginBottom: 4 }}>Mercancía</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{data.description}</div>
                 </div>
               )}
               <div style={{
@@ -156,8 +157,8 @@ export default function TrackingPage() {
                 backgroundColor: SURFACE,
                 borderRadius: 10,
               }}>
-                <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>Entrega Estimada</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED, marginBottom: 4 }}>Entrega Estimada</div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: GOLD, fontFamily: 'var(--font-jetbrains-mono)' }}>
                   {data.status === 'DELIVERED' ? 'Entregado' : formatDate(data.estimatedDelivery)}
                 </div>
               </div>
@@ -167,15 +168,15 @@ export default function TrackingPage() {
                   backgroundColor: SURFACE,
                   borderRadius: 10,
                 }}>
-                  <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>Transportista</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{data.carrier}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED, marginBottom: 4 }}>Transportista</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600 }}>{data.carrier}</div>
                 </div>
               )}
             </div>
 
             {/* Timeline */}
             <div style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: 11, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
                 Progreso
               </div>
               <div style={{ position: 'relative', paddingLeft: 28 }}>
@@ -200,14 +201,14 @@ export default function TrackingPage() {
                         position: 'absolute',
                         left: -28,
                         top: 0,
-                        fontSize: 18,
+                        fontSize: 'var(--aguila-fs-kpi-small)',
                         lineHeight: '24px',
                       }}>
                         {iconChar}
                       </div>
                       {/* Label */}
                       <div style={{
-                        fontSize: 14,
+                        fontSize: 'var(--aguila-fs-section)',
                         fontWeight: step.done || step.active ? 700 : 400,
                         color: step.done ? WHITE : step.active ? GOLD : MUTED,
                         lineHeight: '24px',
@@ -222,8 +223,8 @@ export default function TrackingPage() {
 
             {/* Last updated */}
             {data.lastUpdated && (
-              <div style={{ fontSize: 11, color: MUTED, textAlign: 'center' }}>
-                Ultima actualizacion: {formatDate(data.lastUpdated)}
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: MUTED, textAlign: 'center' }}>
+                Ultima actualizacion: <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{formatDate(data.lastUpdated)}</span>
               </div>
             )}
           </>
@@ -240,7 +241,7 @@ export default function TrackingPage() {
         backgroundColor: DARK,
         borderTop: `1px solid ${SURFACE}`,
         textAlign: 'center',
-        fontSize: 11,
+        fontSize: 'var(--aguila-fs-meta)',
         color: MUTED,
         lineHeight: 1.6,
       }}>

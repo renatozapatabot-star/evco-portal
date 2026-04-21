@@ -16,7 +16,7 @@ export function getTraficoUrgency(t: {
   doc_count?: number
 }): UrgencyResult {
   if ((t.estatus || '').toLowerCase().includes('cruz')) {
-    return { class: 'completed', label: 'Cruzado', color: '#16A34A', bgColor: '#F0FDF4', action: null, days: 0 }
+    return { class: 'completed', label: 'Cruzado', color: 'var(--portal-status-green-fg)', bgColor: '#F0FDF4', action: null, days: 0 }
   }
 
   const days = t.fecha_llegada
@@ -27,24 +27,24 @@ export function getTraficoUrgency(t: {
     return {
       class: hasActivity ? 'stalled' : 'zombie',
       label: hasActivity ? 'Estancado' : 'Abandonado',
-      color: hasActivity ? '#991B1B' : '#6B7280',
-      bgColor: hasActivity ? '#FEF2F2' : '#F3F4F6',
+      color: hasActivity ? 'var(--portal-status-red-fg)' : 'var(--portal-fg-5)',
+      bgColor: hasActivity ? 'var(--portal-status-red-bg)' : 'var(--portal-ink-2)',
       action: hasActivity ? 'Intervención inmediata' : 'Archivar — sin actividad 90+ días',
       days,
     }
   }
 
   if (days > 30) {
-    return { class: 'stalled', label: 'Estancado', color: '#991B1B', bgColor: '#FEF2F2',
+    return { class: 'stalled', label: 'Estancado', color: 'var(--portal-status-red-fg)', bgColor: 'var(--portal-status-red-bg)',
       action: 'Seguimiento urgente', days }
   }
 
   if (days > 7) {
-    return { class: 'overdue', label: 'Retrasado', color: '#DC2626', bgColor: '#FEF2F2',
+    return { class: 'overdue', label: 'Retrasado', color: 'var(--danger-500)', bgColor: 'var(--portal-status-red-bg)',
       action: 'Seguimiento necesario', days }
   }
 
-  return { class: 'active', label: 'En Proceso', color: '#D4952A', bgColor: '#FFFBEB', action: null, days }
+  return { class: 'active', label: 'En Proceso', color: 'var(--portal-status-amber-fg)', bgColor: 'var(--portal-status-amber-bg)', action: null, days }
 }
 
 export function classifyAllTraficos<T extends { estatus: string; fecha_llegada: string | null; pedimento?: string | null }>(traficos: T[]) {

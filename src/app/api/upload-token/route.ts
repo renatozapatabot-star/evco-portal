@@ -23,11 +23,28 @@ export async function GET(request: NextRequest) {
     .update({ view_count: (data.view_count || 0) + 1 })
     .eq('token', token)
 
+  // Resolve human-friendly client name (companies.name). Fail open — the
+  // proveedor page falls back to company_id if the join returns nothing.
+  let companyName: string | null = null
+  if (data.company_id) {
+    const { data: companyRow } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('company_id', data.company_id)
+      .maybeSingle()
+    companyName = (companyRow?.name as string | undefined) ?? null
+  }
+
   return NextResponse.json({
     trafico_id: data.trafico_id,
     company_id: data.company_id,
+    company_name: companyName,
     required_docs: data.required_docs || [],
     docs_received: data.docs_received || [],
+    expires_at: data.expires_at,
+    last_activity_at: data.updated_at || data.created_at || null,
+    shipment_confirmed: !!data.shipment_confirmed_at,
+    shipment_confirmed_at: data.shipment_confirmed_at || null,
   })
 }
 
@@ -95,7 +112,7 @@ export async function POST(request: NextRequest) {
         chat_id: '-5085543275',
         text: `📄 Doc recibido — ${traficoId}\nArchivo: ${file.name}\nVía: Supplier Upload\n— CRUZ 🦀`
       })
-    }).catch(() => {})
+    }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }
 
   return NextResponse.json({ success: true, file_name: file.name })

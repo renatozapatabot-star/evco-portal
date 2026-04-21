@@ -5,6 +5,7 @@
 // Cron: 0 8 * * 0 (Sunday 8 AM)
 
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
@@ -16,6 +17,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
 async function sendTG(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(msg); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -228,10 +230,9 @@ async function main() {
 
     // ── SCAN 4: Classification errors (same product, different fracciones)
     console.log('  🏷️  Scanning classification inconsistencies...')
-    const { data: productos } = await supabase.from('globalpc_productos')
+    const productos = await fetchAll(supabase.from('globalpc_productos')
       .select('descripcion, fraccion, cve_proveedor, cve_trafico')
-      .not('fraccion', 'is', null)
-      .limit(5000)
+      .not('fraccion', 'is', null))
 
     if (productos?.length) {
       // Group by description keyword + proveedor

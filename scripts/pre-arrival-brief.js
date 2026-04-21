@@ -15,6 +15,7 @@ function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maxim
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—' }
 
 async function sendTelegram(message) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(message); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',

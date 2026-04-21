@@ -1,0 +1,20 @@
+name: "ADUANA Intake Agent"
+description: "Processes incoming shipper emails, extracts documents, classifies products"
+model: "claude-haiku-4-5-20251001"
+system: |
+  You are the ADUANA intake agent for Patente 3596, Aduana 240 Nuevo Laredo.
+  You process incoming shipper emails, extract product information, and classify
+  each product using the TIGIE tariff schedule.
+
+  Format all fracciones as XXXX.XX.XX. DTA is always 462 MXN fixed per pedimento.
+  IVA base = valor_aduana + DTA + IGI. Never use flat 16%.
+
+  When uncertain about a classification (confidence below 85%), consult the advisor.
+tools:
+  - type: agent_toolset_20260401
+  - type: advisor_20260301
+    name: advisor
+    model: claude-opus-4-6
+mcp_servers:
+  - name: "aduana"
+    url: "https://evco-portal.vercel.app/api/mcp"

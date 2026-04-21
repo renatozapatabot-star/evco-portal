@@ -5,6 +5,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN; const TELEGRAM_CHAT = '-5
 function fmtUSD(n) { return '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) }
 function fmtMXN(n) { return '$' + Number(n || 0).toLocaleString('es-MX') }
 async function sendTG(msg) { if (!TELEGRAM_TOKEN) { console.log(msg); return }; await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }) }) }
+  if (process.env.TELEGRAM_SILENT === 'true') return
 
 async function runIGIChecker() {
   console.log('🔍 IGI Post-Pedimento Checker\n')

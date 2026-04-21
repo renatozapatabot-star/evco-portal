@@ -1,20 +1,23 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
-import Sidebar from './sidebar'
-import TopBar from './top-bar'
-import { CommandPalette } from './command-palette'
-import { ShortcutHelp } from './shortcut-help'
-import { ToastProvider } from './Toast'
+import { useEffect, useState, useRef, Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import AguilaLayout from './aguila/AguilaLayout'
+import { AguilaFooterShellFallback } from './aguila/AguilaFooter'
+import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { MobileHeader } from './mobile-header'
-import { MobileBottomNav } from './mobile-bottom-nav'
-import { CruzFAB } from './cruz-fab'
-import { IntelligenceTicker } from './IntelligenceTicker'
-import { WelcomeOverlay } from './WelcomeOverlay'
-import { daysUntilMVE } from '@/lib/compliance-dates'
+import { usePullToRefresh } from '@/hooks/use-pull-refresh'
+import { SlideInNotification } from './notifications/SlideInNotification'
+import TelemetryProvider from './telemetry/TelemetryProvider'
+import { getCookieValue } from '@/lib/client-config'
+
+// Defer heavy components — not needed on first paint
+const CommandPaletteProvider = dynamic(() => import('./CommandPaletteProvider').then(m => ({ default: m.CommandPaletteProvider })), { ssr: false })
+const ShortcutHelp = dynamic(() => import('./shortcut-help').then(m => ({ default: m.ShortcutHelp })), { ssr: false })
+const AguilaChatBubble = dynamic(() => import('./aguila-chat-bubble').then(m => ({ default: m.AguilaChatBubble })), { ssr: false })
+const IntelligenceTicker = dynamic(() => import('./intelligence/IntelligenceTicker'), { ssr: false, loading: () => null })
 
 interface Props { children: React.ReactNode }
 
@@ -26,42 +29,95 @@ function LoadingBar() {
   return <div className="load-bar" />
 }
 
-function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const [visible, setVisible] = useState(true)
-  useEffect(() => { setVisible(false); const t = setTimeout(() => setVisible(true), 50); return () => clearTimeout(t) }, [pathname])
-  return <div style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity 200ms ease-out, transform 200ms ease-out' }}>{children}</div>
+/** PageTransition removed — added 30ms+ delay to every navigation with minimal visual benefit */
+
+/** Listens for celebration events dispatched by use-notifications Realtime and triggers toasts. */
+function CelebrationListener() {
+  const { toast } = useToast()
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ title: string }>).detail
+      toast(detail.title, 'celebration')
+    }
+    window.addEventListener('cruz:celebration', handler)
+    return () => window.removeEventListener('cruz:celebration', handler)
+  }, [toast])
+  return null
+}
+
+/** Gold banner shown when broker is impersonating a client view. */
+function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit: () => void }) {
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+      background: 'var(--gold)', color: 'var(--bg-card)', height: 36,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 12, fontSize: 'var(--aguila-fs-body)', fontWeight: 600,
+    }}>
+      <span>Viendo como: {companyName}</span>
+      <button
+        onClick={onExit}
+        style={{
+          background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
+          borderRadius: 4, color: 'var(--bg-card)', padding: '2px 10px',
+          fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, cursor: 'pointer',
+        }}
+      >
+        Salir
+      </button>
+    </div>
+  )
 }
 
 export default function DashboardShellClient({ children }: Props) {
   const pathname = usePathname()
   const isMobile = useIsMobile()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [scrolled, setScrolled] = useState(false)
-  const [alertCount, setAlertCount] = useState(0)
   const [idle, setIdle] = useState(false)
   const [showWarning, setShowWarning] = useState(false)
   const [isOffline, setIsOffline] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const warnTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
+  // Resolve portal identity from cookies
+  const [portalType, setPortalType] = useState<'operator' | 'client'>('client')
+  const [clientName, setClientName] = useState<string | undefined>(undefined)
+  const [clientInitials, setClientInitials] = useState<string | undefined>(undefined)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  useEffect(() => {
+    const role = getCookieValue('user_role')
+    if (role === 'broker' || role === 'admin' || role === 'warehouse' || role === 'contabilidad') {
+      // Internal-team roles all use the operator-style shell (sidebar visible, internal chrome).
+      // Cockpit landing pages (/bodega/inicio, /contabilidad/inicio) arrive in later commits.
+      setPortalType('operator')
+    } else {
+      setPortalType('client')
+      const name = getCookieValue('company_name')
+      if (name) {
+        setClientName(name)
+        const words = name.split(/\s+/).filter(Boolean)
+        setClientInitials(words.length >= 2 ? `${words[0][0]}${words[1][0]}`.toUpperCase() : name.slice(0, 2).toUpperCase())
+      }
+    }
+  }, [])
+
   useKeyboardShortcuts()
+  const { pulling, distance } = usePullToRefresh()
 
+  // Route change: close mobile sidebar, set data-page, read viewing_as cookie
   useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const handler = () => setScrolled(el.scrollTop > 8)
-    el.addEventListener('scroll', handler, { passive: true })
-    return () => el.removeEventListener('scroll', handler)
-  }, [])
-
-  useEffect(() => {
-    const mveDays = daysUntilMVE()
-    setAlertCount(mveDays <= 30 ? 1 : 0)
-  }, [])
-
-  useEffect(() => {
+    setMobileOpen(false)
     document.body.setAttribute('data-page', pathname)
+    const vaMatch = document.cookie.match(/(^| )viewing_as=([^;]+)/)
+    const nameMatch = document.cookie.match(/(^| )company_name=([^;]+)/)
+    if (vaMatch) {
+      setViewingAs(vaMatch[2])
+      setViewingName(nameMatch ? decodeURIComponent(nameMatch[2]) : vaMatch[2])
+    } else {
+      setViewingAs(null)
+    }
     return () => { document.body.removeAttribute('data-page') }
   }, [pathname])
 
@@ -73,6 +129,13 @@ export default function DashboardShellClient({ children }: Props) {
     window.addEventListener('online', goOnline)
     setIsOffline(!navigator.onLine)
     return () => { window.removeEventListener('offline', goOffline); window.removeEventListener('online', goOnline) }
+  }, [])
+
+  // Scroll-to-top visibility
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 500)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   // Session idle detection
@@ -95,56 +158,142 @@ export default function DashboardShellClient({ children }: Props) {
     }
   }, [])
 
-  if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname === '/war-room') return <>{children}</>
+  // Broker impersonation state (read in pathname effect above)
+  const [viewingAs, setViewingAs] = useState<string | null>(null)
+  const [viewingName, setViewingName] = useState<string>('')
+
+  if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname.startsWith('/proveedor') || pathname === '/war-room') return <>{children}</>
 
   return (
     <ToastProvider>
+      <TelemetryProvider>
+      <CelebrationListener />
+      <SlideInNotification />
       <a href="#main-content" className="skip-link">Ir al contenido</a>
-      {!isMobile && <IntelligenceTicker />}
-      <div className="shell">
-        <LoadingBar />
-        {!isMobile && <Sidebar />}
-        <div className="shell-main">
-          {isMobile ? (
-            <MobileHeader alertCount={alertCount} />
-          ) : (
-            <div className={`topbar ${scrolled ? 'topbar-scrolled' : ''}`}>
-              <TopBar />
-            </div>
-          )}
-          <main id="main-content" ref={scrollRef} className="page-wrap">
-            <PageTransition>{children}</PageTransition>
-          </main>
+
+      {/* Broker viewing-as banner */}
+      {viewingAs && <ViewingAsBanner companyName={viewingName} onExit={() => {
+        fetch('/api/auth/view-as', { method: 'DELETE' }).then(() => {
+          setViewingAs(null)
+          window.location.href = '/'
+        })
+      }} />}
+
+      {/* Pull-to-refresh indicator (mobile only) */}
+      {isMobile && distance > 0 && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9998,
+          display: 'flex', justifyContent: 'center', paddingTop: Math.min(distance, 100),
+          transition: pulling ? 'none' : 'padding-top 200ms ease',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'var(--bg-card, #FFFFFF)',
+            border: '1px solid var(--border, #E8E5E0)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: `rotate(${pulling ? 180 : (distance / 80) * 180}deg)`,
+            transition: pulling ? 'none' : 'transform 200ms ease',
+            fontSize: 'var(--aguila-fs-body-lg)',
+          }}>
+            ↓
+          </div>
         </div>
-        <CommandPalette />
-        {!isMobile && <ShortcutHelp />}
-        {isMobile && <MobileBottomNav />}
-        {isMobile && <CruzFAB />}
-      </div>
+      )}
+
+      <AguilaLayout
+        portalType={portalType}
+        clientName={clientName}
+        clientInitials={clientInitials}
+        onLogout={() => { window.location.href = '/api/auth/logout' }}
+        mobileOpen={mobileOpen}
+        onMobileToggle={() => setMobileOpen(v => !v)}
+        hideSidebar={true}
+      >
+        <LoadingBar />
+        <Suspense fallback={null}>
+          <IntelligenceTicker />
+        </Suspense>
+        <div id="main-content" ref={scrollRef}>
+          {children}
+          {/* Shell-level identity footer — renders on every authenticated
+              page. PageShell also renders an AguilaFooter for pages that
+              compose through it (e.g. /inicio). Dedupe guard in the
+              AguilaFooter component itself: if another [data-identity-footer]
+              is already on the page, this one returns null. */}
+          <AguilaFooterShellFallback />
+        </div>
+      </AguilaLayout>
+
+      <CommandPaletteProvider />
+      {!isMobile && <ShortcutHelp />}
+
+      {/* Bottom nav removed — navigation via topbar logo, search icon, and floating CRUZ chat */}
 
       {/* Offline banner */}
       {isOffline && (
-        <div className="offline-banner">Sin conexión — mostrando datos en caché</div>
+        <div style={{
+          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 9998, background: 'var(--navy-900)', color: 'var(--bg-card)',
+          padding: '10px 24px', borderRadius: 'var(--radius-lg)',
+          fontSize: 'var(--aguila-fs-body)', fontWeight: 600, boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ fontSize: 'var(--aguila-fs-body-lg)' }}>📡</span>
+          Sin conexión — mostrando datos previos
+        </div>
       )}
 
-      {/* Welcome overlay for first-time users */}
-      <WelcomeOverlay />
+      {/* Floating Asistente CRUZ chat bubble — mounted on every
+          authenticated page, both desktop and mobile. Desktop taps open
+          an inline panel; mobile taps route to /cruz full-screen. The
+          component owns its own FAB rendering; DashboardShellClient just
+          mounts it inside the authenticated shell. */}
+      <AguilaChatBubble />
+
+      {/* Welcome overlay removed — the launchpad IS the welcome */}
+
+      {/* Scroll to top — sits above the persistent AsistenteButton (60px tall + 20px bottom inset). */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver arriba"
+          style={{
+            position: 'fixed', bottom: 96, right: 20, zIndex: 40,
+            width: 40, height: 40, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            color: 'var(--portal-fg-1)',
+            border: '1px solid rgba(192,197,206,0.18)',
+            cursor: 'pointer',
+            fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 700,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'opacity 200ms',
+          }}
+        >
+          ↑
+        </button>
+      )}
 
       {/* Session idle warning */}
       {showWarning && !idle && (
         <div className="idle-warning">
-          <span>&#9201;</span> Sesión inactiva — se bloqueará en 5 minutos
+          <span>&#9201;</span> Sesion inactiva -- se bloqueara en 5 minutos
         </div>
       )}
 
       {/* Session idle overlay */}
       {idle && (
         <div className="idle-overlay" onClick={() => { setIdle(false); setShowWarning(false) }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>&#128274;</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
-          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>Haz clic o toca para continuar</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-hero)', marginBottom: 16 }}>&#128274;</div>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, marginBottom: 8 }}>Sesión bloqueada</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-4)', marginBottom: 20 }}>Haz clic o toca para continuar</div>
         </div>
       )}
+      </TelemetryProvider>
     </ToastProvider>
   )
 }

@@ -1,0 +1,3 @@
+# V1.5 · F20 Audit — Demo Script
+
+Feature 20 is documentation-only: a 5-minute demo script (`docs/DEMO_SCRIPT.md`) that makes the AGUILA V1.5 walkthrough repeatable and memorable. The script stitches seven features into a single narrative — corridor → Eagle View → trace → warehouse scan → QuickBooks export → Telegram alert → close — with explicit click/say/pause instructions, three pause-for-impact moments, three closing questions, a bilingual follow-up email template, and a video recording checklist. No code changes, no migrations, no new dependencies. Test count unchanged at 343. Typecheck clean, build green, gsd-verify clean. Deferred: actual video recording (path `docs/demo-video/` seeded as placeholder; Renato records when Tito approves first viewing).

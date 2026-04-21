@@ -1,17 +1,24 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
 import { createClient } from '@supabase/supabase-js'
-import { COMPANY_ID } from '@/lib/client-config'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const { data } = await supabase
     .from('traficos')
     .select('estatus, cruz_score, fecha_cruce, fecha_pago, updated_at')
-    .eq('company_id', COMPANY_ID)
+    .eq('company_id', companyId)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
 
   const rows = data || []
   const today = new Date().toISOString().split('T')[0]
@@ -26,6 +33,6 @@ export async function GET() {
 
   return NextResponse.json(
     { enProceso, urgentes, cruzadosHoy, total: rows.length },
-    { headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' } }
+    { headers: { 'Cache-Control': 's-maxage=7200, stale-while-revalidate=14400' } }
   )
 }

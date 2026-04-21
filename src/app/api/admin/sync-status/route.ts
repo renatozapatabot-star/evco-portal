@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
+import { verifySession } from '@/lib/session'
 
 export async function GET(request: NextRequest) {
-  const role = request.cookies.get('user_role')?.value
-  if (role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  if (session.role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Solo administrador' } }, { status: 403 })
   }
 
   try {

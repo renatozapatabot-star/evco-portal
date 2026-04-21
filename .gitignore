@@ -41,3 +41,39 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 credentials/
+
+# Status watcher local checkpoint
+.status-watcher-checkpoint.json
+
+# Sandbox run results (JSON per run, local only)
+scripts/sandbox/results/
+!scripts/sandbox/results/.gitkeep
+
+# Runtime-generated audit + heartbeat files (do not commit)
+docs/SYSTEM_STATE.md
+docs/SYSTEM_STATE.previous.md
+scripts/heartbeat-state.json
+
+# Cron runtime state — checkpoints, snapshots, sync progress (local only)
+scripts/.backfill-checkpoints/
+scripts/.purge-snapshots/
+scripts/.sync-checkpoints/
+
+# Migration backups (SQL rollback snapshots — keep local, not in VCS)
+supabase/migrations/*.sql.backup-*
+
+# Archived migration sets — kept on disk during consolidation, not in VCS
+# (git history preserves the originals; these folders are rollback-only).
+supabase/migrations_broken_*/
+supabase/migrations_backup_*/
+
+# Schema snapshots — regenerable via `pg_dump -s --schema=public`
+.planning/schema-public-*.sql
+
+# Temporary scratch (local-only debugging / curl / paste buffer)
+tmp/
+
+# Aider session artifacts — chat history / input history / tags cache.
+# These can contain pasted secrets or proprietary context; never commit.
+.aider*
+schema_*.sql

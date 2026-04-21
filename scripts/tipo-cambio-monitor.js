@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js')
+const { withSyncLog } = require('./lib/sync-log')
 require('dotenv').config({ path: '.env.local' })
 
 const supabase = createClient(
@@ -21,6 +22,7 @@ function nowCST() {
 }
 
 async function sendTelegram(message) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(message); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -119,12 +121,14 @@ async function runTipoCambioMonitor() {
       ``,
       `Acción: Revisar antes de transmisión SAAI`,
       `Patente 3596 · Aduana 240`,
-      `— CRUZ 🦀`
+      `— PORTAL 🦀`
     ].join('\n'))
   }
+
+  return { rows_synced: rows.length }
 }
 
-runTipoCambioMonitor().catch(err => {
+withSyncLog(supabase, { sync_type: 'tipo_cambio_monitor', company_id: null }, runTipoCambioMonitor).catch(err => {
   console.error('Fatal error:', err)
   process.exit(1)
 })

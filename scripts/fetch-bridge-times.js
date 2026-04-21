@@ -31,7 +31,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const SCRIPT_NAME = 'fetch-bridge-times.js'
 const CBP_API_URL = 'https://bwt.cbp.gov/api/bwtnew?port=2304'
-const MAX_VALID_WAIT_MINUTES = 300 // Discard anything above this — garbage data
+const MAX_VALID_WAIT_MINUTES = 480 // 8 hours — anything above is a data error
 const API_TIMEOUT_MS = 15000
 
 function nowCST() {
@@ -67,10 +67,9 @@ async function getHistoricalFallback(bridgeName) {
   // Fallback: most recent valid entry from bridge_intelligence
   const { data, error } = await supabase
     .from('bridge_intelligence')
-    .select('wait_time_minutes, passenger_wait, fetched_at')
+    .select('crossing_hours, crossing_hours, calculated_at')
     .eq('bridge_name', bridgeName)
-    .eq('source', 'cbp_api')
-    .order('fetched_at', { ascending: false })
+    .order('calculated_at', { ascending: false })
     .limit(1)
 
   if (error || !data || data.length === 0) return null
@@ -81,15 +80,14 @@ async function getHistoricalAverage(bridgeName) {
   // Average of last 48 entries (roughly 24 hours at 30 min intervals)
   const { data, error } = await supabase
     .from('bridge_intelligence')
-    .select('wait_time_minutes')
+    .select('crossing_hours')
     .eq('bridge_name', bridgeName)
-    .eq('source', 'cbp_api')
-    .order('fetched_at', { ascending: false })
+    .order('calculated_at', { ascending: false })
     .limit(48)
 
   if (error || !data || data.length === 0) return null
 
-  const avg = data.reduce((sum, r) => sum + r.wait_time_minutes, 0) / data.length
+  const avg = data.reduce((sum, r) => sum + r.crossing_hours, 0) / data.length
   return Math.round(avg)
 }
 
@@ -154,30 +152,38 @@ async function run() {
         const passengerWait = parseWaitTime(
           port.passenger_vehicle_lanes?.standard_lanes?.delay_minutes ||
           port.passenger?.delay_minutes ||
-          port.passenger_wait
+          port.crossing_hours
         )
 
         if (commercialWait !== null) {
           records.push({
             bridge_name: bridgeName,
-            wait_time_minutes: commercialWait,
-            passenger_wait: passengerWait,
-            source: 'cbp_api',
-            fetched_at: fetchedAt,
+            crossing_hours: commercialWait,
+            crossing_hours: passengerWait,
+            calculated_at: fetchedAt,
             day_of_week: dayOfWeek
           })
           console.log(`  🚛 ${bridgeName}: commercial ${commercialWait}min, passenger ${passengerWait ?? 'N/A'}min`)
+
+          // Anomaly alert: extreme wait time
+          if (commercialWait > 300) {
+            await sendTelegram(`⚠️ Bridge data anomaly: ${bridgeName} shows ${commercialWait} min — verify CBP source`)
+          }
         } else if (passengerWait !== null) {
           // Only passenger data available — still worth storing
           records.push({
             bridge_name: bridgeName,
-            wait_time_minutes: passengerWait,
-            passenger_wait: passengerWait,
-            source: 'cbp_api',
-            fetched_at: fetchedAt,
+            crossing_hours: passengerWait,
+            crossing_hours: passengerWait,
+            calculated_at: fetchedAt,
             day_of_week: dayOfWeek
           })
           console.log(`  🚗 ${bridgeName}: passenger ${passengerWait}min (no commercial data)`)
+
+          // Anomaly alert: extreme wait time
+          if (passengerWait > 300) {
+            await sendTelegram(`⚠️ Bridge data anomaly: ${bridgeName} shows ${passengerWait} min — verify CBP source`)
+          }
         } else {
           // Both values exceeded MAX_VALID_WAIT_MINUTES — use historical average
           console.warn(`  ⚠️  ${bridgeName}: wait times exceeded ${MAX_VALID_WAIT_MINUTES}min — using historical average`)
@@ -185,10 +191,9 @@ async function run() {
           if (avg !== null) {
             records.push({
               bridge_name: bridgeName,
-              wait_time_minutes: avg,
-              passenger_wait: null,
-              source: 'historical_fallback',
-              fetched_at: fetchedAt,
+              crossing_hours: avg,
+              crossing_hours: null,
+              calculated_at: fetchedAt,
               day_of_week: dayOfWeek
             })
             console.log(`  📊 ${bridgeName}: historical avg ${avg}min (garbage data discarded)`)
@@ -210,13 +215,12 @@ async function run() {
       if (fallback) {
         records.push({
           bridge_name: bridgeName,
-          wait_time_minutes: fallback.wait_time_minutes,
-          passenger_wait: fallback.passenger_wait,
-          source: 'historical_fallback',
-          fetched_at: fetchedAt,
+          crossing_hours: fallback.crossing_hours,
+          crossing_hours: fallback.crossing_hours,
+          calculated_at: fetchedAt,
           day_of_week: dayOfWeek
         })
-        console.log(`  📊 ${bridgeName}: fallback ${fallback.wait_time_minutes}min (from ${fallback.fetched_at})`)
+        console.log(`  📊 ${bridgeName}: fallback ${fallback.crossing_hours}min (from ${fallback.calculated_at})`)
       }
     }
 
@@ -254,7 +258,7 @@ async function run() {
       script: SCRIPT_NAME,
       records_stored: records.length,
       sources: [...new Set(records.map(r => r.source))],
-      bridges: records.map(r => `${r.bridge_name}: ${r.wait_time_minutes}min`),
+      bridges: records.map(r => `${r.bridge_name}: ${r.crossing_hours}min`),
       timestamp
     }
   })

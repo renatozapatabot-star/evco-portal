@@ -1,28 +1,38 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-import { CLIENT_CLAVE, COMPANY_ID } from '@/lib/client-config'
-const CLAVE = CLIENT_CLAVE
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const cookieRole = request.cookies.get('user_role')?.value
+  const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
+  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const { id: traficoId } = await params
 
+  // Broker/admin: query by trafico only, no company_id filter (they see all)
+  let trafQ = supabase.from('traficos').select('*').eq('trafico', traficoId)
+  if (!isInternal) trafQ = trafQ.eq('company_id', companyId)
+  trafQ = trafQ.gte('fecha_llegada', PORTAL_DATE_FROM)
+
+  let factQ = supabase.from('aduanet_facturas').select('*').eq('referencia', traficoId)
+  if (!isInternal) factQ = factQ.eq('clave_cliente', clientClave)
+
+  const entQ = supabase.from('entradas').select('*').eq('trafico', traficoId)
+    .order('fecha_llegada_mercancia', { ascending: false })
+
   const [trafRes, factRes, entRes, docsRes] = await Promise.all([
-    supabase.from('traficos').select('*')
-      .eq('trafico', traficoId).eq('company_id', COMPANY_ID).single(),
-    supabase.from('aduanet_facturas').select('*')
-      .eq('referencia', traficoId).eq('clave_cliente', CLAVE),
-    supabase.from('entradas').select('*')
-      .eq('trafico', traficoId).eq('company_id', COMPANY_ID)
-      .order('fecha_llegada_mercancia', { ascending: false }),
+    trafQ.maybeSingle(),
+    factQ,
+    entQ,
     supabase.from('documents').select('*').eq('trafico_id', traficoId),
   ])
 

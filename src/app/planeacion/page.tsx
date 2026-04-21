@@ -1,164 +1,319 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { fmtId } from '@/lib/format-utils'
-import { COMPANY_ID } from '@/lib/client-config'
-import { Calendar, Package, AlertTriangle, CheckCircle } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { getCookieValue } from '@/lib/client-config'
+import { fmtId, fmtDate } from '@/lib/format-utils'
+import { Truck, Package, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
 
-interface Prediction { description: string; due_date?: string; severity: string; prediction_type: string }
-interface Trafico { trafico: string; descripcion_mercancia?: string; fecha_llegada?: string; estatus?: string }
+interface TraficoRow {
+  trafico: string
+  fecha_llegada: string | null
+  estatus: string | null
+  descripcion_mercancia: string | null
+  [k: string]: unknown
+}
+
+interface PipelineRow {
+  trafico_number: string
+  pipeline_stage: string | null
+  [k: string]: unknown
+}
+
+interface BridgeTime {
+  id: number; name: string; nameEs: string
+  commercial: number | null; status: string
+}
+
+const T = {
+  bg: 'var(--bg-main)',
+  card: 'var(--bg-card)',
+  border: 'var(--border)',
+  text: 'var(--text-primary)',
+  textSec: 'var(--text-secondary)',
+  gray: 'var(--text-muted)',
+  gold: 'var(--gold)',
+  green: 'var(--success)',
+  amber: 'var(--warning-500, #D97706)',
+  red: 'var(--danger-500)',
+  r: 8,
+} as const
+
+function getWeekRange(): { start: string; end: string; dayLabels: string[] } {
+  const now = new Date()
+  const day = now.getDay()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
+  monday.setHours(0, 0, 0, 0)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  const labels: string[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    labels.push(d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }))
+  }
+  return { start: monday.toISOString().split('T')[0], end: sunday.toISOString().split('T')[0], dayLabels: labels }
+}
 
 export default function PlaneacionPage() {
-  const [predictions, setPredictions] = useState<Prediction[]>([])
-  const [traficos, setTraficos] = useState<Trafico[]>([])
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
-  const [weeklyPrep, setWeeklyPrep] = useState<any>(null)
+  const [traficos, setTraficos] = useState<TraficoRow[]>([])
+  const [pipeline, setPipeline] = useState<PipelineRow[]>([])
+  const [bridges, setBridges] = useState<BridgeTime[]>([])
+  const [checked, setChecked] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    Promise.all([
-      fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50`).then(r => r.json()),
-      fetch(`/api/data?table=traficos&company_id=${COMPANY_ID}&limit=200&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-    ]).then(([pRes, tRes]) => {
-      setPredictions((pRes.data || []).filter((p: any) => p.prediction_type === 'import_forecast'))
-      setTraficos(tRes.data || [])
-    }).catch(() => {}).finally(() => setLoading(false))
+    const role = getCookieValue('user_role')
+    if (role !== 'broker' && role !== 'admin') return
 
-    // Load weekly prep data
-    fetch(`/api/data?table=compliance_predictions&company_id=${COMPANY_ID}&limit=50&order_by=created_at&order_dir=desc`)
-      .then(r => r.json())
-      .then(res => {
-        const prep = (res.data || []).find((p: any) => p.prediction_type === 'weekly_prep')
-        if (prep) try { setWeeklyPrep(JSON.parse(prep.description)) } catch {}
-      }).catch(() => {})
+    Promise.all([
+      fetch('/api/data?table=traficos&limit=5000&order_by=fecha_llegada&order_dir=desc').then(r => r.json()),
+      fetch('/api/data?table=pipeline_overview&limit=500').then(r => r.json()),
+      fetch('/api/bridge-times').then(r => r.json()),
+    ]).then(([trafData, pipeData, bridgeData]) => {
+      setTraficos((trafData.data ?? []) as TraficoRow[])
+      setPipeline((pipeData.data ?? []) as PipelineRow[])
+      setBridges((bridgeData.bridges ?? []) as BridgeTime[])
+    }).catch((err: unknown) => console.error('[planeacion] fetch failed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
-  // Derive product patterns from traficos
-  const patterns = useMemo(() => {
-    const grouped: Record<string, { dates: string[]; desc: string }> = {}
+  const week = useMemo(() => getWeekRange(), [])
+
+  // Section 1: This week's arrivals
+  const arrivingThisWeek = useMemo(() =>
+    traficos.filter(t => t.fecha_llegada && t.fecha_llegada >= week.start && t.fecha_llegada <= week.end)
+  , [traficos, week])
+
+  const readyToFile = useMemo(() =>
+    pipeline.filter(r => (r.pipeline_stage || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_file')
+  , [pipeline])
+
+  const readyToCross = useMemo(() =>
+    pipeline.filter(r => (r.pipeline_stage || '').toLowerCase().replace(/\s+/g, '_') === 'ready_to_cross')
+  , [pipeline])
+
+  const checklist = useMemo(() => {
+    const items: { id: string; label: string; detail: string; color: string }[] = []
+    readyToCross.forEach(r => items.push({
+      id: `cross-${r.trafico_number}`, label: `Cruzar ${fmtId(r.trafico_number)}`,
+      detail: 'Listo para cruce', color: T.green,
+    }))
+    readyToFile.forEach(r => items.push({
+      id: `file-${r.trafico_number}`, label: `Despachar ${fmtId(r.trafico_number)}`,
+      detail: 'Listo para transmitir', color: T.gold,
+    }))
+    arrivingThisWeek.forEach(t => items.push({
+      id: `arr-${t.trafico}`, label: `Llegada ${fmtId(t.trafico)}`,
+      detail: fmtDate(t.fecha_llegada), color: T.amber,
+    }))
+    return items
+  }, [arrivingThisWeek, readyToFile, readyToCross])
+
+  // Section 2: Capacity
+  const activeCount = useMemo(() =>
+    traficos.filter(t => !(t.estatus || '').toLowerCase().includes('cruz')).length
+  , [traficos])
+
+  const historicalAvg = useMemo(() => {
+    const months = new Map<string, number>()
     traficos.forEach(t => {
-      if (!t.descripcion_mercancia || !t.fecha_llegada) return
-      const key = (t.descripcion_mercancia || '').split(' ').slice(0, 2).join(' ').toUpperCase()
-      if (!grouped[key]) grouped[key] = { dates: [], desc: t.descripcion_mercancia }
-      grouped[key].dates.push(t.fecha_llegada)
+      if (!t.fecha_llegada) return
+      const key = t.fecha_llegada.slice(0, 7)
+      months.set(key, (months.get(key) || 0) + 1)
     })
-    return Object.entries(grouped)
-      .filter(([, v]) => v.dates.length >= 3)
-      .map(([key, v]) => {
-        const sorted = v.dates.sort()
-        const intervals: number[] = []
-        for (let i = 1; i < sorted.length; i++) {
-          const d = (new Date(sorted[i]).getTime() - new Date(sorted[i - 1]).getTime()) / 86400000
-          if (d > 0 && d < 365) intervals.push(d)
-        }
-        const avgInterval = intervals.length ? intervals.reduce((a, b) => a + b, 0) / intervals.length : 0
-        const lastDate = sorted[sorted.length - 1]
-        const daysSinceLast = Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000)
-        const daysUntilNext = Math.max(0, Math.round(avgInterval - daysSinceLast))
-        return { product: key, description: v.desc, count: v.dates.length, avgInterval: Math.round(avgInterval), daysSinceLast, daysUntilNext, lastDate }
-      })
-      .filter(p => p.avgInterval > 0 && p.avgInterval < 90)
-      .sort((a, b) => a.daysUntilNext - b.daysUntilNext)
-      .slice(0, 15)
+    const vals = [...months.values()]
+    return vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0
   }, [traficos])
 
-  return (
-    <div style={{ padding: 32 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 className="pg-title">Planeación de Importaciones</h1>
-        <p className="pg-meta">Predicciones basadas en {traficos.length} tráficos históricos</p>
+  const busiestDay = useMemo(() => {
+    const dayCounts = new Map<string, number>()
+    arrivingThisWeek.forEach(t => {
+      if (!t.fecha_llegada) return
+      const d = new Date(t.fecha_llegada).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric' })
+      dayCounts.set(d, (dayCounts.get(d) || 0) + 1)
+    })
+    let best = { day: 'Sin llegadas', count: 0 }
+    dayCounts.forEach((count, day) => { if (count > best.count) best = { day, count } })
+    return best
+  }, [arrivingThisWeek])
+
+  const fastestBridge = useMemo(() => {
+    const withData = bridges.filter(b => b.commercial !== null && b.commercial !== undefined)
+    if (withData.length === 0) return null
+    return withData.reduce((a, b) => (a.commercial! < b.commercial! ? a : b))
+  }, [bridges])
+
+  const toggle = (id: string) => {
+    setChecked(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  if (loading) {
+    return (
+      <div style={{ background: T.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: T.gold, animation: 'cruzPulse 1.5s infinite' }} />
       </div>
+    )
+  }
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 64, color: 'var(--text-muted)' }}>Analizando patrones...</div>
-      ) : (
-        <>
-          {/* Weekly Kanban */}
-          {weeklyPrep && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-              {[
-                { title: 'Urgente', items: weeklyPrep.items?.overdue || [], color: 'var(--status-red)', count: weeklyPrep.overdue },
-                { title: 'Esta Semana', items: weeklyPrep.items?.thisWeek || [], color: 'var(--status-yellow, #eab308)', count: weeklyPrep.thisWeek },
-                { title: 'Listo para Transmitir', items: weeklyPrep.items?.readyToTransmit || [], color: 'var(--status-green)', count: weeklyPrep.readyToTransmit },
-                { title: 'Esperando Docs', items: weeklyPrep.items?.waitingDocs || [], color: 'var(--text-muted)', count: weeklyPrep.waitingDocs },
-              ].map(col => (
-                <div key={col.title} className="card" style={{ borderTop: `3px solid ${col.color}` }}>
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>{col.title}</span>
-                    <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: col.color }}>{col.count || 0}</span>
-                  </div>
-                  <div style={{ padding: '8px 12px', maxHeight: 200, overflowY: 'auto' }}>
-                    {col.items.slice(0, 5).map((item: any, i: number) => (
-                      <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)', cursor: 'pointer' }}
-                        onClick={() => window.location.href = `/traficos/${item.id}`}>
-                        <div className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.id ? fmtId(item.id) : '—'}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{(item.supplier || '').substring(0, 25)}</div>
-                      </div>
-                    ))}
-                    {col.items.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '12px 0', textAlign: 'center' }}>—</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+  return (
+    <div style={{ background: T.bg, minHeight: '100vh', padding: 32, color: T.text }}>
+      <div style={{ maxWidth: 720, margin: '0 auto' }}>
+        <h1 style={{ fontSize: 'var(--aguila-fs-title)', fontWeight: 800, marginBottom: 4 }}>Planeación Semanal</h1>
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSec, marginBottom: 32 }}>
+          Semana del {week.start} al {week.end}
+        </p>
 
-          {/* Upcoming predictions */}
-          <div className="card" style={{ marginBottom: 24 }}>
-            <div className="card-head">
-              <span className="card-title">Próximas Importaciones Predichas</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{patterns.length} patrones detectados</span>
+        {/* ═══ SECTION 1 — This week's plan ═══ */}
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gray, marginBottom: 12 }}>
+            Plan de la semana
+          </h2>
+          {checklist.length === 0 ? (
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: 48, textAlign: 'center' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>📋</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 4 }}>Sin actividades esta semana</div>
+              <div style={{ fontSize: 'var(--aguila-fs-body)', color: T.textSec }}>Las llegadas y cruces programados aparecerán aquí</div>
             </div>
-            {patterns.length === 0 ? (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>Insuficientes datos para predecir</div>
-            ) : (
-              <div>
-                {patterns.map((p, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px',
-                    borderBottom: '1px solid var(--border-light)',
-                    background: p.daysUntilNext <= 3 ? 'rgba(220,38,38,0.03)' : p.daysUntilNext <= 7 ? 'rgba(217,119,6,0.03)' : 'transparent',
-                  }}>
-                    <div style={{ width: 40, textAlign: 'center' }}>
-                      {p.daysUntilNext <= 3 ? <AlertTriangle size={18} style={{ color: 'var(--status-red)' }} /> :
-                       p.daysUntilNext <= 7 ? <Package size={18} style={{ color: 'var(--status-yellow)' }} /> :
-                       <Calendar size={18} style={{ color: 'var(--text-muted)' }} />}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {checklist.map(item => {
+                const done = checked.has(item.id)
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => toggle(item.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      background: T.card, border: `1px solid ${T.border}`,
+                      borderLeft: `3px solid ${done ? T.gray : item.color}`,
+                      borderRadius: T.r, padding: '12px 16px', cursor: 'pointer',
+                      opacity: done ? 0.5 : 1, transition: 'opacity 150ms',
+                    }}
+                  >
+                    <div style={{
+                      width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                      border: done ? 'none' : `2px solid ${T.gray}`,
+                      background: done ? T.green : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 'var(--aguila-fs-meta)', color: '#FFF', fontWeight: 700,
+                    }}>
+                      {done ? '\u2713' : ''}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.product}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                        Cada ~{p.avgInterval} días · {p.count} importaciones · Último: {p.lastDate || new Date(Date.now() - p.daysSinceLast * 86400000).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      <div style={{
+                        fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: T.text,
+                        textDecoration: done ? 'line-through' : 'none',
+                      }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.textSec, fontFamily: 'var(--font-jetbrains-mono)' }}>
+                        {item.detail}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: p.daysUntilNext <= 3 ? 'var(--status-red)' : p.daysUntilNext <= 7 ? 'var(--status-yellow)' : 'var(--text-primary)' }}>
-                        {new Date(Date.now() + p.daysUntilNext * 86400000).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>estimado</div>
-                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* AI predictions from compliance table */}
-          {predictions.length > 0 && (
-            <div className="card">
-              <div className="card-head">
-                <span className="card-title">Predicciones AI</span>
-              </div>
-              {predictions.map((p, i) => (
-                <div key={i} style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-light)', display: 'flex', gap: 12 }}>
-                  <CheckCircle size={14} style={{ color: 'var(--status-green)', flexShrink: 0, marginTop: 3 }} />
-                  <div>
-                    <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{p.description}</div>
-                    {p.due_date && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Est: {new Date(p.due_date).toLocaleDateString('es-MX')}</div>}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
-        </>
-      )}
+        </div>
+
+        {/* ═══ SECTION 2 — Capacity indicators ═══ */}
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gray, marginBottom: 12 }}>
+            Capacidad
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 8 }}>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: '16px 20px' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSec, marginBottom: 6 }}>
+                Activos
+              </div>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 900, fontFamily: 'var(--font-jetbrains-mono)', color: T.text }}>
+                {activeCount}
+              </div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.gray, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
+                prom. {historicalAvg}/mes
+              </div>
+            </div>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: '16px 20px' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSec, marginBottom: 6 }}>
+                Día pico
+              </div>
+              <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, color: T.text }}>
+                {busiestDay.day}
+              </div>
+              {busiestDay.count > 0 && (
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.gray, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
+                  {busiestDay.count} llegada{busiestDay.count !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.r, padding: '16px 20px' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.textSec, marginBottom: 6 }}>
+                Puente
+              </div>
+              {fastestBridge ? (
+                <>
+                  <div style={{ fontSize: 'var(--aguila-fs-body-lg)', fontWeight: 800, color: T.green }}>
+                    {fastestBridge.nameEs}
+                  </div>
+                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: T.gray, fontFamily: 'var(--font-jetbrains-mono)', marginTop: 2 }}>
+                    {fastestBridge.commercial} min
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 'var(--aguila-fs-section)', color: T.gray }}>Sin datos</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 3 — Quick links ═══ */}
+        <div>
+          <h2 style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.gray, marginBottom: 12 }}>
+            Acceso rápido
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8 }}>
+            {[
+              { href: '/embarques', label: 'Embarques', icon: <Truck size={20} />, count: activeCount },
+              { href: '/bodega', label: 'Bodega', icon: <Package size={20} />, count: null },
+              { href: '/reportes', label: 'Reportes', icon: <BarChart3 size={20} />, count: null },
+            ].map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  background: T.card, border: `1px solid ${T.border}`,
+                  borderRadius: T.r, padding: '16px 20px',
+                  textDecoration: 'none', color: T.text,
+                  transition: 'border-color 150ms',
+                }}
+              >
+                <div style={{ color: T.gold }}>{link.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700 }}>{link.label}</div>
+                </div>
+                {link.count !== null && (
+                  <span style={{
+                    fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)',
+                    color: T.gold,
+                  }}>
+                    {link.count}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

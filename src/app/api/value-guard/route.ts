@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function GET(req: NextRequest) {
+  const sessionToken = req.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+  const role = session.role
+  if (role !== 'broker' && role !== 'admin') {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Acceso restringido' } }, { status: 401 })
+  }
+
   const trafico = req.nextUrl.searchParams.get('trafico')
   if (!trafico) return NextResponse.json({ error: 'Missing trafico param' }, { status: 400 })
 
@@ -15,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const items = partidas || []
   if (items.length === 0) {
-    return NextResponse.json({ clean: true, anomalies: [], message: 'Sin partidas para este tráfico' })
+    return NextResponse.json({ clean: true, anomalies: [], message: 'Sin partidas para este embarque' })
   }
 
   // Get baselines from product_intelligence
@@ -33,7 +44,7 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  const anomalies: any[] = []
+  const anomalies: Array<{ product: string; fraccion: string; declared_price: number; historical_avg: number; deviation_pct: number; z_score: number; severity: string }> = []
   items.forEach(item => {
     if (!item.precio_unitario || !item.fraccion) return
     const price = Number(item.precio_unitario)

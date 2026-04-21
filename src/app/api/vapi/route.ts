@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,12 +8,12 @@ const supabase = createClient(
 )
 
 async function getTraficoStatus(params: { trafico?: string; pedimento?: string }) {
-  let q = supabase.from('traficos').select('*').limit(5)
+  let q = supabase.from('traficos').select('*')
   if (params.trafico) q = q.ilike('trafico', `%${params.trafico}%`)
   if (params.pedimento) q = q.ilike('pedimento', `%${params.pedimento}%`)
-  const { data, error } = await q.order('created_at', { ascending: false })
+  const { data, error } = await q.gte('fecha_llegada', PORTAL_DATE_FROM).order('created_at', { ascending: false }).limit(5)
   if (error) return { error: error.message }
-  if (!data?.length) return { message: 'No se encontró ese tráfico.' }
+  if (!data?.length) return { message: 'No se encontró ese embarque.' }
   return data.map(t => ({
     trafico: t.trafico,
     pedimento: t.pedimento,
@@ -25,8 +26,9 @@ async function getTraficoStatus(params: { trafico?: string; pedimento?: string }
 async function getActiveShipments(params: { cliente?: string }) {
   let q = supabase.from('traficos').select('*')
     .in('status', ['en_proceso', 'en_aduana', 'pendiente', 'activo'])
-    .limit(10)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .order('created_at', { ascending: false })
+    .limit(10)
   if (params.cliente) q = q.ilike('clave_cliente', `%${params.cliente}%`)
   const { data, error } = await q
   if (error) return { error: error.message }
@@ -58,6 +60,15 @@ const functionHandlers: Record<string, (params: Record<string, string>) => Promi
 }
 
 export async function POST(request: NextRequest) {
+  // Vapi server-to-server — shared-secret auth matches /api/vapi-llm.
+  // Prevents any visitor from querying traficos via a crafted function-call
+  // payload (endpoint queries cross-tenant, so the leak is portal-wide).
+  const vapiSecret = request.headers.get('x-vapi-secret') || ''
+  const expected = process.env.VAPI_PRIVATE_KEY || ''
+  if (!expected || vapiSecret !== expected) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const body = await request.json()
   const { message } = body
 
@@ -75,7 +86,7 @@ export async function POST(request: NextRequest) {
 
   // Vapi status updates (call started, ended, etc.)
   if (message?.type === 'status-update' || message?.type === 'end-of-call-report') {
-    console.log('[VAPI]', message.type, JSON.stringify(message).slice(0, 500))
+
     return NextResponse.json({ ok: true })
   }
 

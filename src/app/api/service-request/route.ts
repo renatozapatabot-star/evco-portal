@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { COMPANY_ID } from '@/lib/client-config'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -15,23 +15,36 @@ async function sendTG(msg: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const { request_type, description, company_id = COMPANY_ID } = await request.json()
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const companyId = request.cookies.get('company_id')?.value
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { request_type, description } = await request.json()
   if (!request_type) return NextResponse.json({ error: 'request_type required' }, { status: 400 })
 
   const { data, error } = await supabase.from('service_requests').insert({
-    company_id, request_type, description: description || '', status: 'recibido',
+    company_id: companyId, request_type, description: description || '', status: 'recibido',
   }).select().single()
 
   if (!error) {
-    await sendTG(`🔔 <b>NUEVA SOLICITUD</b>\nTipo: ${request_type}\n${description ? `Detalle: ${description.substring(0, 200)}` : ''}\nCliente: ${company_id}\n— Portal CRUZ`)
+    await sendTG(`🔔 <b>NUEVA SOLICITUD</b>\nTipo: ${request_type}\n${description ? `Detalle: ${description.substring(0, 200)}` : ''}\nCliente: ${companyId}\n— CRUZ`)
   }
 
   return NextResponse.json({ success: !error, id: data?.id })
 }
 
 export async function GET(request: NextRequest) {
-  const company_id = request.nextUrl.searchParams.get('company_id') || COMPANY_ID
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const companyId = request.cookies.get('company_id')?.value
+  const userRole = request.cookies.get('user_role')?.value
+  if (!userRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data } = await supabase.from('service_requests')
-    .select('*').eq('company_id', company_id).order('created_at', { ascending: false }).limit(50)
+    .select('*').eq('company_id', companyId).order('created_at', { ascending: false }).limit(50)
   return NextResponse.json({ requests: data || [] })
 }

@@ -1,0 +1,197 @@
+'use client'
+
+import { useState } from 'react'
+import type { ClasificacionDetail } from '@/lib/launchpad-actions'
+
+interface Props {
+  detail: ClasificacionDetail
+  onComplete: (actionType: string, payload?: Record<string, string>) => void
+  loading: boolean
+}
+
+function ConfidenceBadge({ value }: { value: number }) {
+  const color = value >= 85 ? 'var(--portal-status-green-fg)' : value >= 70 ? 'var(--portal-status-amber-fg)' : 'var(--portal-status-red-fg)'
+  const bg = value >= 85 ? 'var(--portal-status-green-bg)' : value >= 70 ? 'rgba(192,197,206,0.08)' : 'var(--portal-status-red-bg)'
+  return (
+    <span
+      className="font-mono"
+      style={{
+        display: 'inline-block',
+        padding: '2px 8px',
+        borderRadius: 6,
+        fontSize: 'var(--aguila-fs-body)',
+        fontWeight: 600,
+        color,
+        background: bg,
+      }}
+    >
+      {value}%
+    </span>
+  )
+}
+
+export function ClasificacionPanel({ detail, onComplete, loading }: Props) {
+  const [correcting, setCorrecting] = useState(false)
+  const [selected, setSelected] = useState<string | null>(null)
+
+  const handleConfirm = () => {
+    onComplete('confirm')
+  }
+
+  const handleCorrect = () => {
+    if (!selected) return
+    onComplete('correct', { corrected_to: selected })
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Document info */}
+      {detail.filename && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: 'var(--aguila-fs-section)',
+            color: 'var(--portal-fg-5)',
+          }}
+        >
+          <span style={{ fontSize: 'var(--aguila-fs-kpi-small)' }}>&#128196;</span>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-body)' }}>
+            {detail.filename}
+          </span>
+        </div>
+      )}
+
+      {/* PORTAL suggestion */}
+      <div
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          borderRadius: 8,
+          padding: 16,
+          border: '1px solid #E8E5E0',
+        }}
+      >
+        <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--portal-fg-4)', marginBottom: 8, textTransform: 'uppercase' }}>
+          PORTAL sugiere
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-ink-2)' }}>
+            {detail.suggested_classification}
+          </span>
+          <ConfidenceBadge value={detail.confidence} />
+        </div>
+        <p style={{ margin: 0, fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-5)' }}>
+          {detail.product_description}
+        </p>
+      </div>
+
+      {/* Alternatives (shown when correcting) */}
+      {correcting && detail.alternatives.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-5)' }}>
+            Alternativas:
+          </div>
+          {detail.alternatives.map((alt) => (
+            <label
+              key={alt.fraccion}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: 12,
+                borderRadius: 8,
+                border: `1px solid ${selected === alt.fraccion ? 'var(--portal-fg-1)' : 'var(--portal-line-1)'}`,
+                background: selected === alt.fraccion ? 'rgba(192,197,206,0.08)' : 'rgba(255,255,255,0.045)',
+                cursor: 'pointer',
+                minHeight: 48,
+              }}
+            >
+              <input
+                type="radio"
+                name="alt-fraccion"
+                value={alt.fraccion}
+                checked={selected === alt.fraccion}
+                onChange={() => setSelected(alt.fraccion)}
+                style={{ accentColor: 'var(--portal-fg-1)' }}
+              />
+              <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600 }}>
+                {alt.fraccion}
+              </span>
+              <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-fg-5)', flex: 1 }}>
+                {alt.description}
+              </span>
+              <ConfidenceBadge value={alt.confidence} />
+            </label>
+          ))}
+        </div>
+      )}
+
+      {correcting && detail.alternatives.length === 0 && (
+        <p style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', fontStyle: 'italic' }}>
+          Sin alternativas disponibles. Ingrese la fracción correcta manualmente en la página de clasificación.
+        </p>
+      )}
+
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+        {!correcting ? (
+          <>
+            <button
+              onClick={handleConfirm}
+              disabled={loading}
+              style={{
+                flex: 1,
+                minHeight: 60,
+                borderRadius: 12,
+                background: 'var(--portal-fg-1)',
+                color: 'rgba(255,255,255,0.045)',
+                border: 'none',
+                fontSize: 'var(--aguila-fs-body-lg)',
+                fontWeight: 600,
+                cursor: loading ? 'wait' : 'pointer',
+              }}
+            >
+              &#10003; Confirmar
+            </button>
+            <button
+              onClick={() => setCorrecting(true)}
+              disabled={loading}
+              style={{
+                flex: 1,
+                minHeight: 60,
+                borderRadius: 12,
+                background: 'rgba(255,255,255,0.045)',
+                color: 'var(--portal-ink-2)',
+                border: '1px solid #E8E5E0',
+                fontSize: 'var(--aguila-fs-body-lg)',
+                fontWeight: 600,
+                cursor: loading ? 'wait' : 'pointer',
+              }}
+            >
+              &#10007; Corregir
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handleCorrect}
+            disabled={loading || !selected}
+            style={{
+              flex: 1,
+              minHeight: 60,
+              borderRadius: 12,
+              background: selected ? 'var(--portal-fg-1)' : 'var(--portal-line-1)',
+              color: selected ? 'var(--portal-fg-1)' : 'var(--portal-fg-4)',
+              border: 'none',
+              fontSize: 'var(--aguila-fs-body-lg)',
+              fontWeight: 600,
+              cursor: loading || !selected ? 'default' : 'pointer',
+            }}
+          >
+            Guardar corrección
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}

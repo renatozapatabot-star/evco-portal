@@ -19,14 +19,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
-// Service account credentials for domain-wide delegation
-const SERVICE_ACCOUNT_KEY = process.env.GOOGLE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY)
-  : null
+// OAuth2 refresh tokens per inbox
+const TOKEN_MAP = {
+  'claudia@renatozapata.com': process.env.GMAIL_REFRESH_TOKEN_CLAUDIA,
+  'eloisarangel@renatozapata.com': process.env.GMAIL_REFRESH_TOKEN_ELOISA,
+  'ai@renatozapata.com': process.env.GMAIL_REFRESH_TOKEN_AI,
+}
 
 // Study-mode inboxes — extract patterns only, no draft creation
 const STUDY_INBOXES = [
@@ -40,6 +41,7 @@ const FULL_INBOX = { email: 'ai@renatozapata.com', mode: 'full' }
 // ── Notifications ─────────────────────────────────────────────────────────
 
 async function sendTelegram(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log('[TG skip]', msg); return }
   try {
     await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
@@ -50,59 +52,46 @@ async function sendTelegram(msg) {
   } catch (e) { console.error('Telegram error:', e.message) }
 }
 
-// ── Gmail client via service account with domain-wide delegation ──────────
+// ── Gmail client via OAuth2 refresh tokens ───────────────────────────────
 
 async function getGmailForUser(userEmail) {
-  if (!SERVICE_ACCOUNT_KEY) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY not configured — see setup steps')
+  const refreshToken = TOKEN_MAP[userEmail]
+  if (!refreshToken) {
+    throw new Error(`No refresh token configured for ${userEmail}`)
   }
-
-  const auth = new google.auth.JWT({
-    email: SERVICE_ACCOUNT_KEY.client_email,
-    key: SERVICE_ACCOUNT_KEY.private_key,
-    scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
-    subject: userEmail, // Impersonate this user
-  })
-
+  const auth = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    'http://localhost:3333/oauth2callback'
+  )
+  auth.setCredentials({ refresh_token: refreshToken })
   return google.gmail({ version: 'v1', auth })
 }
 
-// ── Anthropic call ────────────────────────────────────────────────────────
+// ── LLM call (via CRUZ unified abstraction) ──────────────────────────────
 
 async function callAnthropic(model, system, userContent, maxTokens = 4096) {
-  const start = Date.now()
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'pdfs-2024-09-25',
-    },
-    body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: userContent }] }),
+  const { llmCall } = require('./lib/llm')
+
+  // Normalize userContent: if it's an array (vision content blocks), pass as-is
+  const messages = Array.isArray(userContent)
+    ? [{ role: 'user', content: userContent }]
+    : [{ role: 'user', content: userContent }]
+
+  const result = await llmCall({
+    modelClass: 'smart',
+    maxTokens,
+    system: system || undefined,
+    callerName: 'email-study',
+    messages,
   })
-  const data = await res.json()
-  const latency = Date.now() - start
 
-  if (data.error) throw new Error(`Anthropic ${model}: ${data.error.message}`)
-
-  // Cost tracking (Operational Resilience Rule #4)
-  const usage = data.usage || {}
-  await supabase.from('api_cost_log').insert({
-    model,
-    input_tokens: usage.input_tokens || 0,
-    output_tokens: usage.output_tokens || 0,
-    action: SCRIPT_NAME,
-    client_code: 'system',
-    latency_ms: latency,
-  }).then(() => {}, () => {})
-
-  return data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || ''
+  return result.text
 }
 
 // ── Extract invoice intelligence from PDF ─────────────────────────────────
 
-async function extractIntelligence(base64Data, mimeType, filename, emailSubject) {
+async function extractIntelligence(base64Data, filename, emailSubject) {
   const system = `You are a customs data extractor for a Mexican customs broker (Patente 3596).
 Extract supplier information and product classifications from this document.
 Return ONLY valid JSON — no markdown, no explanation.
@@ -126,7 +115,7 @@ JSON schema:
   const userContent = [
     {
       type: 'document',
-      source: { type: 'base64', media_type: mimeType || 'application/pdf', data: base64Data },
+      source: { type: 'base64', media_type: 'application/pdf', data: base64Data },
     },
     {
       type: 'text',
@@ -135,7 +124,7 @@ JSON schema:
   ]
 
   // Use Sonnet for extraction accuracy
-  const text = await callAnthropic('claude-sonnet-4-20250514', system, userContent)
+  const text = await callAnthropic('claude-sonnet-4-6', system, userContent)
 
   try {
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
@@ -171,7 +160,10 @@ async function processEmailForIntelligence(gmail, messageId, sourceInbox) {
   }
   findParts(msg.payload?.parts || [msg.payload])
 
-  const pdfs = allAttachments.filter(a => (a.filename || '').toLowerCase().endsWith('.pdf'))
+  const pdfs = allAttachments.filter(a => {
+    const name = a.filename || ''
+    return name.toLowerCase().endsWith('.pdf') && !name.startsWith('._')
+  })
   if (pdfs.length === 0) return 0
 
   let inserted = 0
@@ -182,7 +174,7 @@ async function processEmailForIntelligence(gmail, messageId, sourceInbox) {
       })
       const base64Data = attData.data.replace(/-/g, '+').replace(/_/g, '/')
 
-      const intelligence = await extractIntelligence(base64Data, att.mimeType, att.filename, subject)
+      const intelligence = await extractIntelligence(base64Data, att.filename, subject)
       if (!intelligence?.supplier) continue
 
       // Insert each product as a separate intelligence row
@@ -233,13 +225,6 @@ async function run() {
   console.log(`\n🎓 CRUZ Email Study Pipeline`)
   console.log(`   ${new Date().toLocaleString('es-MX', { timeZone: 'America/Chicago' })}`)
   console.log(`   Patente 3596 · Aduana 240\n`)
-
-  if (!SERVICE_ACCOUNT_KEY) {
-    const msg = '🔴 GOOGLE_SERVICE_ACCOUNT_KEY not configured. See setup steps.'
-    console.error(msg)
-    await sendTelegram(`🔴 <b>${SCRIPT_NAME}</b> · ${msg}`)
-    process.exit(1)
-  }
 
   let totalInserted = 0
   let totalErrors = 0

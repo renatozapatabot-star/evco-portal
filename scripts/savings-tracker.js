@@ -6,6 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+const { getExchangeRate } = require('./lib/rates')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const COMPANY_ID = 'evco'
@@ -14,6 +15,7 @@ const CLAVE = '9254'
 function fmtMXN(n) { return '$' + Number(n || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 }) + ' MXN' }
 
 async function sendTelegram(message) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(message); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -47,7 +49,9 @@ async function run() {
     : 0.05 // Default 5% estimate
   const tmecValue = tmecOps.reduce((s, f) => s + Number(f.valor_usd || 0), 0)
   const tmecSavingsUSD = tmecValue * avgIgiRate
-  const tipoCambio = 17.5 // Approximate
+  const fxData = await getExchangeRate()
+  if (!fxData?.rate) throw new Error('Exchange rate unavailable from system_config — refusing to calculate with stale data')
+  const tipoCambio = fxData.rate
   const tmecSavingsMXN = tmecSavingsUSD * tipoCambio
 
   // Penalties avoided: MVE folios filed

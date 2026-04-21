@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // FEATURE 16 — SAAI/CIITA Direct Integration (Stub)
 // SAAI = Sistema Automatizado Aduanero Integral
-// CIITA = Centro Integral de Informacion de Tramites Aduaneros
+// CIITA = Centro Integral de Información de Trámites Aduaneros
 // Full implementation requires NUA (Numero Unico de Autorizacion) credentials
 // Contact: SHCP / Aduanas for API access
 
@@ -42,9 +42,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   if (!SAAI_CONFIG.nua_user) {
-    return NextResponse.json({ error: 'SAAI not configured — NUA credentials required' }, { status: 503 })
+    return NextResponse.json({ error: 'service_unavailable' }, { status: 503 })
   }
   const body = await request.json()
-  // Future: implement SAAI transmission
-  return NextResponse.json({ status: 'stub', message: 'SAAI transmission not yet implemented', received: body })
+  // Future: implement government-transmission path
+  return NextResponse.json({ status: 'stub', received: body })
 }

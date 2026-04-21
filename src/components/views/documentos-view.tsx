@@ -1,219 +1,372 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { createClient } from '@supabase/supabase-js'
-import { Upload, CheckCircle, AlertTriangle } from 'lucide-react'
-import { CLIENT_NAME } from '@/lib/client-config'
+import { Upload, CheckCircle, ChevronDown, Download, Trash2 } from 'lucide-react'
+import { getClientNameCookie, getCompanyIdCookie } from '@/lib/client-config'
+import { ErrorCard } from '@/components/ui/ErrorCard'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const LEGAL_DOCS = [
-  { id: 'poder_notarial', category: 'Corporativo', label: 'Poder Notarial', desc: 'Autorización ante agente aduanal', required: true, renew: 'Cada 5 años' },
-  { id: 'encargo_conferido', category: 'Corporativo', label: 'Encargo Conferido', desc: 'VUCEM authorization', required: true, renew: 'Según contrato' },
-  { id: 'rfc_constancia', category: 'Fiscal', label: 'RFC Constancia de Situación', desc: 'SAT situación fiscal actualizada', required: true, renew: 'Anual' },
-  { id: 'efirma', category: 'Digital', label: 'e.Firma (SAT)', desc: 'Firma electrónica avanzada', required: true, renew: 'Cada 4 años', expiry: '2028-01-01' },
-  { id: 'immex', category: 'Programa', label: 'Autorización IMMEX', desc: 'Programa de importación temporal', required: true, renew: 'Anual' },
-  { id: 'padron_importadores', category: 'Operativo', label: 'Padron de Importadores', desc: 'Registro activo SAT', required: true, renew: 'Verificar anualmente' },
-  { id: 'acta_constitutiva', category: 'Corporativo', label: 'Acta Constitutiva', desc: 'Escritura de constitución', required: true, renew: 'Permanente' },
-  { id: 'vucem_acceso', category: 'Digital', label: 'Acceso VUCEM', desc: 'Portal ventanilla unica', required: true, renew: 'Verificar vigencia' },
-  { id: 'nom_plasticos', category: 'Regulatorio', label: 'NOM Plasticos', desc: 'Normas aplicables Cap. 39', required: false, renew: 'Según NOM' },
-  { id: 'contrato_agencia', category: 'Contractual', label: 'Contrato de Agencia', desc: 'Contrato con Renato Zapata & Company', required: true, renew: 'Según contrato' },
-  { id: 'seguro_mercancias', category: 'Financiero', label: 'Seguro de Mercancias', desc: 'Poliza de seguro de carga', required: false, renew: 'Anual' },
-  { id: 'certificado_origen', category: 'Comercio', label: 'Certificados T-MEC', desc: 'USMCA certificates on file', required: true, renew: 'Por embarque o anual' },
+  { id: 'poder_notarial', label: 'Poder Notarial', desc: 'Autorización ante agente aduanal', required: true },
+  { id: 'encargo_conferido', label: 'Encargo Conferido', desc: 'Autorización VUCEM', required: true },
+  { id: 'rfc_constancia', label: 'RFC Constancia de Situación', desc: 'SAT situación fiscal actualizada', required: true },
+  { id: 'efirma', label: 'e.Firma (SAT)', desc: 'Firma electrónica avanzada', required: true },
+  { id: 'immex', label: 'Autorización IMMEX', desc: 'Programa de importación temporal', required: true },
+  { id: 'padron_importadores', label: 'Padrón de Importadores', desc: 'Registro activo SAT', required: true },
+  { id: 'acta_constitutiva', label: 'Acta Constitutiva', desc: 'Escritura de constitución', required: true },
+  { id: 'vucem_acceso', label: 'Acceso VUCEM', desc: 'Portal ventanilla única', required: true },
+  { id: 'nom_plasticos', label: 'NOM Plásticos', desc: 'Normas aplicables Cap. 39', required: false },
+  { id: 'contrato_agencia', label: 'Contrato de Agencia', desc: 'Contrato con Renato Zapata & Company', required: true },
+  { id: 'seguro_mercancias', label: 'Seguro de Mercancías', desc: 'Póliza de seguro de carga', required: false },
+  { id: 'certificado_origen', label: 'Certificados T-MEC', desc: 'Certificados de origen en archivo', required: true },
 ]
 
-const CATEGORIES = [...new Set(LEGAL_DOCS.map(d => d.category))]
+export function DocumentosView() {
+  const isMobile = useIsMobile()
+  const [companyDocs, setCompanyDocs] = useState<{ tipo_documento?: string; [key: string]: unknown }[]>([])
+  const [loading, setLoading] = useState(true)
+  const [docError, setDocError] = useState<string | null>(null)
+  const [uploaded, setUploaded] = useState<Record<string, { name: string; time: string }>>({})
 
-function ProgressRing({ completed, total, size = 64 }: { completed: number; total: number; size?: number }) {
-  const r = (size - 8) / 2
-  const circ = 2 * Math.PI * r
-  const pct = total > 0 ? completed / total : 0
-  const offset = circ * (1 - pct)
-  return (
-    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border-primary)" strokeWidth={4} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--status-green)" strokeWidth={4}
-        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 600ms ease' }} />
-      <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central"
-        fill="var(--text-primary)" fontSize={14} fontWeight={600} fontFamily="var(--font-mono)"
-        style={{ transform: 'rotate(90deg)', transformOrigin: 'center' }}>
-        {completed}/{total}
-      </text>
-    </svg>
-  )
-}
-
-function getExpiryStatus(expiry: string | undefined) {
-  if (!expiry) return null
-  const days = Math.floor((new Date(expiry).getTime() - Date.now()) / 86400000)
-  if (days < 0) return { color: 'var(--status-red)', bg: 'rgba(239,68,68,0.15)', label: 'VENCIDO' }
-  if (days < 90) return { color: 'var(--status-red)', bg: 'rgba(239,68,68,0.15)', label: `${days} dias` }
-  if (days < 180) return { color: 'var(--status-yellow)', bg: 'rgba(234,179,8,0.15)', label: `${days} dias` }
-  return { color: 'var(--status-green)', bg: 'rgba(34,197,94,0.15)', label: 'Vigente' }
-}
-
-function UploadZone({ docId, onUploaded }: { docId: string; onUploaded: (name: string) => void }) {
+  // Upload zone state
   const [dragOver, setDragOver] = useState(false)
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadDocType, setUploadDocType] = useState('')
   const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = useCallback((file: File) => {
-    setUploading(true); setProgress(0)
-    // Mock upload with progress
-    let p = 0
-    const interval = setInterval(() => {
-      p += 5
-      setProgress(p)
-      if (p >= 100) { clearInterval(interval); setTimeout(() => onUploaded(file.name), 200) }
-    }, 100)
-  }, [onUploaded])
+  function loadDocs() {
+    setLoading(true)
+    setDocError(null)
+    const companyId = getCompanyIdCookie() || ''
+    supabase.from('company_documents').select('*').eq('company_id', companyId).limit(100)
+      .then(({ data, error }) => {
+        if (error) { setDocError('No se pudieron cargar los documentos.') }
+        else { setCompanyDocs(data || []) }
+        setLoading(false)
+      }, () => {
+        setDocError('No se pudieron cargar los documentos.')
+        setLoading(false)
+      })
+  }
 
-  if (uploading) {
+  useEffect(() => { loadDocs() }, [])
+
+  const handleUploadFile = useCallback((file: File) => {
+    setUploadFile(file)
+    setUploadDocType('')
+  }, [])
+
+  const confirmUpload = useCallback(async () => {
+    if (!uploadFile || !uploadDocType) return
+    setUploading(true)
+    setUploadProgress(10)
+
+    try {
+      const companyId = getCompanyIdCookie() || 'unknown'
+      const ext = uploadFile.name.split('.').pop() || 'pdf'
+      const storagePath = `${companyId}/legal/${uploadDocType}_${Date.now()}.${ext}`
+
+      setUploadProgress(30)
+
+      // Upload to Supabase Storage
+      const { error: storageError } = await supabase.storage
+        .from('company-documents')
+        .upload(storagePath, uploadFile, { upsert: true })
+
+      if (storageError) throw storageError
+      setUploadProgress(70)
+
+      // Insert record into company_documents table
+      const { error: dbError } = await supabase.from('company_documents').insert({
+        company_id: companyId,
+        tipo_documento: uploadDocType,
+        filename: uploadFile.name,
+        storage_path: storagePath,
+        uploaded_at: new Date().toISOString(),
+      })
+
+      if (dbError) throw dbError
+      setUploadProgress(100)
+
+      // Update local state
+      setUploaded(prev => ({ ...prev, [uploadDocType]: { name: uploadFile.name, time: new Date().toLocaleString('es-MX') } }))
+      setUploadFile(null)
+      setUploadDocType('')
+      loadDocs()
+    } catch (err) {
+      setDocError(`Error al subir documento: ${err instanceof Error ? err.message : 'Error desconocido'}`)
+    } finally {
+      setUploading(false)
+      setUploadProgress(0)
+    }
+  }, [uploadFile, uploadDocType])
+
+  const isDocComplete = (docId: string) =>
+    companyDocs.some(cd => cd.tipo_documento?.toLowerCase().includes(docId.toLowerCase())) || !!uploaded[docId]
+
+  const requiredDocs = LEGAL_DOCS.filter(d => d.required)
+  const completedRequired = requiredDocs.filter(d => isDocComplete(d.id)).length
+  const pendingRequired = requiredDocs.length - completedRequired
+
+  // Sort: pending first, then complete
+  const sortedDocs = [...LEGAL_DOCS].sort((a, b) => {
+    const aComplete = isDocComplete(a.id) ? 1 : 0
+    const bComplete = isDocComplete(b.id) ? 1 : 0
+    if (aComplete !== bComplete) return aComplete - bComplete
+    // Within same status, required first
+    if (a.required !== b.required) return a.required ? -1 : 1
+    return 0
+  })
+
+  if (docError) {
     return (
-      <div style={{ marginTop: 12, borderRadius: 8, overflow: 'hidden' }}>
-        <div style={{ height: 6, background: 'var(--bg-elevated)', borderRadius: 3 }}>
-          <div style={{ width: `${progress}%`, height: '100%', background: 'var(--amber-600)', borderRadius: 3, transition: 'width 100ms linear' }} />
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4, textAlign: 'center' }}>{progress}%</div>
+      <div style={{ padding: 32, maxWidth: 700, margin: '0 auto' }}>
+        <ErrorCard message={docError} onRetry={loadDocs} />
       </div>
     )
   }
 
   return (
-    <div
-      onClick={() => inputRef.current?.click()}
-      onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]) }}
-      style={{
-        marginTop: 12, border: `2px dashed ${dragOver ? 'var(--amber-600)' : 'var(--border-primary)'}`,
-        borderRadius: 8, padding: 16, textAlign: 'center', cursor: 'pointer',
-        background: dragOver ? 'rgba(212,168,67,0.05)' : 'transparent', transition: 'all 150ms',
-      }}
-    >
-      <Upload size={16} style={{ color: 'var(--text-tertiary)', marginBottom: 4 }} />
-      <div style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>Arrastra archivo o haz clic</div>
-      <input ref={inputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]) }} />
-    </div>
-  )
-}
+    <div className="page-shell" style={{ maxWidth: 900 }}>
+      <div style={{ height: 20 }} />
 
-export function DocumentosView() {
-  const [companyDocs, setCompanyDocs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('Todos')
-  const [uploaded, setUploaded] = useState<Record<string, { name: string; time: string }>>({})
-
-  useEffect(() => {
-    supabase.from('company_documents').select('*').limit(100)
-      .then(({ data }) => { setCompanyDocs(data || []); setLoading(false) })
-      .then(undefined, () => setLoading(false))
-  }, [])
-
-  const filtered = filter === 'Todos' ? LEGAL_DOCS : LEGAL_DOCS.filter(d => d.category === filter)
-  const requiredDocs = LEGAL_DOCS.filter(d => d.required)
-  const completedRequired = requiredDocs.filter(d => companyDocs.some(cd => cd.tipo_documento?.toLowerCase().includes(d.id.toLowerCase())) || uploaded[d.id]).length
-  const withExpiry = LEGAL_DOCS.filter(d => (d as any).expiry).length
-
-  return (
-    <div style={{ padding: 32 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 className="pg-title">Documentos Legales</h1>
-        <p className="pg-meta">{CLIENT_NAME} &middot; Documentos corporativos y de cumplimiento</p>
-      </div>
-
-      {/* Category filters */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-        {['Todos', ...CATEGORIES].map(cat => (
-          <button key={cat} onClick={() => setFilter(cat)} style={{
-            background: filter === cat ? 'var(--amber-600)' : 'var(--bg-elevated)',
-            border: 'none', borderRadius: 20, padding: '6px 16px', cursor: 'pointer',
-            color: filter === cat ? '#000' : 'var(--amber-700)',
-            fontSize: 14, fontWeight: filter === cat ? 600 : 400, fontFamily: 'var(--font-sans)',
-            transition: 'all 150ms',
-          }}>{cat}</button>
-        ))}
-      </div>
-
-      {/* KPI row with progress ring */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
-        {/* Requeridos with ring */}
-        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
-          <ProgressRing completed={completedRequired} total={requiredDocs.length} />
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)' }}>Requeridos</div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>{completedRequired} de {requiredDocs.length} completos</div>
+      {/* Progress banner */}
+      {!loading && (
+        <div style={{
+          margin: '0 20px 16px',
+          background: completedRequired === requiredDocs.length ? 'rgba(22,163,74,0.06)' : 'rgba(217,119,6,0.06)',
+          border: `1px solid ${completedRequired === requiredDocs.length ? 'rgba(22,163,74,0.25)' : 'rgba(217,119,6,0.25)'}`,
+          borderRadius: 10, padding: '14px 16px',
+        }}>
+          <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold-dark, #7A7E86)' }}>
+            {completedRequired} de {requiredDocs.length} documentos completos
           </div>
-        </div>
-        {/* Con vencimiento */}
-        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <span className="mono" style={{ fontSize: 32, fontWeight: 600, color: withExpiry > 0 ? 'var(--status-yellow)' : 'var(--status-green)' }}>{withExpiry}</span>
-            {withExpiry > 0 && <AlertTriangle size={18} style={{ color: 'var(--status-yellow)' }} />}
+          {/* Progress bar */}
+          <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 9999, overflow: 'hidden', marginTop: 8 }}>
+            <div style={{
+              width: `${Math.round((completedRequired / requiredDocs.length) * 100)}%`,
+              height: '100%',
+              background: completedRequired === requiredDocs.length ? 'var(--success, #16A34A)' : 'var(--gold, #E8EAED)',
+              borderRadius: 9999,
+              transition: 'width 0.4s ease',
+            }} />
           </div>
-          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Con Vencimiento</div>
-        </div>
-        {/* En sistema */}
-        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)' }}>{companyDocs.length}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>En Sistema</div>
-        </div>
-      </div>
-
-      {/* Document cards grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-        {filtered.map(doc => {
-          const expiryStatus = getExpiryStatus((doc as any).expiry)
-          const inSystem = companyDocs.some(d => d.tipo_documento?.toLowerCase().includes(doc.id.toLowerCase()))
-          const up = uploaded[doc.id]
-          const isComplete = inSystem || !!up
-
-          return (
-            <div key={doc.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 24 }}>
-              {/* Top row: name + status */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{doc.label}</span>
-                    {doc.required && <span style={{ background: 'var(--amber-600)', color: '#000', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>REQ</span>}
-                  </div>
-                  <div style={{ fontSize: 14, color: 'var(--amber-700)' }}>{doc.desc}</div>
-                </div>
-                {/* Status badge */}
-                {isComplete ? (
-                  <span style={{ background: 'rgba(34,197,94,0.15)', color: 'var(--status-green)', borderRadius: 4, padding: '4px 8px', fontSize: 12, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>
-                    {up ? 'Recibido' : expiryStatus?.label === 'Vigente' ? 'Vigente' : 'En sistema'}
-                  </span>
-                ) : (
-                  <span style={{ background: 'rgba(234,179,8,0.15)', color: 'var(--status-yellow)', borderRadius: 4, padding: '4px 8px', fontSize: 12, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>Pendiente</span>
-                )}
-              </div>
-
-              {/* Metadata row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--border-light)' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>🔄 {doc.renew}</span>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {expiryStatus && <span style={{ background: expiryStatus.bg, color: expiryStatus.color, borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 600 }}>{expiryStatus.label}</span>}
-                  <span style={{ background: 'var(--bg-elevated)', borderRadius: 4, padding: '2px 8px', fontSize: 12, color: 'var(--text-tertiary)' }}>{doc.category}</span>
-                </div>
-              </div>
-
-              {/* Upload result or upload zone */}
-              {up ? (
-                <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'rgba(34,197,94,0.05)', borderRadius: 8, border: '1px solid rgba(34,197,94,0.15)' }}>
-                  <CheckCircle size={16} style={{ color: 'var(--status-green)', flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: 12, color: 'var(--amber-700)' }}>{up.name}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{up.time}</div>
-                  </div>
-                </div>
-              ) : !isComplete ? (
-                <UploadZone docId={doc.id} onUploaded={(name) => setUploaded(prev => ({ ...prev, [doc.id]: { name, time: new Date().toLocaleString('es-MX') } }))} />
-              ) : null}
+          {pendingRequired > 0 && (
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 6 }}>
+              Documentos requeridos pendientes para cumplimiento SAT
             </div>
-          )
-        })}
+          )}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 260px', gap: 20, padding: '0 20px 40px', alignItems: 'start' }}>
+
+      {/* Document checklist — LEFT */}
+      <div>
+        {!loading && companyDocs.length === 0 && (
+          <div style={{
+            textAlign: 'center', padding: '32px 20px', marginBottom: 16,
+            background: 'var(--bg-card)', border: '1px solid var(--border, #E8E5E0)',
+            borderRadius: 10,
+          }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>📄</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>Sin documentos</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 4 }}>Suba sus documentos para comenzar.</div>
+          </div>
+        )}
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="skeleton-shimmer" style={{ height: 56, borderRadius: 8 }} />
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {sortedDocs.map(doc => {
+              const complete = isDocComplete(doc.id)
+              const up = uploaded[doc.id]
+
+              return (
+                <div
+                  key={doc.id}
+                  id={`doc-${doc.id}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '14px 16px', borderRadius: 10,
+                    background: 'var(--bg-card)',
+                    border: `1px solid ${complete ? 'var(--border, #E8E5E0)' : 'var(--border, #E8E5E0)'}`,
+                    borderLeft: complete ? '3px solid var(--success, #16A34A)' : '3px solid var(--border, #E8E5E0)',
+                    transition: 'background 100ms',
+                  }}
+                >
+                  {/* Status icon */}
+                  {complete ? (
+                    <CheckCircle size={20} style={{ color: 'var(--success, #16A34A)', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid var(--border, #E8E5E0)', flexShrink: 0 }} />
+                  )}
+
+                  {/* Doc info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{
+                        fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
+                        color: complete ? 'var(--text-secondary)' : 'var(--text-primary)',
+                      }}>
+                        {doc.label}
+                      </span>
+                      {doc.required && !complete && (
+                        <span
+                          aria-label="Documento requerido"
+                          style={{
+                          background: 'rgba(0,0,0,0.05)', color: 'var(--text-muted, #9B9B9B)',
+                          borderRadius: 4, padding: '1px 5px', fontSize: 'var(--aguila-fs-label)', fontWeight: 700,
+                        }}>
+                          REQ
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', marginTop: 2 }}>
+                      {up ? `Recibido: ${up.name}` : doc.desc}
+                    </div>
+                  </div>
+
+                  {/* Actions + Status badge */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    {complete && (() => {
+                      const companyDoc = companyDocs.find(cd => cd.tipo_documento?.toLowerCase().includes(doc.id.toLowerCase()))
+                      const fileUrl = (companyDoc as Record<string, unknown>)?.file_url as string | undefined
+                      return fileUrl ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); window.open(fileUrl, '_blank') }}
+                          title="Descargar"
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                            color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                          }}
+                        >
+                          <Download size={16} />
+                        </button>
+                      ) : null
+                    })()}
+                    {complete && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          // TODO(v1.5): Implement actual Supabase delete logic
+                          // 1. Show confirmation dialog
+                          // 2. Delete from company_documents table
+                          // 3. Delete file from Supabase Storage
+                          // 4. Refresh document list
+                          if (window.confirm(`Eliminar documento: ${doc.label}?`)) {
+                            // Delete from local uploaded state if applicable
+                            if (uploaded[doc.id]) {
+                              setUploaded(prev => {
+                                const next = { ...prev }
+                                delete next[doc.id]
+                                return next
+                              })
+                            }
+                          }
+                        }}
+                        title="Eliminar"
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                          color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                    <span style={{
+                      fontSize: 'var(--aguila-fs-compact)', fontWeight: 600,
+                      color: complete ? 'var(--success, #16A34A)' : 'var(--text-muted, #9B9B9B)',
+                    }}>
+                      {complete ? (up ? 'Recibido' : 'Vigente') : 'Pendiente'}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Upload zone — RIGHT column */}
+      <div style={{ position: isMobile ? 'relative' : 'sticky', top: isMobile ? undefined : 80 }}>
+        {!uploadFile ? (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleUploadFile(e.dataTransfer.files[0]) }}
+            style={{
+              border: `2px dashed ${dragOver ? 'var(--gold, #E8EAED)' : 'var(--border, #E8E5E0)'}`,
+              borderRadius: 12, padding: '24px 16px', textAlign: 'center', cursor: 'pointer',
+              background: dragOver ? 'rgba(196,150,60,0.04)' : 'var(--bg-card)',
+              transition: 'all 150ms',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >
+            <Upload size={24} style={{ color: 'var(--text-muted)' }} />
+            <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>Subir documento</div>
+            <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)' }}>PDF, imagen o Word</div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.docx,.doc"
+              style={{ display: 'none' }}
+              onChange={e => { if (e.target.files?.[0]) handleUploadFile(e.target.files[0]) }}
+            />
+          </div>
+        ) : (
+          <div style={{
+            border: '1px solid var(--border, #E8E5E0)',
+            borderRadius: 12, padding: '16px',
+            background: 'var(--bg-card)',
+          }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {uploadFile.name}
+            </div>
+            {uploading ? (
+              <div>
+                <div style={{ height: 6, background: 'var(--border, #E8E5E0)', borderRadius: 3 }}>
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--gold, #E8EAED)', borderRadius: 3, transition: 'width 80ms linear' }} />
+                </div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>{uploadProgress}%</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ position: 'relative' }}>
+                  <select value={uploadDocType} onChange={e => setUploadDocType(e.target.value)}
+                    style={{ width: '100%', padding: '10px 28px 10px 10px', fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer', minHeight: 60 }}>
+                    <option value="">Tipo...</option>
+                    {LEGAL_DOCS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                    <option value="otro">Otro</option>
+                  </select>
+                  <ChevronDown size={12} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={confirmUpload} disabled={!uploadDocType}
+                    style={{ flex: 1, background: uploadDocType ? 'var(--gold)' : 'var(--border)', color: uploadDocType ? '#FFF' : 'var(--text-muted)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, cursor: uploadDocType ? 'pointer' : 'default', minHeight: 60 }}>
+                    Subir
+                  </button>
+                  <button onClick={() => { setUploadFile(null); setUploadDocType('') }}
+                    style={{ background: 'transparent', border: 'none', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', cursor: 'pointer', padding: '10px 6px', minHeight: 60 }}>
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       </div>
     </div>
   )

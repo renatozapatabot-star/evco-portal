@@ -7,6 +7,9 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 
+const { fetchAll } = require('./lib/paginate')
+const { getExchangeRate } = require('./lib/rates')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -16,6 +19,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log('[TG]', msg.replace(/<[^>]+>/g, '')); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -67,27 +71,28 @@ async function optimizeClient(company) {
   }
 
   // Calculate current T-MEC rate
-  const { data: allFacturas } = await supabase
+  const allFacturas = await fetchAll(supabase
     .from('aduanet_facturas')
     .select('igi')
-    .eq('clave_cliente', clave)
-    .limit(5000)
+    .eq('clave_cliente', clave))
 
-  const totalOps = allFacturas?.length || 1
-  const tmecOps = (allFacturas || []).filter(f => (f.igi || 0) === 0).length
+  const totalOps = allFacturas.length || 1
+  const tmecOps = allFacturas.filter(f => (f.igi || 0) === 0).length
   const currentRate = ((tmecOps / totalOps) * 100).toFixed(1)
 
   // Future savings estimate
   const futureSavings = recoveryTotal * 2 // conservative 2x multiplier
+
+  const { rate: tc } = await getExchangeRate()
 
   const report = {
     company_id: cid,
     company_name: company.name,
     current_tmec_rate: parseFloat(currentRate),
     target_rate: 85,
-    igi_paid_unnecessarily_mxn: Math.round(recoveryTotal * 17.5),
+    igi_paid_unnecessarily_mxn: Math.round(recoveryTotal * tc),
     recovery_opportunities: opportunities.slice(0, 20),
-    future_savings_if_optimized_mxn: Math.round(futureSavings * 17.5),
+    future_savings_if_optimized_mxn: Math.round(futureSavings * tc),
     total_operations: totalOps,
     tmec_operations: tmecOps,
     generated_at: new Date().toISOString()

@@ -1,7 +1,7 @@
 'use client'
 
-export function downloadCSV(data: any[], filename: string) {
-  if (!data || data.length === 0) { alert('No hay datos para exportar'); return }
+export function downloadCSV(data: Record<string, unknown>[], filename: string) {
+  if (!data || data.length === 0) return
   const headers = Object.keys(data[0])
   const csvRows = [
     headers.join(','),
@@ -17,7 +17,7 @@ export function downloadCSV(data: any[], filename: string) {
   document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url)
 }
 
-export function ExportButton({ data, filename, label = 'Exportar CSV' }: { data: any[]; filename: string; label?: string }) {
+export function ExportButton({ data, filename, label = 'Exportar CSV' }: { data: Record<string, unknown>[]; filename: string; label?: string }) {
   return (
     <button onClick={() => downloadCSV(data, filename)}
       style={{ background: 'none', border: '1px solid #E6E3DC', borderRadius: 7, padding: '6px 12px',

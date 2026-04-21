@@ -15,7 +15,36 @@ const eslintConfig = defineConfig([
     // Node.js CommonJS pipeline scripts — linted separately
     "scripts/**",
     "ecosystem.config.js",
+    // Design-handoff reference mockups (parallel session vendor drop).
+    // JSX files that rely on globals (Icon, Badge, Sparkline, React) —
+    // not production code. Excluding avoids 54 spurious react/jsx-no-undef.
+    ".planning/**",
   ]),
+  // React Compiler rules downgraded to warnings: they flag optimization
+  // opportunities (memoization skipped, setState-in-effect, impure render),
+  // not runtime bugs. Tracked as tech debt — see /tmp/tech-debt-react-compiler.md.
+  // react-hooks/rules-of-hooks stays an error — that IS a runtime bug.
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/static-components": "warn",
+      // Honor the "_foo" convention for intentionally-unused identifiers.
+      // Standard TS community pattern — unused function args, unused
+      // destructured vars, and caught-error bindings are all fine when
+      // the name starts with "_". Without this override, test stubs
+      // `(_token: string) => ...` and `catch (_err) {}` silently
+      // accumulate warnings (~50 instances across the repo).
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+      }],
+    },
+  },
 ]);
 
 export default eslintConfig;

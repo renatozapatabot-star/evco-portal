@@ -2,7 +2,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Clock, FileText, CheckCircle2, ChevronRight, Truck, Package } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { fmtId, fmtDate, formatAbsoluteETA } from '@/lib/format-utils'
 import { daysUntilMVE } from '@/lib/compliance-dates'
 import { useToast } from '@/components/Toast'
@@ -13,34 +14,40 @@ function getGreeting(): string {
 }
 
 export default function AccionesPage() {
+  const isMobile = useIsMobile()
   const router = useRouter()
   const { toast } = useToast()
-  const [traficos, setTraficos] = useState<any[]>([])
-  const [entradas, setEntradas] = useState<any[]>([])
+  interface TraficoRow { trafico: string; estatus?: string; pedimento?: string; fecha_llegada?: string; fecha_cruce?: string; descripcion_mercancia?: string; [key: string]: unknown }
+  interface EntradaRow { cve_entrada: string; fecha_llegada_mercancia?: string; mercancia_danada?: boolean; tiene_faltantes?: boolean; [key: string]: unknown }
+  const [traficos, setTraficos] = useState<TraficoRow[]>([])
+  const [entradas, setEntradas] = useState<EntradaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [done, setDone] = useState<Set<string>>(new Set())
   const mveDays = daysUntilMVE()
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
+    const clientClave = getClientClaveCookie()
     Promise.all([
-      fetch(`/api/data?table=traficos&trafico_prefix=${CLIENT_CLAVE}-&limit=2000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
-      fetch('/api/data?table=entradas&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc').then(r => r.json()),
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=2000&order_by=fecha_llegada&order_dir=desc`).then(r => r.json()),
+      fetch(`/api/data?table=entradas&cve_cliente=${clientClave}&limit=500&order_by=fecha_llegada_mercancia&order_dir=desc`).then(r => r.json()),
     ]).then(([t, e]) => {
       setTraficos(t.data ?? [])
       setEntradas(e.data ?? [])
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch((err: unknown) => console.error('[acciones] fetch failed:', (err as Error).message)).finally(() => setLoading(false))
   }, [])
 
+  const [now] = useState(() => Date.now())
   const actions = useMemo(() => {
-    const now = Date.now()
-    const urgent: any[] = []
-    const today: any[] = []
-    const week: any[] = []
+    interface ActionItem { id: string; icon: typeof AlertTriangle; color: string; label: string; sub: string; href: string }
+    const urgent: ActionItem[] = []
+    const today: ActionItem[] = []
+    const week: ActionItem[] = []
 
     // MVE pending
     const mvePending = traficos.filter(t => (t.estatus || '').toLowerCase().includes('proceso') && !t.pedimento)
     if (mvePending.length > 0) {
-      urgent.push({ id: 'mve', icon: AlertTriangle, color: 'var(--danger)', label: `${mvePending.length} tráficos sin folio MVE`, sub: `Deadline: ${mveDays}d restantes`, href: '/mve' })
+      urgent.push({ id: 'mve', icon: AlertTriangle, color: 'var(--danger)', label: `${mvePending.length} embarques sin folio MVE`, sub: `Deadline: ${mveDays}d restantes`, href: '/mve' })
     }
 
     // Overdue >7d
@@ -49,11 +56,11 @@ export default function AccionesPage() {
       return (now - new Date(t.fecha_llegada).getTime()) / 86400000 > 7
     })
     if (overdue.length > 0) {
-      urgent.push({ id: 'overdue', icon: Clock, color: 'var(--warning)', label: `${overdue.length} tráficos vencidos +7d`, sub: 'Requieren seguimiento urgente', href: '/traficos' })
+      urgent.push({ id: 'overdue', icon: Clock, color: 'var(--warning)', label: `${overdue.length} embarques vencidos +7d`, sub: 'Requieren seguimiento urgente', href: '/embarques' })
     }
 
     // Damaged entries
-    const damaged = entradas.filter((e: any) => e.mercancia_danada || e.tiene_faltantes)
+    const damaged = entradas.filter((e) => e.mercancia_danada || e.tiene_faltantes)
     if (damaged.length > 0) {
       urgent.push({ id: 'danos', icon: Package, color: 'var(--danger)', label: `${damaged.length} entradas con incidencia`, sub: 'Mercancía dañada o faltante', href: '/entradas' })
     }
@@ -65,13 +72,13 @@ export default function AccionesPage() {
       return daysAgo <= 1 && !(t.estatus ?? '').toLowerCase().includes('cruz')
     })
     recentArrivals.slice(0, 5).forEach(t => {
-      today.push({ id: `arr-${t.trafico}`, icon: Truck, color: 'var(--info)', label: fmtId(t.trafico), sub: `Llegada: ${formatAbsoluteETA(t.fecha_llegada)}`, href: `/traficos/${encodeURIComponent(t.trafico)}` })
+      today.push({ id: `arr-${t.trafico}`, icon: Truck, color: 'var(--info)', label: fmtId(t.trafico), sub: `Llegada: ${formatAbsoluteETA(t.fecha_llegada)}`, href: `/embarques/${encodeURIComponent(t.trafico)}` })
     })
 
     // Missing pedimentos (this week)
     const noPedimento = traficos.filter(t => !(t.estatus ?? '').toLowerCase().includes('cruz') && !t.pedimento).slice(0, 5)
     noPedimento.forEach(t => {
-      week.push({ id: `ped-${t.trafico}`, icon: FileText, color: 'var(--warning)', label: `${fmtId(t.trafico)} — sin pedimento`, sub: fmtDate(t.fecha_llegada), href: `/traficos/${encodeURIComponent(t.trafico)}` })
+      week.push({ id: `ped-${t.trafico}`, icon: FileText, color: 'var(--warning)', label: `${fmtId(t.trafico)} — sin pedimento`, sub: fmtDate(t.fecha_llegada), href: `/embarques/${encodeURIComponent(t.trafico)}` })
     })
 
     return { urgent, today, week }
@@ -85,10 +92,10 @@ export default function AccionesPage() {
   const total = actions.urgent.length + actions.today.length + actions.week.length
   const doneCount = done.size
 
-  const todayStr = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const todayStr = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Chicago' })
 
   return (
-    <div className="acciones-page" style={{ padding: '24px 16px' }}>
+    <div className="acciones-page" style={{ padding: isMobile ? '16px 12px' : '24px 16px' }}>
       <div className="acc-header">
         <h1 className="acc-greeting">{getGreeting()}, Renato</h1>
         <div className="acc-date">{todayStr}</div>

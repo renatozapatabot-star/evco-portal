@@ -1,0 +1,96 @@
+'use client'
+
+import { useState, type ReactNode } from 'react'
+import {
+  ACCENT_SILVER, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  TEXT_MUTED, TEXT_PRIMARY,
+} from '@/lib/design-system'
+import { useTrack } from '@/lib/telemetry/useTrack'
+
+export interface TabDef {
+  id: string
+  label: string
+  content: ReactNode
+}
+
+export function ClienteTabStrip({ tabs, clienteId, defaultTab }: {
+  tabs: TabDef[]; clienteId: string; defaultTab?: string
+}) {
+  const [active, setActive] = useState(defaultTab ?? tabs[0]?.id)
+  const track = useTrack()
+
+  return (
+    <div
+      style={{
+        background: BG_CARD,
+        backdropFilter: `blur(${GLASS_BLUR})`,
+        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 20,
+        boxShadow: GLASS_SHADOW,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        role="tablist"
+        aria-label="Secciones del cliente"
+        className="cliente-tablist"
+        style={{
+          display: 'flex',
+          gap: 4,
+          padding: '8px 12px 0',
+          borderBottom: `1px solid ${BORDER}`,
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {tabs.map((t) => {
+          const selected = t.id === active
+          return (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={selected}
+              onClick={() => {
+                setActive(t.id)
+                track('page_view', {
+                  entityType: 'cliente_tab',
+                  entityId: clienteId,
+                  metadata: { tab: t.id },
+                })
+              }}
+              style={{
+                minHeight: 60,
+                minWidth: 60,
+                padding: '14px 18px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: selected ? `2px solid ${ACCENT_SILVER}` : '2px solid transparent',
+                color: selected ? TEXT_PRIMARY : TEXT_MUTED,
+                fontSize: 'var(--aguila-fs-body)',
+                fontWeight: selected ? 700 : 500,
+                letterSpacing: '0.02em',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
+              }}
+            >
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+      <div role="tabpanel" style={{ padding: 20 }}>
+        {tabs.find((t) => t.id === active)?.content ?? null}
+      </div>
+      <style>{`
+        @media (max-width: 600px) {
+          .cliente-tablist { padding: 6px 8px 0 !important; }
+          .cliente-tablist button { padding: 14px 14px !important; font-size: 12px !important; }
+        }
+      `}</style>
+    </div>
+  )
+}

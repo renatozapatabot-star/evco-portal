@@ -4,9 +4,12 @@ const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-const TG = process.env.TELEGRAM_BOT_TOKEN
-const CHAT = '-5085543275'
-async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
+const { safeUpsert } = require('./lib/safe-write')
+const { withSyncLog } = require('./lib/sync-log')
+// Canonical Telegram helper — handles TELEGRAM_SILENT internally.
+// Previous local tg() + stray top-level `return` made this script a
+// silent no-op under TELEGRAM_SILENT=true. Fixed 2026-04-20.
+const { sendTelegram: tg } = require('./lib/telegram')
 
 async function run() {
   console.log('\n📋 FULL EVENTOS SYNC (upsert on consecutivo)')
@@ -26,7 +29,8 @@ async function run() {
   await tg(`📋 <b>Eventos full upsert</b>\n${totalRows.toLocaleString()} registros\n— CRUZ 🦀`)
 
   const BATCH = 10000
-  let offset = 0, total = 0
+  let offset = 0, total = 0, skippedRows = 0
+  const skippedClaves = new Set()
 
   while (true) {
     const [rows] = await conn.execute(`
@@ -39,23 +43,33 @@ async function run() {
     `)
     if (!rows.length) break
 
-    const batch = rows.map(r => ({
-      consecutivo: r.iConsecutivo,
-      cve_trafico: r.sCveTrafico,
-      consecutivo_evento: r.iConsecutivoEvento,
-      comentarios: r.sComentarios,
-      fecha: r.dFecha,
-      registrado_por: r.sRegistradoPor,
-      remesa: r.sRemesa,
-      company_id: claveMap[r.sCveCliente] || r.sCveCliente || 'unknown'
-    }))
+    // Block EE: skip-and-alert on unknown cve_cliente instead of tagging 'unknown'.
+    const batch = rows.map(r => {
+      const companyId = claveMap[r.sCveCliente]
+      if (!companyId) {
+        skippedClaves.add(r.sCveCliente ?? '(null)')
+        skippedRows++
+        return null
+      }
+      return {
+        consecutivo: r.iConsecutivo,
+        cve_trafico: r.sCveTrafico,
+        consecutivo_evento: r.iConsecutivoEvento,
+        comentarios: r.sComentarios,
+        fecha: r.dFecha,
+        registrado_por: r.sRegistradoPor,
+        remesa: r.sRemesa,
+        company_id: companyId,
+      }
+    }).filter(Boolean)
 
     for (let i = 0; i < batch.length; i += 1000) {
-      const { error } = await supabase.from('globalpc_eventos').upsert(
-        batch.slice(i, i + 1000),
-        { onConflict: 'consecutivo', ignoreDuplicates: false }
-      )
-      if (error) console.error('\n  Upsert error at', total + i, ':', error.message.substring(0, 80))
+      // safeUpsert: error + zero-write-drift both fire Telegram.
+      await safeUpsert(supabase, 'globalpc_eventos', batch.slice(i, i + 1000), {
+        onConflict: 'consecutivo',
+        ignoreDuplicates: false,
+        scriptName: 'full-sync-eventos',
+      })
     }
 
     total += rows.length
@@ -66,7 +80,18 @@ async function run() {
   await conn.end()
   const { count } = await supabase.from('globalpc_eventos').select('*', { count: 'exact', head: true })
   console.log(`\n✅ Done. Supabase now: ${(count || 0).toLocaleString()} rows`)
-  await tg(`✅ <b>Eventos complete</b>\n${(count || 0).toLocaleString()} en Supabase\n— CRUZ 🦀`)
+
+  if (skippedRows > 0) {
+    const sample = Array.from(skippedClaves).slice(0, 10).join(', ')
+    console.warn(`⚠ Skipped ${skippedRows} rows · ${skippedClaves.size} unknown cve_cliente: ${sample}`)
+    await tg(
+      `🟡 <b>Eventos full-sync · skipped rows</b>\n` +
+      `${skippedRows.toLocaleString()} rows · ${skippedClaves.size} unknown cve_cliente\n` +
+      `<code>${sample}${skippedClaves.size > 10 ? `, …${skippedClaves.size - 10} more` : ''}</code>`
+    )
+  }
+  await tg(`✅ <b>Eventos complete</b>\n${(count || 0).toLocaleString()} en Supabase${skippedRows > 0 ? ` · ${skippedRows} skipped` : ''}\n— PORTAL 🦀`)
+  return { rows_synced: count || 0, skipped: skippedRows }
 }
 
-run().catch(e => { console.error(e); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'globalpc_eventos_full', company_id: null }, run).catch(e => { console.error(e); process.exit(1) })

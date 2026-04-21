@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Truck, Clock, TrendingUp, AlertTriangle, ChevronRight, X } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Carrier {
   name: string
@@ -16,14 +18,15 @@ interface Carrier {
   crossing_avg_days?: number
 }
 
-function scoreColor(s: number) { return s >= 90 ? '#166534' : s >= 70 ? '#92400E' : '#991B1B' }
-function scoreBg(s: number) { return s >= 90 ? '#DCFCE7' : s >= 70 ? '#FEF3C7' : '#FEE2E2' }
+function scoreColor(s: number) { return s >= 90 ? 'var(--portal-status-green-fg)' : s >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)' }
+function scoreBg(s: number) { return s >= 90 ? 'var(--portal-status-green-bg)' : s >= 70 ? 'var(--portal-status-amber-bg)' : 'var(--portal-status-red-bg)' }
 
 export default function CarriersPage() {
+  const isMobile = useIsMobile()
   const [carriers, setCarriers] = useState<Carrier[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [crossingData, setCrossingData] = useState<any>(null)
+  const [crossingData, setCrossingData] = useState<{ averages?: { overall?: { days?: number }; by_carrier?: { name: string; avgHours: number; avgDays: number }[] }; fastest_day?: string; slowest_day?: string; recommended_arrival_day?: string } | null>(null)
   const [selected, setSelected] = useState<Carrier | null>(null)
 
   useEffect(() => {
@@ -36,7 +39,7 @@ export default function CarriersPage() {
 
       // Merge crossing times into carrier data
       const crossingByCarrier: Record<string, { avgHours: number; avgDays: number }> = {}
-      ;(crossing?.averages?.by_carrier || []).forEach((c: any) => {
+      ;(crossing?.averages?.by_carrier || []).forEach((c: { name: string; avgHours: number; avgDays: number }) => {
         crossingByCarrier[c.name] = { avgHours: c.avgHours, avgDays: c.avgDays }
       })
 
@@ -62,13 +65,13 @@ export default function CarriersPage() {
       <div className="mb-4">
         <h1 className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>Carrier Performance</h1>
         <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          {carriers.length} transportistas &middot; {total.toLocaleString()} traficos analizados
+          {carriers.length} transportistas &middot; {total.toLocaleString()} embarques analizados
         </p>
       </div>
 
       {/* KPI Cards */}
       {!loading && carriers.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3 mb-4`}>
           <div className="rounded-[3px] p-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Truck size={13} style={{ color: 'var(--text-muted)' }} />
@@ -88,7 +91,7 @@ export default function CarriersPage() {
               <TrendingUp size={13} style={{ color: 'var(--text-muted)' }} />
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--text-muted)' }}>Mejor</span>
             </div>
-            <div className="text-[13px] font-semibold truncate" style={{ color: '#166534' }}>
+            <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--portal-status-green-fg)' }}>
               {bestPerformer?.name?.substring(0, 22) || ''}
             </div>
             <div className="mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{bestPerformer?.score}/100</div>
@@ -98,7 +101,7 @@ export default function CarriersPage() {
               <AlertTriangle size={13} style={{ color: 'var(--text-muted)' }} />
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--text-muted)' }}>Mayor Incidencia</span>
             </div>
-            <div className="text-[13px] font-semibold truncate" style={{ color: '#991B1B' }}>
+            <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--danger-text)' }}>
               {worstIncident?.name?.substring(0, 22) || ''}
             </div>
             <div className="mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{((worstIncident?.faltantes_rate || 0) + (worstIncident?.danos_rate || 0)).toFixed(1)}% incidentes</div>
@@ -106,13 +109,14 @@ export default function CarriersPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (selected ? '1fr 380px' : '1fr'), gap: 16 }}>
         {/* Main Table */}
         <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           {loading ? (
             <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>Cargando carriers...</div>
           ) : (
-            <table className="data-table">
+            <div style={{ overflowX: 'auto' }}>
+            <table className="data-table" aria-label="Rendimiento de transportistas">
               <thead>
                 <tr>
                   <th style={{ width: 40 }}>#</th>
@@ -127,9 +131,14 @@ export default function CarriersPage() {
                 </tr>
               </thead>
               <tbody>
+                {!loading && carriers.length === 0 && (
+                  <tr><td colSpan={9}>
+                    <EmptyState icon="🚛" title="Sin transportistas registrados" description="Los datos de carriers aparecerán después de la sincronización" />
+                  </td></tr>
+                )}
                 {carriers.map((c, i) => (
                   <tr key={c.name}
-                    style={{ cursor: 'pointer', background: selected?.name === c.name ? 'rgba(201,168,76,0.04)' : undefined }}
+                    style={{ cursor: 'pointer', minHeight: 60, background: selected?.name === c.name ? 'rgba(192,197,206,0.04)' : undefined }}
                     onClick={() => setSelected(selected?.name === c.name ? null : c)}>
                     <td className="mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{i + 1}</td>
                     <td>
@@ -141,8 +150,8 @@ export default function CarriersPage() {
                     <td className="text-right mono text-[12px]" style={{ color: c.crossing_avg_days && c.crossing_avg_days > 3 ? 'var(--amber-600)' : 'var(--text-secondary)' }}>
                       {c.crossing_avg_days ? `${c.crossing_avg_days}d` : ''}
                     </td>
-                    <td className="text-right text-[12px]" style={{ color: c.faltantes_rate > 0 ? '#b91c1c' : 'var(--text-muted)' }}>{c.faltantes_rate}%</td>
-                    <td className="text-right text-[12px]" style={{ color: c.danos_rate > 0 ? '#b91c1c' : 'var(--text-muted)' }}>{c.danos_rate}%</td>
+                    <td className="text-right text-[12px]" style={{ color: c.faltantes_rate > 0 ? 'var(--portal-status-red-fg)' : 'var(--text-muted)' }}>{c.faltantes_rate}%</td>
+                    <td className="text-right text-[12px]" style={{ color: c.danos_rate > 0 ? 'var(--portal-status-red-fg)' : 'var(--text-muted)' }}>{c.danos_rate}%</td>
                     <td className="text-right mono text-[12px]" style={{ color: 'var(--text-secondary)' }}>{c.completion_rate}%</td>
                     <td className="text-center">
                       <span className="mono text-[11px] font-bold px-2 py-0.5 rounded-[4px]"
@@ -157,6 +166,7 @@ export default function CarriersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
@@ -168,7 +178,7 @@ export default function CarriersPage() {
                 <div className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>{selected.name}</div>
                 <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Detalle de transportista</div>
               </div>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              <button onClick={() => setSelected(null)} aria-label="Cerrar detalle de transportista" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                 <X size={16} />
               </button>
             </div>
@@ -182,10 +192,10 @@ export default function CarriersPage() {
                   <div className="mt-2">
                     <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
                       style={{
-                        background: selected.score >= 90 ? '#DCFCE7' : selected.score >= 70 ? '#FEF3C7' : '#FEE2E2',
-                        color: selected.score >= 90 ? '#166534' : selected.score >= 70 ? '#92400E' : '#991B1B',
+                        background: selected.score >= 90 ? 'var(--portal-status-green-bg)' : selected.score >= 70 ? 'var(--portal-status-amber-bg)' : 'var(--portal-status-red-bg)',
+                        color: selected.score >= 90 ? 'var(--portal-status-green-fg)' : selected.score >= 70 ? 'var(--amber-text, #92400E)' : 'var(--danger-text, #991B1B)',
                       }}>
-                      {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atencion'}
+                      {selected.score >= 90 ? 'Excelente' : selected.score >= 70 ? 'Aceptable' : 'Requiere Atención'}
                     </span>
                   </div>
                 </div>
@@ -212,8 +222,8 @@ export default function CarriersPage() {
               <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-2" style={{ color: 'var(--text-muted)' }}>Incidencias</div>
               <div className="space-y-1.5 mb-4">
                 {[
-                  { label: 'Faltantes', rate: selected.faltantes_rate, color: '#EF4444' },
-                  { label: 'Danos', rate: selected.danos_rate, color: '#F59E0B' },
+                  { label: 'Faltantes', rate: selected.faltantes_rate, color: 'var(--portal-status-red-fg)' },
+                  { label: 'Danos', rate: selected.danos_rate, color: 'var(--warning-500)' },
                 ].map(item => (
                   <div key={item.label}>
                     <div className="flex justify-between text-[11px] mb-0.5">
@@ -233,7 +243,7 @@ export default function CarriersPage() {
                   <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-2" style={{ color: 'var(--text-muted)' }}>Tiempos de Cruce</div>
                   <div className="text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     <div>Dia mas rapido: <span className="font-semibold" style={{ color: 'var(--green)' }}>{crossingData.fastest_day}</span></div>
-                    <div>Dia mas lento: <span className="font-semibold" style={{ color: '#EF4444' }}>{crossingData.slowest_day}</span></div>
+                    <div>Dia mas lento: <span className="font-semibold" style={{ color: 'var(--portal-status-red-fg)' }}>{crossingData.slowest_day}</span></div>
                     <div>Recomendado: <span className="font-semibold" style={{ color: 'var(--amber-600)' }}>{crossingData.recommended_arrival_day}</span></div>
                   </div>
                 </div>

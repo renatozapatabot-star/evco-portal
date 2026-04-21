@@ -1,308 +1,421 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
-import { Search, Download, ChevronDown, ChevronRight, ChevronLeft, FileText } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
-import { fmtUSDFull as fmtUSD, fmtMXN, fmtDate } from '@/lib/format-utils'
-import { getTariffRate } from '@/lib/cruz-score'
-import { GOLD } from '@/lib/design-system'
+import { useEffect, useState, useMemo, Suspense } from 'react'
+import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
+import { fmtUSDFull as fmtUSD, fmtDate, fmtPedimentoShort, fmtDesc, fmtId } from '@/lib/format-utils'
+import { formatPedimento } from '@/lib/format/pedimento'
+import { useSort, type SortState } from '@/hooks/use-sort'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
+import { renderNull, renderPending } from '@/lib/ui/cell-renderers'
+import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
+import { MonthSelector } from '@/components/admin/MonthSelector'
+import { FreshnessBanner } from '@/components/aguila'
+import { useFreshness } from '@/hooks/use-freshness'
+import Link from 'next/link'
 
-const titleCase = (s: string) => {
-  if (!s) return ''
-  return s.toLowerCase().replace(/(?:^|\s|[-/])\w/g, c => c.toUpperCase())
-}
-
-interface FacturaRow {
-  referencia: string
+interface TraficoRow {
+  trafico: string
   pedimento: string | null
   fecha_pago: string | null
-  proveedor: string | null
-  tc: number | null
-  valor_usd: number | null
-  dta: number | null
-  igi: number | null
-  iva: number | null
+  fecha_llegada: string | null
+  importe_total: number | null
+  estatus: string | null
+  regimen: string | null
+  proveedores: string | null
+  descripcion_mercancia: string | null
+  company_id: string | null
   [key: string]: unknown
 }
 
 interface PedGroup {
   pedimento: string
-  rows: FacturaRow[]
-  totalValor: number
-  totalDta: number
-  totalIgi: number
-  totalIva: number
+  trafico: string
   fecha: string | null
-  referencia: string
-  tc: number | null
-  proveedores: string[]
+  importe: number
+  regimen: string
   tmec: boolean
+  descripcion: string
 }
 
-const PAGE_SIZE = 30
+const PAGE_SIZE = 50
 
-// Use shared formatters — imported at top
-
-function exportCSV(rows: FacturaRow[]) {
-  const headers = ['Referencia', 'Pedimento', 'Fecha Pago', 'Proveedor', 'TC', 'Valor USD', 'DTA', 'IGI', 'IVA']
-  const csvRows = rows.map(r => [
-    r.referencia, r.pedimento ?? '', r.fecha_pago ?? '', (r.proveedor ?? '').replace(/,/g, ' '),
-    r.tc ?? '', r.valor_usd ?? '', r.dta ?? '', r.igi ?? '', r.iva ?? '',
-  ].join(','))
-  const csv = [headers.join(','), ...csvRows].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `pedimentos-${CLIENT_CLAVE}-${new Date().toISOString().split('T')[0]}.csv`
-  a.click()
+function SortArrow({ col, sort }: { col: string; sort: SortState }) {
+  if (sort.column !== col) return null
+  return <span style={{ marginLeft: 4, fontSize: 'var(--aguila-fs-label)' }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
 }
 
 export default function PedimentosPage() {
-  const [rows, setRows] = useState<FacturaRow[]>([])
+  return (
+    <Suspense fallback={<div className="page-shell" style={{ padding: 20 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
+      <PedimentosContent />
+    </Suspense>
+  )
+}
+
+function PedimentosContent() {
+  const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
+  const monthParam = searchParams.get('month')
+  const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
+  const monthOptions = useMemo(() => recentMonths(24), [])
+  const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [page, setPage] = useState(0)
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [tmecOnly, setTmecOnly] = useState(false)
+  const freshness = useFreshness()
+  const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
+  const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
+  const [aduanetValorMap, setAduanetValorMap] = useState<Map<string, number>>(new Map())
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/data?table=aduanet_facturas&clave_cliente=${CLIENT_CLAVE}&limit=5000&order_by=fecha_pago&order_dir=desc`)
-      .then((r) => r.json())
-      .then((data) => setRows(data.data ?? data ?? []))
-      .catch(() => {})
+    const userRole = getCookieValue('user_role') ?? ''
+    const isInternal = userRole === 'broker' || userRole === 'admin'
+    const companyId = getCompanyIdCookie()
+
+    const params = new URLSearchParams({
+      table: 'traficos', limit: '5000',
+      order_by: 'fecha_pago', order_dir: 'desc',
+      not_null: 'pedimento',
+      gte_field: 'fecha_llegada', gte_value: monthWindow.monthStart,
+      lte_field: 'fecha_llegada', lte_value: monthWindow.monthEnd,
+    })
+    if (!isInternal && companyId) params.set('company_id', companyId)
+
+    // Retrofit B6a: prefer new `pedimentos` table; traficos query is fallback
+    // for rows not yet migrated. Merge by pedimento_number (new table wins).
+    const pedimentoParams = new URLSearchParams({
+      table: 'pedimentos', limit: '5000',
+      order_by: 'created_at', order_dir: 'desc',
+    })
+    if (!isInternal && companyId) pedimentoParams.set('company_id', companyId)
+
+    Promise.all([
+      fetch(`/api/data?${params}`).then(r => r.json()).catch((err: Error) => {
+        console.error('[pedimentos] traficos fetch:', err.message)
+        return { data: [] }
+      }),
+      fetch(`/api/data?${pedimentoParams}`).then(r => r.json()).catch(() => ({ data: [] })),
+    ])
+      .then(([traficoRes, pedimentoRes]) => {
+        const traficoRows = (traficoRes.data ?? traficoRes ?? []) as TraficoRow[]
+        const pedimentoRows = (pedimentoRes.data ?? []) as Array<{
+          pedimento_number: string | null
+          trafico_id: string
+          company_id: string
+          status: string | null
+          created_at: string
+        }>
+        const existingNumbers = new Set(traficoRows.map(r => r.pedimento).filter(Boolean))
+        const overlayRows: TraficoRow[] = pedimentoRows
+          .filter(p => p.pedimento_number && !existingNumbers.has(p.pedimento_number))
+          .map(p => ({
+            trafico: p.trafico_id,
+            pedimento: p.pedimento_number,
+            fecha_pago: null,
+            fecha_llegada: p.created_at,
+            importe_total: null,
+            estatus: p.status ?? null,
+            regimen: null,
+            proveedores: null,
+            descripcion_mercancia: null,
+            company_id: p.company_id,
+          }))
+        setRows([...traficoRows, ...overlayRows])
+      })
       .finally(() => setLoading(false))
-  }, [])
+
+    // Partida descriptions — scope by company to avoid cross-client description bleed.
+    // For client role, /api/data auto-injects the signed session company_id. For
+    // broker/admin, we pass the currently-viewed company_id explicitly (or skip
+    // the fetch entirely when broker is aggregating across all clients).
+    const partidaParams = new URLSearchParams({ table: 'globalpc_partidas', select: 'cve_trafico,descripcion', limit: '5000' })
+    if (!isInternal && companyId) partidaParams.set('company_id', companyId)
+    else if (isInternal && companyId) partidaParams.set('company_id', companyId)
+    fetch(`/api/data?${partidaParams}`)
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, string>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((p: { cve_trafico?: string; descripcion?: string }) => {
+          if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
+        })
+        setPartidaDescMap(map)
+      }).catch((err) => console.error('[pedimentos] partidas fetch:', err.message))
+
+    // Aduanet facturas for valor fallback
+    const aduanetParams = new URLSearchParams({ table: 'aduanet_facturas', select: 'pedimento,valor_usd', limit: '5000' })
+    if (!isInternal && companyId) aduanetParams.set('company_id', companyId)
+    fetch(`/api/data?${aduanetParams}`)
+      .then(r => r.json()).then(d => {
+        const map = new Map<string, number>()
+        const arr = Array.isArray(d.data) ? d.data : []
+        arr.forEach((f: { pedimento?: string; valor_usd?: number }) => {
+          if (f.pedimento && f.valor_usd && !map.has(f.pedimento)) map.set(f.pedimento, f.valor_usd)
+        })
+        setAduanetValorMap(map)
+      }).catch((err) => console.error('[pedimentos] aduanet fetch:', err.message))
+  }, [monthWindow.monthStart, monthWindow.monthEnd])
 
   const groups: PedGroup[] = useMemo(() => {
-    const map = new Map<string, FacturaRow[]>()
-    let filteredRows = rows
+    const today = new Date().toISOString().split('T')[0]
+    let filtered = rows.filter(r => {
+      const fecha = r.fecha_pago || r.fecha_llegada
+      if (fecha && fecha > today) return false
+      return true
+    })
     if (search.trim()) {
       const q = search.toLowerCase()
-      filteredRows = filteredRows.filter(r =>
-        (r.referencia ?? '').toLowerCase().includes(q) ||
+      filtered = filtered.filter(r =>
         (r.pedimento ?? '').toLowerCase().includes(q) ||
-        (r.proveedor ?? '').toLowerCase().includes(q))
+        (r.trafico ?? '').toLowerCase().includes(q) ||
+        (r.proveedores ?? '').toLowerCase().includes(q) ||
+        (r.descripcion_mercancia ?? '').toLowerCase().includes(q))
     }
-    if (dateFrom) filteredRows = filteredRows.filter(r => (r.fecha_pago || '') >= dateFrom)
-    if (dateTo) filteredRows = filteredRows.filter(r => (r.fecha_pago || '') <= dateTo)
-    if (tmecOnly) filteredRows = filteredRows.filter(r => (r.igi || 0) === 0)
 
-    filteredRows.forEach(r => {
-      const key = r.pedimento || r.referencia || 'Sin pedimento'
+    const map = new Map<string, TraficoRow[]>()
+    filtered.forEach(r => {
+      const key = r.pedimento!
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(r)
     })
 
-    return Array.from(map.entries()).map(([pedimento, rows]) => {
-      // Financial values are pedimento-level totals duplicated on every row.
-      // Use the first row's values — they're the same across all rows.
-      const first = rows[0]
+    const result = Array.from(map.entries()).map(([pedimento, pedRows]) => {
+      const first = pedRows[0]
+      const reg = (first.regimen ?? '').toUpperCase()
+      const tmec = reg === 'ITE' || reg === 'ITR' || reg === 'IMD'
       return {
         pedimento,
-        rows,
-        totalValor: Number(first.valor_usd) || 0,
-        totalDta: Number(first.dta) || 0,
-        totalIgi: Number(first.igi) || 0,
-        totalIva: Number(first.iva) || 0,
-        fecha: first.fecha_pago,
-        referencia: first.referencia,
-        tc: first.tc,
-        proveedores: [...new Set(rows.map(r => r.proveedor).filter(Boolean))] as string[],
-        tmec: (Number(first.igi) || 0) === 0,
+        trafico: first.trafico,
+        fecha: first.fecha_pago || first.fecha_llegada,
+        importe: Number(first.importe_total) || aduanetValorMap.get(pedimento) || 0,
+        regimen: first.regimen ?? '',
+        tmec,
+        descripcion: first.descripcion_mercancia ?? '',
       }
     })
-  }, [rows, search, dateFrom, dateTo, tmecOnly])
+
+    result.sort((a, b) => {
+      const col = sort.column as keyof PedGroup
+      const av = a[col] ?? ''
+      const bv = b[col] ?? ''
+      const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv), 'es', { numeric: true })
+      return sort.direction === 'asc' ? cmp : -cmp
+    })
+
+    return result
+  }, [rows, search, sort, aduanetValorMap])
 
   const totalPages = Math.ceil(groups.length / PAGE_SIZE)
-  const pagedGroups = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const paged = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
-  const totals = useMemo(() => groups.reduce(
-    (acc, g) => ({
-      valor: acc.valor + g.totalValor,
-      dta: acc.dta + g.totalDta,
-      igi: acc.igi + g.totalIgi,
-      iva: acc.iva + g.totalIva,
-    }),
-    { valor: 0, dta: 0, igi: 0, iva: 0 }
-  ), [groups])
+  // USD sync is asynchronous — aduanet_facturas lands ~24h after the cross.
+  // When none of the in-window groups has an importe, hide the column
+  // entirely so the page doesn't read as "broken column with every row
+  // showing —". A calm banner above the table explains the sync cadence.
+  const hasUSDValues = groups.some((g) => g.importe > 0)
 
-  const toggle = (ped: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev)
-      next.has(ped) ? next.delete(ped) : next.add(ped)
-      return next
-    })
+  const getDesc = (g: PedGroup) => {
+    const partidaDesc = partidaDescMap.get(g.trafico)
+    if (partidaDesc) return fmtDesc(partidaDesc)
+    if (g.descripcion) return fmtDesc(g.descripcion)
+    return null
   }
 
-  const summaryCards = [
-    { label: 'Valor Total USD', value: fmtUSD(totals.valor), accent: false },
-    { label: 'DTA Total', value: fmtMXN(totals.dta), accent: false },
-    { label: 'IGI Total', value: fmtMXN(totals.igi), accent: false },
-    { label: 'IVA Total', value: fmtMXN(totals.iva), accent: false },
-  ]
-
   return (
-    <div className="p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h1 className="page-title">Pedimentos</h1>
-          <p className="text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {groups.length.toLocaleString()} pedimentos &middot; {rows.length.toLocaleString()} lineas &middot; Clave {CLIENT_CLAVE}
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            onClick={() => exportCSV(rows)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-[12px] font-medium"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-          >
-            <Download size={12} strokeWidth={2} /> CSV
-          </button>
-          <div className="flex items-center gap-1.5">
-            <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0) }}
-              className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)', height: 30 }} />
-            <span style={{ color: 'var(--text-disabled)', fontSize: 11 }}>—</span>
-            <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(0) }}
-              className="rounded-[6px] px-2 py-1 text-[11px] outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)', height: 30 }} />
-            {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-                className="text-[10px] font-medium px-1.5 py-0.5 rounded"
-                style={{ color: 'var(--red-text)', border: '1px solid var(--red-border)', background: 'var(--red-bg)' }}>✕</button>
-            )}
-          </div>
-          <label className="flex items-center gap-1.5 text-[11.5px] cursor-pointer" style={{ color: tmecOnly ? '#166534' : '#6b7280' }}>
-            <input type="checkbox" checked={tmecOnly} onChange={e => { setTmecOnly(e.target.checked); setPage(0) }} style={{ width: 13, height: 13 }} />
-            T-MEC only
-          </label>
-          <div
-            className="flex items-center gap-2 rounded-[3px] px-3 py-1.5"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', width: 240 }}
-          >
-            <Search size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+    <div className="page-shell">
+
+      <div style={{ marginBottom: 16 }}>
+        <MonthSelector
+          ym={monthWindow.ym}
+          label={monthWindow.label}
+          prev={monthWindow.prev}
+          next={monthWindow.next}
+          options={monthOptions}
+        />
+      </div>
+
+      {freshness && <div style={{ marginBottom: 12 }}><FreshnessBanner reading={freshness} /></div>}
+
+      <div className="table-shell">
+        <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
+          <div className="toolbar-search" style={{ minHeight: 60 }}>
+            <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              type="text"
-              placeholder="Pedimento, proveedor, factura..."
+              placeholder="Pedimento, embarque, proveedor..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-              className="flex-1 bg-transparent outline-none text-[12.5px]"
-              style={{ color: 'var(--text-secondary)' }}
+              onChange={e => { setSearch(e.target.value); setPage(0) }}
+              aria-label="Buscar pedimentos"
             />
           </div>
         </div>
-      </div>
 
-      {/* T-MEC Savings Banner */}
-      {groups.length > 0 && (() => {
-        const tmecCount = groups.filter(g => g.tmec).length
-        const nonTmecCount = groups.filter(g => !g.tmec).length
-        const nonTmecGroups = groups.filter(g => !g.tmec).sort((a, b) => b.totalValor - a.totalValor)
-        const nonTmecValue = nonTmecGroups.reduce((s, g) => s + g.totalValor, 0)
-        const estimatedSavings = nonTmecGroups.reduce((s, g) => s + g.totalValor * getTariffRate(g.proveedores?.[0] || ''), 0)
-        return (
-          <div style={{
-            background: 'var(--gold-50)', border: '1px solid var(--gold-200)',
-            borderRadius: 'var(--r-lg)', padding: '16px 20px',
-            marginBottom: 20,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--n-900)' }}>
-                  T-MEC: {tmecCount} de {groups.length} pedimentos ({groups.length > 0 ? Math.round(tmecCount / groups.length * 100) : 0}%)
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--n-500)', marginTop: 2 }}>
-                  {nonTmecCount} pedimentos sin T-MEC · Valor: {fmtUSD(nonTmecValue)}
-                </div>
-              </div>
-              {estimatedSavings > 0 && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Ahorro potencial*</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--gold-700)' }}>{fmtUSD(estimatedSavings)}</div>
-                </div>
-              )}
+        {!loading && groups.length > 0 && !hasUSDValues && (
+          <div
+            role="status"
+            style={{
+              margin: '0 16px 12px',
+              padding: '10px 14px',
+              fontSize: 'var(--aguila-fs-meta)',
+              color: 'var(--text-muted)',
+              background: 'rgba(148,163,184,0.08)',
+              border: '1px solid rgba(148,163,184,0.18)',
+              borderRadius: 8,
+            }}
+          >
+            Los valores en USD se sincronizan el día siguiente del cruce.
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="skeleton-shimmer" style={{ height: 44, borderRadius: 6 }} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && paged.length === 0 && (
+          search.trim() ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 8 }}>🔍</div>
+              <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-secondary)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
+              <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setPage(0) }}>Limpiar búsqueda</button>
             </div>
-            {nonTmecGroups.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                {nonTmecGroups.slice(0, 3).map(g => (
-                  <div key={g.pedimento} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0' }}>
-                    <span style={{ fontWeight: 700 }}>{g.pedimento} — {titleCase(g.proveedores?.[0] || '')}</span>
-                    <span style={{ fontWeight: 800, color: 'var(--gold-700)' }}>{fmtUSD(g.totalValor * getTariffRate(g.proveedores?.[0] || ''))}</span>
-                  </div>
-                ))}
-                <div style={{ fontSize: 10, color: 'var(--n-400)', marginTop: 6 }}>* Estimado por fracción arancelaria. Verificar para cálculo exacto.</div>
-              </div>
-            )}
-          </div>
-        )
-      })()}
+          ) : (
+            <CalmEmptyState
+              icon="document"
+              title="Sin pedimentos en este período"
+              message="Los pedimentos aparecerán aquí cuando se asignen a tus embarques."
+            />
+          )
+        )}
 
-      <div className="kpi-grid" style={{ marginBottom: 24 }}>
-        {summaryCards.map((c) => (
-          <div key={c.label} className="kpi-card">
-            <div className="kpi-label">{c.label}</div>
-            <div className="kpi-value" style={{ fontSize: 28, color: 'var(--n-900)' }}>{c.value}</div>
+        {/* Mobile cards */}
+        {!loading && paged.length > 0 && isMobile && (
+          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {paged.map(g => (
+              <button
+                key={g.pedimento}
+                type="button"
+                onClick={() => window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')}
+                style={{
+                  textAlign: 'left', cursor: 'pointer', font: 'inherit',
+                  textDecoration: 'none', color: 'inherit',
+                  background: 'var(--bg-card)', border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #E8EAED)'}`,
+                  borderRadius: 10, padding: '14px 16px', display: 'block', minHeight: 60,
+                  width: '100%',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{formatPedimento(g.pedimento, g.pedimento, { dd: g.fecha?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span>
+                  {g.tmec && <span className="badge-tmec">T-MEC</span>}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
+                  {hasUSDValues && (
+                    <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                      {g.importe > 0 ? fmtUSD(g.importe) : ''}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {getDesc(g) || renderNull()}
+                </div>
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
 
-      <div className="rounded-[3px] overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-        {loading ? (
-          <div className="text-center py-12 text-[13px]" style={{ color: 'var(--text-muted)' }}>Cargando pedimentos...</div>
-        ) : pagedGroups.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <FileText size={32} strokeWidth={1.5} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-700)', marginBottom: 4 }}>Sin pedimentos registrados</div>
-            <div style={{ fontSize: 13, color: 'var(--n-400)' }}>Los pedimentos aparecerán aquí</div>
-          </div>
-        ) : (
-          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
-            <table className="data-table">
+        {/* Desktop table */}
+        {!loading && paged.length > 0 && !isMobile && (
+          <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'auto' }}>
+            <table className="aguila-table" role="table" aria-label="Lista de pedimentos" style={{ minWidth: 700 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 28 }}></th>
-                  <th>Pedimento</th>
-                  <th>Tráfico</th>
-                  <th>Proveedores</th>
-                  <th>Fecha</th>
-                  <th>T-MEC</th>
-                  <th style={{ textAlign: 'right' }}>Valor USD</th>
+                  <th style={{ cursor: 'pointer', width: 160 }} onClick={() => toggleSort('pedimento')}>Pedimento<SortArrow col="pedimento" sort={sort} /></th>
+                  <th style={{ width: 140, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Embarque<SortArrow col="trafico" sort={sort} /></th>
+                  <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha')}>Fecha<SortArrow col="fecha" sort={sort} /></th>
+                  <th>Mercancía</th>
+                  <th style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('regimen')}>Régimen<SortArrow col="regimen" sort={sort} /></th>
+                  {hasUSDValues && (
+                    <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" sort={sort} /></th>
+                  )}
+                  <th style={{ width: 50, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>
               <tbody>
-                {pagedGroups.map((g) => (
-                  <tr key={g.pedimento} onClick={() => toggle(g.pedimento)} style={{ cursor: 'pointer' }}>
-                    <td style={{ padding: '0 4px 0 12px' }}>
-                      {expanded.has(g.pedimento) ? <ChevronDown size={14} style={{ color: GOLD }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
-                    </td>
-                    <td><span className="c-id">{g.pedimento}</span></td>
-                    <td><span className="c-id">{g.referencia}</span></td>
+                {paged.map((g, i) => (
+                  <tr
+                    key={g.pedimento}
+                    className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
+                    onClick={() => window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <td>
-                      {g.proveedores.length > 0 ? (
-                        <>
-                          <span style={{ fontSize: 13, color: 'var(--n-700)' }}>
-                            {titleCase(g.proveedores[0])}
-                          </span>
-                          {g.proveedores.length > 1 && (
-                            <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--n-100)', color: 'var(--n-500)' }}>
-                              +{g.proveedores.length - 1}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="c-empty">&middot;</span>
-                      )}
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {fmtPedimentoShort(g.pedimento)}
+                      </span>
                     </td>
-                    <td className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</td>
                     <td>
-                      {g.tmec && (
-                        <span className="badge-tmec">T-MEC</span>
-                      )}
+                      <Link
+                        href={`/embarques/${encodeURIComponent(g.trafico)}`}
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--gold-dark, #7A7E86)', textDecoration: 'none' }}
+                      >
+                        {fmtId(g.trafico)}
+                      </Link>
                     </td>
-                    <td className="c-num">{fmtUSD(g.totalValor)}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
+                      {g.fecha ? fmtDate(g.fecha) : renderNull()}
+                    </td>
+                    <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
+                      {(() => {
+                        const d = getDesc(g)
+                        if (!d) return renderPending()
+                        return (
+                          <Link
+                            href={`/catalogo?q=${encodeURIComponent(d)}`}
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            style={{ color: 'var(--text-secondary)', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
+                            title="Ver en catálogo / fracción"
+                          >
+                            {d}
+                          </Link>
+                        )
+                      })()}
+                    </td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                      {g.regimen || renderNull()}
+                      {g.tmec && <span style={{ marginLeft: 6, fontSize: 'var(--aguila-fs-meta)', color: 'var(--success)', fontWeight: 600 }}>T-MEC</span>}
+                    </td>
+                    {hasUSDValues && (
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-primary)', fontWeight: 600 }}>
+                        {g.importe > 0 ? `${fmtUSD(g.importe)}` : ''}
+                      </td>
+                    )}
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')
+                        }}
+                        title="Descargar PDF"
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          padding: 4, borderRadius: 4, display: 'inline-flex',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        <Download size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -311,23 +424,13 @@ export default function PedimentosPage() {
         )}
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-3 px-1">
-          <span className="text-[11.5px]" style={{ color: 'var(--text-muted)' }}>
-            {(page * PAGE_SIZE + 1)}-{Math.min((page + 1) * PAGE_SIZE, groups.length)} de {groups.length} pedimentos
-          </span>
-          <div className="flex items-center gap-1.5">
-            <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page === 0 ? '#f7f8fa' : '#ffffff', border: '1px solid var(--border)', color: page === 0 ? '#d1d5db' : '#374151', cursor: page === 0 ? 'default' : 'pointer' }}>
-              <ChevronLeft size={12} /> Anterior
-            </button>
-            <span className="mono text-[11px] px-2" style={{ color: 'var(--text-muted)' }}>{page + 1}/{totalPages}</span>
-            <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-[11.5px] font-medium"
-              style={{ background: page >= totalPages - 1 ? '#f7f8fa' : '#ffffff', border: '1px solid var(--border)', color: page >= totalPages - 1 ? '#d1d5db' : '#374151', cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
-              Siguiente <ChevronRight size={12} />
-            </button>
+        <div className="pagination">
+          <span className="pagination-info">Página {page + 1} de {totalPages}</span>
+          <div className="pagination-btns">
+            <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={14} /></button>
+            <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={14} /></button>
           </div>
         </div>
       )}

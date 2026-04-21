@@ -1,0 +1,352 @@
+/* =========================================================================
+   PORTAL — Design Tokens · Baseline 2026-04-17 (Block DD)
+   Single source of truth for color, type, spacing, motion, elevation.
+   Reference tokens via var(--portal-*). Never hardcode hex values.
+
+   Brand lineage: CRUZ → ADUANA → AGUILA → ZAPATA AI → CRUZ → PORTAL (final).
+   Internal identifiers still use `Aguila*` / `.aguila-*` / `--aguila-*` for
+   code stability — the legacy-alias block at the bottom keeps those
+   identifiers valid during the per-page migration to portal-* primitives.
+   ========================================================================= */
+
+:root {
+  /* —— Base canvas —————————————————————————————— */
+  --portal-ink-0:   #050506;   /* page void */
+  --portal-ink-1:   #0a0a0c;   /* primary surface */
+  --portal-ink-2:   #101014;   /* raised surface */
+  --portal-ink-3:   #16171c;   /* card */
+  --portal-ink-4:   #1e2026;   /* card hover / input */
+  --portal-ink-5:   #2a2d36;   /* border-strong */
+
+  --portal-line-1:  rgba(255,255,255,0.06);  /* hairline */
+  --portal-line-2:  rgba(255,255,255,0.10);  /* divider */
+  --portal-line-3:  rgba(255,255,255,0.16);  /* focus / strong */
+
+  /* —— Text —————————————————————————————— */
+  --portal-fg-1:    oklch(0.98 0.005 240);
+  --portal-fg-2:    oklch(0.88 0.005 240);
+  --portal-fg-3:    oklch(0.74 0.006 240);
+  --portal-fg-4:    oklch(0.60 0.008 240);
+  --portal-fg-5:    oklch(0.48 0.008 240);
+
+  /* —— Accent: emerald (state: healthy, live) —————————— */
+  --portal-green-1: oklch(0.92 0.10 158);
+  --portal-green-2: oklch(0.82 0.17 155);   /* PRIMARY */
+  --portal-green-3: oklch(0.68 0.19 154);
+  --portal-green-4: oklch(0.48 0.14 154);
+  --portal-green-5: oklch(0.28 0.08 154);
+  --portal-green-glow: oklch(0.82 0.17 155 / 0.22);
+
+  /* —— Accent: ice (state: info, secondary) ——————————— */
+  --portal-ice-1:   oklch(0.92 0.04 220);
+  --portal-ice-2:   oklch(0.80 0.08 220);   /* SECONDARY */
+  --portal-ice-3:   oklch(0.64 0.10 220);
+  --portal-ice-4:   oklch(0.42 0.08 220);
+
+  /* —— Semantic: warn / alert ————————————————————— */
+  --portal-amber:   oklch(0.82 0.15 78);
+  --portal-red:     oklch(0.70 0.19 22);
+
+  /* —— Brand gold (identity only: mark, wordmark, primary CTAs, active nav) ——
+     Data/chrome surfaces stay silver (--portal-fg-*). Published here so every
+     consumer (design-system.ts, tailwind.config.ts, globals.css) resolves the
+     same hex. Canonical values match ZAPATA_GOLD_* in src/lib/design-system.ts.
+     NEVER add decorative gold — dual-accent rule (gold identity, silver data). */
+  --portal-gold-50:       rgba(201,167,74,0.08);
+  --portal-gold-100:      #FBF5E6;
+  --portal-gold-200:      #F0D88A;
+  --portal-gold-300:      #E8C468;
+  --portal-gold-400:      #F4D47A;                              /* bright */
+  --portal-gold-500:      #C9A74A;                              /* base — canonical */
+  --portal-gold-600:      #B8933B;
+  --portal-gold-700:      #8F7628;                              /* dim */
+  --portal-gold-800:      #7A5C1E;
+  --portal-gold-gradient: linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%);
+  --portal-gold-glow:         rgba(201,167,74,0.28);
+  --portal-gold-glow-subtle:  rgba(201,167,74,0.12);
+
+  /* —— Semáforo (customs inspection) ——————————————————
+     Consumed by SemaforoPill. Tokenized so recoloring the semáforo palette
+     cascades through every list and detail page without hunting inline rgba. */
+  --portal-semaforo-verde-bg:     rgba(34,197,94,0.14);
+  --portal-semaforo-verde-fg:     #22C55E;
+  --portal-semaforo-amarillo-bg:  rgba(251,191,36,0.14);
+  --portal-semaforo-amarillo-fg:  #FBBF24;
+  --portal-semaforo-rojo-bg:      rgba(239,68,68,0.14);
+  --portal-semaforo-rojo-fg:      #EF4444;
+  --portal-semaforo-none-bg:      rgba(148,163,184,0.10);
+  --portal-semaforo-none-fg:      var(--portal-fg-4);
+
+  /* —— Status badge palette (dark-canvas compatible) ——————
+     StatusBadge was originally built for warm-white surfaces (bg-amber-50
+     etc.). These tokens give it a dark-canvas variant so the badge reads
+     correctly on /inicio, /embarques, and every authenticated surface. */
+  --portal-status-gray-bg:     rgba(148,163,184,0.10);
+  --portal-status-gray-fg:     var(--portal-fg-3);
+  --portal-status-gray-ring:   rgba(148,163,184,0.22);
+  --portal-status-slate-bg:    rgba(100,116,139,0.14);
+  --portal-status-slate-fg:    #CBD5E1;
+  --portal-status-slate-ring:  rgba(148,163,184,0.26);
+  --portal-status-amber-bg:    rgba(251,191,36,0.14);
+  --portal-status-amber-fg:    #FBBF24;
+  --portal-status-amber-ring:  rgba(251,191,36,0.30);
+  --portal-status-orange-bg:   rgba(249,115,22,0.14);
+  --portal-status-orange-fg:   #FB923C;
+  --portal-status-orange-ring: rgba(249,115,22,0.30);
+  --portal-status-teal-bg:     rgba(20,184,166,0.14);
+  --portal-status-teal-fg:     #2DD4BF;
+  --portal-status-teal-ring:   rgba(20,184,166,0.30);
+  --portal-status-green-bg:    rgba(34,197,94,0.14);
+  --portal-status-green-fg:    #4ADE80;
+  --portal-status-green-ring:  rgba(34,197,94,0.30);
+  --portal-status-red-bg:      rgba(239,68,68,0.14);
+  --portal-status-red-fg:      #F87171;
+  --portal-status-red-ring:    rgba(239,68,68,0.32);
+
+  /* —— Typography —————————————————————————————— */
+  --portal-font-display: 'Geist', 'Söhne', -apple-system, system-ui, sans-serif;
+  --portal-font-serif:   'Instrument Serif', 'GT Sectra', 'Times New Roman', serif;
+  --portal-font-sans:    'Geist', 'Söhne', -apple-system, system-ui, sans-serif;
+  --portal-font-mono:    'Geist Mono', 'JetBrains Mono', 'Söhne Mono', ui-monospace, Menlo, monospace;
+
+  --portal-fs-micro: 10px;
+  --portal-fs-tiny:  11px;
+  --portal-fs-xs:    12px;
+  --portal-fs-sm:    13px;
+  --portal-fs-base:  14px;
+  --portal-fs-md:    16px;
+  --portal-fs-lg:    20px;
+  --portal-fs-xl:    28px;
+  --portal-fs-2xl:   40px;
+  --portal-fs-3xl:   56px;
+  --portal-fs-4xl:   80px;
+  --portal-fs-5xl:  112px;
+
+  /* —— Spacing (4px grid) ——————————————————————— */
+  --portal-s-1:  4px;
+  --portal-s-2:  8px;
+  --portal-s-3:  12px;
+  --portal-s-4:  16px;
+  --portal-s-5:  20px;
+  --portal-s-6:  24px;
+  --portal-s-7:  32px;
+  --portal-s-8:  40px;
+  --portal-s-9:  56px;
+  --portal-s-10: 72px;
+  --portal-s-11: 96px;
+
+  /* —— Radius —————————————————————————————— */
+  --portal-r-1: 4px;
+  --portal-r-2: 8px;
+  --portal-r-3: 12px;
+  --portal-r-4: 16px;
+  --portal-r-5: 24px;
+  --portal-r-pill: 999px;
+
+  /* —— Elevation ——————————————————————————— */
+  --portal-shadow-1: 0 1px 0 rgba(255,255,255,0.03) inset, 0 1px 2px rgba(0,0,0,0.5);
+  --portal-shadow-2: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);
+  --portal-shadow-3: 0 1px 0 rgba(255,255,255,0.05) inset, 0 24px 64px rgba(0,0,0,0.65), 0 8px 16px rgba(0,0,0,0.4);
+  --portal-shadow-glow: 0 0 0 1px var(--portal-green-5), 0 0 32px var(--portal-green-glow);
+
+  /* —— Motion ——————————————————————————— */
+  --portal-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --portal-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --portal-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --portal-dur-1: 120ms;
+  --portal-dur-2: 220ms;
+  --portal-dur-3: 420ms;
+  --portal-dur-4: 720ms;
+
+  /* —— Layout —————————————————————————————— */
+  --portal-topbar-h: 56px;
+  --portal-ticker-h: 28px;
+  --portal-sidebar-w: 240px;
+  --portal-maxw: 1440px;
+}
+
+/* Reset & base */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--portal-ink-0); color: var(--portal-fg-2); font-family: var(--portal-font-sans); font-size: var(--portal-fs-base); font-feature-settings: "ss01", "ss02", "cv11"; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+input, textarea { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--portal-green-3); color: var(--portal-ink-0); }
+
+/* Tabular numerics utility */
+.portal-tabular, .portal-num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum", "lnum"; }
+
+/* Universal tabular-nums for any element whose inline style uses the
+ * mono stack. Chrome-audit 2026-04-19: hero KPIs, pedimento numbers,
+ * and currency values rendered in proportional digits because inline
+ * `style={{ fontFamily: 'var(--font-mono)' }}` consumers never opted
+ * into `.portal-num`. This rule makes tabular-nums the default for
+ * every mono consumer — a broker dictating "6500284" on the phone
+ * needs monospace spacing. Override to `normal` inline if the rare
+ * caller wants proportional digits. */
+[style*="var(--font-mono)"],
+[style*="var(--font-jetbrains-mono)"],
+[style*="var(--portal-font-mono)"],
+[style*="JetBrains Mono"],
+[style*="Geist Mono"] {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "lnum";
+}
+
+/* Noise / film grain overlay (applied to body) */
+.portal-grain::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.035 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.5; mix-blend-mode: overlay;
+}
+
+/* Scanline hairline */
+.portal-scan { position: relative; overflow: hidden; }
+.portal-scan::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--portal-green-2), transparent);
+  box-shadow: 0 0 8px var(--portal-green-2);
+  animation: portal-scan 6s linear infinite; top: 0;
+}
+@keyframes portal-scan { 0% { top: -2%; } 100% { top: 102%; } }
+
+/* Pulse dot */
+.portal-pulse { position: relative; display: inline-block; width: 6px; height: 6px; border-radius: 999px; background: var(--portal-green-2); box-shadow: 0 0 0 0 var(--portal-green-2); animation: portal-pulse 2s cubic-bezier(0,0,.2,1) infinite; }
+@keyframes portal-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--portal-green-glow); }
+  70%  { box-shadow: 0 0 0 8px rgba(0,0,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--portal-ink-4); border-radius: 999px; border: 2px solid var(--portal-ink-0); }
+::-webkit-scrollbar-thumb:hover { background: var(--portal-ink-5); }
+
+/* Accent theme variants (swapped by Tweaks panel via data-accent) */
+[data-accent="teal"]   { --portal-green-2: oklch(0.80 0.14 180); --portal-green-3: oklch(0.66 0.16 180); --portal-green-glow: oklch(0.80 0.14 180 / 0.22); }
+[data-accent="lime"]   { --portal-green-2: oklch(0.88 0.18 130); --portal-green-3: oklch(0.74 0.20 130); --portal-green-glow: oklch(0.88 0.18 130 / 0.22); }
+[data-accent="emerald"]{ /* default */ }
+
+/* Background variants */
+[data-bg="void"]      { --portal-ink-0: #050506; --portal-ink-1: #0a0a0c; }
+[data-bg="near"]      { --portal-ink-0: #0c0d10; --portal-ink-1: #111217; }
+[data-bg="blueprint"] { --portal-ink-0: #070a14; --portal-ink-1: #0c1020; --portal-ink-3: #141a2c; --portal-ink-4: #1c2338; }
+
+/* Density */
+[data-density="compact"]    { --portal-s-6: 16px; --portal-s-7: 20px; --portal-s-8: 28px; }
+[data-density="comfortable"]{ /* default */ }
+[data-density="spacious"]   { --portal-s-6: 32px; --portal-s-7: 44px; --portal-s-8: 56px; }
+
+/* Type pair swap */
+[data-type="editorial"] { --portal-font-display: 'Geist', 'Söhne', sans-serif; }
+[data-type="grotesque"] { --portal-font-display: 'Geist', 'Söhne', sans-serif; }
+[data-type="mono-all"]  { --portal-font-display: 'Geist Mono', monospace; --portal-font-sans: 'Geist Mono', monospace; }
+
+/* Motion off */
+[data-motion="off"] *, [data-motion="off"] *::before, [data-motion="off"] *::after {
+  animation: none !important; transition: none !important;
+}
+
+/* Global portal dot pulse/ping — used in login and dashboard nav */
+@keyframes portalPing {
+  0%   { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes portalDotPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--portal-green-glow); }
+  50%      { box-shadow: 0 0 18px var(--portal-green-2); }
+}
+@keyframes portalFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes crossToastIn {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes loginWireTick {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes theaterIn {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to   { opacity: 1; backdrop-filter: blur(20px); }
+}
+@keyframes theaterActIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes crossFlash {
+  0%   { box-shadow: 0 0 0 0 var(--portal-green-2); }
+  50%  { box-shadow: 0 0 0 2px var(--portal-green-2), 0 0 30px var(--portal-green-glow); }
+  100% { box-shadow: 0 0 0 0 var(--portal-green-2); }
+}
+
+/* =========================================================================
+   Legacy AGUILA aliases — backward compat during per-page migration.
+   Every existing `var(--aguila-*)` inline style keeps rendering because the
+   alias resolves to the new portal token. Removed when Block EE ports the
+   final consumer — track via `rg "--aguila-" src/` count in gsd-verify.sh.
+   ========================================================================= */
+:root {
+  /* Typography scale aliases */
+  --aguila-fs-micro:    var(--portal-fs-micro);
+  --aguila-fs-label:    var(--portal-fs-micro);
+  --aguila-fs-tiny:     var(--portal-fs-tiny);
+  --aguila-fs-meta:     var(--portal-fs-tiny);
+  --aguila-fs-xs:       var(--portal-fs-xs);
+  --aguila-fs-compact:  var(--portal-fs-xs);
+  --aguila-fs-sm:       var(--portal-fs-sm);
+  --aguila-fs-body:     var(--portal-fs-sm);
+  --aguila-fs-base:     var(--portal-fs-base);
+  --aguila-fs-md:       var(--portal-fs-md);
+  --aguila-fs-section:  var(--portal-fs-md);
+  --aguila-fs-lg:       var(--portal-fs-lg);
+  --aguila-fs-xl:       var(--portal-fs-xl);
+  --aguila-fs-title:    var(--portal-fs-xl);
+  --aguila-fs-kpi-hero: var(--portal-fs-2xl);
+
+  /* Tracking (letter-spacing) aliases */
+  --aguila-ls-tight:     -0.03em;
+  --aguila-ls-label:      0.08em;
+  --aguila-ls-dramatic:   0.15em;
+  --aguila-ls-tagline:    0.3em;
+  --aguila-ls-footer:     0.12em;
+
+  /* Spacing aliases */
+  --aguila-gap-stack:   var(--portal-s-3);
+  --aguila-gap-card:    var(--portal-s-4);
+  --aguila-gap-section: var(--portal-s-7);
+  --aguila-radius-card: var(--portal-r-5);
+  --aguila-radius-compact: var(--portal-r-4);
+
+  /* Motion aliases — AGUILA had --ease-brand / --dur-fast etc */
+  --ease-brand:   var(--portal-ease-out);
+  --ease-enter:   var(--portal-ease-out);
+  --dur-fast:     var(--portal-dur-1);
+  --dur-base:     var(--portal-dur-2);
+  --dur-slow:     var(--portal-dur-3);
+
+  /* Font family aliases — map to PORTAL's Geist + Geist Mono */
+  --font-sans: var(--portal-font-sans);
+  --font-mono: var(--portal-font-mono);
+}
+
+/* AGUILA class aliases → PORTAL chemistry */
+.aguila-dark {
+  background: var(--portal-ink-0);
+  color: var(--portal-fg-2);
+}
+.aguila-pulse { animation: portalDotPulse 2s var(--portal-ease-out) infinite; }
+.aguila-dot-pulse { animation: portalDotPulse 2s var(--portal-ease-out) infinite; }
+.aguila-reveal { animation: portalFadeUp var(--portal-dur-3) var(--portal-ease-out) both; }
+.aguila-reveal-delay-1 { animation-delay: 120ms; }
+.aguila-reveal-delay-2 { animation-delay: 280ms; }
+.aguila-reveal-delay-3 { animation-delay: 440ms; }
+.aguila-stagger-in { animation: portalFadeUp 240ms var(--portal-ease-out) both; }
+
+/* Legacy aura → becomes the PORTAL grain overlay */
+.aguila-canvas { background: var(--portal-ink-0); }
+.aguila-aura { display: none; }  /* replaced by body.portal-grain overlay */

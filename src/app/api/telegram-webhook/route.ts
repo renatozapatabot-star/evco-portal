@@ -33,6 +33,19 @@ async function sendTelegramReply(chatId: string | number, text: string, replyToM
   })
 }
 
+async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: object) {
+  await fetch(`${TELEGRAM_API}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+      ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+    }),
+  })
+}
+
 async function answerCallbackQuery(callbackQueryId: string, text?: string) {
   await fetch(`${TELEGRAM_API}/answerCallbackQuery`, {
     method: 'POST',
@@ -44,13 +57,62 @@ async function answerCallbackQuery(callbackQueryId: string, text?: string) {
   })
 }
 
+// Hardcoded fallback: Tito (8538502098) and Renato IV (7277519813)
+const FALLBACK_APPROVERS = ['8538502098', '7277519813']
+
 function isAuthorized(userId: number): boolean {
-  // If no authorized users configured, allow all (dev mode)
-  if (AUTHORIZED_USERS.length === 0) return true
-  return AUTHORIZED_USERS.includes(String(userId))
+  const allowList = AUTHORIZED_USERS.length > 0 ? AUTHORIZED_USERS : FALLBACK_APPROVERS
+  return allowList.includes(String(userId))
 }
 
-async function handleApproval(draftId: string, chatId: number, userId: number, username: string) {
+async function handleCancellation(draftId: string, chatId: number, userId: number, username: string) {
+  const supabase = createServerClient()
+
+  // Only revert if still in approved_pending (5-second window)
+  const { data: draft, error: fetchErr } = await supabase
+    .from('pedimento_drafts')
+    .select('id, status, draft_data')
+    .eq('id', draftId)
+    .single()
+
+  if (fetchErr || !draft) {
+    return `❌ Borrador <code>${draftId.substring(0, 8)}</code> no encontrado.`
+  }
+
+  if (draft.status !== 'approved_pending') {
+    return `⚠️ La ventana de cancelación ya expiró. Estado actual: <code>${draft.status}</code>`
+  }
+
+  // Revert to draft status
+  const { error: updateErr } = await supabase
+    .from('pedimento_drafts')
+    .update({
+      status: 'draft',
+      reviewed_by: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', draftId)
+
+  if (updateErr) {
+    return `❌ Error cancelando aprobación: ${updateErr.message}`
+  }
+
+  // Audit log — cancellation within window
+  await supabase.from('audit_log').insert({
+    action: 'draft_approval_cancelled_telegram',
+    details: {
+      draft_id: draftId,
+      cancelled_by: username || String(userId),
+      channel: 'telegram',
+    },
+    actor: 'tito',
+    timestamp: new Date().toISOString(),
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
+
+  return `↩️ Aprobación cancelada. Borrador regresado a pendiente.`
+}
+
+async function handleApproval(draftId: string, chatId: number, userId: number, username: string): Promise<string | null> {
   const supabase = createServerClient()
 
   // Verify draft exists and is pending
@@ -64,15 +126,15 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
     return `❌ Borrador <code>${draftId.substring(0, 8)}</code> no encontrado.`
   }
 
-  if (draft.status === 'approved') {
+  if (draft.status === 'approved' || draft.status === 'approved_pending') {
     return `⚠️ Este borrador ya fue aprobado.`
   }
 
-  // Update status
+  // Update status to approved_pending — 5-second cancellation window (Approval Gate)
   const { error: updateErr } = await supabase
     .from('pedimento_drafts')
     .update({
-      status: 'approved',
+      status: 'approved_pending',
       reviewed_by: 'tito',
       updated_at: new Date().toISOString(),
     })
@@ -91,13 +153,37 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
       supplier: draft.draft_data?.supplier,
       valor_usd: draft.draft_data?.valor_total_usd,
       channel: 'telegram',
+      status: 'approved_pending',
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   const supplier = draft.draft_data?.supplier || 'Desconocido'
-  return `✅ Patente 3596 honrada. Gracias, Tito. 🦀\n\nBorrador <b>${supplier}</b> aprobado.`
+  const companyId = draft.draft_data?.company_id || ''
+
+  // Insert celebration notification for portal users
+  if (companyId) {
+    await supabase.from('notifications').insert({
+      type: 'approval_complete',
+      severity: 'celebration',
+      title: `🦀 Borrador aprobado: ${supplier}`,
+      description: 'Patente 3596 honrada. Gracias, Tito.',
+      company_id: companyId,
+      read: false,
+    }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
+  }
+
+  // Send approval message with cancel button — the telegram-bot.js PM2 process
+  // handles the visual 5-second countdown via editMessageText. The webhook just
+  // sets the initial state and sends the first message.
+  await sendTelegramMessage(chatId, `⏳ <b>5</b> — Aprobando <b>${supplier}</b>... Cancelar ahora si hay error.`, {
+    inline_keyboard: [[
+      { text: '❌ CANCELAR', callback_data: `cancelar_${draftId}` },
+    ]],
+  })
+
+  return null
 }
 
 async function handleRejection(draftId: string, reason: string, chatId: number, userId: number, username: string) {
@@ -133,7 +219,7 @@ async function handleRejection(draftId: string, reason: string, chatId: number, 
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   return `❌ Borrador rechazado.\nMotivo: <i>${reason}</i>`
 }
@@ -171,7 +257,7 @@ async function handleCorrection(draftId: string, note: string, chatId: number, u
     },
     actor: 'tito',
     timestamp: new Date().toISOString(),
-  }).then(() => {}, () => {})
+  }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   return `✏️ Borrador aprobado con corrección.\nNota: <i>${note}</i>\n\n✅ Patente 3596 honrada. Gracias, Tito. 🦀`
 }
@@ -183,6 +269,10 @@ export async function POST(request: NextRequest) {
 
   const update = await request.json()
 
+  // Idempotency: deduplicate Telegram retries (5-minute window)
+  const processedCallbacks = (globalThis as Record<string, unknown>).__cruzProcessedCallbacks as Map<string, number> ??
+    ((globalThis as Record<string, unknown>).__cruzProcessedCallbacks = new Map<string, number>())
+
   // Handle callback queries from inline keyboard buttons
   if (update.callback_query) {
     const cb = update.callback_query
@@ -190,6 +280,17 @@ export async function POST(request: NextRequest) {
     const userId = cb.from?.id
     const username = cb.from?.username || cb.from?.first_name || ''
     const data = cb.data || ''
+
+    // Deduplicate: skip if same callback already processed in last 5 minutes
+    if (processedCallbacks.has(cb.id)) {
+      await answerCallbackQuery(cb.id, '✅ Ya procesado')
+      return NextResponse.json({ ok: true })
+    }
+    processedCallbacks.set(cb.id, Date.now())
+    // Cleanup old entries
+    for (const [key, ts] of processedCallbacks) {
+      if (Date.now() - ts > 300000) processedCallbacks.delete(key)
+    }
 
     if (!isAuthorized(userId)) {
       await answerCallbackQuery(cb.id, '⛔ No autorizado')
@@ -208,6 +309,11 @@ export async function POST(request: NextRequest) {
     if (action === 'aprobar') {
       await answerCallbackQuery(cb.id, '✅ Aprobando...')
       const reply = await handleApproval(draftId, chatId, userId, username)
+      // reply is null when approval succeeded (message sent with cancel button)
+      if (reply) await sendTelegramReply(chatId, reply)
+    } else if (action === 'cancelar') {
+      await answerCallbackQuery(cb.id, '↩️ Cancelando...')
+      const reply = await handleCancellation(draftId, chatId, userId, username)
       await sendTelegramReply(chatId, reply)
     } else if (action === 'rechazar') {
       await answerCallbackQuery(cb.id, '📝 Escribe el motivo del rechazo...')
@@ -256,6 +362,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
+    // Handle /status command — quick embarque summary
+    if (text === '/status') {
+      const supabase = createServerClient()
+      const today = new Date().toISOString().slice(0, 10)
+
+      const [activeRes, cruzadosRes, urgentRes] = await Promise.all([
+        supabase.from('traficos').select('trafico', { count: 'exact', head: true })
+          .not('estatus', 'ilike', '%cruz%')
+          .gte('fecha_llegada', '2024-01-01'),
+        supabase.from('traficos').select('trafico', { count: 'exact', head: true })
+          .ilike('estatus', '%cruz%')
+          .gte('fecha_cruce', today),
+        supabase.from('traficos').select('trafico', { count: 'exact', head: true })
+          .eq('semaforo', 1)
+          .not('estatus', 'ilike', '%cruz%')
+          .gte('fecha_llegada', '2024-01-01'),
+      ])
+
+      const activos = activeRes.count ?? 0
+      const cruzaron = cruzadosRes.count ?? 0
+      const urgentes = urgentRes.count ?? 0
+
+      await sendTelegramReply(
+        chatId,
+        `📊 <b>Estado CRUZ</b>\n\n${activos} embarques activos · ${cruzaron} cruzaron hoy · ${urgentes} urgentes`,
+        msg.message_id,
+      )
+      return NextResponse.json({ ok: true })
+    }
+
     // Handle slash commands: /aprobar_UUID, /rechazar_UUID, /corregir_UUID
     const commandMatch = text.match(/^\/(aprobar|rechazar|corregir)_(.+)$/)
     if (commandMatch) {
@@ -263,7 +399,7 @@ export async function POST(request: NextRequest) {
 
       if (action === 'aprobar') {
         const reply = await handleApproval(draftId, chatId, userId, username)
-        await sendTelegramReply(chatId, reply, msg.message_id)
+        if (reply) await sendTelegramReply(chatId, reply, msg.message_id)
       } else if (action === 'rechazar') {
         pendingActions.set(key, { action: 'rechazar', draftId, expires: Date.now() + 5 * 60 * 1000 })
         await sendTelegramReply(chatId, `❌ <b>Rechazar borrador</b>\n\nEscribe el motivo del rechazo:`, msg.message_id)

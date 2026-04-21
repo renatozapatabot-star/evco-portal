@@ -19,6 +19,7 @@
 const { createClient } = require('@supabase/supabase-js')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -98,6 +99,37 @@ async function getPreviousBaseline(tableName) {
 
   if (data && data.length > 0) return data[0]
   return null
+}
+
+async function visualRegressionCheck() {
+  try {
+    const res = await fetch('https://evco-portal.vercel.app')
+    const html = await res.text()
+
+    const FORBIDDEN_STRINGS = [
+      '50 clientes', '754 tráficos activos', 'Ollama',
+      'GlobalPC MySQL', 'SCORE GENERAL', 'Exposición total',
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+
+    const violations = FORBIDDEN_STRINGS.filter(s =>
+      html.toLowerCase().includes(s.toLowerCase())
+    )
+
+    if (violations.length > 0) {
+      await sendTelegram(
+        `🔴 REGRESIÓN DETECTADA en portal EVCO\n` +
+        `Strings prohibidos encontrados:\n${violations.map(v => `• "${v}"`).join('\n')}\n` +
+        `— CRUZ 🦀`
+      )
+      console.log(`  ⚠️  Visual regression: ${violations.length} forbidden string(s) found`)
+    } else {
+      console.log('  ✅ Visual regression check passed — no forbidden strings')
+    }
+  } catch (err) {
+    console.log('⚠️ Visual regression check skipped:', err.message)
+  }
 }
 
 async function runGuard() {
@@ -219,12 +251,15 @@ async function runGuard() {
     await sendTelegram(msg)
     console.log(`\n  \u2705 No regressions \u2014 all clear`)
   }
+
+  // V6: Visual regression check against live portal
+  await visualRegressionCheck()
 }
 
-runGuard().catch(async (err) => {
+withSyncLog(supabase, { sync_type: 'regression_guard', company_id: null }, runGuard).catch(async (err) => {
   console.error('Fatal regression guard error:', err)
   try {
-    await sendTelegram(`\uD83D\uDD34 <b>${SCRIPT_NAME} FATAL</b>\n${err.message}\n\u2014 CRUZ \uD83E\uDD80`)
+    await sendTelegram(`\uD83D\uDD34 <b>${SCRIPT_NAME} FATAL</b>\n${err.message}\n\u2014 PORTAL \uD83E\uDD80`)
     await supabase.from('regression_guard_log').insert({
       table_name: '_fatal',
       row_count: 0,

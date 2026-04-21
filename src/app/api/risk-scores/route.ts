@@ -1,25 +1,32 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
-import { COMPANY_ID } from '@/lib/client-config'
+import { NextRequest, NextResponse } from 'next/server'
+import { verifySession } from '@/lib/session'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const { data: traficos } = await supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia')
-    .eq('company_id', COMPANY_ID).eq('estatus', 'En Proceso').limit(500)
+    .eq('company_id', companyId).eq('estatus', 'En Proceso').gte('fecha_llegada', PORTAL_DATE_FROM).limit(500)
 
   const { data: docs } = await supabase.from('documents')
     .select('trafico_id, doc_type').limit(5000)
 
   const { data: entradas } = await supabase.from('entradas')
-    .select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', COMPANY_ID).limit(5000)
+    .select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', companyId).limit(5000)
 
   const docMap: Record<string, Set<string>> = {}
-  ;(docs || []).forEach((d: any) => { if (!docMap[d.trafico_id]) docMap[d.trafico_id] = new Set(); docMap[d.trafico_id].add(d.doc_type) })
+  ;(docs || []).forEach((d: { trafico_id?: string; doc_type?: string }) => { if (d.trafico_id && d.doc_type) { if (!docMap[d.trafico_id]) docMap[d.trafico_id] = new Set(); docMap[d.trafico_id].add(d.doc_type) } })
 
   const entMap: Record<string, { faltantes: boolean; danada: boolean }> = {}
-  ;(entradas || []).forEach((e: any) => {
+  ;(entradas || []).forEach((e: { trafico?: string | null; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null }) => {
+    if (!e.trafico) return
     if (!entMap[e.trafico]) entMap[e.trafico] = { faltantes: false, danada: false }
     if (e.tiene_faltantes) entMap[e.trafico].faltantes = true
     if (e.mercancia_danada) entMap[e.trafico].danada = true
@@ -28,7 +35,7 @@ export async function GET() {
   const now = Date.now()
   const scores: Record<string, { score: number; factors: string[] }> = {}
 
-  ;(traficos || []).forEach((t: any) => {
+  ;(traficos || []).forEach((t: { trafico: string; estatus?: string | null; fecha_llegada?: string | null; pedimento?: string | null }) => {
     let score = 0
     const factors: string[] = []
 

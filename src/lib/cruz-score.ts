@@ -1,4 +1,6 @@
-// Cruz Score: proprietary 0-100 health metric per tráfico.
+import type { Trafico } from '@/types/database'
+
+// Cruz Score: proprietary 0-100 health metric per embarque.
 // Weights: docs 40% + time 25% + payment 20% + pedimento 10% + compliance 5% = 100%
 
 interface ScoreInput {
@@ -62,7 +64,7 @@ export function calculateCruzScoreDetailed(input: ScoreInput): ScoreResult {
   else if (!input.hasFechaPago && !input.hasPedimento) { payScore = 50 }
 
   // PEDIMENTO (10%)
-  let pedScore = input.hasPedimento ? 100 : 0
+  const pedScore = input.hasPedimento ? 100 : 0
   if (!input.hasPedimento) reasons.push('Sin pedimento')
 
   // COMPLIANCE (5%)
@@ -96,14 +98,14 @@ export function scoreLabel(score: number): string {
   return 'Urgente'
 }
 
-export function scoreReason(t: any): string {
+export function scoreReason(t: Trafico & { score_reasons?: string; _docCount?: number }): string {
   if (t.score_reasons) return t.score_reasons
   const input = extractScoreInput(t)
   const { reasons } = calculateCruzScoreDetailed(input)
   return reasons.join(' · ') || ''
 }
 
-export function extractScoreInput(trafico: any): ScoreInput {
+export function extractScoreInput(trafico: Trafico & { fecha_pago?: string | null; _docCount?: number }): ScoreInput {
   const now = Date.now()
   const llegada = trafico.fecha_llegada ? new Date(trafico.fecha_llegada).getTime() : now
   const daysInProcess = Math.max(0, Math.floor((now - llegada) / 86400000))

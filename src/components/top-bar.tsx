@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react'
 import { Bell } from 'lucide-react'
 import Link from 'next/link'
-import { CLIENT_NAME, CLIENT_CLAVE } from '@/lib/client-config'
+import { getClientNameCookie, getClientClaveCookie, getCompanyIdCookie } from '@/lib/client-config'
 import { SearchBar } from '@/components/layout/search-bar'
 import { daysUntilMVE, mveIsUrgent } from '@/lib/compliance-dates'
 import { fmtDate } from '@/lib/format-utils'
+import { NightModeToggle } from '@/components/NightModeToggle'
+import { useStatusSentence } from '@/hooks/use-status-sentence'
 
 function LiveClock() {
   const [now, setNow] = useState(new Date())
@@ -19,15 +21,13 @@ function LiveClock() {
 
 export default function TopBar() {
   const mveDays = daysUntilMVE()
-  const [alertCount, setAlertCount] = useState(0)
+  const { urgentes, enProceso } = useStatusSentence()
+  const alertCount = urgentes + (enProceso > 50 ? 1 : 0)
   const [lastSync, setLastSync] = useState('')
 
   useEffect(() => {
-    fetch('/api/status-summary').then(r => r.json())
-      .then(d => setAlertCount((d.urgentes || 0) + (d.enProceso > 50 ? 1 : 0)))
-      .catch(() => {})
-
-    fetch('/api/data?table=traficos&select=updated_at&limit=1&order_by=updated_at&order_dir=desc')
+    const companyId = getCompanyIdCookie()
+    fetch(`/api/data?table=traficos&company_id=${companyId}&select=updated_at&limit=1&order_by=updated_at&order_dir=desc`)
       .then(r => r.json())
       .then(d => {
         const ts = d.data?.[0]?.updated_at
@@ -37,15 +37,15 @@ export default function TopBar() {
           else if (mins < 1440) setLastSync(`${Math.floor(mins / 60)}h`)
           else setLastSync(`${Math.floor(mins / 1440)}d`)
         }
-      }).catch(() => {})
+      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <span className="tb-company">{CLIENT_NAME}</span>
+        <span className="tb-company">{getClientNameCookie()}</span>
         <span className="tb-pipe" />
-        <span className="tb-meta">{CLIENT_CLAVE}</span>
+        <span className="tb-meta">{getClientClaveCookie()}</span>
       </div>
 
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
@@ -62,7 +62,7 @@ export default function TopBar() {
         <LiveClock />
         {lastSync && (
           <span style={{
-            fontSize: 10, fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--aguila-fs-label)', fontFamily: 'var(--font-mono)',
             color: lastSync.includes('d') ? 'var(--danger)' : 'var(--n-400)',
           }}>
             sync {lastSync}
@@ -72,10 +72,11 @@ export default function TopBar() {
           <Bell size={15} strokeWidth={1.8} style={{ color: 'var(--n-400)' }} />
           {alertCount > 0 && (
             <span style={{ position: 'absolute', top: 2, right: 2, width: 14, height: 14, borderRadius: '50%',
-              background: '#EF4444', color: '#fff', fontSize: 8, fontWeight: 700,
+              background: 'var(--portal-status-red-fg)', color: 'rgba(255,255,255,0.045)', fontSize: 8, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{alertCount > 9 ? '9+' : alertCount}</span>
           )}
         </Link>
+        <NightModeToggle />
         <div className="tb-avatar">RZ</div>
       </div>
     </>

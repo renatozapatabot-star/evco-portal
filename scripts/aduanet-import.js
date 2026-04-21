@@ -23,6 +23,7 @@ const CHAT = '-5085543275'
 const CLAVE = '9254' // EVCO-specific — not a multi-client pattern
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TG) return console.log('[TG]', msg)
   await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ZAPATA AI — canonical brand mark.
+  Brushed-chrome block Z, same silver palette as every card hairline and
+  KPI sparkline in the cockpit. Gold is NOT in the mark itself — the
+  "ZAPATA AI" wordmark carries the gold heritage moment; the mark stays
+  instrument-grade silver so it blends into the chrome chemistry.
+  Ceremony (login hero, approval celebration) is earned via a gold CSS
+  drop-shadow applied by the host surface, NOT baked into the SVG.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="ZAPATA AI">
+  <defs>
+    <linearGradient id="z-chrome" x1="0" y1="16" x2="0" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E8EAED" />
+      <stop offset="0.5" stop-color="#C0C5CE" />
+      <stop offset="1" stop-color="#7A7E86" />
+    </linearGradient>
+    <linearGradient id="z-sheen" x1="0" y1="16" x2="0" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="z-edge" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.4" />
+      <stop offset="1" stop-color="#3A3D44" stop-opacity="0.4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Block Z — top bar, diagonal, bottom bar unioned. -->
+  <g fill="url(#z-chrome)" stroke="url(#z-edge)" stroke-width="0.75" stroke-linejoin="miter">
+    <polygon points="10,16 90,16 90,32 10,32" />
+    <polygon points="90,32 70,32 10,68 30,68" />
+    <polygon points="10,68 90,68 90,84 10,84" />
+  </g>
+
+  <!-- Top-edge highlight for instrument depth. -->
+  <polygon points="10,16 90,16 90,23 10,23" fill="url(#z-sheen)" />
+</svg>

@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { AlertTriangle, CheckCircle, Clock, Shield, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { COMPANY_ID, CLIENT_NAME } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
+import { fmtDate as fmtDateLib } from '@/lib/format-utils'
 
 interface LegalDoc {
   id: string
@@ -45,16 +47,16 @@ function getStatus(expiryDate: string | null): LegalDoc['status'] {
 
 function StatusBadge({ status, days }: { status: LegalDoc['status']; days: number | null }) {
   const config = {
-    valid: { label: 'Vigente', color: 'var(--success)', bg: 'rgba(34,197,94,0.08)' },
-    expiring_90: { label: `${days}d restantes`, color: 'var(--warning)', bg: 'rgba(234,179,8,0.08)' },
+    valid: { label: 'Vigente', color: 'var(--success)', bg: 'var(--portal-status-green-bg)' },
+    expiring_90: { label: `${days}d restantes`, color: 'var(--warning)', bg: 'rgba(192,197,206,0.08)' },
     expiring_30: { label: `${days}d — URGENTE`, color: 'var(--danger)', bg: 'rgba(239,68,68,0.08)' },
-    expired: { label: 'EXPIRADO', color: 'var(--danger)', bg: 'rgba(239,68,68,0.12)' },
+    expired: { label: 'EXPIRADO', color: 'var(--danger)', bg: 'var(--portal-status-red-bg)' },
     verify: { label: 'Verificar', color: 'var(--n-400)', bg: 'var(--n-50)' },
   }
   const c = config[status]
   return (
     <span style={{
-      fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6,
+      fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, padding: '3px 8px', borderRadius: 6,
       color: c.color, background: c.bg, textTransform: 'uppercase',
     }}>
       {c.label}
@@ -63,15 +65,21 @@ function StatusBadge({ status, days }: { status: LegalDoc['status']; days: numbe
 }
 
 // ── Hardcoded initial data (will be dynamic from DB) ──
-const INITIAL_DOCS: LegalDoc[] = [
-  { id: '1', document_type: 'poder_notarial', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2024-01-15', expiry_date: '2027-01-15', status: 'valid', notes: 'Poder amplio para despacho', responsible: 'Tito' },
-  { id: '2', document_type: 'encargo_conferido', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2025-06-01', expiry_date: '2026-06-01', status: 'expiring_90', notes: 'Renovar antes de jun 2026', responsible: 'Ursula' },
-  { id: '3', document_type: 'padron_importadores', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: null, expiry_date: null, status: 'verify', notes: 'Verificar vigencia en SAT', responsible: 'Juan José' },
-  { id: '4', document_type: 'efirma', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2023-03-10', expiry_date: '2027-03-10', status: 'valid', notes: null, responsible: 'Ursula' },
-  { id: '5', document_type: 'immex', client_name: CLIENT_NAME, company_id: COMPANY_ID, issued_date: '2024-08-01', expiry_date: '2027-08-01', status: 'valid', notes: 'Programa activo', responsible: 'Tito' },
-]
+function getInitialDocs(): LegalDoc[] {
+  const clientName = getCookieValue('company_name') || 'Su Empresa'
+  const companyId = getCookieValue('company_id') ?? ''
+  const contactName = getCookieValue('user_name') ?? 'Contacto'
+  return [
+  { id: '1', document_type: 'poder_notarial', client_name: clientName, company_id: companyId, issued_date: '2024-01-15', expiry_date: '2027-01-15', status: 'valid', notes: 'Poder amplio para despacho', responsible: contactName },
+  { id: '2', document_type: 'encargo_conferido', client_name: clientName, company_id: companyId, issued_date: '2025-06-01', expiry_date: '2026-06-01', status: 'expiring_90', notes: 'Renovar antes de jun 2026', responsible: contactName },
+  { id: '3', document_type: 'padron_importadores', client_name: clientName, company_id: companyId, issued_date: null, expiry_date: null, status: 'verify', notes: 'Verificar vigencia en SAT', responsible: contactName },
+  { id: '4', document_type: 'efirma', client_name: clientName, company_id: companyId, issued_date: '2023-03-10', expiry_date: '2027-03-10', status: 'valid', notes: null, responsible: contactName },
+  { id: '5', document_type: 'immex', client_name: clientName, company_id: companyId, issued_date: '2024-08-01', expiry_date: '2027-08-01', status: 'valid', notes: 'Programa activo', responsible: contactName },
+  ]
+}
 
 export default function DocumentosLegalesPage() {
+  const isMobile = useIsMobile()
   const [docs, setDocs] = useState<LegalDoc[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -81,23 +89,16 @@ export default function DocumentosLegalesPage() {
       .then(r => r.json())
       .then(res => {
         if (res.data?.length > 0) {
-          setDocs(res.data.map((d: any) => ({
+          setDocs(res.data.map((d: { expiry_date?: string | null; [key: string]: unknown }) => ({
             ...d,
-            status: getStatus(d.expiry_date),
+            status: getStatus(d.expiry_date ?? null),
           })))
         } else {
-          // Use initial hardcoded data
-          setDocs(INITIAL_DOCS.map(d => ({
-            ...d,
-            status: getStatus(d.expiry_date),
-          })))
+          setDocs([])
         }
       })
       .catch(() => {
-        setDocs(INITIAL_DOCS.map(d => ({
-          ...d,
-          status: getStatus(d.expiry_date),
-        })))
+        setDocs([])
       })
       .finally(() => setLoading(false))
   }, [])
@@ -107,10 +108,7 @@ export default function DocumentosLegalesPage() {
   const valid = docs.filter(d => d.status === 'valid')
   const needVerify = docs.filter(d => d.status === 'verify')
 
-  const fmtDate = (s: string | null) => {
-    if (!s) return '—'
-    return new Date(s).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
-  }
+  const fmtDate = (s: string | null) => fmtDateLib(s)
 
   const getDocLabel = (key: string) => DOC_TYPES.find(d => d.key === key)?.label || key
 
@@ -119,7 +117,7 @@ export default function DocumentosLegalesPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 className="page-title">Documentos Legales</h1>
-          <p style={{ fontSize: 13, color: 'var(--n-400)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-400)', margin: '4px 0 0' }}>
             Poderes notariales, encargos conferidos, e.firma y más
           </p>
         </div>
@@ -128,33 +126,42 @@ export default function DocumentosLegalesPage() {
       {/* Alert summary */}
       {(expired.length > 0 || expiringSoon.length > 0) && (
         <div style={{
-          background: expired.length > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(234,179,8,0.06)',
-          border: `1px solid ${expired.length > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.2)'}`,
+          background: expired.length > 0 ? 'var(--portal-status-red-bg)' : 'rgba(192,197,206,0.06)',
+          border: `1px solid ${expired.length > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(192,197,206,0.2)'}`,
           borderRadius: 12, padding: '16px 20px', marginBottom: 20,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <AlertTriangle size={16} style={{ color: expired.length > 0 ? 'var(--danger)' : 'var(--warning)' }} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: expired.length > 0 ? 'var(--danger)' : 'var(--warning)' }}>
+            <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: expired.length > 0 ? 'var(--danger)' : 'var(--warning)' }}>
               {expired.length > 0
                 ? `${expired.length} documento(s) expirado(s) — acción inmediata requerida`
                 : `${expiringSoon.length} documento(s) próximo(s) a vencer`}
             </span>
           </div>
           {expired.map(d => (
-            <div key={d.id} style={{ fontSize: 12, color: 'var(--danger)', marginLeft: 24, marginTop: 4 }}>
-              {d.client_name} — {getDocLabel(d.document_type)} — Expirado {fmtDate(d.expiry_date)}
+            <div key={d.id} style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--danger)', marginLeft: 24, marginTop: 4 }}>
+              {d.client_name} — {getDocLabel(d.document_type)} — Expirado <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.expiry_date)}</span>
             </div>
           ))}
           {expiringSoon.map(d => (
-            <div key={d.id} style={{ fontSize: 12, color: 'var(--warning)', marginLeft: 24, marginTop: 4 }}>
-              {d.client_name} — {getDocLabel(d.document_type)} — Vence {fmtDate(d.expiry_date)} ({daysUntilExpiry(d.expiry_date)}d)
+            <div key={d.id} style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--warning)', marginLeft: 24, marginTop: 4 }}>
+              {d.client_name} — {getDocLabel(d.document_type)} — Vence <span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(d.expiry_date)}</span> (<span style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{daysUntilExpiry(d.expiry_date)}d</span>)
             </div>
           ))}
         </div>
       )}
 
+      {/* Empty state */}
+      {!loading && docs.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <Shield size={32} style={{ color: 'var(--n-300)', margin: '0 auto 12px', display: 'block' }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Sin documentos legales registrados</div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>Contacte a su agente aduanal para registrar poderes, encargos y permisos</div>
+        </div>
+      )}
+
       {/* Documents table */}
-      <div className="card">
+      {(loading || docs.length > 0) && <div className="card">
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
@@ -188,26 +195,26 @@ export default function DocumentosLegalesPage() {
                                 doc.status === 'expiring_30' ? 'rgba(239,68,68,0.02)' : undefined,
                   }}>
                     <td>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{getDocLabel(doc.document_type)}</div>
-                      {doc.notes && <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 2 }}>{doc.notes}</div>}
+                      <div style={{ fontWeight: 600, fontSize: 'var(--aguila-fs-body)' }}>{getDocLabel(doc.document_type)}</div>
+                      {doc.notes && <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 2 }}>{doc.notes}</div>}
                     </td>
-                    <td style={{ fontSize: 13 }}>{doc.client_name}</td>
-                    <td style={{ fontSize: 13, color: 'var(--n-500)' }}>{fmtDate(doc.issued_date)}</td>
-                    <td style={{ fontSize: 13, fontWeight: doc.status !== 'valid' ? 600 : 400 }}>{fmtDate(doc.expiry_date)}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)' }}>{doc.client_name}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-500)', fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.issued_date)}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: doc.status !== 'valid' ? 600 : 400, fontFamily: 'var(--font-jetbrains-mono)' }}>{fmtDate(doc.expiry_date)}</td>
                     <td><StatusBadge status={doc.status} days={days} /></td>
-                    <td style={{ fontSize: 13, color: 'var(--n-500)' }}>{doc.responsible || '—'}</td>
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--n-500)' }}>{doc.responsible || '—'}</td>
                     <td>
                       {doc.status === 'expired' && (
-                        <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, cursor: 'pointer' }}>Renovar</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--danger)', fontWeight: 600, cursor: 'pointer' }}>Renovar</span>
                       )}
                       {(doc.status === 'expiring_30' || doc.status === 'expiring_90') && (
-                        <span style={{ fontSize: 12, color: 'var(--warning)', fontWeight: 600, cursor: 'pointer' }}>Programar</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--warning)', fontWeight: 600, cursor: 'pointer' }}>Programar</span>
                       )}
                       {doc.status === 'verify' && (
-                        <span style={{ fontSize: 12, color: 'var(--gold-600)', fontWeight: 600, cursor: 'pointer' }}>Verificar</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--gold-600)', fontWeight: 600, cursor: 'pointer' }}>Verificar</span>
                       )}
                       {doc.status === 'valid' && (
-                        <span style={{ fontSize: 12, color: 'var(--n-300)' }}>—</span>
+                        <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-300)' }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -216,21 +223,21 @@ export default function DocumentosLegalesPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
 
       {/* Alert schedule info */}
       <div style={{ marginTop: 20, padding: '16px 20px', background: 'var(--n-50)', borderRadius: 12, border: '1px solid var(--border-light)' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, marginBottom: 8 }}>
           <Shield size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
           Alertas Automáticas
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, fontSize: 12, color: 'var(--n-500)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12, fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-500)' }}>
           <div><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 90 días: Advertencia</div>
           <div><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 60 días: Recordatorio</div>
           <div><AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 30 días: Crítico</div>
           <div><AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 7 días: Escalación</div>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--n-400)', marginTop: 8 }}>
+        <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--n-400)', marginTop: 8 }}>
           Las alertas se envían por portal, email y Telegram al equipo de operaciones.
         </div>
       </div>

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { ChevronUp, ChevronDown, Download, Search } from 'lucide-react'
-import { COMPANY_ID } from '@/lib/client-config'
+import { ChevronUp, ChevronDown, Download, Search, Layers, Save, BookOpen } from 'lucide-react'
+import { getCompanyIdCookie } from '@/lib/client-config'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic data-table column must accept any row shape; callers narrow via type param
 export interface Column<T = any> {
   key: string
   label: string
@@ -11,9 +12,21 @@ export interface Column<T = any> {
   align?: 'left' | 'right' | 'center'
   mono?: boolean
   sortable?: boolean
+  groupable?: boolean
   render?: (row: T, index: number) => React.ReactNode
+  /** Conditional cell styling based on value */
+  cellStyle?: (value: unknown, row: T) => React.CSSProperties | undefined
 }
 
+interface SavedView {
+  name: string
+  sortKey: string | null
+  sortDir: 'asc' | 'desc'
+  groupBy: string | null
+  search: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table props; T is narrowed by caller
 interface Props<T = any> {
   columns: Column<T>[]
   data: T[]
@@ -26,23 +39,47 @@ interface Props<T = any> {
   exportFilename?: string
   emptyMessage?: string
   filters?: React.ReactNode
+  /** Enable group-by dropdown */
+  enableGroupBy?: boolean
+  /** Enable save/load views (uses localStorage) */
+  enableSavedViews?: boolean
+  /** Unique ID for saved views storage */
+  viewStorageKey?: string
 }
 
-function fmtExportVal(v: any): string {
+function fmtExportVal(v: unknown): string {
   if (v == null) return ''
   return String(v).replace(/,/g, ' ')
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- row shape is arbitrary across callers; cell access is dynamic by design
 export default function DataTable<T extends Record<string, any>>({
   columns, data, loading, pageSize = 50, keyField = 'id',
   expandable, onRowClick, searchPlaceholder = 'Buscar...',
   exportFilename, emptyMessage = 'Sin resultados', filters,
+  enableGroupBy, enableSavedViews, viewStorageKey,
 }: Props<T>) {
   const [search, setSearch] = useState('')
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(0)
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const [groupBy, setGroupBy] = useState<string | null>(null)
+  const [savedViews, setSavedViews] = useState<SavedView[]>([])
+  const [showSaveView, setShowSaveView] = useState(false)
+  const [viewName, setViewName] = useState('')
+
+  // Load saved views from localStorage
+  useState(() => {
+    if (enableSavedViews && viewStorageKey && typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`cruz-views-${viewStorageKey}`)
+        if (stored) setSavedViews(JSON.parse(stored))
+      } catch (e) { console.error('[data-table] localStorage parse:', (e as Error).message) }
+    }
+  })
+
+  const groupableColumns = useMemo(() => columns.filter(c => c.groupable), [columns])
 
   // Auto-hide columns where ALL values are empty/null/dash/zero
   const visibleColumns = useMemo(() => {
@@ -74,8 +111,38 @@ export default function DataTable<T extends Record<string, any>>({
     return out
   }, [data, search, sortKey, sortDir, visibleColumns])
 
+  // Grouped data
+  const grouped = useMemo(() => {
+    if (!groupBy) return null
+    const map = new Map<string, T[]>()
+    for (const row of filtered) {
+      const key = String(row[groupBy] ?? 'Sin valor')
+      const arr = map.get(key)
+      if (arr) arr.push(row); else map.set(key, [row])
+    }
+    return map
+  }, [filtered, groupBy])
+
   const totalPages = Math.ceil(filtered.length / pageSize)
   const paged = filtered.slice(page * pageSize, (page + 1) * pageSize)
+
+  function saveView() {
+    if (!viewName.trim() || !viewStorageKey) return
+    const view: SavedView = { name: viewName.trim(), sortKey, sortDir, groupBy, search }
+    const updated = [...savedViews.filter(v => v.name !== view.name), view]
+    setSavedViews(updated)
+    localStorage.setItem(`cruz-views-${viewStorageKey}`, JSON.stringify(updated))
+    setShowSaveView(false)
+    setViewName('')
+  }
+
+  function loadView(view: SavedView) {
+    setSortKey(view.sortKey)
+    setSortDir(view.sortDir)
+    setGroupBy(view.groupBy)
+    setSearch(view.search)
+    setPage(0)
+  }
 
   const handleSort = useCallback((key: string) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -90,7 +157,7 @@ export default function DataTable<T extends Record<string, any>>({
     const blob = new Blob([csv], { type: 'text/csv' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = exportFilename || `${COMPANY_ID}_export_${new Date().toISOString().split('T')[0]}.csv`
+    a.download = exportFilename || `${getCompanyIdCookie()}_export_${new Date().toISOString().split('T')[0]}.csv`
     a.click()
   }, [filtered, columns, exportFilename])
 
@@ -105,6 +172,35 @@ export default function DataTable<T extends Record<string, any>>({
             <input placeholder={searchPlaceholder} value={search}
               onChange={e => { setSearch(e.target.value); setPage(0) }} />
           </div>
+          {enableGroupBy && groupableColumns.length > 0 && (
+            <select
+              value={groupBy || ''}
+              onChange={e => { setGroupBy(e.target.value || null); setPage(0) }}
+              className="act-btn"
+              style={{ fontSize: 'var(--aguila-fs-compact)', padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: 32 }}
+            >
+              <option value="">Agrupar por...</option>
+              {groupableColumns.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+            </select>
+          )}
+          {enableSavedViews && viewStorageKey && (
+            <>
+              {savedViews.length > 0 && (
+                <select
+                  onChange={e => { const v = savedViews.find(sv => sv.name === e.target.value); if (v) loadView(v) }}
+                  className="act-btn"
+                  style={{ fontSize: 'var(--aguila-fs-compact)', padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: 32 }}
+                  defaultValue=""
+                >
+                  <option value="" disabled>Vistas guardadas</option>
+                  {savedViews.map(v => <option key={v.name} value={v.name}>{v.name}</option>)}
+                </select>
+              )}
+              <button className="act-btn" onClick={() => setShowSaveView(v => !v)} title="Guardar vista">
+                <Save size={14} />
+              </button>
+            </>
+          )}
           {exportFilename && (
             <button className="act-btn" onClick={handleExport}>
               <Download size={14} /> CSV
@@ -113,74 +209,138 @@ export default function DataTable<T extends Record<string, any>>({
         </div>
       </div>
 
+      {/* Save view input */}
+      {showSaveView && (
+        <div style={{ display: 'flex', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+          <input
+            value={viewName}
+            onChange={e => setViewName(e.target.value)}
+            placeholder="Nombre de la vista..."
+            style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px', fontSize: 'var(--aguila-fs-compact)', outline: 'none', color: 'var(--text-primary)', background: 'var(--bg-main)' }}
+            onKeyDown={e => e.key === 'Enter' && saveView()}
+          />
+          <button onClick={saveView} disabled={!viewName.trim()} className="act-btn" style={{ fontSize: 'var(--aguila-fs-compact)', padding: '4px 12px' }}>
+            Guardar
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              {visibleColumns.map(col => (
-                <th key={col.key}
-                  style={{ width: col.width, textAlign: col.align || 'left', cursor: col.sortable !== false ? 'pointer' : 'default' }}
-                  onClick={() => col.sortable !== false && handleSort(col.key)}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    {col.label}
-                    {sortKey === col.key && (
-                      sortDir === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
-                    )}
-                  </span>
-                </th>
-              ))}
-              {(expandable || onRowClick) && <th style={{ width: 24 }}></th>}
-            </tr>
-          </thead>
-          <tbody>
-            {loading && Array.from({ length: 8 }).map((_, i) => (
-              <tr key={`skel-${i}`}>
-                {visibleColumns.map(col => (
-                  <td key={col.key}><div className="skel" style={{ width: '70%', height: 14 }} /></td>
-                ))}
-                {(expandable || onRowClick) && <td />}
-              </tr>
-            ))}
-            {!loading && paged.length === 0 && (
-              <tr><td colSpan={visibleColumns.length + (expandable || onRowClick ? 1 : 0)} style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>{emptyMessage}</td></tr>
-            )}
-            {!loading && paged.map((row, i) => {
-              const key = String(row[keyField] ?? i)
-              const isExpanded = expandedKey === key
-              return (
-                <tbody key={key}>
-                  <tr
-                    className={isExpanded ? 'selected' : ''}
-                    onClick={() => {
-                      if (expandable) setExpandedKey(isExpanded ? null : key)
-                      else if (onRowClick) onRowClick(row)
-                    }}
-                  >
-                    {visibleColumns.map(col => (
-                      <td key={col.key} style={{ textAlign: col.align || 'left' }}
-                        className={col.mono ? 'c-num' : ''}>
-                        {col.render ? col.render(row, i) : (
-                          <span className={col.mono ? 'mono' : ''}>{row[col.key] != null ? String(row[col.key]) : '-'}</span>
-                        )}
-                      </td>
-                    ))}
-                    {(expandable || onRowClick) && <td><span className="c-arr">&#8250;</span></td>}
-                  </tr>
-                  {expandable && isExpanded && (
+        {grouped ? (
+          /* Grouped view */
+          <div>
+            {[...grouped.entries()].map(([groupKey, groupRows]) => (
+              <div key={groupKey} style={{ marginBottom: 16 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 16px', background: 'rgba(196,150,60,0.06)',
+                  borderRadius: '8px 8px 0 0', borderBottom: '1px solid var(--border)',
+                }}>
+                  <Layers size={12} style={{ color: 'var(--gold)' }} />
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, color: 'var(--text-primary)' }}>{groupKey}</span>
+                  <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{groupRows.length}</span>
+                </div>
+                <table className="data-table">
+                  <thead>
                     <tr>
-                      <td colSpan={visibleColumns.length + 1} style={{ padding: 0 }}>
-                        <div style={{ padding: 24, background: 'var(--bg-elevated)', borderLeft: '3px solid var(--amber-600)' }}>
-                          {expandable(row)}
-                        </div>
-                      </td>
+                      {visibleColumns.filter(c => c.key !== groupBy).map(col => (
+                        <th key={col.key} style={{ width: col.width, textAlign: col.align || 'left' }}>{col.label}</th>
+                      ))}
                     </tr>
-                  )}
-                </tbody>
-              )
-            })}
-          </tbody>
-        </table>
+                  </thead>
+                  <tbody>
+                    {groupRows.map((row, i) => {
+                      const key = String(row[keyField] ?? i)
+                      return (
+                        <tr key={key} onClick={() => onRowClick?.(row)} style={{ cursor: onRowClick ? 'pointer' : undefined }}>
+                          {visibleColumns.filter(c => c.key !== groupBy).map(col => (
+                            <td key={col.key}
+                              style={{ textAlign: col.align || 'left', ...(col.cellStyle ? col.cellStyle(row[col.key], row) : {}) }}
+                              className={col.mono ? 'c-num' : ''}>
+                              {col.render ? col.render(row, i) : (
+                                <span className={col.mono ? 'mono' : ''}>{row[col.key] != null ? String(row[col.key]) : '-'}</span>
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Flat view */
+          <table className="data-table">
+            <thead>
+              <tr>
+                {visibleColumns.map(col => (
+                  <th key={col.key}
+                    style={{ width: col.width, textAlign: col.align || 'left', cursor: col.sortable !== false ? 'pointer' : 'default' }}
+                    onClick={() => col.sortable !== false && handleSort(col.key)}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {col.label}
+                      {sortKey === col.key && (
+                        sortDir === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+                      )}
+                    </span>
+                  </th>
+                ))}
+                {(expandable || onRowClick) && <th style={{ width: 24 }}></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {loading && Array.from({ length: 8 }).map((_, i) => (
+                <tr key={`skel-${i}`}>
+                  {visibleColumns.map(col => (
+                    <td key={col.key}><div className="skel" style={{ width: '70%', height: 14 }} /></td>
+                  ))}
+                  {(expandable || onRowClick) && <td />}
+                </tr>
+              ))}
+              {!loading && paged.length === 0 && (
+                <tr><td colSpan={visibleColumns.length + (expandable || onRowClick ? 1 : 0)} style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>{emptyMessage}</td></tr>
+              )}
+              {!loading && paged.map((row, i) => {
+                const key = String(row[keyField] ?? i)
+                const isExpanded = expandedKey === key
+                return (
+                  <tbody key={key}>
+                    <tr
+                      className={isExpanded ? 'selected' : ''}
+                      onClick={() => {
+                        if (expandable) setExpandedKey(isExpanded ? null : key)
+                        else if (onRowClick) onRowClick(row)
+                      }}
+                    >
+                      {visibleColumns.map(col => (
+                        <td key={col.key}
+                          style={{ textAlign: col.align || 'left', ...(col.cellStyle ? col.cellStyle(row[col.key], row) : {}) }}
+                          className={col.mono ? 'c-num' : ''}>
+                          {col.render ? col.render(row, i) : (
+                            <span className={col.mono ? 'mono' : ''}>{row[col.key] != null ? String(row[col.key]) : '-'}</span>
+                          )}
+                        </td>
+                      ))}
+                      {(expandable || onRowClick) && <td><span className="c-arr">&#8250;</span></td>}
+                    </tr>
+                    {expandable && isExpanded && (
+                      <tr>
+                        <td colSpan={visibleColumns.length + 1} style={{ padding: 0 }}>
+                          <div style={{ padding: 24, background: 'var(--bg-elevated)', borderLeft: '3px solid var(--amber-600)' }}>
+                            {expandable(row)}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Pagination */}

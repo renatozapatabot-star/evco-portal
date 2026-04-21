@@ -2,9 +2,18 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import DataTable, { Column } from '@/components/DataTable'
-import EmptyState from '@/components/EmptyState'
-import { Landmark } from 'lucide-react'
-import { COMPANY_ID } from '@/lib/client-config'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Landmark, Shield } from 'lucide-react'
+import { getCompanyIdCookie } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
+
+interface SemaforoStats {
+  total: number
+  verde: number
+  rojo: number
+  pending: number
+  verdeRate: number
+}
 
 const BRIDGES = [
   { name: 'Puente Internacional I', sub: 'Gateway to Americas', type: 'Pasajero', status: 'green', wait: '-' },
@@ -17,27 +26,52 @@ function StatusBadge({ value }: { value: string }) {
   const v = (value || '').toUpperCase()
   const isGreen = v.includes('DESADUAN')
   const isBlue = v.includes('CUMPLIDO')
-  const bg = isGreen ? 'rgba(34,197,94,0.15)' : isBlue ? 'rgba(59,130,246,0.15)' : 'rgba(234,179,8,0.15)'
+  const bg = isGreen ? 'rgba(34,197,94,0.15)' : isBlue ? 'rgba(59,130,246,0.15)' : 'rgba(192,197,206,0.15)'
   const color = isGreen ? 'var(--status-green)' : isBlue ? 'var(--status-blue)' : 'var(--status-yellow)'
-  return <span style={{ background: bg, color, fontSize: 12, fontWeight: 600, padding: '4px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{v || '-'}</span>
+  return <span style={{ background: bg, color, fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, padding: '4px 8px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{v || '-'}</span>
 }
 
 export function SoiaView() {
-  const [cruces, setCruces] = useState<any[]>([])
+  const isMobile = useIsMobile()
+  const [cruces, setCruces] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [bridgeRec, setBridgeRec] = useState<{ name: string; avg: number } | null>(null)
+  const [semaforoStats, setSemaforoStats] = useState<SemaforoStats | null>(null)
 
   useEffect(() => {
+    const companyId = getCompanyIdCookie()
     fetch('/api/data?table=soia_cruces&limit=200&order_by=created_at&order_dir=desc')
       .then(r => r.json()).then(d => setCruces(d.data || []))
-      .catch(() => {}).finally(() => setLoading(false))
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) }).finally(() => setLoading(false))
+
+    // Semáforo stats from traficos (semaforo field: 0=verde, 1=rojo, null=pending)
+    if (companyId) {
+      fetch(`/api/data?table=traficos&company_id=${companyId}&limit=5000&gte_field=fecha_llegada&gte_value=2024-01-01`)
+        .then(r => r.json())
+        .then(d => {
+          const rows = (d.data || []) as { semaforo?: number | null }[]
+          const withSemaforo = rows.filter(r => r.semaforo != null)
+          const verde = withSemaforo.filter(r => r.semaforo === 0).length
+          const rojo = withSemaforo.filter(r => r.semaforo === 1).length
+          const pending = rows.length - withSemaforo.length
+          const total = withSemaforo.length
+          setSemaforoStats({
+            total,
+            verde,
+            rojo,
+            pending,
+            verdeRate: total > 0 ? (verde / total) * 100 : 0,
+          })
+        })
+        .catch((err) => console.error('[soia] semaforo fetch:', err.message))
+    }
     // Bridge intelligence
-    fetch(`/api/data?table=bridge_intelligence&company_id=${COMPANY_ID}&limit=500`)
+    fetch(`/api/data?table=bridge_intelligence&company_id=${companyId}&limit=500`)
       .then(r => r.json()).then(d => {
         const today = new Date().getDay()
-        const records = (d.data || []).filter((b: any) => b.day_of_week === today)
+        const records = (d.data || []).filter((b: { bridge_id?: string; bridge_name?: string; day_of_week?: number; crossing_hours: number }) => b.day_of_week === today)
         const avgByBridge: Record<string, number[]> = {}
-        records.forEach((b: any) => {
+        records.forEach((b: { bridge_id?: string; bridge_name?: string; crossing_hours: number }) => {
           const name = b.bridge_id || b.bridge_name || 'unknown'
           if (!avgByBridge[name]) avgByBridge[name] = []
           avgByBridge[name].push(b.crossing_hours)
@@ -47,7 +81,7 @@ export function SoiaView() {
           avg: hours.reduce((a, b) => a + b, 0) / hours.length,
         })).sort((a, b) => a.avg - b.avg)
         if (bridges[0]) setBridgeRec(bridges[0])
-      }).catch(() => {})
+      }).catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
   }, [])
 
   // Derive summary stats
@@ -69,14 +103,14 @@ export function SoiaView() {
       return {
         key,
         label: key.replace(/_/g, ' '),
-        render: isStatus ? (row: any) => <StatusBadge value={row[key]} /> : undefined,
+        render: isStatus ? (row: Record<string, unknown>) => <StatusBadge value={String(row[key] || "")} /> : undefined,
         mono: key.includes('trafico') || key.includes('pedimento') || key.includes('num') || key.includes('secuencia'),
       }
     })
   }, [cruces])
 
   return (
-    <div style={{ padding: 32 }}>
+    <div style={{ padding: isMobile ? 16 : 32 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 className="pg-title">SOIA — Semáforo Aduanal</h1>
         <p className="pg-meta">Aduana 240 Nuevo Laredo &middot; {cruces.length} registros</p>
@@ -90,7 +124,7 @@ export function SoiaView() {
               Recomendado Hoy — {['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][new Date().getDay()]}
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--n-900)' }}>{bridgeRec.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--n-400)', marginTop: 2 }}>Promedio hoy: {bridgeRec.avg.toFixed(1)}h · basado en historial real</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--n-400)', marginTop: 2 }}>Promedio hoy: {bridgeRec.avg.toFixed(1)}h · basado en historial real</div>
           </div>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 0 4px var(--success-bg)' }} />
         </div>
@@ -105,42 +139,82 @@ export function SoiaView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--green, #16A34A)', boxShadow: '0 0 0 3px var(--green-bg, rgba(22,163,74,0.08))' }} />
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green, #16A34A)', marginBottom: 2 }}>Cruce Recomendado</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{best.name} — {best.sub}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Semáforo verde &middot; Comercial disponible</div>
+                <div style={{ fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green, #16A34A)', marginBottom: 2 }}>Cruce Recomendado</div>
+                <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)' }}>{best.name} — {best.sub}</div>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)', marginTop: 2 }}>Semáforo verde &middot; Comercial disponible</div>
               </div>
             </div>
           </div>
         )
       })()}
 
+      {/* Semáforo Statistics */}
+      {semaforoStats && semaforoStats.total > 0 && (
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 20, marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Shield size={16} style={{ color: 'var(--gold)' }} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+              Historial de semáforo
+            </span>
+            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              {semaforoStats.total} embarques
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ textAlign: 'center', padding: 12 }}>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verde}</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Verde</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: 12 }}>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--status-red, #DC2626)' }}>{semaforoStats.rojo}</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Rojo</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: 12 }}>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, color: 'var(--status-green)' }}>{semaforoStats.verdeRate.toFixed(1)}%</div>
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 4 }}>Tasa verde</div>
+            </div>
+          </div>
+          {/* Verde bar */}
+          <div style={{ marginTop: 12, height: 8, borderRadius: 4, background: 'var(--border-primary, #E8E5E0)', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 4, background: 'var(--status-green)',
+              width: `${semaforoStats.verdeRate}%`, transition: 'width 300ms',
+            }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted)' }}>
+            <span>Verde: {semaforoStats.verde}</span>
+            <span>Rojo: {semaforoStats.rojo}</span>
+          </div>
+        </div>
+      )}
+
       {/* Bridge Status Grid 2x2 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
         {BRIDGES.map(b => (
           <div key={b.name} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{b.name}</div>
-            <div style={{ fontSize: 14, color: 'var(--amber-700)', marginBottom: 16 }}>{b.sub}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{b.name}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--amber-700)', marginBottom: 16 }}>{b.sub}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: b.status === 'green' ? 'var(--status-green)' : b.status === 'yellow' ? 'var(--status-yellow)' : 'var(--status-red)' }} />
-                <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{b.type}</span>
+                <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-primary)' }}>{b.type}</span>
               </div>
-              <div className="mono" style={{ fontSize: 28, fontWeight: 600, color: 'var(--text-primary)' }}>{b.wait}</div>
+              <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 600, color: 'var(--text-primary)' }}>{b.wait}</div>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 12 }}>Actualizado: {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-tertiary)', marginTop: 12 }}>Actualizado: {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
           </div>
         ))}
       </div>
 
       {/* Summary KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 32, fontWeight: 600, color: 'var(--status-green)' }}>{desaduanado}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Desaduanado</div>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 24 }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: isMobile ? 16 : 24, textAlign: 'center' }}>
+          <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 600, color: 'var(--status-green)' }}>{desaduanado}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Desaduanado</div>
         </div>
         <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 32, fontWeight: 600, color: 'var(--status-blue)' }}>{cumplido}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Cumplido</div>
+          <div className="mono" style={{ fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 600, color: 'var(--status-blue)' }}>{cumplido}</div>
+          <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--amber-700)', marginTop: 4 }}>Cumplido</div>
         </div>
       </div>
 
@@ -153,9 +227,9 @@ export function SoiaView() {
       ) : cruces.length === 0 ? (
         <div className="card">
           <EmptyState
-            icon={<Landmark size={20} style={{ color: 'var(--amber-600)' }} />}
-            title="Sin datos SOIA"
-            subtitle="La tabla soia_cruces está vacía. Se poblará cuando GlobalPC sincronice datos de cruces."
+            icon="landmark"
+            title="SOIA pendiente de sincronización"
+            description="La tabla soia_cruces está vacía. Se poblará cuando GlobalPC sincronice datos de cruces."
           />
         </div>
       ) : (
@@ -165,7 +239,7 @@ export function SoiaView() {
           loading={false}
           keyField="id"
           pageSize={50}
-          exportFilename={`${COMPANY_ID}_soia`}
+          exportFilename={`${getCompanyIdCookie()}_soia`}
           searchPlaceholder="Buscar cruce..."
           emptyMessage="Sin cruces recientes"
         />

@@ -1,0 +1,308 @@
+/* PORTAL · Shared component styles — reference via class names.
+ * Import AFTER portal-tokens.css. Every rule here consumes var(--portal-*)
+ * and respects the theme-swap attributes on <html>. */
+
+/* —— Responsive modules grid ———————————————————— */
+.portal-modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; grid-auto-rows: 1fr; }
+.portal-modules-grid > * { height: 100%; }
+@media (max-width: 960px) { .portal-modules-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .portal-modules-grid { grid-template-columns: 1fr; gap: 12px; } }
+
+/* Numbers + metadata use JetBrains Mono globally */
+.portal-num, .portal-meta, .portal-eyebrow, .portal-label, .portal-kbd,
+.portal-badge, .portal-ticker, table.portal-table td.num, table.portal-table .num {
+  font-family: var(--portal-font-mono) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Living pulse */
+@keyframes portalPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50%      { opacity: 1;   transform: scale(1.1); }
+}
+
+/* —— Buttons ———————————————————————————————— */
+.portal-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 16px; border-radius: var(--portal-r-2);
+  font-size: var(--portal-fs-sm); font-weight: 500; letter-spacing: 0.02em;
+  transition: all var(--portal-dur-2) var(--portal-ease-out);
+  white-space: nowrap;
+}
+.portal-btn--primary { background: var(--portal-fg-1); color: var(--portal-ink-0); box-shadow: var(--portal-shadow-1); }
+.portal-btn--primary:hover { background: var(--portal-fg-2); transform: translateY(-1px); box-shadow: var(--portal-shadow-2); }
+.portal-btn--primary:active { transform: translateY(0); }
+
+.portal-btn--ghost { color: var(--portal-fg-2); border: 1px solid var(--portal-line-2); background: transparent; }
+.portal-btn--ghost:hover { border-color: var(--portal-line-3); color: var(--portal-fg-1); background: var(--portal-ink-3); }
+
+.portal-btn--accent { background: var(--portal-green-2); color: var(--portal-ink-0); box-shadow: 0 0 0 1px var(--portal-green-3), 0 0 24px var(--portal-green-glow); }
+.portal-btn--accent:hover { background: var(--portal-green-1); }
+
+.portal-btn--sm { height: 28px; padding: 0 10px; font-size: var(--portal-fs-xs); border-radius: var(--portal-r-1); }
+.portal-btn--lg { height: 52px; padding: 0 24px; font-size: var(--portal-fs-md); border-radius: var(--portal-r-3); }
+.portal-btn--icon { width: 36px; padding: 0; }
+
+/* —— Badges ———————————————————————————————— */
+.portal-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 22px; padding: 0 8px; border-radius: var(--portal-r-pill);
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro);
+  font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid var(--portal-line-2); color: var(--portal-fg-3);
+}
+.portal-badge--live { color: var(--portal-green-1); border-color: var(--portal-green-5); background: color-mix(in oklch, var(--portal-green-2) 8%, transparent); }
+.portal-badge--info { color: var(--portal-ice-1); border-color: color-mix(in oklch, var(--portal-ice-3) 40%, transparent); background: color-mix(in oklch, var(--portal-ice-2) 6%, transparent); }
+.portal-badge--warn { color: var(--portal-amber); border-color: color-mix(in oklch, var(--portal-amber) 40%, transparent); background: color-mix(in oklch, var(--portal-amber) 6%, transparent); }
+.portal-badge--alert { color: var(--portal-red); border-color: color-mix(in oklch, var(--portal-red) 40%, transparent); background: color-mix(in oklch, var(--portal-red) 6%, transparent); }
+
+/* —— Cards ————————————————————————————————
+ * Chrome audit 2026-04-19 surfaced: .portal-card had no backdrop-filter,
+ * no rgba glass background, and no top-lit inset — it was visually a
+ * bordered opaque card, not a true glass panel. The Design System v6
+ * spec requires rgba(0,0,0,0.25) + blur(20px) + top-lit inset for the
+ * base card tier (secondary), and rgba(0,0,0,0.4) + halo for hero.
+ * This brings the primitive in line with /login's canon.
+ */
+.portal-card {
+  background: rgba(0,0,0,0.25) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
+  border: 1px solid var(--portal-line-1);
+  border-radius: var(--portal-r-4);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color var(--portal-dur-2) var(--portal-ease-out),
+    transform var(--portal-dur-2) var(--portal-ease-out),
+    box-shadow var(--portal-dur-2) var(--portal-ease-out);
+}
+/* Re-allow accent variant to override the !important background with its
+ * radial-gradient. The accent variant ships its own inline background
+ * via PortalModuleCard; this class lets the inline win even with !important
+ * baseline. */
+.portal-card[data-accent="true"] { background: inherit !important; }
+.portal-card:hover { border-color: var(--portal-line-2); }
+.portal-card--raised {
+  background: rgba(0,0,0,0.12);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.portal-card--interactive { cursor: pointer; }
+.portal-card--interactive:hover {
+  border-color: var(--portal-line-3);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.5),
+    0 0 32px rgba(192,197,206,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.portal-card--hero {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 40%),
+    rgba(0,0,0,0.4);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.6),
+    0 0 20px rgba(192,197,206,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.portal-card--hero:hover {
+  border-color: rgba(192,197,206,0.4);
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.75),
+    0 0 32px rgba(192,197,206,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.11);
+}
+
+/* Card grid indicator rail */
+.portal-card__rail {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--portal-green-2); opacity: 0; transition: opacity var(--portal-dur-2);
+}
+.portal-card--active .portal-card__rail { opacity: 1; }
+
+/* —— Inputs ———————————————————————————————— */
+.portal-input {
+  width: 100%; height: 48px; padding: 0 16px;
+  background: var(--portal-ink-0); border: 1px solid var(--portal-line-2); border-radius: var(--portal-r-2);
+  color: var(--portal-fg-1); font-family: var(--portal-font-mono); font-size: var(--portal-fs-md); letter-spacing: 0.1em;
+  transition: border-color var(--portal-dur-2), box-shadow var(--portal-dur-2);
+  outline: none;
+}
+.portal-input:focus { border-color: var(--portal-green-3); box-shadow: 0 0 0 4px var(--portal-green-glow); }
+.portal-input::placeholder { color: var(--portal-fg-5); }
+
+.portal-label {
+  display: block; font-family: var(--portal-font-mono);
+  font-size: var(--portal-fs-micro); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--portal-fg-4); margin-bottom: 10px;
+}
+
+/* —— Ticker ———————————————————————————————— */
+.portal-ticker {
+  height: var(--portal-ticker-h);
+  border-top: 1px solid var(--portal-line-1);
+  border-bottom: 1px solid var(--portal-line-1);
+  background: var(--portal-ink-1);
+  overflow: hidden;
+  position: relative;
+  font-family: var(--portal-font-mono);
+  font-size: var(--portal-fs-tiny);
+  letter-spacing: 0.1em;
+}
+.portal-ticker__track { display: flex; gap: 40px; align-items: center; height: 100%; white-space: nowrap; animation: portal-ticker 80s linear infinite; padding-left: 100%; }
+.portal-ticker__item { display: inline-flex; gap: 8px; align-items: center; color: var(--portal-fg-3); }
+.portal-ticker__item .tk-label { color: var(--portal-fg-5); letter-spacing: 0.18em; }
+.portal-ticker__item .tk-up { color: var(--portal-green-2); }
+.portal-ticker__item .tk-down { color: var(--portal-red); }
+@keyframes portal-ticker { to { transform: translateX(-100%); } }
+
+/* —— Hero metric ——————————————————————————— */
+.portal-metric {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.portal-metric__label {
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--portal-fg-4);
+}
+.portal-metric__value {
+  font-family: var(--portal-font-sans); font-weight: 500;
+  font-size: var(--portal-fs-3xl); line-height: 1;
+  letter-spacing: -0.035em; color: var(--portal-fg-1);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.portal-metric__value--display { font-family: var(--portal-font-display); font-weight: 300; letter-spacing: -0.03em; }
+.portal-metric__sub {
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-tiny);
+  letter-spacing: 0.08em; color: var(--portal-fg-4);
+}
+
+/* —— Sparkline container ——————————————————————————— */
+.portal-spark { width: 100%; height: 40px; display: block; }
+.portal-spark__path { fill: none; stroke: var(--portal-fg-3); stroke-width: 1.25; }
+.portal-spark__path--accent { stroke: var(--portal-green-2); }
+.portal-spark__fill { fill: url(#portal-spark-grad); opacity: 0.35; }
+
+/* —— Section header ——————————————————————————— */
+.portal-section-title {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: var(--portal-s-4) 0 var(--portal-s-3);
+  border-bottom: 1px solid var(--portal-line-1);
+  margin-bottom: var(--portal-s-6);
+}
+.portal-section-title h2 {
+  font-family: var(--portal-font-display); font-weight: 300;
+  font-size: var(--portal-fs-xl); letter-spacing: -0.02em; color: var(--portal-fg-1); margin: 0;
+}
+.portal-section-title .eyebrow {
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--portal-fg-4);
+}
+
+/* —— Eyebrow/meta text ——————————————————————————— */
+.portal-eyebrow {
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro);
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--portal-fg-4);
+}
+.portal-meta {
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-tiny);
+  letter-spacing: 0.08em; color: var(--portal-fg-4);
+}
+
+/* —— Keyboard key ——————————————————————————— */
+.portal-kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border: 1px solid var(--portal-line-2); border-radius: var(--portal-r-1);
+  background: var(--portal-ink-2); color: var(--portal-fg-3);
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro);
+}
+
+/* —— Divider ——————————————————————————— */
+.portal-divider { height: 1px; background: var(--portal-line-1); width: 100%; }
+.portal-divider--v { width: 1px; background: var(--portal-line-1); height: 100%; }
+
+/* —— Avatar ring ——————————————————————————— */
+.portal-avatar {
+  width: 32px; height: 32px; border-radius: var(--portal-r-pill);
+  background: linear-gradient(135deg, var(--portal-green-3), var(--portal-ice-3));
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-tiny);
+  color: var(--portal-ink-0); font-weight: 600; letter-spacing: 0.1em;
+}
+
+/* —— Progress / status bar ——————————————————————————— */
+.portal-progress { width: 100%; height: 2px; background: var(--portal-line-1); border-radius: 999px; overflow: hidden; }
+.portal-progress__fill { height: 100%; background: var(--portal-green-2); box-shadow: 0 0 8px var(--portal-green-glow); transition: width var(--portal-dur-3) var(--portal-ease-out); }
+
+/* —— Row / table ——————————————————————————— */
+.portal-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--portal-fs-sm); }
+.portal-table th {
+  text-align: left; padding: 12px 16px; font-weight: 500;
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-micro); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--portal-fg-4); border-bottom: 1px solid var(--portal-line-1);
+}
+.portal-table td { padding: 14px 16px; border-bottom: 1px solid var(--portal-line-1); color: var(--portal-fg-2); }
+.portal-table tr:hover td { background: var(--portal-ink-2); }
+.portal-table .num { font-family: var(--portal-font-mono); font-variant-numeric: tabular-nums; color: var(--portal-fg-1); }
+
+/* —— Glow ring (focus indicator) ——————————————————— */
+.portal-ring-glow { box-shadow: 0 0 0 1px var(--portal-green-3), 0 0 24px var(--portal-green-glow); }
+
+/* —— Unified motion system ———————————————————————— */
+/* Every interactive thing uses the same ease + timing */
+a, button, [role="button"], input, textarea, select,
+.portal-card, .portal-module, .portal-badge, .portal-tab, .portal-row {
+  transition:
+    background-color var(--portal-dur-2) var(--portal-ease-out),
+    border-color     var(--portal-dur-2) var(--portal-ease-out),
+    color            var(--portal-dur-2) var(--portal-ease-out),
+    transform        var(--portal-dur-2) var(--portal-ease-out),
+    box-shadow       var(--portal-dur-2) var(--portal-ease-out),
+    opacity          var(--portal-dur-2) var(--portal-ease-out);
+}
+
+/* Focus-visible — one green ring, never browser default */
+*:focus { outline: none; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  box-shadow: 0 0 0 2px var(--portal-ink-0), 0 0 0 3px var(--portal-green-3), 0 0 20px var(--portal-green-glow);
+  border-radius: var(--portal-r-1);
+}
+
+/* Row / list-item hover — subtle lift + rail */
+.portal-row {
+  position: relative;
+  padding: 10px 12px;
+  border-radius: var(--portal-r-2);
+  cursor: pointer;
+}
+.portal-row::before {
+  content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px;
+  background: var(--portal-green-2); border-radius: 2px;
+  opacity: 0; transform: scaleY(0.4); transform-origin: center;
+  transition: opacity var(--portal-dur-2) var(--portal-ease-out), transform var(--portal-dur-2) var(--portal-ease-out);
+}
+.portal-row:hover { background: color-mix(in oklch, var(--portal-ink-2) 60%, transparent); }
+.portal-row:hover::before { opacity: 1; transform: scaleY(1); }
+
+/* Reveal-on-enter — shared class */
+@keyframes portalReveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.portal-reveal { animation: portalReveal var(--portal-dur-4) var(--portal-ease-out) both; }
+.portal-reveal-1 { animation-delay: 60ms; }
+.portal-reveal-2 { animation-delay: 120ms; }
+.portal-reveal-3 { animation-delay: 180ms; }
+.portal-reveal-4 { animation-delay: 240ms; }
+.portal-reveal-5 { animation-delay: 300ms; }
+
+/* Reduced-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

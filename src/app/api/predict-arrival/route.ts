@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,6 +9,12 @@ const supabase = createClient(
 )
 
 export async function POST(request: NextRequest) {
+  const sessionToken = request.cookies.get('portal_session')?.value || ''
+  const session = await verifySession(sessionToken)
+  if (!session) {
+    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Sesión inválida' } }, { status: 401 })
+  }
+
   const { trafico_id } = await request.json()
   if (!trafico_id) return NextResponse.json({ error: 'trafico_id required' }, { status: 400 })
 
@@ -14,9 +22,10 @@ export async function POST(request: NextRequest) {
     .from('traficos')
     .select('*')
     .eq('trafico', trafico_id)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .single()
 
-  if (!trafico) return NextResponse.json({ error: 'Tráfico not found' }, { status: 404 })
+  if (!trafico) return NextResponse.json({ error: 'Embarque not found' }, { status: 404 })
   if ((trafico.estatus || '').toLowerCase().includes('cruz')) {
     return NextResponse.json({ trafico_id, prediction: null, reason: 'Already crossed' })
   }
@@ -29,6 +38,7 @@ export async function POST(request: NextRequest) {
     .eq('transportista_extranjero', carrier)
     .not('fecha_cruce', 'is', null)
     .not('fecha_llegada', 'is', null)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .limit(200)
 
   // Calculate baseline hours

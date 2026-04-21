@@ -15,11 +15,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const { withSyncLog } = require('./lib/sync-log')
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 
 async function tg(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) return
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -183,4 +185,4 @@ async function run() {
   })
 }
 
-run().catch(console.error)
+withSyncLog(supabase, { sync_type: 'aduanet_watcher', company_id: null }, run).catch(console.error)

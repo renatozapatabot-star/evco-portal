@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
+const { fetchAll } = require('./lib/paginate')
 const s = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 async function validate() {
   // Get all distinct company_ids from traficos
-  const { data: companies } = await s.from('traficos')
-    .select('company_id').limit(5000)
+  const companies = await fetchAll(s.from('traficos')
+    .select('company_id'))
   const ids = [...new Set((companies || []).map(c => c.company_id).filter(Boolean))]
   console.log(`Validating ${ids.length} clients...\n`)
   console.log('Status  Client'.padEnd(40) + 'Traf'.padEnd(8) + 'Docs'.padEnd(8) + 'Issues')

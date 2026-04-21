@@ -15,6 +15,7 @@ const TG_CHAT = '-5085543275'
 const COMPANY_ID = 'evco'
 
 async function sendTG(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TG_TOKEN) { console.log(msg); return }
   await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

@@ -2,211 +2,212 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import DataTable, { Column } from '@/components/DataTable'
-import { COMPANY_ID } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const FLAGS: Record<string, string> = { USA: '🇺🇸', MX: '🇲🇽', CA: '🇨🇦', MEX: '🇲🇽', CAN: '🇨🇦', DEU: '🇩🇪', CHN: '🇨🇳', JPN: '🇯🇵', TWN: '🇹🇼', KOR: '🇰🇷', THA: '🇹🇭', VNM: '🇻🇳', ITA: '🇮🇹', BEL: '🇧🇪', AUS: '🇦🇺', CHE: '🇨🇭', IND: '🇮🇳', MYS: '🇲🇾' }
-const flag = (c: string | null) => FLAGS[(c || '').toUpperCase()] || '🌐'
-
-type ViewTab = 'proveedores' | 'productos'
+interface SupplierScore {
+  name: string
+  avgDays: number
+  compliance: number
+  operations: number
+  tmec: boolean
+}
 
 export function ProveedoresView() {
-  const [suppliers, setSuppliers] = useState<any[]>([])
-  const [selected, setSelected] = useState<any>(null)
-  const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState<any>({})
+  const companyId = getCookieValue('company_id') ?? ''
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [viewTab, setViewTab] = useState<ViewTab>('proveedores')
-  const [products, setProducts] = useState<any[]>([])
-  const [productsLoading, setProductsLoading] = useState(false)
-  const [networkMap, setNetworkMap] = useState<Map<string, any>>(new Map())
+  const [suppliers, setSuppliers] = useState<SupplierScore[]>([])
 
   useEffect(() => {
-    supabase.from('supplier_network').select('supplier_name, supplier_name_normalized, reliability_score, tmec_eligible, incident_rate, total_operations')
-      .then(({ data }) => {
-        const map = new Map<string, any>()
-        ;(data || []).forEach(s => {
-          map.set((s.supplier_name || '').toLowerCase().trim(), s)
-          if (s.supplier_name_normalized) map.set(s.supplier_name_normalized.toLowerCase().trim(), s)
+    async function load() {
+      // Fetch supplier network and traficos in parallel
+      const [networkRes, traficosRes] = await Promise.all([
+        supabase
+          .from('supplier_network')
+          .select('supplier_name, reliability_score, tmec_eligible, total_operations'),
+        supabase
+          .from('traficos')
+          .select('proveedor, fecha_llegada, fecha_cruce')
+          .eq('company_id', companyId)
+          .not('fecha_llegada', 'is', null)
+          .not('fecha_cruce', 'is', null)
+          .limit(2000),
+      ])
+
+      const networkData = networkRes.data ?? []
+      const traficosData = traficosRes.data ?? []
+
+      // Compute avg crossing days per supplier from traficos
+      const daysMap = new Map<string, number[]>()
+      for (const t of traficosData) {
+        const key = (t.proveedor || '').toLowerCase().trim()
+        if (!key) continue
+        const arrival = new Date(t.fecha_llegada)
+        const cross = new Date(t.fecha_cruce)
+        const diffDays = Math.max(0, (cross.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24))
+        if (!daysMap.has(key)) daysMap.set(key, [])
+        daysMap.get(key)!.push(diffDays)
+      }
+
+      // Build scored list from supplier_network
+      const scored: SupplierScore[] = networkData
+        .filter(s => s.supplier_name && s.reliability_score != null)
+        .map(s => {
+          const key = (s.supplier_name || '').toLowerCase().trim()
+          const daysList = daysMap.get(key)
+          const avgDays = daysList && daysList.length > 0
+            ? Math.round((daysList.reduce((a, b) => a + b, 0) / daysList.length) * 10) / 10
+            : 0
+          return {
+            name: s.supplier_name,
+            avgDays,
+            compliance: Math.round(s.reliability_score),
+            operations: s.total_operations || 0,
+            tmec: !!s.tmec_eligible,
+          }
         })
-        setNetworkMap(map)
-      })
-  }, [])
+        .sort((a, b) => b.compliance - a.compliance || a.avgDays - b.avgDays)
 
-  async function load() {
-    const { data } = await supabase.from('supplier_contacts').select('*').eq('company_id', COMPANY_ID).order('proveedor', { ascending: true })
-    // Deduplicate by proveedor name (case-insensitive), keep most complete
-    const seen = new Map<string, any>()
-    ;(data || []).forEach(s => {
-      const key = (s.proveedor || '').toLowerCase().trim()
-      const existing = seen.get(key)
-      if (!existing || (s.contact_email && !existing.contact_email) || (s.updated_at > (existing.updated_at || ''))) seen.set(key, s)
-    })
-    setSuppliers(Array.from(seen.values()))
-    setLoading(false)
-  }
-  useEffect(() => { load() }, [])
-
-  useEffect(() => {
-    if (viewTab === 'productos' && products.length === 0) {
-      setProductsLoading(true)
-      fetch(`/api/data?table=product_intelligence&company_id=${COMPANY_ID}&limit=200&order_by=total_value_usd&order_dir=desc`)
-        .then(r => r.json())
-        .then(d => { setProducts(d.data ?? []); setProductsLoading(false) })
-        .catch(() => setProductsLoading(false))
+      setSuppliers(scored)
+      setLoading(false)
     }
-  }, [viewTab, products.length])
 
-  async function save() {
-    setSaving(true)
-    const { error } = await supabase.from('supplier_contacts').upsert({ ...form, company_id: COMPANY_ID, updated_at: new Date().toISOString() }, { onConflict: 'id' })
-    if (!error) { await load(); setEditing(false); setSelected({ ...form }) }
-    setSaving(false)
+    load()
+  }, [companyId])
+
+  const top3 = useMemo(() => suppliers.slice(0, 3), [suppliers])
+  const ranked = useMemo(() => suppliers, [suppliers])
+
+  if (loading) {
+    return (
+      <div className="page-shell">
+        <div style={{ marginBottom: 24 }}>
+          <h1 className="page-title">Proveedores</h1>
+          <p className="page-subtitle">Cargando scoreboard...</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 20px' }}>
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="skeleton-shimmer" style={{ height: 56, borderRadius: 10 }} />
+          ))}
+        </div>
+      </div>
+    )
   }
 
-  const withContacts = suppliers.filter(s => s.contact_email || s.contact_phone).length
+  if (suppliers.length === 0) {
+    return (
+      <div className="page-shell">
+        <div style={{ marginBottom: 24 }}>
+          <h1 className="page-title">Proveedores</h1>
+        </div>
+        <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 'var(--aguila-fs-kpi-compact)', marginBottom: 12 }}>📦</div>
+          <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4 }}>
+            Sin proveedores registrados
+          </div>
+          <div style={{ fontSize: 'var(--aguila-fs-body)' }}>
+            Ejecuta la sincronizacion de supplier_network para ver el scoreboard.
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-  const columns: Column[] = useMemo(() => [
-    { key: 'proveedor', label: 'Proveedor', render: (r: any) => <span style={{ fontWeight: 500, color: 'var(--text-primary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{r.proveedor}</span> },
-    { key: 'country', label: 'Pais', render: (r: any) => <span>{flag(r.country)} {r.country || 'USA'}</span> },
-    { key: 'contact', label: 'Contacto', sortable: false, render: (r: any) => r.contact_email || r.contact_phone ? <span style={{ color: 'var(--status-green)' }}>Verificado</span> : <span style={{ color: 'var(--text-muted)' }}>—</span> },
-    { key: 'usmca_eligible', label: 'T-MEC', render: (r: any) => r.usmca_eligible !== false ? <span style={{ color: 'var(--success)' }}>✓</span> : <span style={{ color: 'var(--n-400)' }}>—</span> },
-    { key: 'reliability', label: 'Confiabilidad', sortable: false, render: (r: any) => {
-      const intel = networkMap.get((r.proveedor || '').toLowerCase().trim())
-      if (!intel?.reliability_score) return <span style={{ color: 'var(--n-400)' }}>—</span>
-      const score = intel.reliability_score
-      return <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: score >= 90 ? 'var(--success)' : score >= 70 ? 'var(--warning)' : 'var(--danger)' }}>{score}</span>
-    }},
-    { key: 'operations', label: 'Ops', sortable: false, render: (r: any) => {
-      const intel = networkMap.get((r.proveedor || '').toLowerCase().trim())
-      return <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--n-600)' }}>{intel?.total_operations || ''}</span>
-    }},
-  ], [networkMap])
+  const rowBg = (compliance: number) =>
+    compliance >= 95 ? 'rgba(22,163,74,0.04)'
+      : compliance >= 80 ? 'rgba(212,149,42,0.04)'
+      : 'rgba(220,38,38,0.04)'
 
-  const trendIcon = (t: string) => t === 'up' ? '↑' : t === 'down' ? '↓' : '→'
-  const trendColor = (t: string) => t === 'up' ? 'var(--status-red, #ef4444)' : t === 'down' ? 'var(--status-green, #22c55e)' : 'var(--text-muted)'
+  const rowBorder = (compliance: number) =>
+    compliance >= 95 ? 'rgba(22,163,74,0.1)'
+      : compliance >= 80 ? 'rgba(212,149,42,0.1)'
+      : 'rgba(220,38,38,0.1)'
 
   return (
-    <div style={{ padding: 32 }}>
+    <div className="page-shell">
       <div style={{ marginBottom: 24 }}>
-        <h1 className="pg-title">Proveedores</h1>
-        <p className="pg-meta">{suppliers.length} proveedores &middot; {withContacts} con contacto</p>
+        <h1 className="page-title">Proveedores</h1>
+        <p className="page-subtitle">{suppliers.length} proveedores rankeados por confiabilidad</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 2, marginBottom: 20, borderBottom: '1px solid var(--border-light)' }}>
-        {([{ key: 'proveedores', label: `Proveedores (${suppliers.length})` }, { key: 'productos', label: 'Productos Top' }] as const).map(t => (
-          <button key={t.key} onClick={() => setViewTab(t.key)}
-            style={{
-              padding: '8px 16px', background: 'none', border: 'none',
-              borderBottom: viewTab === t.key ? '2px solid var(--gold)' : '2px solid transparent',
-              cursor: 'pointer', fontSize: 13.5, fontWeight: viewTab === t.key ? 600 : 400,
-              color: viewTab === t.key ? 'var(--text-primary)' : 'var(--text-muted)',
-              marginBottom: -1,
-            }}>{t.label}</button>
-        ))}
-      </div>
+      {/* Podium — Top 3 */}
+      {top3.length >= 1 && (
+        <div style={{ padding: isMobile ? '20px 12px' : '24px 20px', textAlign: 'center' }}>
+          {/* #1 */}
+          <div style={{
+            padding: '20px 24px', borderRadius: 16, marginBottom: 16,
+            background: 'linear-gradient(135deg, rgba(196,150,60,0.1) 0%, rgba(196,150,60,0.02) 100%)',
+            border: '2px solid rgba(196,150,60,0.3)',
+          }}>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-mid)' }}>🥇</div>
+            <div style={{ fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
+              {top3[0].name}
+            </div>
+            <div style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+              {top3[0].avgDays > 0 ? `Docs en ${top3[0].avgDays} dias` : 'Sin datos de cruce'} · {top3[0].compliance}% completos
+            </div>
+          </div>
 
-      {viewTab === 'productos' && (
-        <div>
-          {productsLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 48, borderRadius: 8 }} />)}
-            </div>
-          ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-              <p style={{ fontSize: 14 }}>Sin datos de producto. Ejecuta el script product-intelligence primero.</p>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>#</th>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción</th>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fracción</th>
-                    <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Prom.</th>
-                    <th style={{ textAlign: 'center', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tendencia</th>
-                    <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor Total</th>
-                    <th style={{ textAlign: 'center', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Proveedores</th>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Última Import.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.slice(0, 20).map((p: any, i: number) => (
-                    <tr key={p.id || i} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                      <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontFamily: 'var(--font-data)' }}>{i + 1}</td>
-                      <td style={{ padding: '10px 12px', color: 'var(--text-primary)', fontWeight: 500, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {p.descripcion}
-                        {p.anomaly_flag && <span style={{ marginLeft: 6, fontSize: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>ANOMALÍA</span>}
-                      </td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-data)', color: 'var(--amber-600)' }}>{p.fraccion}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-data)', color: 'var(--text-primary)' }}>${Number(p.avg_unit_price || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: trendColor(p.price_trend), fontSize: 16 }}>{trendIcon(p.price_trend)}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'var(--font-data)', color: 'var(--text-primary)' }}>${Number(p.total_value_usd || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'center', fontFamily: 'var(--font-data)' }}>{p.supplier_count}</td>
-                      <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: 12 }}>{p.last_imported ? new Date(p.last_imported).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* #2 and #3 side by side */}
+          {top3.length >= 2 && (
+            <div style={{ display: 'grid', gridTemplateColumns: top3.length >= 3 ? '1fr 1fr' : '1fr', gap: 12 }}>
+              {top3.slice(1, 3).map((s, i) => (
+                <div key={s.name} style={{
+                  padding: 16, borderRadius: 14,
+                  background: 'var(--bg-card)', border: '1px solid var(--border-card)',
+                }}>
+                  <div style={{ fontSize: 'var(--aguila-fs-headline)' }}>{i === 0 ? '🥈' : '🥉'}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, marginTop: 4, color: 'var(--text-primary)' }}>{s.name}</div>
+                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                    {s.avgDays > 0 ? `${s.avgDays} dias` : '—'} · {s.compliance}%
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
       )}
 
-      {viewTab === 'proveedores' && <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 400px' : '1fr', gap: 16 }}>
-        <DataTable
-          columns={columns}
-          data={suppliers}
-          loading={loading}
-          keyField="id"
-          pageSize={50}
-          exportFilename={`${COMPANY_ID}_proveedores`}
-          searchPlaceholder="Buscar proveedor..."
-          onRowClick={(r) => { setSelected(r); setForm(r); setEditing(false) }}
-        />
-
-        {selected && (
-          <div className="card" style={{ padding: 24, alignSelf: 'start', position: 'sticky', top: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis' }}>{selected.proveedor}</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setEditing(!editing)} style={{ background: editing ? 'var(--bg-elevated)' : 'rgba(212,168,67,0.1)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: '6px 16px', color: editing ? 'var(--text-secondary)' : 'var(--amber-600)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>{editing ? 'Cancelar' : 'Editar'}</button>
-                <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 20 }}>x</button>
+      {/* Ranked List */}
+      <div style={{ padding: isMobile ? '0 12px' : '0 20px' }}>
+        {ranked.map((supplier, i) => (
+          <div key={supplier.name} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '14px 16px', borderRadius: 10, marginBottom: 6,
+            background: rowBg(supplier.compliance),
+            border: `1px solid ${rowBorder(supplier.compliance)}`,
+          }}>
+            <span style={{
+              fontSize: 'var(--aguila-fs-section)', fontWeight: 800, fontFamily: 'var(--font-mono)',
+              color: 'var(--text-muted)', width: 32, flexShrink: 0,
+            }}>
+              #{i + 1}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {supplier.name}
+              </div>
+              <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                {supplier.avgDays > 0 ? `${supplier.avgDays} dias` : '—'} · {supplier.operations} ops · {supplier.compliance}%
               </div>
             </div>
-            {editing ? (
-              <div>
-                {[{ label: 'Nombre de Contacto', key: 'contact_name' }, { label: 'Email', key: 'contact_email' }, { label: 'Telefono', key: 'contact_phone' }, { label: 'Cargo', key: 'contact_title' }, { label: 'Pais', key: 'country' }].map(f => (
-                  <div key={f.key} style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{f.label}</label>
-                    <input value={form[f.key] || ''} onChange={e => setForm((p: any) => ({ ...p, [f.key]: e.target.value }))} style={{ width: '100%', height: 40, border: '1px solid var(--border-default)', borderRadius: 8, padding: '0 12px', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-sans)', background: 'var(--bg-elevated)', boxSizing: 'border-box' }} />
-                  </div>
-                ))}
-                <button onClick={save} disabled={saving} style={{ width: '100%', height: 40, background: saving ? 'var(--bg-elevated)' : 'var(--amber-600)', border: 'none', borderRadius: 8, color: saving ? 'var(--text-muted)' : '#000', fontSize: 14, fontWeight: 600, cursor: saving ? 'default' : 'pointer', fontFamily: 'var(--font-sans)', marginTop: 8 }}>{saving ? 'Guardando...' : 'Guardar Contacto'}</button>
-              </div>
-            ) : (
-              <div>
-                {[{ label: 'Pais', value: `${flag(selected.country)} ${selected.country || 'USA'}` }, { label: 'Contacto', value: selected.contact_name }, { label: 'Email', value: selected.contact_email }, { label: 'Telefono', value: selected.contact_phone }, { label: 'T-MEC', value: selected.usmca_eligible !== false ? 'Elegible' : 'No' }].filter(f => f.value).map(f => (
-                  <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border-light)' }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>{f.label}</span>
-                    <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 500 }}>{f.value}</span>
-                  </div>
-                ))}
-                {!selected.contact_email && !selected.contact_phone && (
-                  <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 14, marginBottom: 8 }}>Sin informacion de contacto</div>
-                    <button onClick={() => setEditing(true)} style={{ background: 'var(--amber-100)', border: '1px solid var(--border-primary)', borderRadius: 8, padding: '8px 20px', color: 'var(--amber-600)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>+ Agregar contacto</button>
-                  </div>
-                )}
-              </div>
+            {supplier.tmec && (
+              <span style={{
+                fontSize: 'var(--aguila-fs-label)', fontWeight: 700, padding: '3px 8px', borderRadius: 9999,
+                background: 'rgba(22,163,74,0.1)', color: 'var(--success)', flexShrink: 0,
+              }}>
+                T-MEC
+              </span>
             )}
           </div>
-        )}
-      </div>}
+        ))}
+      </div>
     </div>
   )
 }

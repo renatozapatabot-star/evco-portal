@@ -8,9 +8,19 @@ const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const { safeUpsert, safeInsert } = require('./lib/safe-write')
+const { withSyncLog } = require('./lib/sync-log')
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
-async function tg(msg) { if (!TG) return; await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }) }).catch(() => {}) }
+async function tg(msg) {
+  if (!TG) return
+  if (process.env.TELEGRAM_SILENT === 'true') return
+  await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: CHAT, text: msg, parse_mode: 'HTML' }),
+  }).catch(() => {})
+}
 
 // Map e-Conta MySQL tables to Supabase tables
 const TABLE_MAP = [
@@ -59,18 +69,17 @@ async function syncTable(conn, mysqlTable, supabaseTable, keyCol) {
       return mapped
     })
 
-    // Try upsert, fall back to insert
+    // safeUpsert with ignoreDuplicates:true preserves the original
+    // "idempotent backfill" semantic — no fallback-insert needed because
+    // the wrapper already destructures error and alerts on real failures
+    // (the old fallback-insert was swallowing non-dup errors silently).
     for (let i = 0; i < batch.length; i += 500) {
-      const chunk = batch.slice(i, i + 500)
-      const { error } = await supabase.from(supabaseTable).upsert(chunk, {
+      const slice = batch.slice(i, i + 500)
+      await safeUpsert(supabase, supabaseTable, slice, {
         onConflict: keyCol.toLowerCase(),
-        ignoreDuplicates: true
+        ignoreDuplicates: true,
+        scriptName: 'full-sync-econta',
       })
-      if (error) {
-        // Try plain insert
-        const { error: e2 } = await supabase.from(supabaseTable).insert(chunk)
-        if (e2) { /* skip duplicates silently */ }
-      }
     }
 
     total += rows.length
@@ -122,14 +131,18 @@ async function run() {
   console.log(`\n✅ e-Conta sync complete: ${totalSynced.toLocaleString()} rows`)
   await tg(`✅ <b>e-Conta sync completo</b>\n${totalSynced.toLocaleString()} registros\n— CRUZ 🦀`)
 
-  await supabase.from('scrape_runs').insert({
-    source: 'econta_full',
-    started_at: new Date().toISOString(),
-    completed_at: new Date().toISOString(),
-    records_found: totalSynced,
-    records_new: totalSynced,
-    status: 'success'
-  })
+  // Telemetry — safeInsert surfaces schema mismatches (scrape_runs columns
+  // may not match this payload) instead of the old silent swallow.
+  try {
+    await safeInsert(supabase, 'scrape_runs', {
+      source: 'econta_full',
+      started_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+      records_found: totalSynced,
+      records_new: totalSynced,
+      status: 'success'
+    }, { scriptName: 'full-sync-econta' })
+  } catch { /* telemetry — safeInsert already alerted */ }
 }
 
-run().catch(e => { console.error(e); process.exit(1) })
+withSyncLog(supabase, { sync_type: 'econta_full', company_id: null }, run).catch(e => { console.error(e); process.exit(1) })

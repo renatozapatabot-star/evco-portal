@@ -13,14 +13,15 @@ caused a real regression, a compliance risk, or a silent failure in production.
 
 ## DESIGN SYSTEM
 
-1. **No hardcoded colors.** Every color uses v5.0 design system tokens defined
-   in `tailwind.config`. Dark palette (`bg-slate-950`, `#0A0A0A`, `#0D0D0C`)
-   is for PDF report generation ONLY — never in portal UI components.
-   verify: `grep -r "bg-slate-9" src/components/` → 0 matches
+1. **No hardcoded opaque backgrounds.** `.aduana-dark` class with cinematic glass
+   system on ALL authenticated pages including login. Cards use `rgba(9,9,11,0.75)`
+   with `backdrop-filter: blur(20px)`. NEVER #111111, #222222, #1A1A1A on cards.
+   Glassmorphism is REQUIRED (was banned — rule reversed April 2026).
+   verify: `grep -rn "background.*'#111111'\|background.*'#222222'" src/components/` → 0 matches
 
-2. **Gold is never text on light backgrounds.** Use `#8B6914` (WCAG AA 5.2:1).
-   Amber is never text on white. Use `#92400E`.
-   verify: `grep -r "#C9A84C" src/` → 0 matches outside tailwind.config
+2. **Gold #eab308 for CTA buttons ONLY.** Never for borders or card accents.
+   Cyan rgba(34,211,238,0.3) for all borders. No colored urgency borders.
+   verify: `grep -r "#C9A84C" src/` → 0 matches (old gold removed)
 
 3. **Badge consistency across ALL pages.** Use `<StatusBadge>` component only.
    Never inline badge styles. Global mapping: amber=active, green=completed,
@@ -122,3 +123,121 @@ caused a real regression, a compliance risk, or a silent failure in production.
 23. **Cross-link entities.** Tráficos link to pedimentos and expedientes.
     Pedimentos link back. Documents link to their parent entity.
     verify: tráfico detail page contains links to pedimento and expediente
+
+## COCKPIT STANDARD
+
+24. **Client surfaces show certainty, not anxiety.** `<DeltaIndicator>`,
+    `<SeverityRibbon>`, and amber/red-toned sparklines are internal-only.
+    Shipper portal, `/track/[token]`, `/share/[trafico_id]`, and `/cliente/**`
+    render positive-direction sparklines only (on-time rate, crossings
+    completed). Compliance countdowns, MVE deadlines, missing-doc warnings,
+    and crossing holds never appear on a client-facing surface.
+    verify: `grep -rn "DeltaIndicator\|SeverityRibbon" src/app/cliente src/app/track src/app/share` → 0 matches
+
+25. **Cockpit KPI primitives are centralized.** Every internal cockpit
+    composes from `src/components/aguila/` — `<KPITile>`, `<Sparkline>`,
+    `<DeltaIndicator>`, `<SeverityRibbon>`, `<TimelineFeed>`. Local
+    reimplementations of these patterns are banned — a quality bump in the
+    primitive must cascade to every cockpit at once.
+    verify: `grep -rn "fontSize: 48\|fontSize: 44" src/app/` → matches resolve
+    only through `@/components/aguila` or a documented exception
+
+26. **No inline glass card chrome outside `src/components/aguila/`.**
+    Every glass surface composes from `<GlassCard>`. Inline definitions
+    of `background: rgba(255,255,255,0.04)` + `backdrop-filter: blur(20px)`
+    drift the chrome over time and break unification.
+    verify: `grep -rn "background: *['\"]?rgba(255,255,255,0\.04)" src/app src/components | grep -v "components/aguila/" | grep -v ".test."` → 0 matches
+
+27. **Typography scale is centralized as CSS variables.** Hardcoded
+    `fontSize: NNN` values in `src/app/**` violate v6. Use the
+    `--aguila-fs-*` variables published in `globals.css`. Exceptions:
+    primitives inside `src/components/aguila/` (which define the scale),
+    and intentionally one-off display moments documented inline with `WHY:`.
+    verify: `grep -rn "fontSize: [0-9]" src/app | grep -v "components/aguila/" | grep -v "var(--aguila-fs-" | grep -v ".test."` → drift trends to 0
+
+28. **Same-origin iframes are allowed.** Cockpit composition reuses
+    pages via `<iframe src="/route?embed=1">`. `X-Frame-Options:
+    SAMEORIGIN` and CSP `frame-ancestors 'self'` are the operating
+    headers. Cross-origin iframing remains denied. The 2026-04-13
+    Corredor outage was caused by `DENY` + `frame-ancestors 'none'`
+    blocking same-origin embeds — never set those again.
+    verify: `grep -n "X-Frame-Options\|frame-ancestors" next.config.ts` → must show SAMEORIGIN + 'self'
+
+29. **Six cockpit nav cards across `/inicio`, `/operador/inicio`,
+    `/admin/eagle`.** The six are **Embarques, Contabilidad, Expedientes,
+    Catálogo, Entradas, Anexo 24**. Tile #2 promoted from "Pedimentos"
+    to "Contabilidad" on 2026-04-19 per the founder-override log
+    (`.claude/rules/founder-overrides.md`) — client role routes to
+    `/mi-cuenta` (their own A/R per the ethical contract at
+    `.claude/rules/client-accounting-ethics.md`), operator + owner route
+    to `/contabilidad/inicio` (Anabel's broker cockpit). Tile #6
+    (Anexo 24) promotion from "Reportes" remains — 2026-04-18 per
+    Renato IV founder sign-off. Legacy `/pedimentos` and `/reportes`
+    routes stay live via deep link, CruzCommand, and CRUZ AI tools for
+    back-compat. Order, labels, icons, and descriptions are defined
+    once in `src/lib/cockpit/nav-tiles.ts` (`UNIFIED_NAV_TILES`).
+    Role-aware href resolution lives in `resolveNavHref(tile, role)`
+    exported from the same file. Role decides what *data* populates
+    each card; role does not decide which cards appear. **This rule is
+    SOFT per founder-overrides.md** — future tile swaps overridable via
+    a dated log entry + same-commit doc updates (no dual sign-off
+    required for SOFT changes; only HARD invariants need it).
+    verify: `grep -rn "UNIFIED_NAV_TILES" src/app/inicio src/app/operador/inicio src/app/admin/eagle` → every cockpit route imports the constant
+
+30. **CockpitInicio is the canonical composition.** `/inicio`,
+    `/operador/inicio`, `/admin/eagle` compose from
+    `@/components/aguila/CockpitInicio`. Parallel implementations are
+    banned — a quality bump in the primitive must cascade to all three
+    surfaces automatically. Role-specific content enters via `heroKPIs`,
+    `navCounts`, `estadoSections`, `actividad` props.
+
+31. **Owner (/admin/eagle) aggregates across all clients.** Admin login
+    encodes `session.companyId='admin'` (broker encodes `'internal'`) —
+    these values do not match any `company_id` in data tables. Owner
+    queries MUST NOT filter by `session.companyId` because it guarantees
+    zero rows. Owner is the broker's view of every tenant under Patente 3596.
+    Client surfaces (`/inicio`) remain strictly scoped by `session.companyId`
+    (invariant 24 still governs); operator surfaces are ops-wide for
+    shared counts, personal for assignments.
+    verify: `grep -n "session.companyId" src/app/admin/eagle/page.tsx` → 0 matches
+
+32. **`audit_log` is the canonical activity-feed source.** All three
+    cockpits (`/inicio`, `/operador/inicio`, `/admin/eagle`) read Actividad
+    Reciente from `audit_log` via `src/lib/cockpit/audit-format.ts`. Client
+    filters by `company_id`; operator is unfiltered; owner filters to the
+    escalation allowlist (`draft_rejected`, `login_failed`, `oca_requested`,
+    `compliance_escalated`, `mve_critical`, `pedimento_rechazado`,
+    `data_exported`). `workflow_events` and `operational_decisions` are no
+    longer used for cockpit activity feeds.
+    verify: `grep -rn "from('audit_log')" src/app/inicio src/app/operador/inicio src/app/admin/eagle` → ≥3 matches
+
+33. **`/operador` root redirects to `/operador/inicio`.** A single canonical
+    operator cockpit. The legacy `OperatorCockpit` + `FlowCard` +
+    `OperatorHeroStrip` + `OperatorRightRail` under
+    `src/app/operador/_components/` were deleted in v8 — any attempt to
+    reintroduce them is a regression.
+    verify: `grep -n "redirect" src/app/operador/page.tsx` → must show redirect to /operador/inicio
+
+34. **Cockpit SSR queries are soft-wrapped.** Every Supabase call on
+    `/inicio`, `/operador/inicio`, `/admin/eagle` goes through
+    `softCount`, `softData`, or `softFirst` (from `src/lib/cockpit/safe-query.ts`).
+    One bad column, a missing table, or a timeout never crashes the page —
+    it returns the safe default (0 / []) and the cockpit renders with
+    whichever signals succeeded. Raw `.select()` destructuring in a
+    `Promise.all` on these routes is banned.
+    verify: `grep -rn "softCount\|softData\|softFirst" src/app/inicio src/app/operador/inicio src/app/admin/eagle | wc -l` → ≥ 20
+
+35. **Client Mensajería feed is feature-flagged.** `/inicio` reads
+    `NEXT_PUBLIC_MENSAJERIA_CLIENT` via `mensajeriaClientEnabled()` from
+    `src/lib/mensajeria/feed.ts`. When `false`, the activity slot renders
+    "Mensajería próximamente" instead of the feed. Default-off until
+    operator-internal usage period completes (per CLAUDE.md Mensajería
+    rollout plan).
+    verify: `grep -n "NEXT_PUBLIC_MENSAJERIA_CLIENT\|mensajeriaClientEnabled" src/app/inicio/page.tsx` → must match
+
+36. **Every authenticated cockpit route has `error.tsx` + `loading.tsx`.**
+    If SSR throws despite soft wrappers, `error.tsx` renders a
+    `<CockpitErrorCard>` with a readable message + Reintentar button.
+    `loading.tsx` renders `<CockpitSkeleton>` so the user sees glass
+    chrome immediately while data hydrates — never an infinite spinner.
+    verify: `ls src/app/inicio/{error,loading}.tsx src/app/operador/inicio/{error,loading}.tsx src/app/admin/eagle/{error,loading}.tsx 2>&1 | grep -c tsx` → 6

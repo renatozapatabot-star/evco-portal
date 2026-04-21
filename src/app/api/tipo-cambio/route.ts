@@ -1,10 +1,21 @@
 import { NextResponse } from 'next/server'
+import { getErrorMessage } from '@/lib/errors'
+import { getExchangeRate } from '@/lib/rates'
 
 const BANXICO_TOKEN = process.env.BANXICO_TOKEN
 const BANXICO_SERIES = 'SF43718'
 
+async function getFallbackRate() {
+  try {
+    const { rate, date } = await getExchangeRate()
+    return { tc: rate, fecha: date || new Date().toISOString().split('T')[0], source: 'system_config' }
+  } catch {
+    return { tc: 17.50, fecha: new Date().toISOString().split('T')[0], source: 'hardcoded_fallback' }
+  }
+}
+
 export async function GET() {
-  if (!BANXICO_TOKEN) return NextResponse.json({ tc: 17.50, fecha: new Date().toISOString().split('T')[0], source: 'fallback' })
+  if (!BANXICO_TOKEN) return NextResponse.json(await getFallbackRate())
   try {
     const today = new Date().toISOString().split('T')[0]
     const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
@@ -12,8 +23,14 @@ export async function GET() {
     if (!res.ok) throw new Error(`Banxico ${res.status}`)
     const data = await res.json()
     const obs = data?.bmx?.series?.[0]?.datos || []
-    const latest = obs.filter((d: any) => d.dato !== 'N/E').pop()
+    const latest = obs.filter((d: { dato: string; fecha: string }) => d.dato !== 'N/E').pop()
     if (!latest) throw new Error('No data')
-    return NextResponse.json({ tc: parseFloat(latest.dato), fecha: latest.fecha, source: 'Banxico FIX', series: BANXICO_SERIES })
-  } catch (e: any) { return NextResponse.json({ tc: 17.50, fecha: new Date().toISOString().split('T')[0], source: 'fallback', error: e.message }) }
+    // Banxico returns fecha in dd/mm/yyyy format — convert to ISO yyyy-mm-dd for correct JS Date parsing
+    const [d, m, y] = latest.fecha.split('/')
+    const fechaISO = `${y}-${m}-${d}`
+    return NextResponse.json({ tc: parseFloat(latest.dato), fecha: fechaISO, source: 'Banxico FIX', series: BANXICO_SERIES })
+  } catch (e: unknown) {
+    const fallback = await getFallbackRate()
+    return NextResponse.json({ ...fallback, error: getErrorMessage(e) })
+  }
 }

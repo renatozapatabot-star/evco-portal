@@ -1,0 +1,87 @@
+/* Block 7 · Corridor Map — global styles for the /corredor route. */
+
+.aguila-pulse-wrapper {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.aguila-pulse-core {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.aguila-pulse-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: aguila-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes aguila-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  80% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Leaflet overrides so our silver hairlines read over dark tiles */
+.leaflet-container {
+  background: #05070B !important;
+  outline: none;
+}
+.leaflet-control-attribution {
+  background: rgba(10, 10, 12, 0.7) !important;
+  color: rgba(192, 197, 206, 0.7) !important;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: rgba(192, 197, 206, 0.9) !important;
+}
+.leaflet-control-zoom a {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #E6EDF3 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(192, 197, 206, 0.18) !important;
+}
+
+/* Mobile simplifications */
+@media (max-width: 768px) {
+  .aguila-corridor-in-transit,
+  .aguila-corridor-coordinates,
+  .aguila-corridor-tagline {
+    display: none !important;
+  }
+  .aguila-corridor-liveflow {
+    width: 180px !important;
+  }
+  .aguila-corridor-rail {
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    right: 0 !important;
+    border-radius: 0 !important;
+  }
+}

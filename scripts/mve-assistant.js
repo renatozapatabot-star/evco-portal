@@ -18,6 +18,7 @@ const CLAVE = '9254'
 const MVE_DEADLINE = new Date('2026-03-31')
 
 async function sendTG(msg) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(msg); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

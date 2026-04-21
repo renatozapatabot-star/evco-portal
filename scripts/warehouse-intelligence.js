@@ -14,6 +14,7 @@ const COMPANY_ID = 'evco'
 function fmtNum(n) { return Number(n || 0).toLocaleString('es-MX') }
 
 async function sendTelegram(message) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(message); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -243,13 +244,13 @@ async function run() {
     }
 
     // Only send Telegram if shortage or damage rate is elevated
-    const shortageCount = records.filter(r => r.shortage_count > 0).reduce((s, r) => s + r.shortage_count, 0)
-    const damageCount = records.filter(r => r.damage_count > 0).reduce((s, r) => s + r.damage_count, 0)
+    const totalShortages = records.filter(r => r.shortage_count > 0).reduce((s, r) => s + r.shortage_count, 0)
+    const totalDamages = records.filter(r => r.damage_count > 0).reduce((s, r) => s + r.damage_count, 0)
     if (shortageRate > 0.005 || damageRate > 0.03) {
       await sendTelegram(
         `⚠️ <b>Warehouse Alert</b>\n\n` +
-        `Shortages: ${shortageCount} (${(shortageRate * 100).toFixed(2)}%)\n` +
-        `Damages: ${damageCount} (${(damageRate * 100).toFixed(2)}%)\n` +
+        `Shortages: ${totalShortages} (${(shortageRate * 100).toFixed(2)}%)\n` +
+        `Damages: ${totalDamages} (${(damageRate * 100).toFixed(2)}%)\n` +
         `Worst carrier: ${worstCarrier ? worstCarrier[0] : 'N/A'}\n` +
         `Worst supplier: ${worstSupplier ? worstSupplier[0] : 'N/A'}\n\n` +
         `CRUZ 🦀`

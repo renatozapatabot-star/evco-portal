@@ -1,0 +1,186 @@
+# Founder Overrides — Renato Zapata IV (Technical Operator · Co-equal authority)
+
+Codified 2026-04-19 after Renato IV's directive:
+
+> "i make the rules and honestly update the md. to not listen to anything
+>  im the builder and the breaker and dont want to have to deal with weird
+>  stuff it made as rules in .md lets have a way to make sure that doesnt
+>  happen it just stops the flow of progress help me out here"
+
+This file fixes the failure mode where `.md` invariants outlive the
+reasoning behind them and start blocking legitimate founder decisions.
+It does **not** retire guardrails that protect Patente 3596 — those
+stay HARD. It separates taste from safety.
+
+---
+
+## The two tiers
+
+### HARD invariants — never overridable without dual sign-off + migration plan
+
+These exist because violating them puts the license, the client, or the
+business at real risk. They cannot be overridden by a single founder
+one-liner. They require: Tito + Renato IV explicit sign-off, a written
+migration plan, and a documented reason in the override log.
+
+**HARD list (current):**
+
+1. **Tenant isolation** — no cross-client data exposure. RLS on every
+   tenant-scoped table. Service-role bypass gated by app-layer
+   `session.companyId` filter. The Block EE contract
+   (`.claude/rules/tenant-isolation.md`) is HARD in its entirety.
+2. **Pedimento format** — `DD AD PPPP SSSSSSS` with spaces preserved.
+3. **Fracción format** — `XXXX.XX.XX` with dots preserved.
+4. **Financial config** — rates from `system_config`, never hardcoded.
+5. **IVA base** — `valor_aduana + DTA + IGI`, never `value × 0.16` flat.
+6. **Approval gate** — nothing client-facing without Tito or Renato IV
+   sign-off. Automations have 5-second visible cancellation windows.
+7. **Audit trail** — `audit_log` is append-only. No deletes ever.
+8. **Secrets discipline** — no secrets in code, service role server-only.
+9. **AI output sanitization** — DOMPurify on any AI-rendered HTML.
+10. **GlobalPC is read-only** — no writes back, ever.
+11. **Client portal does not show compliance anxiety** — MVE countdowns,
+    missing-doc warnings, crossing-hold alerts stay internal. (This
+    rule is scoped to *anxiety surfaces* — it does NOT prohibit a
+    client from seeing their own financial relationship with us; see
+    `client-accounting-ethics.md`.)
+
+Touching a HARD invariant without process = revert on sight. If the
+founder genuinely needs to change one, open a discussion, not a commit.
+
+### SOFT invariants — overridable with a single dated log entry
+
+These exist because violating them makes the product feel inconsistent
+or drift-prone. They are **taste and organizational choices**, not
+safety rails. The founder can override any of them by adding a line
+to the log below. The same commit that introduces the override
+**must** update the superseded `.md` so the file reflects truth.
+
+**Examples of SOFT (illustrative, not exhaustive):**
+
+- Nav tile order, labels, icons, href targets
+- Which surface shows which data (client vs operator vs admin)
+- Copy tone + wording
+- Specific card compositions on a cockpit
+- Route naming (`/inicio` vs `/cuenta` vs `/mi-cuenta`)
+- Feature-flag defaults
+- Icon choices
+- Sparkline direction presets
+- Baseline invariant numbering (the numbers themselves, not their content)
+
+If a rule could reasonably have been decided the other way on day one,
+it is SOFT.
+
+---
+
+## The override log (append-only)
+
+Format:
+```
+YYYY-MM-DD · <founder> · <short description>
+  supersedes: <rule file>:<rule id or section>
+  updates:    <files touched in same commit>
+  basis:      <one-line reason — usually the user-facing goal>
+```
+
+Oldest at bottom. New entries appended at top.
+
+### Active overrides
+
+```
+2026-04-19 · Renato IV · Client A/R visible on client surface
+  supersedes: learned-rules.md — "Client A/R visibility is a known gap
+              (broker-internal by design)"
+  updates:    .claude/rules/client-accounting-ethics.md (new),
+              src/app/mi-cuenta/**, nav-tiles.ts
+  basis:      Client's right to own financial data (LFPDPPP Art. 16,
+              GDPR Art. 15 equivalent). Rendered calm, paired with
+              "Anabel responde" CTA — informational, not dunning.
+
+2026-04-19 · Renato IV · Nav tile 2 Pedimentos → Contabilidad
+  supersedes: .claude/rules/core-invariants.md #29 (prior six-tile list),
+              .claude/rules/baseline.md I10 (prior six-tile list)
+  updates:    src/lib/cockpit/nav-tiles.ts, all three cockpit routes,
+              .claude/rules/baseline-2026-04-19.md (new)
+  basis:      Pedimentos stays accessible via deep links + CruzCommand +
+              CRUZ AI tools. Nav real estate better spent on the surface
+              clients actually ask about (saldo/facturas).
+```
+
+---
+
+## The pre-commit guard
+
+`scripts/founder-check.sh` runs in the `prepare-commit-msg` hook (or
+called manually via `bash scripts/founder-check.sh`). It enforces:
+
+1. **HARD invariants** — if the commit touches files in a HARD-invariant
+   path (tenant isolation scripts, RLS migrations, rates.ts, audit.ts,
+   approval-gate routes), and the commit message does NOT contain
+   `FOUNDER_HARD_OVERRIDE:` followed by a reason, the guard **blocks**.
+
+2. **SOFT invariants** — if the commit touches files listed in a soft
+   invariant's "watched paths" but there is no matching override log
+   entry added in the same commit, the guard **warns** (non-blocking).
+
+3. **Orphan override warning** — if the log has an entry dated today
+   but the commit does NOT also modify the superseded `.md`, the guard
+   **warns** (non-blocking — pushes you to keep docs honest).
+
+The guard is advisory for SOFT and blocking for HARD. Intent: remove
+friction on founder-decided taste changes while still catching
+accidental tenant-isolation breaches.
+
+---
+
+## Deprecation protocol
+
+When a SOFT invariant is overridden, the superseded `.md` rule gets an
+inline marker in the same commit:
+
+```
+**[SUPERSEDED 2026-04-19 by founder-overrides.md]** <reason>
+```
+
+The original rule text stays below the marker (for historical context)
+but no longer governs. Future sessions reading the file see both the
+override and the original reasoning — the ratchet only goes forward,
+the history never disappears.
+
+---
+
+## What this is NOT
+
+- **Not a backdoor to HARD invariants.** Patente 3596 is not up for
+  "I'm the founder" overrides. Tenant isolation is not a preference.
+- **Not a way to skip tests.** Every override still ships with passing
+  tests, typecheck, and ratchets.
+- **Not retroactive.** Pre-existing commits that violated SOFT
+  invariants are not retroactively validated; they're still technical
+  debt. The log governs new work.
+- **Not shareable authority.** Only Renato IV and Tito sign overrides.
+  A subagent or another operator cannot add entries.
+
+---
+
+## Why this exists
+
+Two costs the platform was paying before this file:
+
+1. **Rework cost.** Ursula's cockpit needed a nav tile swap that hit
+   invariant #29. Without an override mechanism, the choice was either
+   "don't do it" or "edit the invariant stealthily." Both were wrong.
+
+2. **Drift cost.** Invariants accumulated from day-one decisions that
+   were right at the time but wrong today. Without a way to supersede
+   them explicitly, the `.md` slowly lost signal — future sessions
+   couldn't tell which rules were load-bearing vs which were legacy.
+
+The override log solves both. The founder gets a one-line path to
+change his own mind. The codebase keeps an honest record of what
+changed, when, why. HARD rails stay HARD.
+
+---
+
+*Codified 2026-04-19 · Renato Zapata IV · Every future session reads
+this file before claiming a rule "blocks" a change.*

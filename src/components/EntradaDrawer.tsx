@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { X, Check, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { GOLD } from '@/lib/design-system'
 
@@ -55,8 +55,9 @@ const fmtPeso = (n: number | null | undefined) =>
   n ? `${Number(n).toLocaleString('es-MX')} kg` : ''
 
 const fmtTrafico = (id: string) => {
+  const clientClave = getCookieValue('company_clave') ?? ''
   const clean = id.replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clientClave}-`) ? clean : `${clientClave}-${clean}`
 }
 
 const DetailItem = ({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) => (
@@ -111,25 +112,25 @@ function EntradaDocuments({ traficoId }: { traficoId: string }) {
       try {
         const res = await fetch(`/api/data?table=documents&limit=200`)
         const d = await res.json()
-        ;(d.data ?? []).forEach((doc: any) => {
+        ;(d.data ?? []).forEach((doc: { document_type?: string; file_url?: string; metadata?: { trafico?: string; nombre?: string } }) => {
           const metaTrafico = doc.metadata?.trafico
           const urlMatch = doc.file_url?.includes(traficoId)
           if (metaTrafico === traficoId || urlMatch) {
             all.push({
               type: doc.document_type || 'unknown',
               name: doc.metadata?.nombre || doc.file_url?.split('/').pop() || doc.document_type || '',
-              url: doc.file_url
+              url: doc.file_url ?? null
             })
           }
         })
-      } catch {}
+      } catch (e) { console.error('[entrada-drawer] documents fetch:', (e as Error).message) }
       setDocs(all)
       setLoading(false)
     }
     load()
   }, [traficoId])
 
-  if (loading) return <div style={{ color: 'var(--text-muted)', fontSize: 12, padding: '8px 0' }}>Cargando documentos...</div>
+  if (loading) return <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Cargando documentos...</div>
 
   return (
     <div>
@@ -137,23 +138,23 @@ function EntradaDocuments({ traficoId }: { traficoId: string }) {
         Documentos ({docs.length})
       </div>
       {docs.length === 0 ? (
-        <div style={{ color: 'var(--text-muted)', fontSize: 12, padding: '8px 0' }}>Sin documentos vinculados</div>
+        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Sin documentos vinculados</div>
       ) : (
         <div className="flex flex-col gap-1">
           {docs.map((d, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border-subtle, rgba(255,255,255,0.06))' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--portal-status-green-fg)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
                   {d.type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {d.name}
                 </div>
               </div>
               {d.url && d.url.startsWith('http') && (
                 <a href={d.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 10, color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
+                  style={{ fontSize: 'var(--aguila-fs-label)', color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
                   onClick={e => e.stopPropagation()}>
                   Ver ↗
                 </a>
@@ -213,9 +214,9 @@ export default function EntradaDrawer({ entrada, onClose }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <DetailItem label="No. Entrada" value={entrada.cve_entrada} mono />
-              <DetailItem label="Tráfico" value={
+              <DetailItem label="Embarque" value={
                 entrada.trafico ? (
-                  <Link href="/traficos" className="mono font-semibold" style={{ color: '#1A6BFF', textDecoration: 'none' }}>
+                  <Link href="/embarques" className="mono font-semibold" style={{ color: '#1A6BFF', textDecoration: 'none' }}>
                     {fmtTrafico(entrada.trafico)}
                   </Link>
                 ) : ''
@@ -314,7 +315,7 @@ export default function EntradaDrawer({ entrada, onClose }: Props) {
             </div>
           )}
 
-          {/* Documents — from parent tráfico */}
+          {/* Documents — from parent embarque */}
           {entrada.trafico && <EntradaDocuments traficoId={entrada.trafico} />}
 
         </div>

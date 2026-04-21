@@ -7,6 +7,9 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 
+const { fetchAll } = require('./lib/paginate')
+const { getExchangeRate } = require('./lib/rates')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -21,12 +24,12 @@ async function run() {
   const activeClients = companies?.length || 0
 
   // T-MEC savings
-  const { data: tmecOps } = await supabase
+  const tmecOps = await fetchAll(supabase
     .from('aduanet_facturas')
     .select('valor_usd, igi')
-    .eq('igi', 0)
-    .limit(10000)
+    .eq('igi', 0))
   const tmecSavings = (tmecOps || []).reduce((s, f) => s + (f.valor_usd || 0) * 0.05, 0)
+  const { rate: tc } = await getExchangeRate()
 
   // Pedimentos processed
   const { count: pedCount } = await supabase
@@ -61,7 +64,7 @@ async function run() {
     active_clients: activeClients,
     pedimentos_processed: pedCount || 0,
     tmec_savings_usd: Math.round(tmecSavings),
-    tmec_savings_mxn: Math.round(tmecSavings * 17.5),
+    tmec_savings_mxn: Math.round(tmecSavings * tc),
     documents_processed: (docCount || 0) + (expDocCount || 0),
     alerts_sent: alertCount || 0,
     ai_conversations: convCount || 0,

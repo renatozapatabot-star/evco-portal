@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 
-interface SortState { column: string; direction: 'asc' | 'desc' }
+export interface SortState { column: string; direction: 'asc' | 'desc' }
 
 export function useSort(storageKey: string, defaultSort: SortState) {
   const [sort, setSort] = useState<SortState>(() => {

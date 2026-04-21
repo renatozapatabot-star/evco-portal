@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +40,7 @@ export async function GET(
     .from('traficos')
     .select('trafico, estatus, descripcion_mercancia, fecha_llegada, transportista_mexicano, created_at, updated_at')
     .eq('trafico', tokenRow.trafico_id)
+    .gte('fecha_llegada', PORTAL_DATE_FROM)
     .single()
 
   if (trafError || !trafico) {
@@ -58,7 +60,7 @@ export async function GET(
   // Map internal status to tracking status
   const statusRaw = (trafico.estatus || '').toLowerCase()
   let trackingStatus = 'IN_TRANSIT'
-  let statusLabel = 'En Transito'
+  let statusLabel = 'En Tránsito'
 
   if (statusRaw.includes('proceso') || statusRaw.includes('despacho')) {
     trackingStatus = 'CUSTOMS_CLEARANCE'
@@ -74,24 +76,25 @@ export async function GET(
     statusLabel = 'En Frontera'
   }
 
-  // Determine timeline steps
+  // V1 · Spanish-primary per CLAUDE.md. External tracking page must match
+  // brand voice (no mixed English/Spanish steps).
   const steps = [
-    { key: 'DEPARTED_ORIGIN', label: 'Departed Origin', done: true },
-    { key: 'ARRIVED_LAREDO', label: 'Arrived Laredo', done: true },
+    { key: 'DEPARTED_ORIGIN', label: 'Salió de origen', done: true },
+    { key: 'ARRIVED_LAREDO', label: 'Llegó a Laredo', done: true },
     {
       key: 'CUSTOMS_CLEARANCE',
-      label: 'Customs Clearance',
+      label: 'Despacho aduanal',
       done: ['CUSTOMS_CLEARANCE', 'AT_BORDER', 'CLEARED', 'DELIVERED'].includes(trackingStatus),
     },
     {
       key: 'BORDER_CROSSING',
-      label: 'Border Crossing',
+      label: 'Cruce fronterizo',
       done: ['CLEARED', 'DELIVERED'].includes(trackingStatus),
       active: trackingStatus === 'AT_BORDER' || trackingStatus === 'CUSTOMS_CLEARANCE',
     },
     {
       key: 'DELIVERED',
-      label: 'Delivery',
+      label: 'Entregado',
       done: trackingStatus === 'DELIVERED',
     },
   ]

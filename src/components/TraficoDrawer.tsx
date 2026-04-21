@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X, AlertTriangle, Clock } from 'lucide-react'
-import { CLIENT_CLAVE } from '@/lib/client-config'
+import { getCookieValue } from '@/lib/client-config'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { GOLD } from '@/lib/design-system'
 
@@ -27,8 +27,9 @@ interface Props {
 }
 
 const fmtId = (id: string) => {
+  const clientClave = getCookieValue('company_clave') ?? ''
   const clean = (id ?? '').replace(/[\u2013\u2014]/g, '-')
-  return clean.startsWith(`${CLIENT_CLAVE}-`) ? clean : `${CLIENT_CLAVE}-${clean}`
+  return clean.startsWith(`${clientClave}-`) ? clean : `${clientClave}-${clean}`
 }
 
 const fmtPeso = (n: number | null | undefined) =>
@@ -74,14 +75,14 @@ interface DetailItemProps {
 const DetailItem = ({ label, value, mono }: DetailItemProps) => (
   <div
     className="rounded-[7px] p-3"
-    style={{ background: '#f7f8fa' }}
+    style={{ background: 'var(--portal-ink-2)' }}
   >
-    <div className="text-[10.5px] mb-1" style={{ color: '#6b7280' }}>
+    <div className="text-[10.5px] mb-1" style={{ color: 'var(--portal-fg-5)' }}>
       {label}
     </div>
     <div
       className={`text-[13px] font-medium ${mono ? 'mono' : ''}`}
-      style={{ color: typeof value === 'string' && value === '—' ? '#d1d5db' : '#111827' }}
+      style={{ color: typeof value === 'string' && value === '—' ? 'var(--portal-fg-3)' : 'var(--portal-ink-1)' }}
     >
       {value}
     </div>
@@ -97,16 +98,16 @@ const DocRow = ({
 }) => {
   const colors = {
     ok:      { bg: '#d1fae5', color: '#065f46', label: 'OK' },
-    pending: { bg: '#fffbeb', color: '#92400e', label: 'Pendiente' },
-    missing: { bg: '#fef2f2', color: '#b91c1c', label: 'Falta' },
+    pending: { bg: 'var(--portal-status-amber-bg)', color: '#92400e', label: 'Pendiente' },
+    missing: { bg: 'var(--portal-status-red-bg)', color: 'var(--portal-status-red-fg)', label: 'Falta' },
   }
   const c = colors[status]
   return (
     <div
       className="flex items-center justify-between px-3 py-2 rounded-[6px]"
-      style={{ background: '#f7f8fa' }}
+      style={{ background: 'var(--portal-ink-2)' }}
     >
-      <span className="text-[12px]" style={{ color: '#374151' }}>
+      <span className="text-[12px]" style={{ color: 'var(--text-primary)' }}>
         {name}
       </span>
       <span
@@ -135,16 +136,16 @@ function Timeline({ traficoId }: { traficoId: string }) {
     fetch(`/api/data?table=globalpc_eventos&cve_trafico=${traficoId}&limit=50&order_by=fecha&order_dir=desc`)
       .then(r => r.json())
       .then(data => setEvents(data.data ?? []))
-      .catch(() => {})
+      .catch((err: unknown) => { console.error("[CRUZ]", (err as Error)?.message || err) })
       .finally(() => setLoading(false))
   }, [traficoId])
 
-  if (loading) return <div className="text-[12px] py-4 text-center" style={{ color: '#9ca3af' }}>Cargando eventos...</div>
+  if (loading) return <div className="text-[12px] py-4 text-center" style={{ color: 'var(--portal-fg-4)' }}>Cargando eventos...</div>
   if (events.length === 0) return null
 
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: '#9ca3af' }}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: 'var(--portal-fg-4)' }}>
         Historial ({events.length})
       </div>
       <div className="relative pl-5" style={{ borderLeft: '2px solid #e5e7eb' }}>
@@ -154,19 +155,19 @@ function Timeline({ traficoId }: { traficoId: string }) {
               className="absolute rounded-full"
               style={{
                 left: -23, top: 3, width: 8, height: 8,
-                background: i === 0 ? GOLD : '#d1d5db',
-                border: `2px solid ${i === 0 ? GOLD : '#e5e7eb'}`,
+                background: i === 0 ? GOLD : 'var(--portal-fg-3)',
+                border: `2px solid ${i === 0 ? GOLD : 'var(--portal-fg-2)'}`,
               }}
             />
-            <div className="text-[11px] font-medium" style={{ color: '#111827' }}>
+            <div className="text-[11px] font-medium" style={{ color: 'var(--portal-ink-1)' }}>
               {e.comentarios || 'Evento registrado'}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px]" style={{ color: '#9ca3af' }}>
+              <span className="text-[10px]" style={{ color: 'var(--portal-fg-4)' }}>
                 {fmtDate(e.fecha)}
               </span>
               {e.registrado_por && (
-                <span className="text-[10px]" style={{ color: '#d1d5db' }}>
+                <span className="text-[10px]" style={{ color: 'var(--portal-fg-3)' }}>
                   · {e.registrado_por}
                 </span>
               )}
@@ -189,51 +190,51 @@ function RealDocuments({ traficoId }: { traficoId: string }) {
       try {
         const res1 = await fetch(`/api/data?table=expediente_documentos&pedimento_id=${encodeURIComponent(traficoId)}&limit=50`)
         const d1 = await res1.json()
-        ;(d1.data ?? d1 ?? []).forEach((d: any) => all.push({ type: d.doc_type || 'unknown', name: d.file_name || d.doc_type || '', url: d.file_url }))
-      } catch {}
+        ;(d1.data ?? d1 ?? []).forEach((d: { doc_type?: string; file_name?: string; file_url?: string }) => all.push({ type: d.doc_type || 'unknown', name: d.file_name || d.doc_type || '', url: d.file_url ?? null }))
+      } catch (e) { console.error('[trafico-drawer] expediente docs:', (e as Error).message) }
       // Source 2: documents table (match by file_url containing trafico ID)
       try {
         const res2 = await fetch(`/api/data?table=documents&limit=200`)
         const d2 = await res2.json()
-        ;(d2.data ?? d2 ?? []).forEach((d: any) => {
+        ;(d2.data ?? d2 ?? []).forEach((d: { document_type?: string; file_url?: string; metadata?: { trafico?: string; nombre?: string } }) => {
           const metaTrafico = d.metadata?.trafico
           const urlMatch = d.file_url?.includes(traficoId)
           if (metaTrafico === traficoId || urlMatch) {
-            all.push({ type: d.document_type || 'unknown', name: d.metadata?.nombre || d.file_url?.split('/').pop() || d.document_type || '', url: d.file_url })
+            all.push({ type: d.document_type || 'unknown', name: d.metadata?.nombre || d.file_url?.split('/').pop() || d.document_type || '', url: d.file_url ?? null })
           }
         })
-      } catch {}
+      } catch (e) { console.error('[trafico-drawer] documents fetch:', (e as Error).message) }
       setDocs(all)
       setLoading(false)
     }
     load()
   }, [traficoId])
 
-  if (loading) return <div style={{ color: '#6b7280', fontSize: 12, padding: '8px 0' }}>Cargando documentos...</div>
+  if (loading) return <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Cargando documentos...</div>
 
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: '#9ca3af' }}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: 'var(--portal-fg-4)' }}>
         Documentos ({docs.length})
       </div>
       {docs.length === 0 ? (
-        <div style={{ color: '#6b7280', fontSize: 12, padding: '8px 0' }}>Sin documentos — sync en progreso</div>
+        <div style={{ color: 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-compact)', padding: '8px 0' }}>Sin documentos — sync en progreso</div>
       ) : (
         <div className="flex flex-col gap-1">
           {docs.map((d, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border-subtle, rgba(255,255,255,0.06))' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--portal-status-green-fg)', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-compact)', fontWeight: 500, color: 'var(--text-primary, #e5e7eb)' }}>
                   {d.type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--aguila-fs-label)', color: 'var(--text-muted, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {d.name}
                 </div>
               </div>
               {d.url && d.url.startsWith('http') && (
                 <a href={d.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 10, color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
+                  style={{ fontSize: 'var(--aguila-fs-label)', color: GOLD, textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}
                   onClick={e => e.stopPropagation()}>
                   Ver ↗
                 </a>
@@ -265,13 +266,13 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
           style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}
         >
           <div>
-            <div className="mono font-semibold text-[15px]" style={{ color: '#111827' }}>
+            <div className="mono font-semibold text-[15px]" style={{ color: 'var(--portal-ink-1)' }}>
               {fmtId(trafico.trafico)}
             </div>
             <div className="flex items-center gap-2 mt-1.5">
               <StatusBadge status={trafico.estatus} />
               {trafico.peso_bruto && (
-                <span className="text-[11.5px]" style={{ color: '#9ca3af' }}>
+                <span className="text-[11.5px]" style={{ color: 'var(--portal-fg-4)' }}>
                   {fmtPeso(trafico.peso_bruto)}
                 </span>
               )}
@@ -281,8 +282,8 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             onClick={onClose}
             className="w-7 h-7 rounded-[6px] flex items-center justify-center
                        transition-colors duration-100 flex-shrink-0 mt-0.5"
-            style={{ background: '#f0f2f5', color: '#6b7280' }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#e5e7eb')}
+            style={{ background: '#f0f2f5', color: 'var(--portal-fg-5)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--portal-fg-2)')}
             onMouseLeave={e => (e.currentTarget.style.background = '#f0f2f5')}
           >
             <X size={14} strokeWidth={2} />
@@ -296,7 +297,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             <div
               className="flex items-start gap-2.5 rounded-[8px] px-3.5 py-3"
               style={{
-                background: '#fffbeb',
+                background: 'var(--portal-status-amber-bg)',
                 border: '1px solid rgba(245,158,11,0.2)',
               }}
             >
@@ -318,12 +319,12 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
           <div>
             <div
               className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5"
-              style={{ color: '#9ca3af' }}
+              style={{ color: 'var(--portal-fg-4)' }}
             >
               Información del Embarque
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <DetailItem label="Tráfico"        value={fmtId(trafico.trafico)} mono />
+              <DetailItem label="Embarque"        value={fmtId(trafico.trafico)} mono />
               <DetailItem label="Pedimento"       value={trafico.pedimento ?? ''} mono />
               <DetailItem label="Fecha Llegada"   value={fmtDate(trafico.fecha_llegada)} />
               <DetailItem label="Peso Bruto"      value={fmtPeso(trafico.peso_bruto)} mono />
@@ -337,7 +338,7 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             <div>
               <div
                 className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5"
-                style={{ color: '#9ca3af' }}
+                style={{ color: 'var(--portal-fg-4)' }}
               >
                 Transportistas
               </div>
@@ -359,13 +360,13 @@ export default function TraficoDrawer({ trafico, onClose }: Props) {
             <div>
               <div
                 className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5"
-                style={{ color: '#9ca3af' }}
+                style={{ color: 'var(--portal-fg-4)' }}
               >
                 Mercancía
               </div>
               <div
                 className="rounded-[7px] p-3 text-[13px]"
-                style={{ background: '#f7f8fa', color: '#374151' }}
+                style={{ background: 'var(--portal-ink-2)', color: 'var(--text-primary)' }}
               >
                 {trafico.descripcion_mercancia}
               </div>

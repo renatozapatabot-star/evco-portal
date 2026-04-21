@@ -1,8 +1,8 @@
 export const THRESHOLDS = { RED: 50, AMBER: 80 }
 
 export const severityColor = (pct: number) =>
-  pct >= THRESHOLDS.AMBER ? '#16A34A' :
-  pct >= THRESHOLDS.RED ? '#D4952A' : '#DC2626'
+  pct >= THRESHOLDS.AMBER ? 'var(--portal-status-green-fg)' :
+  pct >= THRESHOLDS.RED ? 'var(--portal-status-amber-fg)' : 'var(--danger-500)'
 
 export const severityLabel = (pct: number) =>
   pct >= THRESHOLDS.AMBER ? 'Excelente' :

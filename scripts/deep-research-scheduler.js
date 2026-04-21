@@ -8,12 +8,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+const { llmCall } = require('./lib/llm')
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT = '-5085543275'
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 const CLAVE = '9254'
 
 async function sendTelegram(message) {
+  if (process.env.TELEGRAM_SILENT === 'true') return
   if (!TELEGRAM_TOKEN) { console.log(message); return }
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -61,21 +63,23 @@ Format your response as:
 Be specific and actionable. If no significant changes found, say so clearly.`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+    const result = await llmCall({
+      modelClass: 'smart',
+      messages: [{ role: 'user', content: prompt }],
+      maxTokens: 1000,
+      callerName: 'deep-research-scheduler',
     })
-    const data = await res.json()
-    return data.content?.[0]?.text || null
+    // Cost tracking
+    supabase.from('api_cost_log').insert({
+      model: result.model,
+      input_tokens: result.tokensIn,
+      output_tokens: result.tokensOut,
+      cost_usd: (result.tokensIn * 0.003 + result.tokensOut * 0.015) / 1000,
+      action: 'deep_research',
+      client_code: 'system',
+      latency_ms: result.durationMs,
+    }).then(() => {}, () => {})
+    return result.text || null
   } catch (e) {
     console.error('Claude API error:', e.message)
     return null

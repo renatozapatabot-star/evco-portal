@@ -1,20 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
-import { COMPANY_ID } from '@/lib/client-config'
+import { NextRequest, NextResponse } from 'next/server'
+import { PORTAL_DATE_FROM } from '@/lib/data'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const companyId = request.cookies.get('company_id')?.value ?? ''
   const [trafRes, entRes] = await Promise.all([
-    supabase.from('traficos').select('trafico, estatus, transportista_extranjero, transportista_mexicano, fecha_llegada, peso_bruto').eq('company_id', COMPANY_ID).not('transportista_extranjero', 'is', null).limit(5000),
-    supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', COMPANY_ID).limit(10000),
+    supabase.from('traficos').select('trafico, estatus, transportista_extranjero, transportista_mexicano, fecha_llegada, peso_bruto').eq('company_id', companyId).not('transportista_extranjero', 'is', null).gte('fecha_llegada', PORTAL_DATE_FROM).limit(5000),
+    supabase.from('entradas').select('trafico, tiene_faltantes, mercancia_danada').eq('company_id', companyId).limit(10000),
   ])
 
   const traficos = trafRes.data || []
   const entradas = entRes.data || []
 
   const entMap: Record<string, { f: number; d: number; t: number }> = {}
-  entradas.forEach((e: any) => {
+  entradas.forEach((e: { trafico: string; tiene_faltantes?: boolean | null; mercancia_danada?: boolean | null }) => {
     if (!entMap[e.trafico]) entMap[e.trafico] = { f: 0, d: 0, t: 0 }
     entMap[e.trafico].t++
     if (e.tiene_faltantes) entMap[e.trafico].f++
@@ -22,7 +27,7 @@ export async function GET() {
   })
 
   const carriers: Record<string, { shipments: number; peso: number; faltantes: number; danos: number; entradas: number; cruzados: number }> = {}
-  traficos.forEach((t: any) => {
+  traficos.forEach((t: { transportista_extranjero?: string | null; trafico: string; peso_bruto?: number | null; estatus?: string | null }) => {
     const c = t.transportista_extranjero
     if (!c) return
     if (!carriers[c]) carriers[c] = { shipments: 0, peso: 0, faltantes: 0, danos: 0, entradas: 0, cruzados: 0 }

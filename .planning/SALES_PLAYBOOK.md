@@ -83,10 +83,43 @@ rfc, notes, source, source_campaign, source_url }`. Writes to the
 ### 6. `/admin/leads` — pipeline admin
 
 Broker/admin only. Renders:
+- `<NewLeadForm>` collapsed at the top — click "+ Nuevo lead" for
+  manual capture (referrals / phone calls / LinkedIn outside
+  the public /pitch funnel). Defaults `source='referral'` +
+  `source_campaign='manual-admin-entry'` so it doesn't pollute
+  attribution metrics.
 - Hero metrics (total, acciones pendientes, demo vistos, ganados)
-- "Acciones pendientes hoy" strip (next_action_at ≤ now)
-- Full pipeline `<AguilaDataTable>` with stage-tonal coloring
+- "Acciones pendientes hoy" strip (next_action_at ≤ now) · rows
+  clickable → `/admin/leads/[id]`
+- Full pipeline `<AguilaDataTable>` with stage-tonal coloring ·
+  every row clickable
 - Stage breakdown portal-badge row
+
+### 7. `/admin/leads/[id]` — lead detail + stage transitions
+
+Broker/admin only. Every row in the pipeline table routes here.
+Composes `<DetailPageShell>` + 5 GlassCards:
+
+- **Hero metrics**: etapa actual · fuente · capturado · último contacto
+  (attention-tone if never contacted)
+- **Cambiar etapa**: 8-pill row, active stage shows primary tier,
+  click any to transition. Clock icon while PATCH is in flight.
+- **Próxima acción**: `next_action_at` datetime picker + note. Autosaves
+  on blur. Green "Guardado" flash for 1.4s.
+- **Contacto**: name, email, phone, RFC (uppercase). All autosave.
+- **Forma del deal**: `value_monthly_mxn` + priority select.
+- **Notas libres**: 6-row textarea with autosave.
+
+All mutations go through `PATCH /api/leads/[id]` — whitelisted fields
+only, server-side validates stage + priority values, strips
+non-string types, coerces ISO dates + numbers. CSRF token carried
+from cookie. 500 errors render a calm red banner, never expose DB
+details.
+
+Immutable-never-editable fields: `id` · `firm_name` · `source` ·
+`source_campaign` · `source_url` · `created_at`. If a lead's firm
+name changes, delete the row and re-add (history matters more than
+inline rename for audit).
 
 ---
 
@@ -262,12 +295,13 @@ named lead. Both rows coexist and tell the funnel story:
 |---|---|---|
 | `src/lib/leads/__tests__/types.test.ts` | 6 | LEAD_STAGES · LEAD_SOURCES contract |
 | `src/app/api/leads/__tests__/route.test.ts` | 12 | POST path · sanitize · error shape · honeypot |
+| `src/app/api/leads/[id]/__tests__/route.test.ts` | 18 | PATCH/GET auth fence · whitelists · coercions |
 | `src/components/aguila/__tests__/AguilaMetric.test.tsx` | 11 | metric primitive |
 | `src/components/aguila/__tests__/AguilaBeforeAfter.test.tsx` | 6 | delta strip primitive |
 | `src/components/aguila/__tests__/AguilaTestimonial.test.tsx` | 7 | testimonial primitive |
 | `src/components/aguila/__tests__/AguilaCTA.test.tsx` | 10 | CTA primitive · href/onClick/external/disabled |
 
-**Total: 52 sales-layer test assertions.**
+**Total: 70 sales-layer test assertions.**
 
 ## OpenGraph social preview
 

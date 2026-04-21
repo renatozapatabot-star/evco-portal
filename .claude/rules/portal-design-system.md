@@ -74,6 +74,65 @@ choices. `POST /api/portal/theme` writes the cookie. `ThemeSwitcher`
 - `.portal-kbd` for keyboard key visuals
 - `.portal-ticker`, `.portal-metric`, `.portal-row`, `.portal-spark`
 
+### Chip chemistry (V1 canonical · 2026-04-20)
+
+`.portal-badge` is a uniform pill across the dashboard. The metric
+chips on PortalModuleCard (e.g. "18 EN TRÁNSITO", "10 MES") and the
+"EN LÍNEA" live pill all compose from this class. Canonical spec
+(portal-components.css):
+
+```
+default:  padding 4px 10px · radius 9999px · 10px mono · 0.12em
+          tracking uppercase · rgba(255,255,255,0.04) bg ·
+          rgba(255,255,255,0.1) border · rgba(255,255,255,0.6) text
+--live:   #22c55e14 bg · #22c55e33 border · #4ade80 text
+--info:   token-mixed ice palette
+--warn:   token-mixed amber palette
+--alert:  token-mixed red palette
+```
+
+Never introduce bespoke inline chip styles. Extend the class.
+
+### Viz primitive split-state rule
+
+When a card's primary metric is a ratio or audit percentage (e.g.
+"98.8% clasificado", "Anexo 24 audit"), prefer `<VizDonut>` over
+`<VizRing>`. VizDonut renders two concentric arcs (green-2 for
+matched, status-red-fg for mismatches) against the silver track,
+making the failure mode visible at a glance. VizRing remains for
+single-fill progress where there's no pass/fail dichotomy.
+
+---
+
+## PageShell header parity (V1 · 2026-04-20)
+
+Every authenticated cockpit + detail page that composes from
+`<PageShell>` inherits login-parity header typography:
+
+```
+h1: weight 600 (not 800) · ACCENT_SILVER_BRIGHT (not TEXT_PRIMARY) ·
+    letter-spacing -0.01em (not -0.03em display tracking)
+subtitle: ACCENT_SILVER_DIM · weight 500
+```
+
+This makes the cockpit hero feel like the continuation of /login,
+not a different app. Re-introducing weight 800 or bright white on
+these surfaces breaks the family resemblance.
+
+### Mobile greeting floor (PortalGreeting · 2026-04-20)
+
+Hero greeting clamp: `clamp(32px, 5.5vw, 56px)`. Floor was 40px
+pre-V1, forced awkward wrap on longer company names at 375px
+(3 AM Driver standard). 32px breathes without shrinking too far
+on mid-range devices.
+
+### Module-grid staggered entrance (2026-04-20)
+
+`.portal-modules-grid > *` auto-receives `portalReveal` entrance
+(400ms cubic-bezier + 40ms stagger across six children). Reduced-
+motion neutralizes the animation; `[data-motion="off"]` on `<html>`
+does too. Never hand-roll `@keyframes portalModuleX` per child.
+
 ---
 
 ## Brand wordmark contract

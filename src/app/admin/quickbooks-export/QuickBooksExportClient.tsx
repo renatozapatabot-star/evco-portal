@@ -21,7 +21,7 @@ import {
   TEXT_SECONDARY,
 } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
-import { AguilaInput, AguilaSelect } from '@/components/aguila'
+import { AguilaInput, AguilaSelect, GlassCard } from '@/components/aguila'
 
 interface ExportRow {
   id: string
@@ -167,14 +167,11 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         </p>
       </header>
 
-      <div
-        role="note"
+      <GlassCard
+        tier="hero"
+        padding="12px 16px"
+        ariaLabel="Nota informativa"
         style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 12,
-          padding: '12px 16px',
           marginBottom: 20,
           color: TEXT_SECONDARY,
           fontSize: 'var(--aguila-fs-body)',
@@ -184,20 +181,10 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         }}
       >
         Fase 1: importación manual. API directa pendiente certificación Intuit.
-      </div>
+      </GlassCard>
 
       {/* Form card */}
-      <section
-        style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 24,
-          marginBottom: 24,
-          boxShadow: GLASS_SHADOW,
-        }}
-      >
+      <GlassCard tier="hero" padding={24} style={{ marginBottom: 24 }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -270,19 +257,10 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         {message && (
           <p style={{ marginTop: 16, fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>{message}</p>
         )}
-      </section>
+      </GlassCard>
 
       {/* Recent exports */}
-      <section
-        style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 24,
-          boxShadow: GLASS_SHADOW,
-        }}
-      >
+      <GlassCard tier="hero" padding={24}>
         <h2 style={{
           fontSize: 'var(--aguila-fs-body-lg)',
           fontWeight: 700,
@@ -367,7 +345,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
             </table>
           </div>
         )}
-      </section>
+      </GlassCard>
     </div>
   )
 }

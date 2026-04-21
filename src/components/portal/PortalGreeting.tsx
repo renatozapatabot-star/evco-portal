@@ -71,7 +71,7 @@ export function PortalGreeting({
               margin: 0,
               fontFamily: 'var(--portal-font-display)',
               fontWeight: 600,
-              fontSize: 'clamp(40px, 6vw, 56px)',
+              fontSize: 'clamp(32px, 5.5vw, 56px)',
               letterSpacing: 'var(--aguila-ls-tight)',
               lineHeight: 1.05,
               color: 'var(--portal-fg-2)',

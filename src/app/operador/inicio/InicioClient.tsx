@@ -6,11 +6,12 @@ import Link from 'next/link'
 import { Activity } from 'lucide-react'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
 import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  BORDER,
   TEXT_MUTED, TEXT_SECONDARY, ACCENT_SILVER, GOLD, AMBER,
 } from '@/lib/design-system'
 import {
   CockpitInicio,
+  GlassCard,
   SeverityRibbon, severityFromCount,
   OperatorActivityStack,
   ActividadStrip,
@@ -272,18 +273,7 @@ export function InicioClient(props: Props) {
 function ColaCard({ colaCount }: { colaCount: number }) {
   const severity = severityFromCount(colaCount, { warn: 1, crit: 6 })
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
-      {colaCount > 0 && <SeverityRibbon tone={severity} />}
+    <GlassCard tier="hero" severity={colaCount > 0 ? severity : undefined}>
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -329,24 +319,14 @@ function ColaCard({ colaCount }: { colaCount: number }) {
           Sin excepciones pendientes.
         </p>
       )}
-    </section>
+    </GlassCard>
   )
 }
 
 function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignadasHoy: number }) {
   const isIncomplete = enBanco === 0 && asignadasHoy === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px',
-    }}>
+    <GlassCard tier="hero">
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -410,7 +390,7 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
         isIncomplete={isIncomplete}
         message="Sin facturas en PORTAL todavía — el banco de GlobalPC tiene el histórico."
       />
-    </section>
+    </GlassCard>
   )
 }
 
@@ -418,17 +398,7 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
   const severity = rojo > 0 ? 'critical' : 'healthy'
   const isIncomplete = activos === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
+    <GlassCard tier="hero">
       {rojo > 0 && <SeverityRibbon tone={severity} />}
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
@@ -493,24 +463,14 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
         isIncomplete={isIncomplete}
         message="Sin tráficos activos en PORTAL — el monitor de GlobalPC tiene el histórico."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number; aprobadasMes: number }) {
   const isIncomplete = pendientes === 0 && aprobadasMes === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px',
-    }}>
+    <GlassCard tier="hero">
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -574,24 +534,14 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
         isIncomplete={isIncomplete}
         message="Sin productos por clasificar en PORTAL — consulta el histórico en GlobalPC."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimientosPronto: number }) {
   const isIncomplete = total === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
+    <GlassCard tier="hero">
       {vencimientosPronto > 0 && <SeverityRibbon tone="critical" />}
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
@@ -656,24 +606,14 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
         isIncomplete={isIncomplete}
         message="Sin productos en PORTAL — consulta el catálogo en GlobalPC."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function TransportistasCard({ activos, top }: { activos: number; top: number }) {
   const isIncomplete = activos === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px',
-    }}>
+    <GlassCard tier="hero">
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -737,23 +677,13 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
         isIncomplete={isIncomplete}
         message="Sin transportistas capturados en PORTAL — consulta el catálogo de GlobalPC."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number; exportadasHoy: number }) {
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
+    <GlassCard tier="hero">
       {pendientes > 5 && <SeverityRibbon tone="warning" />}
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
@@ -818,7 +748,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
         isIncomplete={false}
         cta="Reportes legacy en GlobalPC"
       />
-    </section>
+    </GlassCard>
   )
 }
 

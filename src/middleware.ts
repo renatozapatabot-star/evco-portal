@@ -1,3 +1,25 @@
+/**
+ * Middleware — every request passes through here before hitting a
+ * route handler or page.
+ *
+ * Responsibilities (in order):
+ *   1. CSRF for mutating /api/* (POST/PUT/DELETE/PATCH)
+ *   2. Token-gated public paths (/track/*, /upload/*, /share/*,
+ *      /proveedor/*) — accessible without login via magic URL tokens
+ *   3. Public marketing (/demo, /pitch) — always accessible
+ *   4. SEO (/sitemap.xml, /robots.txt)
+ *   5. Auth-guarded everything else (redirect to /login if no session)
+ *   6. Admin-only routes (verify session.role against ADMIN_ONLY_ROUTES)
+ *
+ * Runtime: Edge. Don't import anything Node-specific here (no fs,
+ * no crypto.randomBytes, no Buffer). verifySession uses Web Crypto.
+ *
+ * When adding a new public path:
+ *   - Add to PUBLIC_PATHS OR add an explicit `startsWith` branch
+ *   - Update src/lib/csrf.ts exempt list if prospects can POST to it
+ *   - Document why in a comment next to the entry
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { ADMIN_ONLY_ROUTES } from '@/components/nav/nav-config'
 import { verifySession } from '@/lib/session'

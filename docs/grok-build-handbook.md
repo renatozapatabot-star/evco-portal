@@ -623,7 +623,183 @@ npx supabase migration repair --status reverted <version>
 
 ---
 
-## 18. Quick-reference links
+## 18. Reusable patterns (follow these shapes, don't reinvent)
+
+A primitive is a component; a pattern is a composition. These five
+patterns show up often enough that Grok (or future-you) should
+recognize them and follow the shape.
+
+### 18.1 — Three-state conditional component (`LeadConvertCard` pattern)
+
+When a component's visibility + content depend on entity state,
+return `null` + a success banner + an action form from the SAME
+component rather than three siblings.
+
+```tsx
+export function LeadConvertCard({ lead, onConverted }: Props) {
+  // State 1: not ready → render nothing
+  if (lead.stage !== 'won' && !lead.converted_at) return null
+
+  // State 3: already done → success banner with silver-green tint
+  if (lead.converted_at && lead.client_code_assigned) {
+    return <GlassCard tier="hero" style={{ borderColor: 'var(--portal-status-green-ring)' }}>…</GlassCard>
+  }
+
+  // State 2: ready → inline form with auto-slugify, validation,
+  // submit-via-fetch, onConverted callback
+  return <GlassCard tier="hero"><form>…</form></GlassCard>
+}
+```
+
+File: `src/app/admin/leads/[id]/LeadConvertCard.tsx`.
+
+### 18.2 — URL-driven filter with debounced search (`LeadsFilterBar` pattern)
+
+When a list surface needs filter + search, make the URL the source
+of truth so links are shareable. Client component manages transient
+input state; server component reads `searchParams` and filters.
+
+```tsx
+// Client
+function FilterBar() {
+  const router = useRouter()
+  const params = useSearchParams()
+  const activeStage = params.get('stage')
+  const [q, setQ] = useState(params.get('q') ?? '')
+
+  // Debounce search → URL push
+  useEffect(() => {
+    if (q === (params.get('q') ?? '')) return
+    const t = setTimeout(() => {
+      const next = new URLSearchParams(params.toString())
+      q.trim() ? next.set('q', q.trim()) : next.delete('q')
+      router.push(`?${next.toString()}`, { scroll: false })
+    }, 220)
+    return () => clearTimeout(t)
+  }, [q])
+
+  // Stage chips as <Link> (no JS-side state for chips — keeps SSR honest)
+  return <>{stages.map(s => <Link href={`?stage=${s}`}>{label}</Link>)}</>
+}
+
+// Server
+export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams
+  const rows = allRows.filter(r => matchesFilter(r, params))
+  return <FilterBar /> + <Table rows={rows} />
+}
+```
+
+File: `src/app/admin/leads/LeadsFilterBar.tsx` + `src/app/admin/leads/page.tsx`.
+
+### 18.3 — Cross-entity activity feed (`RecentActivityFeed` pattern)
+
+When you need "what happened recently across N entities" for a
+dashboard: fetch entities + activities in parallel via `Promise.all`,
+then join in-memory via a Map rather than a DB JOIN. One fewer
+roundtrip.
+
+```ts
+const [{ data: allLeads }, { data: activities }] = await Promise.all([
+  supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(500),
+  supabase.from('lead_activities').select('…').order('occurred_at', { ascending: false }).limit(15),
+])
+
+const leadFirmMap = new Map(allLeads.map(r => [r.id, r.firm_name]))
+const feed = activities.map(a => ({ ...a, firm_name: leadFirmMap.get(a.lead_id) ?? null }))
+```
+
+File: `src/app/admin/leads/RecentActivityFeed.tsx`.
+
+### 18.4 — Error + Loading boundaries (`CockpitSkeleton` + `CockpitErrorCard`)
+
+Every route with server-side data needs BOTH boundary files. Use
+the shared primitives — don't write custom skeletons per page.
+
+```tsx
+// src/app/<route>/loading.tsx — 2 lines
+import { CockpitSkeleton } from '@/components/aguila/CockpitSkeleton'
+export default function RouteLoading() { return <CockpitSkeleton /> }
+
+// src/app/<route>/error.tsx — 7 lines
+'use client'
+import { CockpitErrorCard } from '@/components/aguila/CockpitErrorCard'
+export default function RouteError({ error, reset }: { error: Error; reset: () => void }) {
+  return <CockpitErrorCard message={error.message} onRetry={reset} />
+}
+```
+
+Applies to **every** dynamic route too (`[id]`, `[token]`, `[code]`).
+M5 audit added these to `/anexo-24/[cveProducto]`, `/catalogo/partes/[cveProducto]`,
+`/catalogo/fraccion/[code]`, `/embarques/[id]`, `/mensajeria`.
+
+### 18.5 — Calm empty-state pattern
+
+When a section would otherwise hide silently because no data exists
+yet, render a calm placeholder matching the same glass chrome. Never
+show an absent section — Ursula will notice the missing block and
+wonder what's wrong.
+
+```tsx
+{lastIngest?.completed_at ? (
+  <GlassCard>…real data…</GlassCard>
+) : (
+  <GlassCard padding="12px 16px">
+    <span className="portal-eyebrow">Última ingesta SAT</span>
+    <span style={{ color: 'var(--portal-fg-3)' }}>
+      Sin ingestas registradas aún · tu primera subida activará este panel
+    </span>
+  </GlassCard>
+)}
+```
+
+Three canonical empty-state copy forms (pick the one that fits):
+
+- **Calm (happy path):** `"Tu operación está en calma · todo en orden."`
+- **History fallback:** `"Último · #<id> · hace <N> días."`
+- **Pre-activation:** `"Sin datos aún · tu primer registro activará este panel."`
+
+Raw `—` is allowed ONLY in monospace data tables.
+
+---
+
+## 19. Ursula context (the first real client)
+
+When reasoning about client-facing surfaces, hold Ursula Banda in
+your head:
+
+- Dir. de Operaciones at EVCO Plastics de México
+- Opens the portal at 11 PM after dinner, 30 seconds of scanning
+- On mobile 80% of the time (iPhone); desktop for deep work
+- Thinks in: "¿ya se liberó?" · "¿falta documento?" · "¿cuándo cruza?"
+- Does NOT think in: "what's my API response time" · "schema changes"
+- Tito's daughter-in-law trusts this. Tito himself signs off on every
+  real pedimento. That approval gate is permanent.
+
+**Surfaces Ursula touches regularly:**
+- `/inicio` — morning + night scan
+- `/embarques` — "where's the truck?"
+- `/anexo-24` — quarterly SAT prep
+- `/catalogo/partes/[cve]` — ad-hoc classification check
+- `/mi-cuenta` — monthly reconciliation
+- `/mensajeria` — operational comms
+
+**Surfaces she's NEVER shown:**
+- Any `/admin/*` route
+- Any `/operador/*` route
+- Pipeline alerts, sync_log status, tenant audit tools
+
+Keep her calm. Keep her informed. Never make her anxious. The
+calm-tone invariant isn't aesthetic — it's the contract.
+
+Demo assets for operator-led walkthrough:
+- `docs/EVCO_DEMO_PLAYBOOK.md` — 14-min scripted walkthrough
+- `docs/URSULA_DEMO_SCRIPT_3MIN.md` — lightning version
+- `docs/URSULA_7_MOMENTS.md` — cheat sheet
+
+---
+
+## 20. Quick-reference links
 
 | Doc | What |
 |---|---|
@@ -635,8 +811,11 @@ npx supabase migration repair --status reverted <version>
 | `.claude/rules/founder-overrides.md` | HARD vs SOFT rule tiers |
 | `.claude/rules/client-accounting-ethics.md` | Client A/R ethical contract |
 | `.planning/SALES_PLAYBOOK.md` | Operational sales runbook |
-| `.planning/HANDOFF_*.md` | Per-session shipping logs |
+| `.planning/HANDOFF_*.md` | Per-session shipping logs (M2-M6) |
 | `supabase/MIGRATION_QUEUE.md` | Pending/applied schema changes |
+| `docs/EVCO_DEMO_PLAYBOOK.md` | Full scripted walkthrough for Ursula |
+| `docs/URSULA_DEMO_SCRIPT_3MIN.md` | 3-min version |
+| `docs/URSULA_7_MOMENTS.md` | 7-moment cheat sheet |
 
 ---
 

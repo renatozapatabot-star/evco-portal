@@ -269,3 +269,218 @@ posts. Dial back the promo copy, tighten the hook.
 *Codified 2026-04-21 during Marathon 3 · HIGH-ROI marathon · Renato
 Zapata IV founder voice — adapt to your own voice if reading this
 file as someone else.*
+
+---
+
+## Extended set — Templates 6–10 (added Marathon 6 · 2026-04-21)
+
+Five more templates covering different angles. Rotate through all 10
+to avoid repetition; LinkedIn's algo punishes sameness.
+
+---
+
+## Template 6 — The "SAT Audit Week" Post
+
+**Purpose:** Lead with a compliance pain every importer knows. Earn
+credibility with a specific fix.
+
+```
+Esta semana cerramos el Q1 para uno de nuestros clientes. El SAT
+pidió Formato 53 de los últimos 90 días.
+
+Antes: alguien del equipo abre Excel. 4 horas de cruzar SKUs contra
+pedimentos. 3 cafés. 2 errores que hay que corregir.
+
+Hoy: click en Anexo 24, elegir "Trimestre", descargar. 12 segundos.
+
+PDF + Excel con las 41 columnas SAT-canónicas. Trazable SKU por
+SKU. Con el historial de quién clasificó qué y cuándo.
+
+Cada importador mexicano va a pasar por esto cada 3 meses. La
+pregunta no es "¿estás listo?" — es "¿cuánto tiempo de tu equipo
+cuesta estar listo?".
+
+Si quieres ver cómo se ve un Anexo 24 operado así, abre el demo
+público:
+
+renato-zapata.com/pitch
+
+Sin registro. Sin email.
+
+Patente 3596 · Aduana 240 · Laredo, TX · Est. 1941
+
+#ComercioExterior #SAT #Aduana
+```
+
+**Attach:** screenshot of `/anexo-24` period picker + a piece of the
+downloaded PDF (blurred-out client name).
+
+---
+
+## Template 7 — The "Data Integrity Moment" Post
+
+**Purpose:** Make engineering rigor visible to CFOs who value it.
+
+```
+148,537 SKUs en tu catálogo. Para cada uno:
+
+— clave de producto
+— fracción arancelaria
+— fundamento legal del CAAAREM
+— fecha de clasificación y quién firmó
+— últimos cruces con su semáforo
+
+Ahora imaginá que un SKU tiene dato incorrecto. ¿Cuántos pedimentos
+de los últimos 12 meses están afectados? ¿Cuándo se filió? ¿Cómo lo
+arregles sin romper lo que sí funciona?
+
+Esa trazabilidad es lo que construimos. No porque sea bonito — porque
+es lo que el SAT exige en una auditoría, y lo que Tito exige cuando
+firma algo con su patente 3596.
+
+Data integrity no es un tema de software. Es un tema de licencias.
+
+renato-zapata.com/pitch
+
+#DataIntegrity #Compliance #Aduana
+```
+
+**Attach:** a small ASCII/Mermaid diagram of the classification
+provenance chain.
+
+---
+
+## Template 8 — The "EVCO Case Study Teaser" Post
+
+**Purpose:** Soft-launch social proof. Requires Ursula's written
+permission first.
+
+```
+Un caso real — con permiso del cliente para contarlo.
+
+EVCO Plastics de México. 148,537 SKUs activos. Cruzan Aduana 240
+(Nuevo Laredo) 40-60 trailers por mes.
+
+Antes de abril de 2026:
+— Clasificar un SKU nuevo: 22 minutos
+— Confirmar estado de un trafico: 40-60 minutos
+— Sistemas separados: 5
+— Semáforo verde al primer intento: 88%
+
+Hoy:
+— Clasificar un SKU nuevo: 2 minutos
+— Confirmar estado de un trafico: sub-3 segundos
+— Sistemas: 1 (el portal · GlobalPC queda en respaldo)
+— Semáforo verde al primer intento: 98%
+
+Ursula Banda, Directora de Operaciones, lo dice así: "Abro el portal
+a las 11 PM, veo todo en una pantalla, y me voy a dormir."
+
+Nuestro siguiente cliente arranca en Mayo. Si importas >50 veces al
+mes y te interesa esta operación:
+
+renato-zapata.com/pitch · DM abierto
+
+Patente 3596 · Est. 1941
+
+#ClientSuccess #Aduana #ComercioExterior
+```
+
+**Attach:** the official EVCO case study PDF (once approved via
+the process in `scripts/cold-outreach/case-study-template.md`).
+
+**IMPORTANT:** Do NOT publish this template until Ursula's written
+permission is saved in `.planning/case-studies/evco-approval.txt`.
+
+---
+
+## Template 9 — The "85 Años" Storytelling Post
+
+**Purpose:** Humanize the brand. Compete on heritage + modernity,
+not on feature list.
+
+```
+Mi abuelo abrió la oficina de Renato Zapata & Co. en 1941.
+
+La Patente 3596 llegó poco después. Aduana 240. Nuevo Laredo.
+
+85 años. Cuatro generaciones cruzando la frontera. Mismo nombre
+en la puerta.
+
+Hace 6 meses, Tito (mi papá, director general hoy) y yo decidimos
+que la siguiente década del despacho no puede ser la misma que las
+8 anteriores. Decidimos construir un portal — con IA, con código
+propio, con Next.js y Supabase y Anthropic — para que los
+importadores que nos eligen sientan que están en 2026, no en 1990.
+
+No somos una startup. Somos un despacho aduanal de 85 años que
+decidió operar como startup. La diferencia importa.
+
+Si tienes importaciones mexicanas y valoras precisión sobre
+velocidad bruta:
+
+renato-zapata.com/pitch
+
+Dos personas. Patente 3596. Aduana 240. Laredo, Texas. Est. 1941.
+
+#Storytelling #FamilyBusiness #Aduana
+```
+
+**Attach:** an old photo (1941-era storefront, a grandfather's
+customs license, the patent document). This is the one post where
+an old photograph outperforms any screenshot.
+
+---
+
+## Template 10 — The "AI-Native, Not AI-Washed" Post
+
+**Purpose:** Speak to technical decision-makers who value rigor.
+
+```
+Todos los SaaS de logística dicen "with AI" en su homepage. Pocos
+pueden decir qué modelo corre dónde, cuánto cuesta, y por qué.
+
+Nosotros sí:
+
+— Clasificación arancelaria (148K SKUs): Qwen, local, en nuestro
+  Mac Studio. $0/consulta. Privacidad total.
+— Respuestas en lenguaje natural (portal): Claude Sonnet,
+  ~$0.003 por pregunta, con 50+ herramientas MCP-expuestas.
+— Opinión de clasificación formal (OCA): Claude Opus, ~$0.12
+  por documento, con fundamento legal citeable.
+
+Cada llamada queda en audit_log. Cada modelo se usa donde su costo
+y capacidad encajan. Nada inventado, nada hallucinated en producción
+— si la AI no está segura, Tito revisa.
+
+Esto es AI-nativo porque se diseñó AI-nativo desde el código. No es
+un chatbot pegado encima de un CRM.
+
+renato-zapata.com/pitch
+
+#AI #EngineeringRigor #Aduana
+```
+
+**Attach:** a small architecture diagram (Qwen → Classification;
+Sonnet → Portal AI; Opus → OCA) with per-model cost annotations.
+
+---
+
+## When to post each template
+
+| Day | Template ideas |
+|---|---|
+| Tuesday AM | **4 (why we built it)** or **7 (data integrity)** — technical prospects check LinkedIn on the commute |
+| Thursday AM | **2 (before/after)** or **6 (SAT audit week)** — operational prospects read over coffee |
+| Tuesday after a client win | **8 (case study teaser — ONLY if approval)** |
+| Quarterly | **9 (85 años storytelling)** — don't overuse |
+| When a CTO/engineer DMed | **10 (AI-native)** — follow-up post within 3 days |
+
+**Rotation rule:** don't post the same template twice in 30 days.
+LinkedIn recognizes patterns and throttles.
+
+---
+
+*Templates 6–10 appended 2026-04-21 during Marathon 6 · Renato
+Zapata IV founder voice. Adapt + track performance via the sheet
+above.*

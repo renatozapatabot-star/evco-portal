@@ -377,6 +377,55 @@ async function main() {
     assert(ratio <= 2.0, `EVCO productos/partidas ratio: ${ratio.toFixed(2)} (threshold 2.0 — contamination creeping back)`)
   })
 
+  // ─────────────────────────────────────────────────────────────────
+  // Sync-reliability hardening (2026-04-22) — 3 additive checks
+  // Fills gaps in the user's target-table list (entradas null-check,
+  // globalpc_facturas smoke) + regression guard for the anomaly_log
+  // check_date fix shipped alongside.
+  // ─────────────────────────────────────────────────────────────────
+
+  // ── 21a. No entradas with null company_id ──
+  // Mirror of check #7 for traficos — every tenant-scoped insert must
+  // carry company_id per .claude/rules/tenant-isolation.md.
+  await test('No entradas with null company_id (365d)', async () => {
+    const { count } = await supabase
+      .from('entradas')
+      .select('*', { count: 'exact', head: true })
+      .is('company_id', null)
+      .gte('fecha_llegada_mercancia', new Date(Date.now() - 365 * 86_400_000).toISOString())
+    assert((count || 0) === 0, `Found ${count} entradas with null company_id (365d)`)
+  })
+
+  // ── 21b. globalpc_facturas has rows for EVCO in window ──
+  // Cockpit smoke mirror — globalpc_facturas is probed by the health
+  // endpoint but wasn't in the ship-gate integrity script. A silent
+  // filter/RLS regression here would empty the invoice surface.
+  await test('EVCO cockpit: globalpc_facturas has rows (365d window)', async () => {
+    const { count, error } = await supabase
+      .from('globalpc_facturas')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', 'evco')
+      .gte('fecha_facturacion', new Date(Date.now() - 365 * 86_400_000).toISOString())
+    if (error && error.code === '42P01') return // table absent → skip
+    if (error) throw new Error(error.message)
+    assert((count || 0) > 0, `EVCO globalpc_facturas returned 0 rows in 365d window`)
+  })
+
+  // ── 21c. anomaly_log accepting writes (check_date regression guard) ──
+  // From 2026-04-06 through the 2026-04-22 fix, every anomaly_log insert
+  // was silently rejected by a NOT NULL check_date constraint (712KB
+  // error log). This guard fails if no row has been written in 48h —
+  // either the cron is dead or the schema drifted again.
+  await test('anomaly_log accepting writes (last 48h)', async () => {
+    const { count, error } = await supabase
+      .from('anomaly_log')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString())
+    if (error && error.code === '42P01') return // table absent → skip
+    if (error) throw new Error(error.message)
+    assert((count || 0) > 0, `anomaly_log has 0 rows in last 48h — cron dead or schema drift`)
+  })
+
   // ── 21. Orphan rows bounded — orphan-* company_ids don't grow ──
   //   After Block EE retag, ~12K rows across productos + facturas are tagged
   //   orphan-<clave>. If this grows, it means MySQL is feeding claves that

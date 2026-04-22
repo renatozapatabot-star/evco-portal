@@ -430,6 +430,21 @@ module.exports = {
       error_file: '/tmp/econta-reconciler-error.log',
       out_file: '/tmp/econta-reconciler-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      // Reaps abandoned agent_actions (proposed rows past commit_deadline_at
+      // by >10min grace). Flips to 'cancelled' — never 'committed' — so the
+      // approval-gate invariant holds even when the UI never fired /commit.
+      // Policy + grace-window rationale live in the script header.
+      name: 'agent-actions-reaper',
+      script: 'scripts/agent-actions-reaper.js',
+      cwd,
+      cron_restart: '0 3 * * *',      // 03:00 CST nightly, post-postmortem
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/agent-actions-reaper-error.log',
+      out_file: '/tmp/agent-actions-reaper-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]
 }

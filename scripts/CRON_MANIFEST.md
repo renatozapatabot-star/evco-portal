@@ -9,8 +9,9 @@
 **Host:** Throne (local Mac Studio, `50.84.32.162`). `pm2 save` must run after every edit.
 
 **CLAUDE.md gap:** global constitution (user file) claims 33 cron jobs. This
-manifest accounts for 29 PM2 processes (28 on 2026-04-19 + 1 added
-2026-04-20: `system-config-expiry-watch`). The remaining 4-job gap is likely
+manifest accounts for 30 PM2 processes (28 on 2026-04-19 + 1 added
+2026-04-20: `system-config-expiry-watch` + 1 added 2026-04-22:
+`agent-actions-reaper`). The remaining gap is likely
 (a) `nightly-pipeline.js` which invokes multiple sub-jobs and counts as 1
 PM2 entry, (b) legacy crontab entries that migrated to PM2 but were counted
 in both inventories, or (c) ad-hoc scripts run manually that were included
@@ -65,6 +66,7 @@ verified.
 | 11 | `pipeline-postmortem` | ⏰ `0 2 * * *` | `scripts/pipeline-postmortem.js` | 💾📣 | 02:00 — diff yesterday's sync deltas; alert if coverage dropped >2%. |
 | 12 | `wsdl-anexo24-pull` | ⏰ `15 2 * * *` | `scripts/wsdl-anexo24-pull.js` | 💾📣 | 02:15 — pull SOAP Formato 53 from GlobalPC. Method name pending Mario confirmation; falls back to inbox path. |
 | 13 | `v2c-batch` | ⏰ `0 3 * * *` | `scripts/v2c-managed-agent/nightly-batch.js` | 💾📣 | 03:00 — V2C managed-agent batch run. Writes `docs/v2c-batch-reports/YYYY-MM-DD.md`. |
+| 13b | `agent-actions-reaper` | ⏰ `0 3 * * *` | `scripts/agent-actions-reaper.js` | 💾📣 | 03:00 — flips `agent_actions` rows stuck at `proposed` past deadline + 10min grace to `cancelled`. Never commits — abandoned ≠ authorized. Quiet unless reap ≥ 20. |
 | 14 | `feedback-loop` | ⏰ `0 4 * * *` | `scripts/feedback-loop.js` | 💾📣 | 04:00 — aggregates Tito corrections into training signal. |
 | 15 | `clearance-sandbox` | ⏰ `0 5 * * *` | `scripts/sandbox/clearance-sandbox.js` | 💾 | 05:00 — runs clearance simulations; writes to `sandbox_runs`. |
 | 16 | `doc-prerequest` | ⏰ `0 6 * * *` | `scripts/doc-prerequest.js` | 💾📣 | 06:00 — emails suppliers for missing docs (draft only — Tito-approved before send). |

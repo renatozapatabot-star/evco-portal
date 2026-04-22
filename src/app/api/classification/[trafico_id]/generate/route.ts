@@ -35,6 +35,10 @@ type TraficoRow = {
   tipo_operacion?: string | null
 }
 
+// Legacy type — retained for reference by any consumers that depended on
+// the old shape. Real partida columns are: id, folio, cve_producto,
+// cve_cliente, cantidad, precio_unitario, pais_origen (M16 phantom sweep).
+// The enrichment path now runs through productos + facturas.
 type PartidaRow = {
   id?: string | null
   cve_producto?: string | null
@@ -47,6 +51,7 @@ type PartidaRow = {
   valor_comercial?: number | null
   tmec?: boolean | null
 }
+void (null as unknown as PartidaRow) // preserve type export for downstream readers
 
 function err(code: string, message: string, status: number) {
   return NextResponse.json({ data: null, error: { code, message } }, { status })
@@ -112,30 +117,75 @@ export async function POST(
 
   const config = normalizeConfig(await request.json().catch(() => ({})))
 
-  // Pull partidas/productos — globalpc_partidas is the de-facto productos
-  // list per embarque.
-  const { data: partidasRaw, error: partidasErr } = await supabase
-    .from('globalpc_partidas')
-    .select(
-      'id, cve_producto, fraccion_arancelaria, fraccion, descripcion, umc, pais_origen, cantidad, valor_comercial, tmec',
-    )
+  // Pull partidas/productos via the canonical 2-hop join.
+  // Real schema: partidas has no cve_trafico/fraccion/descripcion/umc/
+  // valor_comercial/tmec columns (M16 phantom sweep). Route through
+  //   facturas(cve_trafico → folio) → partidas(folio) → productos(cve_producto)
+  const { data: facturas, error: facErr } = await supabase
+    .from('globalpc_facturas')
+    .select('folio')
     .eq('cve_trafico', traficoId)
-    .limit(2000)
-  if (partidasErr) return err('DB_ERROR', partidasErr.message, 500)
+    .eq('company_id', companyId)
+  if (facErr) return err('DB_ERROR', facErr.message, 500)
+  const folios = (facturas ?? []).map((f: { folio: number | null }) => f.folio).filter((x): x is number => x != null)
 
-  const partidas = (partidasRaw as PartidaRow[] | null) ?? []
-  const productos: Producto[] = partidas.map((p) => ({
-    id: p.id ?? undefined,
-    cve_producto: p.cve_producto ?? undefined,
-    fraccion_arancelaria: p.fraccion_arancelaria ?? undefined,
-    fraccion: p.fraccion ?? undefined,
-    descripcion: p.descripcion ?? undefined,
-    umc: p.umc ?? undefined,
-    pais_origen: p.pais_origen ?? undefined,
-    cantidad: p.cantidad ?? undefined,
-    valor_comercial: p.valor_comercial ?? undefined,
-    certificado_origen_tmec: p.tmec ?? undefined,
-  }))
+  type PartidaRaw = {
+    id: number | null
+    folio: number | null
+    cve_producto: string | null
+    cve_cliente: string | null
+    cantidad: number | null
+    precio_unitario: number | null
+    pais_origen: string | null
+  }
+  let partidaRows: PartidaRaw[] = []
+  if (folios.length > 0) {
+    const { data, error: partidasErr } = await supabase
+      .from('globalpc_partidas')
+      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, pais_origen')
+      .in('folio', folios)
+      .eq('company_id', companyId)
+      .limit(2000)
+    if (partidasErr) return err('DB_ERROR', partidasErr.message, 500)
+    partidaRows = (data ?? []) as PartidaRaw[]
+  }
+
+  const productMap = new Map<string, { descripcion: string | null; fraccion: string | null; umt: string | null }>()
+  const cves = Array.from(new Set(partidaRows.map(p => p.cve_producto).filter((c): c is string => !!c)))
+  if (cves.length > 0) {
+    const { data: prods } = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, cve_cliente, descripcion, fraccion, umt')
+      .in('cve_producto', cves)
+      .eq('company_id', companyId)
+      .limit(2000)
+    for (const p of (prods ?? []) as Array<{
+      cve_producto: string | null; cve_cliente: string | null
+      descripcion: string | null; fraccion: string | null; umt: string | null
+    }>) {
+      productMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, {
+        descripcion: p.descripcion, fraccion: p.fraccion, umt: p.umt,
+      })
+    }
+  }
+
+  const productos: Producto[] = partidaRows.map((p) => {
+    const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+    const cantidad = Number(p.cantidad) || 0
+    const precio = Number(p.precio_unitario) || 0
+    return {
+      id: p.id != null ? String(p.id) : undefined,
+      cve_producto: p.cve_producto ?? undefined,
+      fraccion_arancelaria: enr?.fraccion ?? undefined,
+      fraccion: enr?.fraccion ?? undefined,
+      descripcion: enr?.descripcion ?? undefined,
+      umc: enr?.umt ?? undefined,
+      pais_origen: p.pais_origen ?? undefined,
+      cantidad: cantidad || undefined,
+      valor_comercial: cantidad * precio || undefined,
+      certificado_origen_tmec: undefined, // tmec lives on traficos.predicted_tmec
+    }
+  })
 
   const sheet = generateClassificationSheet(productos, config)
 

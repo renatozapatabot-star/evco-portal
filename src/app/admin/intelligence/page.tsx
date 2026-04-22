@@ -69,7 +69,11 @@ export default async function IntelligencePage({
       top_proveedores: [],
       watch_proveedores: [],
       anomalies: [],
-      volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null },
+      volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null, daily_series: [] },
+      fraccion_health: [],
+      top_predictions: [],
+      watch_predictions: [],
+      baseline_verde_pct: 0,
     }
   }
 

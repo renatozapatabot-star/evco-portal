@@ -4,7 +4,14 @@ import Anthropic from '@anthropic-ai/sdk'
 import { randomUUID } from 'crypto'
 import { verifySession, type PortalRole } from '@/lib/session'
 import { logOperatorAction } from '@/lib/operator-actions'
-import { TOOL_DEFINITIONS, runTool, type AguilaCtx, type ToolName } from '@/lib/aguila/tools'
+import {
+  TOOL_DEFINITIONS,
+  runTool,
+  isWriteGatedTool,
+  type AguilaCtx,
+  type ToolName,
+  type ActionProposalResponse,
+} from '@/lib/aguila/tools'
 import { resolveMentions } from '@/lib/aguila/mentions'
 import { logShadow } from '@/lib/aguila/shadow-log'
 import { buildClientAIContext, formatClientAIContextPreamble } from '@/lib/ai/client-context'
@@ -541,6 +548,24 @@ function streamingAskResponse(input: StreamingAskInput): Response {
             emit({ type: 'tool', name: toolName })
             const result = await runTool(toolName, block.input, input.ctx)
             if (result.forbidden) forbiddenHit = true
+            // Phase 6 — write-gated tools return a flat `{ awaiting_commit: true, ... }`
+            // envelope that promotes to a client `action` event. The UI renders a
+            // 5-second countdown banner and calls /api/cruz-ai/actions/commit or
+            // /cancel at the deadline. Shape is guaranteed by isWriteGatedTool +
+            // ActionProposalResponse — the cast is safe.
+            if (isWriteGatedTool(toolName)) {
+              const envelope = result.result as ActionProposalResponse
+              if (envelope?.awaiting_commit && envelope.action_id) {
+                emit({
+                  type: 'action',
+                  action_id: envelope.action_id,
+                  kind: envelope.kind,
+                  summary_es: envelope.summary_es,
+                  commit_deadline_at: envelope.commit_deadline_at,
+                  cancel_window_ms: envelope.cancel_window_ms,
+                })
+              }
+            }
             const resultJson = JSON.stringify(result.result).slice(0, 8000)
             toolResultTexts.push(resultJson)
             toolResults.push({

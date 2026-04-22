@@ -11,6 +11,7 @@ import {
 import type { Recommendation } from '@/lib/intelligence/recommend'
 import type { FullCrossingInsight } from '@/lib/intelligence/full-insight'
 import { withDecisionLog } from '@/lib/intelligence/decision-log'
+import { proposeAction, CANCEL_WINDOW_MS, type AgentActionKind } from './actions'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,6 +44,9 @@ export type ToolName =
   | 'check_tmec_eligibility'
   | 'search_supplier_history'
   | 'find_missing_documents'
+  | 'flag_shipment'
+  | 'draft_mensajeria_to_anabel'
+  | 'open_oca_request'
 
 /**
  * Anthropic tool definitions. Kept deliberately small so Haiku picks the
@@ -274,6 +278,55 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
         clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
       },
       required: ['traficoId'],
+    },
+  },
+  {
+    name: 'flag_shipment',
+    description:
+      'Propone marcar un embarque (tráfico) con una bandera interna — "revisión pendiente", "documentos faltantes", "escalar a Tito", etc. NO se marca de inmediato: queda como proposed con 5 segundos para cancelar; luego el operador ejecuta la acción real. Úsalo cuando el usuario pida "marca este embarque", "alerta sobre Y-1234" o similar.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        traficoId: { type: 'string', description: 'Clave del tráfico a marcar (ej. Y-1234).' },
+        reasonEs: { type: 'string', description: 'Razón breve en español (≤280 car.).' },
+        severity: {
+          type: 'string',
+          enum: ['info', 'warn', 'critical'],
+          description: 'Severidad de la bandera. Default "warn".',
+        },
+      },
+      required: ['traficoId', 'reasonEs'],
+    },
+  },
+  {
+    name: 'draft_mensajeria_to_anabel',
+    description:
+      'Propone enviar un mensaje interno a Anabel (contabilidad) — dudas de saldo, facturas del mes, pagos pendientes. NO se envía de inmediato: queda como proposed con 5 segundos para cancelar. Úsalo cuando el usuario pida "pregúntale a Anabel", "avisa a contabilidad" o "manda un mensaje sobre mi saldo".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        subjectEs: { type: 'string', description: 'Asunto en español (≤140 car.).' },
+        bodyEs: { type: 'string', description: 'Cuerpo del mensaje en español (≤4000 car.).' },
+        relatedTraficoId: { type: 'string', description: 'Clave del tráfico relacionado (opcional).' },
+        relatedPedimento: { type: 'string', description: 'Número de pedimento relacionado (opcional).' },
+      },
+      required: ['subjectEs', 'bodyEs'],
+    },
+  },
+  {
+    name: 'open_oca_request',
+    description:
+      'Propone abrir una Opinión de Clasificación Arancelaria (OCA) — solicitud formal para que Tito revise una fracción dudosa. NO se abre de inmediato: queda como proposed con 5 segundos para cancelar. Úsalo cuando el usuario pida "abre una OCA", "necesito opinión oficial de clasificación" o "dudas sobre la fracción X".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        productDescriptionEs: { type: 'string', description: 'Descripción del producto en español (≤500 car.).' },
+        reasonEs: { type: 'string', description: 'Razón de la solicitud en español (≤500 car.).' },
+        fraccion: { type: 'string', description: 'Fracción propuesta XXXX.XX.XX (opcional, con puntos).' },
+        traficoId: { type: 'string', description: 'Clave del tráfico relacionado (opcional).' },
+        cveProducto: { type: 'string', description: 'CVE del producto en el catálogo (opcional).' },
+      },
+      required: ['productDescriptionEs', 'reasonEs'],
     },
   },
 ]
@@ -618,6 +671,12 @@ export async function runTool(
         return { tool, result: await execSearchSupplierHistory(args as SearchSupplierHistoryArgs, ctx) }
       case 'find_missing_documents':
         return { tool, result: await execFindMissingDocs(args as FindMissingDocsArgs, ctx) }
+      case 'flag_shipment':
+        return { tool, result: await execFlagShipment(args as FlagShipmentArgs, ctx) }
+      case 'draft_mensajeria_to_anabel':
+        return { tool, result: await execDraftMensajeriaToAnabel(args as DraftToAnabelArgs, ctx) }
+      case 'open_oca_request':
+        return { tool, result: await execOpenOcaRequest(args as OpenOcaArgs, ctx) }
       default:
         return { tool, result: null, error: `unknown_tool:${tool}` }
     }
@@ -1273,6 +1332,167 @@ interface CheckTmecArgs { fraccion?: string; origin?: string; valorAduanaMxn?: n
 interface SearchSupplierHistoryArgs { searchTerm?: string; windowDays?: number; clientFilter?: string }
 interface FindMissingDocsArgs { traficoId?: string; clientFilter?: string }
 
+// =============================================================================
+// v2 expansion · 2026-04-22 — write-gated action tools
+// =============================================================================
+//
+// These tools do not write to client-visible or regulated tables. They
+// insert a `proposed` row into `agent_actions` and return the row + the
+// 5-second cancel window so the UI + caller can surface the cancellation
+// UX per CLAUDE.md's non-negotiable approval gate.
+//
+// The HARD approval gate stays intact: `committed` is authorization, not
+// execution. The downstream side-effect (real flag / real send / real OCA
+// draft) is owned by an operator surface that reads `committed` rows.
+//
+// Tenant isolation: the executor stamps `company_id = ctx.companyId` and
+// never reads `clientFilter` — clients cannot propose actions that touch
+// another tenant, and internal roles can't either without switching
+// sessions. Matches the tenant-isolation contract in Block EE.
+
+interface FlagShipmentArgs {
+  traficoId?: string
+  reasonEs?: string
+  severity?: 'info' | 'warn' | 'critical'
+}
+interface DraftToAnabelArgs {
+  subjectEs?: string
+  bodyEs?: string
+  relatedTraficoId?: string
+  relatedPedimento?: string
+}
+interface OpenOcaArgs {
+  productDescriptionEs?: string
+  reasonEs?: string
+  fraccion?: string
+  traficoId?: string
+  cveProducto?: string
+}
+
+/**
+ * Flat shape on purpose — the streaming branch in `/api/cruz-ai/ask`
+ * promotes this envelope to an `action` stream event with a simple
+ * existence check (`awaiting_commit === true && typeof action_id ===
+ * 'string'`). Keeping it flat avoids a nested-object null-guard in the
+ * hot streaming path.
+ */
+export interface ActionProposalResponse {
+  success: boolean
+  awaiting_commit: boolean
+  action_id: string | null
+  kind: AgentActionKind | null
+  summary_es: string | null
+  status: 'proposed' | null
+  commit_deadline_at: string | null
+  cancel_window_ms: number
+  message_es: string
+  error: string | null
+  error_detail: string | null
+}
+
+const WRITE_GATED_TOOLS: ReadonlySet<ToolName> = new Set<ToolName>([
+  'flag_shipment',
+  'draft_mensajeria_to_anabel',
+  'open_oca_request',
+])
+
+export function isWriteGatedTool(tool: ToolName): boolean {
+  return WRITE_GATED_TOOLS.has(tool)
+}
+
+function truncate(s: string, n: number): string {
+  return s.length > n ? s.slice(0, n - 1) + '…' : s
+}
+
+async function proposalEnvelope(
+  ctx: AguilaCtx,
+  kind: AgentActionKind,
+  payload: Record<string, unknown>,
+  summaryEs: string,
+): Promise<ActionProposalResponse> {
+  const r = await proposeAction(ctx.supabase, {
+    companyId: ctx.companyId,
+    actorId: ctx.operatorId ?? ctx.userId,
+    actorRole: ctx.role,
+    kind,
+    payload,
+    summaryEs,
+  })
+  if (!r.ok) {
+    return {
+      success: false,
+      awaiting_commit: false,
+      action_id: null,
+      kind: null,
+      summary_es: null,
+      status: null,
+      commit_deadline_at: null,
+      cancel_window_ms: CANCEL_WINDOW_MS,
+      message_es: 'No pude proponer la acción. Revisa los datos e intenta de nuevo.',
+      error: r.error,
+      error_detail: r.detail ?? null,
+    }
+  }
+  const a = r.action
+  return {
+    success: true,
+    awaiting_commit: true,
+    action_id: a.id,
+    kind: a.kind,
+    summary_es: a.summary_es,
+    status: 'proposed',
+    commit_deadline_at: a.commit_deadline_at,
+    cancel_window_ms: CANCEL_WINDOW_MS,
+    message_es: `Acción propuesta: ${a.summary_es}. Tienes 5 segundos para cancelar antes de que se confirme.`,
+    error: null,
+    error_detail: null,
+  }
+}
+
+async function execFlagShipment(args: FlagShipmentArgs, ctx: AguilaCtx): Promise<ActionProposalResponse> {
+  const traficoId = String(args.traficoId ?? '').trim()
+  const reasonEs = String(args.reasonEs ?? '').trim()
+  const severity = args.severity ?? 'warn'
+  const summaryEs = `Marcar ${traficoId || 'tráfico'} — ${truncate(reasonEs || 'sin razón', 80)}`
+  return proposalEnvelope(ctx, 'flag_shipment', {
+    trafico_id: traficoId,
+    reason_es: reasonEs,
+    severity,
+  }, summaryEs)
+}
+
+async function execDraftMensajeriaToAnabel(args: DraftToAnabelArgs, ctx: AguilaCtx): Promise<ActionProposalResponse> {
+  const subjectEs = String(args.subjectEs ?? '').trim()
+  const bodyEs = String(args.bodyEs ?? '').trim()
+  const payload: Record<string, unknown> = {
+    subject_es: subjectEs,
+    body_es: bodyEs,
+  }
+  const related = String(args.relatedTraficoId ?? '').trim()
+  if (related) payload.related_trafico_id = related
+  const ped = String(args.relatedPedimento ?? '').trim()
+  if (ped) payload.related_pedimento = ped
+  const summaryEs = `Mensaje a Anabel — ${truncate(subjectEs || 'sin asunto', 80)}`
+  return proposalEnvelope(ctx, 'draft_mensajeria_to_anabel', payload, summaryEs)
+}
+
+async function execOpenOcaRequest(args: OpenOcaArgs, ctx: AguilaCtx): Promise<ActionProposalResponse> {
+  const productDescriptionEs = String(args.productDescriptionEs ?? '').trim()
+  const reasonEs = String(args.reasonEs ?? '').trim()
+  const payload: Record<string, unknown> = {
+    product_description_es: productDescriptionEs,
+    reason_es: reasonEs,
+  }
+  const fraccion = String(args.fraccion ?? '').trim()
+  if (fraccion) payload.fraccion = fraccion
+  const traficoId = String(args.traficoId ?? '').trim()
+  if (traficoId) payload.trafico_id = traficoId
+  const cveProducto = String(args.cveProducto ?? '').trim()
+  if (cveProducto) payload.cve_producto = cveProducto
+  const summaryEs = `OCA — ${truncate(productDescriptionEs || 'producto sin descripción', 80)}`
+  return proposalEnvelope(ctx, 'open_oca_request', payload, summaryEs)
+}
+
 async function execSuggestClasificacion(args: SuggestClasificacionArgs, ctx: AguilaCtx) {
   const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
   return suggestClasificacion(supabaseAdmin, companyId, {
@@ -1330,3 +1550,4 @@ export type { ValidatePedimentoResult, ValidationCheck } from './tool-helpers/va
 export type { TmecEligibilityResult } from './tool-helpers/check-tmec'
 export type { SupplierHistoryResult, SupplierHistoryMatch } from './tool-helpers/supplier-history'
 export type { MissingDocsResult } from './tool-helpers/find-missing-docs'
+

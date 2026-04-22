@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   traficoHref,
   fraccionHref,
@@ -17,6 +17,17 @@ interface DataRefs {
   suppliers: string[]
 }
 
+interface PendingAction {
+  action_id: string
+  kind: string
+  summary_es: string
+  commit_deadline_at: string
+  /** 'pending' = inside 5s window · 'committed' / 'cancelled' = terminal */
+  status: 'pending' | 'committed' | 'cancelled' | 'error'
+  /** Spanish message shown after terminal transition. */
+  resolution_es?: string
+}
+
 export function AduanaAskPanel() {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
@@ -25,6 +36,8 @@ export function AduanaAskPanel() {
   const [statusLabel, setStatusLabel] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [dataRefs, setDataRefs] = useState<DataRefs | null>(null)
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
+  const [secondsLeft, setSecondsLeft] = useState<number>(0)
 
   // Persist the conversation + session ids between turns so the route
   // can load prior history. Survives re-renders; resets on page reload.
@@ -54,6 +67,7 @@ export function AduanaAskPanel() {
     setStatusLabel('Analizando tu pregunta...')
     setSuggestions([])
     setDataRefs(null)
+    setPendingAction(null)
 
     try {
       const res = await fetch('/api/cruz-ai/ask', {
@@ -101,6 +115,17 @@ export function AduanaAskPanel() {
             setSuggestions(Array.isArray(evt.items) ? (evt.items as string[]) : [])
           } else if (type === 'data') {
             setDataRefs(evt.refs as DataRefs)
+          } else if (type === 'action') {
+            // Phase 5 Option 1 — write-gated tool proposed an action
+            // with a 5-second cancel window. UI owns the countdown +
+            // auto-commit; server owns the deadline as source of truth.
+            setPendingAction({
+              action_id: String(evt.action_id ?? ''),
+              kind: String(evt.kind ?? ''),
+              summary_es: String(evt.summary_es ?? ''),
+              commit_deadline_at: String(evt.commit_deadline_at ?? ''),
+              status: 'pending',
+            })
           } else if (type === 'done') {
             doneSignaled = true
             setIsFallback(Boolean(evt.fallback))
@@ -122,6 +147,97 @@ export function AduanaAskPanel() {
       setStatusLabel(null)
       setLoading(false)
       setQuestion('')
+    }
+  }
+
+  // Countdown + auto-commit effect. Runs while a `pending` action is
+  // in flight. Recomputes seconds-left each tick against the server's
+  // `commit_deadline_at` so clock drift doesn't extend the window.
+  useEffect(() => {
+    if (!pendingAction || pendingAction.status !== 'pending') {
+      setSecondsLeft(0)
+      return
+    }
+    const deadlineMs = Date.parse(pendingAction.commit_deadline_at)
+    let cancelled = false
+
+    const tick = () => {
+      if (cancelled) return
+      const left = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000))
+      setSecondsLeft(left)
+      if (left <= 0) {
+        void commitNow(pendingAction.action_id)
+      }
+    }
+    tick()
+    const iv = window.setInterval(tick, 250)
+    return () => { cancelled = true; window.clearInterval(iv) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAction?.action_id, pendingAction?.status])
+
+  async function commitNow(actionId: string) {
+    try {
+      const res = await fetch('/api/cruz-ai/actions/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actionId }),
+      })
+      const body = (await res.json().catch(() => null)) as
+        | { data?: { status?: string; message_es?: string }; error?: { message?: string } | null }
+        | null
+      if (res.ok && body?.data?.status === 'committed') {
+        setPendingAction((prev) =>
+          prev && prev.action_id === actionId
+            ? { ...prev, status: 'committed', resolution_es: body.data?.message_es ?? 'Acción confirmada.' }
+            : prev,
+        )
+      } else {
+        setPendingAction((prev) =>
+          prev && prev.action_id === actionId
+            ? { ...prev, status: 'error', resolution_es: body?.error?.message ?? 'No se pudo confirmar la acción.' }
+            : prev,
+        )
+      }
+    } catch {
+      setPendingAction((prev) =>
+        prev && prev.action_id === actionId
+          ? { ...prev, status: 'error', resolution_es: 'No se pudo contactar al servidor para confirmar.' }
+          : prev,
+      )
+    }
+  }
+
+  async function cancelNow(actionId: string) {
+    // Optimistic — snap to cancelled locally so the countdown stops;
+    // if the server disagrees (race with auto-commit) we swap back.
+    setPendingAction((prev) =>
+      prev && prev.action_id === actionId ? { ...prev, status: 'cancelled' } : prev,
+    )
+    try {
+      const res = await fetch('/api/cruz-ai/actions/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actionId, reasonEs: 'user_clicked_cancel' }),
+      })
+      const body = (await res.json().catch(() => null)) as
+        | { data?: { status?: string; message_es?: string }; error?: { message?: string } | null }
+        | null
+      setPendingAction((prev) => {
+        if (!prev || prev.action_id !== actionId) return prev
+        if (res.ok && body?.data?.status === 'cancelled') {
+          return { ...prev, status: 'cancelled', resolution_es: body.data?.message_es ?? 'Acción cancelada.' }
+        }
+        if (body?.data?.status === 'committed') {
+          return { ...prev, status: 'committed', resolution_es: 'La acción ya se había confirmado.' }
+        }
+        return { ...prev, status: 'error', resolution_es: body?.error?.message ?? 'No se pudo cancelar.' }
+      })
+    } catch {
+      setPendingAction((prev) =>
+        prev && prev.action_id === actionId
+          ? { ...prev, status: 'error', resolution_es: 'No se pudo contactar al servidor para cancelar.' }
+          : prev,
+      )
     }
   }
 
@@ -210,6 +326,101 @@ export function AduanaAskPanel() {
           }}
         >
           {statusLabel}
+        </div>
+      )}
+
+      {pendingAction && (
+        <div
+          role="alertdialog"
+          aria-live="assertive"
+          aria-label="Ventana de cancelación de 5 segundos"
+          style={{
+            marginTop: 12,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background:
+              pendingAction.status === 'cancelled'
+                ? 'rgba(192,197,206,0.08)'
+                : pendingAction.status === 'committed'
+                  ? 'rgba(34,197,94,0.08)'
+                  : pendingAction.status === 'error'
+                    ? 'rgba(239,68,68,0.08)'
+                    : 'rgba(251,191,36,0.08)',
+            border:
+              pendingAction.status === 'cancelled'
+                ? '1px solid rgba(192,197,206,0.25)'
+                : pendingAction.status === 'committed'
+                  ? '1px solid rgba(34,197,94,0.3)'
+                  : pendingAction.status === 'error'
+                    ? '1px solid rgba(239,68,68,0.3)'
+                    : '1px solid rgba(251,191,36,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-2)', fontWeight: 600 }}>
+              {pendingAction.status === 'pending'
+                ? 'Acción propuesta'
+                : pendingAction.status === 'committed'
+                  ? 'Confirmada'
+                  : pendingAction.status === 'cancelled'
+                    ? 'Cancelada'
+                    : 'Error'}
+            </div>
+            <div
+              style={{
+                fontSize: 'var(--aguila-fs-compact)',
+                color: 'var(--portal-fg-3)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {pendingAction.summary_es}
+            </div>
+            {pendingAction.resolution_es && (
+              <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)' }}>
+                {pendingAction.resolution_es}
+              </div>
+            )}
+          </div>
+          {pendingAction.status === 'pending' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <span
+                aria-label={`Se confirma en ${secondsLeft} segundos`}
+                style={{
+                  minWidth: 60,
+                  textAlign: 'center',
+                  padding: '4px 10px',
+                  borderRadius: 8,
+                  background: 'rgba(0,0,0,0.25)',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                  fontSize: 'var(--aguila-fs-compact)',
+                  color: 'var(--portal-fg-2)',
+                }}
+              >
+                {secondsLeft}s
+              </span>
+              <button
+                onClick={() => cancelNow(pendingAction.action_id)}
+                style={{
+                  minHeight: 36,
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(239,68,68,0.35)',
+                  background: 'rgba(239,68,68,0.12)',
+                  color: 'var(--portal-fg-1)',
+                  fontSize: 'var(--aguila-fs-compact)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
         </div>
       )}
 

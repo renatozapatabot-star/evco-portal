@@ -38,7 +38,77 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ## Currently pending
 
-*(none — drained 2026-04-21 · see "Applied this session" below)*
+### `20260422140000_trade_index_mv.sql`
+
+**What:** Trade Index V1 foundation — two materialized views + one
+k-anonymity view + one refresh RPC, all service-role-only.
+
+| Object | Shape |
+|---|---|
+| `mv_trade_index_client_position_90d` | per-(company_id, aduana, oficina) aggregate: shipment count, avg/median clearance days, total value USD, T-MEC rate |
+| `mv_trade_index_lane_90d` | per-(aduana, oficina) aggregate across all clients: shipments, distinct companies, avg/median/p10/p90 clearance, total value USD, T-MEC rate |
+| `v_trade_index_public` | k-anonymity view over lane MV — only surfaces lanes with ≥3 distinct companies |
+| `refresh_trade_index()` | `SECURITY DEFINER` RPC that runs `REFRESH MATERIALIZED VIEW CONCURRENTLY` on both MVs |
+
+Window: rolling 90 days of `traficos` with `fecha_llegada` + `fecha_cruce`
+populated, clearance bounded `[0, 60]` days, non-null `aduana` +
+`company_id`. Factura value pulled from `globalpc_facturas` on
+(company_id, cve_trafico), normalized to USD via `traficos.tipo_cambio`
+for MXN rows.
+
+**Why:** V2 benchmarking foundation — powers the `/admin/trade-index`
+leaderboard and the `TradeIndexCard` on `/mi-cuenta`. Access gate is
+the portal API layer; DB-level gate is `revoke all` + service-role
+grants only.
+
+**Rollback:**
+```sql
+drop view if exists public.v_trade_index_public cascade;
+drop materialized view if exists public.mv_trade_index_lane_90d cascade;
+drop materialized view if exists public.mv_trade_index_client_position_90d cascade;
+drop function if exists public.refresh_trade_index() cascade;
+```
+
+**Verification:**
+```sql
+select count(*) from public.mv_trade_index_lane_90d;
+select count(*) from public.mv_trade_index_client_position_90d;
+select min(distinct_company_count) from public.v_trade_index_public;
+-- → expect 3 or higher
+select public.refresh_trade_index();
+```
+
+Then `node scripts/refresh-trade-index.js --dry-run` from the workdir
+— expect successful RPC call, non-zero crossings fetched, no writes.
+
+### `20260422140100_client_benchmarks_deciles.sql`
+
+**What:** adds `p10` + `p90` numeric columns to `client_benchmarks`.
+Existing `top_quartile` / `bottom_quartile` retained for back-compat.
+
+**Why:** `scripts/refresh-trade-index.js` computes fleet p10/p90 via
+`percentile_cont` and upserts them alongside the quartiles so
+`ComparativeWidget` + the new `TradeIndexCard` can surface top/bottom
+10% bands.
+
+**Rollback:**
+```sql
+alter table public.client_benchmarks drop column if exists p90;
+alter table public.client_benchmarks drop column if exists p10;
+```
+
+**Verification:**
+```sql
+select column_name from information_schema.columns
+where table_name = 'client_benchmarks' and column_name in ('p10', 'p90');
+-- → expect 2 rows
+```
+
+After next `refresh-trade-index` cron run:
+```sql
+select count(*) from public.client_benchmarks where p10 is not null;
+-- → expect ≥ 1 per active client with 90d shipments
+```
 
 ---
 

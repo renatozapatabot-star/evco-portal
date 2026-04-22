@@ -81,13 +81,20 @@ async function sendTelegram(message) {
 
 async function logPipeline(step, status, details) {
   if (DRY_RUN) return
-  await supabase.from('pipeline_log').insert({
-    step: `${SCRIPT_NAME}:${step}`,
-    status,
-    input_summary: JSON.stringify(details),
-    timestamp: new Date().toISOString(),
-    ...(status === 'error' && { error_message: details?.error || JSON.stringify(details) }),
-  }).catch((err) => console.error('pipeline_log error:', err.message))
+  // Supabase v2 returns PostgrestResponse (not a native Promise with .catch);
+  // use try/catch on an awaited call instead of chained .catch.
+  try {
+    const { error } = await supabase.from('pipeline_log').insert({
+      step: `${SCRIPT_NAME}:${step}`,
+      status,
+      input_summary: JSON.stringify(details),
+      timestamp: new Date().toISOString(),
+      ...(status === 'error' && { error_message: details?.error || JSON.stringify(details) }),
+    })
+    if (error) console.error('pipeline_log error:', error.message)
+  } catch (err) {
+    console.error('pipeline_log threw:', err instanceof Error ? err.message : String(err))
+  }
 }
 
 // ── Previous value from anomaly_log ──
@@ -111,24 +118,32 @@ async function logMetric(client, metric, currentValue, previousValue, severity, 
     ? Math.round(((currentValue - previousValue) / previousValue) * 10000) / 100
     : null
 
+  // Real schema: id, created_at, client, metric, previous_value,
+  // current_value, delta_pct, severity. No `details` / `check_date`
+  // column — those live only in memory / stdout for the operator.
   const entry = {
-    check_date: todayDate(),
     client,
     metric,
     previous_value: previousValue,
     current_value: currentValue,
     delta_pct: deltaPct,
     severity,
-    details,
   }
 
   if (DRY_RUN) {
-    console.log(`   [LOG] ${metric}: ${currentValue} (prev: ${previousValue}, delta: ${deltaPct}%, severity: ${severity})`)
+    console.log(`   [LOG] ${metric}: ${currentValue} (prev: ${previousValue}, delta: ${deltaPct}%, severity: ${severity}${details ? `, ${JSON.stringify(details).slice(0, 80)}` : ''})`)
     return entry
   }
 
-  await supabase.from('anomaly_log').insert(entry)
-    .catch((err) => console.error(`anomaly_log insert error: ${err.message}`))
+  // Supabase v2 insert doesn't expose a native .catch — use await+try/catch.
+  try {
+    const { error } = await supabase.from('anomaly_log').insert(entry)
+    if (error) console.error(`anomaly_log insert error: ${error.message}`)
+  } catch (err) {
+    console.error(
+      `anomaly_log insert threw: ${err instanceof Error ? err.message : String(err)}`,
+    )
+  }
 
   return entry
 }

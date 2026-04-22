@@ -38,7 +38,8 @@ interface DocRow {
   file_name: string | null
   file_url: string | null
   doc_type: string | null
-  document_type: string | null
+  // Legacy alias — real column is doc_type only. document_type was always
+  // a phantom (M15 sweep). Kept in type for back-compat where referenced.
 }
 
 async function markPendingManual(
@@ -47,12 +48,12 @@ async function markPendingManual(
   session: { companyId: string; role: string },
   traficoId: string | null
 ): Promise<void> {
+  // Real columns: doc_type only. document_type + document_type_confidence
+  // were phantoms (M15 sweep). Confidence can live in metadata jsonb if
+  // we need it persisted later.
   await supabase
     .from('expediente_documentos')
-    .update({
-      document_type: 'pending_manual',
-      document_type_confidence: null,
-    })
+    .update({ doc_type: 'pending_manual' })
     .eq('id', docId)
 
   await logDecision({
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
 
   const { data: docRaw, error: fetchError } = await supabase
     .from('expediente_documentos')
-    .select('id, company_id, pedimento_id, file_name, file_url, doc_type, document_type')
+    .select('id, company_id, pedimento_id, file_name, file_url, doc_type')
     .eq('id', parsed.data.documentId)
     .single()
 
@@ -193,9 +194,11 @@ export async function POST(request: NextRequest) {
 
     const { error: updateError } = await supabase
       .from('expediente_documentos')
+      // Confidence stored in metadata jsonb (real schema has no dedicated
+      // confidence column — M15 sweep). Merge via PostgREST's object update.
       .update({
-        document_type: result.type,
-        document_type_confidence: result.confidence,
+        doc_type: result.type,
+        metadata: { classification_confidence: result.confidence },
       })
       .eq('id', doc.id)
 

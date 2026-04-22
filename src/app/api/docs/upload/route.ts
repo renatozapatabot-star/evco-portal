@@ -108,8 +108,9 @@ export async function POST(request: NextRequest) {
     .from('expediente_documentos')
     .insert({
       pedimento_id: parsed.data.traficoId,
+      // Real column is doc_type only. document_type was always a phantom
+      // (M15 sweep) — dropping it removes a silent 400 on every upload.
       doc_type: 'pending',
-      document_type: 'pending',
       file_name: file.name,
       file_url: fileUrl,
       uploaded_by: `${session.companyId}:${session.role}`,

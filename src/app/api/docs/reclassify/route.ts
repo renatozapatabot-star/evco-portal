@@ -31,8 +31,10 @@ interface DocRow {
   id: string
   company_id: string | null
   pedimento_id: string | null
-  document_type: string | null
-  document_type_confidence: number | null
+  // Real column is doc_type. No document_type or document_type_confidence.
+  // Confidence was written but never persisted (phantom column silently
+  // dropped by PostgREST); simply dropped now per M15 sweep.
+  doc_type: string | null
 }
 
 export async function POST(request: NextRequest) {
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
 
   const { data: docRaw, error: fetchError } = await supabase
     .from('expediente_documentos')
-    .select('id, company_id, pedimento_id, document_type, document_type_confidence')
+    .select('id, company_id, pedimento_id, doc_type')
     .eq('id', parsed.data.documentId)
     .single()
 
@@ -86,14 +88,12 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const originalType = doc.document_type
-  const originalConfidence = doc.document_type_confidence
+  const originalType = doc.doc_type
 
   const { error: updateError } = await supabase
     .from('expediente_documentos')
     .update({
-      document_type: parsed.data.newType,
-      document_type_confidence: 1, // human override = full confidence
+      doc_type: parsed.data.newType,
     })
     .eq('id', doc.id)
 
@@ -109,11 +109,10 @@ export async function POST(request: NextRequest) {
     company_id: session.companyId,
     decision_type: 'doc_type_corrected',
     decision: parsed.data.newType,
-    reasoning: `Operator reclassified from ${originalType ?? 'null'} (confidence ${originalConfidence ?? 'null'})`,
+    reasoning: `Operator reclassified from ${originalType ?? 'null'}`,
     dataPoints: {
       document_id: doc.id,
       original_type: originalType,
-      original_confidence: originalConfidence,
       corrected_by: `${session.companyId}:${session.role}`,
     },
   })

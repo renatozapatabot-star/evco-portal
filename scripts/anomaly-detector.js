@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CRUZ — Nightly Data Quality Anomaly Detector
+ * PORTAL — Nightly Data Quality Anomaly Detector
  *
  * Runs after globalpc-sync completes. Compares today's data vs yesterday
  * for each client. Alerts on regressions — stays silent when healthy.
@@ -11,6 +11,21 @@
  *   3. High-value outliers (valor > 2x rolling average)
  *   4. Duplicate pedimento numbers
  *   5. Stale traficos (missing pedimento for > 7 days)
+ *   6. Zombie tráficos (En Proceso > 30 days)
+ *   7. Missing T-MEC (US/CA origin without ITE/ITR/IMD régimen)
+ *   8. Duplicate descriptions on same day
+ *
+ * Reliability contract (fix/sync-reliability-2026-04-22):
+ *   · Every Supabase query goes through `safeQuery()` — 2 retries with
+ *     linear backoff on transient errors. No hand-rolled try/catch
+ *     around `.from().select()` chains that silently ran with undefined
+ *     `data`.
+ *   · Every check runs inside `runCheck()` — if one throws, the other
+ *     seven still run. Failures surface in the final Telegram message,
+ *     never silent.
+ *   · Structured per-check log line: `[anomaly-detector][<client>][check=<name>]
+ *     <ok|fail> dur=<ms> …`. Stable enough for operators to grep.
+ *   · Aggregate summary at end: `checks_run=N passed=X failed=Y alerts=Z`.
  *
  * Alert thresholds:
  *   - > 5% regression in any metric → 🔴 Telegram alert
@@ -64,6 +79,94 @@ function todayDate() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }) // YYYY-MM-DD
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Structured log line — single format operators can grep.
+ * Example:
+ *   [anomaly-detector][evco][check=row_counts] ok dur=234ms rows=3439
+ */
+function structLog(level, client, check, status, extra = {}) {
+  const parts = [`[${SCRIPT_NAME}]`]
+  if (client) parts.push(`[${client}]`)
+  if (check) parts.push(`[check=${check}]`)
+  parts.push(status)
+  for (const [k, v] of Object.entries(extra)) {
+    if (v == null) continue
+    parts.push(`${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`)
+  }
+  const line = parts.join(' ')
+  if (level === 'error') console.error(line)
+  else console.log(line)
+}
+
+/**
+ * Wrap a Supabase query builder with 2 retries + linear backoff on
+ * transient errors. Never throws — returns a `{ data, count, error }`
+ * shape so callers can destructure and skip the check gracefully.
+ *
+ * We retry on either a thrown exception (network blip) OR a resolved
+ * response with a non-null `error` (Postgres error). We do NOT retry
+ * on `data: null` with `error: null` — that's a legitimate empty set.
+ */
+async function safeQuery(queryFn, { retries = 2, backoffMs = 500, label = 'query' } = {}) {
+  let lastErr = null
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const result = await queryFn()
+      if (result && result.error) {
+        lastErr = result.error
+        if (attempt < retries) {
+          structLog('error', null, null, `retry[${attempt + 1}/${retries}]`, {
+            label, err: lastErr.message || String(lastErr),
+          })
+          await sleep(backoffMs * (attempt + 1))
+          continue
+        }
+        return { data: null, count: null, error: lastErr }
+      }
+      return result ?? { data: null, count: null, error: null }
+    } catch (e) {
+      lastErr = e
+      if (attempt < retries) {
+        structLog('error', null, null, `retry[${attempt + 1}/${retries}]`, {
+          label, err: e instanceof Error ? e.message : String(e),
+        })
+        await sleep(backoffMs * (attempt + 1))
+        continue
+      }
+      return {
+        data: null,
+        count: null,
+        error: lastErr instanceof Error ? lastErr : new Error(String(lastErr)),
+      }
+    }
+  }
+  return { data: null, count: null, error: lastErr }
+}
+
+/**
+ * Run a single check with its own timing + try/catch. One check
+ * throwing never blocks the others from running. Returns a uniform
+ * outcome record so the aggregator can summarize at the end.
+ */
+async function runCheck(name, client, fn) {
+  const start = Date.now()
+  try {
+    const result = await fn()
+    const duration_ms = Date.now() - start
+    structLog('info', client, name, 'ok', { dur_ms: duration_ms })
+    return { name, client, status: 'ok', duration_ms, result: result ?? [], error: null }
+  } catch (e) {
+    const duration_ms = Date.now() - start
+    const err = e instanceof Error ? e.message : String(e)
+    structLog('error', client, name, 'fail', { dur_ms: duration_ms, err })
+    return { name, client, status: 'fail', duration_ms, result: null, error: err }
+  }
+}
+
 async function sendTelegram(message) {
   if (DRY_RUN) { console.log('[TG dry-run]', message.replace(/<[^>]+>/g, '')); return }
   if (process.env.TELEGRAM_SILENT === 'true') return
@@ -101,14 +204,17 @@ async function logPipeline(step, status, details) {
 
 async function getPrevious(client, metric) {
   // Exclude today's own rows so a same-day retry still compares to yesterday.
-  const { data } = await supabase
-    .from('anomaly_log')
-    .select('current_value')
-    .eq('client', client)
-    .eq('metric', metric)
-    .lt('check_date', todayDate())
-    .order('check_date', { ascending: false })
-    .limit(1)
+  const { data } = await safeQuery(
+    () => supabase
+      .from('anomaly_log')
+      .select('current_value')
+      .eq('client', client)
+      .eq('metric', metric)
+      .lt('check_date', todayDate())
+      .order('check_date', { ascending: false })
+      .limit(1),
+    { label: `getPrevious:${metric}` },
+  )
 
   return data?.[0]?.current_value ?? null
 }
@@ -138,7 +244,6 @@ async function logMetric(client, metric, currentValue, previousValue, severity, 
     return entry
   }
 
-  // Supabase v2 insert doesn't expose a native .catch — use await+try/catch.
   try {
     const { error } = await supabase.from('anomaly_log').insert(entry)
     if (error) console.error(`anomaly_log insert error: ${error.message}`)
@@ -162,10 +267,13 @@ async function checkRowCounts(client) {
     const filterCol = table === 'aduanet_facturas' ? 'clave_cliente' : 'company_id'
     const filterVal = table === 'aduanet_facturas' ? getClientClave(client) : client
 
-    const { count, error } = await supabase
-      .from(table)
-      .select('id', { count: 'exact', head: true })
-      .eq(filterCol, filterVal)
+    const { count, error } = await safeQuery(
+      () => supabase
+        .from(table)
+        .select('id', { count: 'exact', head: true })
+        .eq(filterCol, filterVal),
+      { label: `row_count:${table}` },
+    )
 
     if (error) {
       console.error(`   ❌ ${table} count failed: ${error.message}`)
@@ -197,11 +305,17 @@ async function checkRowCounts(client) {
 // ── Check 2: Expediente coverage ──
 
 async function checkCoverage(client) {
-  // Coverage = traficos with at least one doc in expediente_documentos
-  const { count: total } = await supabase
-    .from('traficos')
-    .select('id', { count: 'exact', head: true })
-    .eq('company_id', client)
+  const { count: total, error: totalErr } = await safeQuery(
+    () => supabase
+      .from('traficos')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', client),
+    { label: 'coverage:total' },
+  )
+
+  if (totalErr) {
+    throw new Error(`coverage total count failed: ${totalErr.message}`)
+  }
 
   if (!total || total === 0) {
     await logMetric(client, 'expediente_coverage', 0, null, 'ok')
@@ -211,21 +325,37 @@ async function checkCoverage(client) {
 
   // Get tráfico claves that have at least one doc.
   // Column on traficos is `trafico` (business clave), not `trafico_id`.
-  const { data: traficos } = await supabase
-    .from('traficos')
-    .select('trafico')
-    .eq('company_id', client)
+  const { data: traficos, error: traficosErr } = await safeQuery(
+    () => supabase
+      .from('traficos')
+      .select('trafico')
+      .eq('company_id', client),
+    { label: 'coverage:traficos' },
+  )
+
+  if (traficosErr) {
+    throw new Error(`coverage traficos list failed: ${traficosErr.message}`)
+  }
 
   const traficoIds = (traficos || []).map(t => t.trafico)
 
   let withDocs = 0
-  // Check in batches
   for (let i = 0; i < traficoIds.length; i += 200) {
     const batch = traficoIds.slice(i, i + 200)
-    const { data: docs } = await supabase
-      .from('expediente_documentos')
-      .select('pedimento_id')
-      .in('pedimento_id', batch)
+    const { data: docs, error: docsErr } = await safeQuery(
+      () => supabase
+        .from('expediente_documentos')
+        .select('pedimento_id')
+        .in('pedimento_id', batch),
+      { label: `coverage:docs[${i}]` },
+    )
+
+    if (docsErr) {
+      // Skip this batch but keep counting — partial coverage is better
+      // than aborting the whole check.
+      console.error(`   ⚠️ expediente_documentos batch ${i} failed: ${docsErr.message}`)
+      continue
+    }
 
     const unique = new Set((docs || []).map(d => d.pedimento_id))
     withDocs += unique.size
@@ -260,12 +390,19 @@ async function checkHighValueOutliers(client) {
   // 90-day average valor_usd
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: historical } = await supabase
-    .from('aduanet_facturas')
-    .select('valor_usd')
-    .eq(filterCol, filterVal)
-    .gte('fecha_pago', ninetyDaysAgo)
-    .not('valor_usd', 'is', null)
+  const { data: historical, error: histErr } = await safeQuery(
+    () => supabase
+      .from('aduanet_facturas')
+      .select('valor_usd')
+      .eq(filterCol, filterVal)
+      .gte('fecha_pago', ninetyDaysAgo)
+      .not('valor_usd', 'is', null),
+    { label: 'outliers:historical' },
+  )
+
+  if (histErr) {
+    throw new Error(`outliers historical failed: ${histErr.message}`)
+  }
 
   if (!historical || historical.length < 5) {
     console.log('   ⏭️  high_value_outliers: not enough historical data')
@@ -278,13 +415,20 @@ async function checkHighValueOutliers(client) {
   // Check last 24h for outliers
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: recent } = await supabase
-    .from('aduanet_facturas')
-    .select('id, valor_usd, pedimento, proveedor')
-    .eq(filterCol, filterVal)
-    .gte('created_at', oneDayAgo)
-    .not('valor_usd', 'is', null)
-    .gt('valor_usd', threshold)
+  const { data: recent, error: recentErr } = await safeQuery(
+    () => supabase
+      .from('aduanet_facturas')
+      .select('id, valor_usd, pedimento, proveedor')
+      .eq(filterCol, filterVal)
+      .gte('created_at', oneDayAgo)
+      .not('valor_usd', 'is', null)
+      .gt('valor_usd', threshold),
+    { label: 'outliers:recent' },
+  )
+
+  if (recentErr) {
+    throw new Error(`outliers recent failed: ${recentErr.message}`)
+  }
 
   const outlierCount = (recent || []).length
   const severity = outlierCount > 0 ? 'warning' : 'ok'
@@ -314,12 +458,18 @@ async function checkHighValueOutliers(client) {
 // ── Check 4: Duplicate pedimento numbers ──
 
 async function checkDuplicatePedimentos(client) {
-  // Find pedimento numbers that appear more than once for this client
-  const { data: traficos } = await supabase
-    .from('traficos')
-    .select('trafico, pedimento')
-    .eq('company_id', client)
-    .not('pedimento', 'is', null)
+  const { data: traficos, error } = await safeQuery(
+    () => supabase
+      .from('traficos')
+      .select('trafico, pedimento')
+      .eq('company_id', client)
+      .not('pedimento', 'is', null),
+    { label: 'dupes:traficos' },
+  )
+
+  if (error) {
+    throw new Error(`duplicate_pedimentos query failed: ${error.message}`)
+  }
 
   if (!traficos || traficos.length === 0) {
     console.log('   ✅ duplicate_pedimentos: no pedimentos to check')
@@ -362,17 +512,19 @@ async function checkDuplicatePedimentos(client) {
 async function checkStaleTraficos(client) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: stale, error } = await supabase
-    .from('traficos')
-    .select('trafico, estatus, fecha_llegada')
-    .eq('company_id', client)
-    .in('estatus', ['En Proceso', 'en proceso', 'EN PROCESO'])
-    .is('pedimento', null)
-    .lt('fecha_llegada', sevenDaysAgo)
+  const { data: stale, error } = await safeQuery(
+    () => supabase
+      .from('traficos')
+      .select('trafico, estatus, fecha_llegada')
+      .eq('company_id', client)
+      .in('estatus', ['En Proceso', 'en proceso', 'EN PROCESO'])
+      .is('pedimento', null)
+      .lt('fecha_llegada', sevenDaysAgo),
+    { label: 'stale:traficos' },
+  )
 
   if (error) {
-    console.error(`   ❌ stale traficos query failed: ${error.message}`)
-    return []
+    throw new Error(`stale traficos query failed: ${error.message}`)
   }
 
   const count = (stale || []).length
@@ -397,6 +549,100 @@ async function checkStaleTraficos(client) {
   return count > 0 ? [{ metric: 'stale_traficos', severity, count }] : []
 }
 
+// ── Check 6: Zombie tráficos (En Proceso > 30 days) ──
+
+async function checkZombies(client) {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
+  const { data: zombies, error } = await safeQuery(
+    () => supabase
+      .from('traficos')
+      .select('trafico, fecha_llegada')
+      .eq('company_id', client)
+      .neq('estatus', 'Cruzado')
+      .lt('fecha_llegada', thirtyDaysAgo)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
+      .limit(100),
+    { label: 'zombies:traficos' },
+  )
+
+  if (error) {
+    throw new Error(`zombie traficos query failed: ${error.message}`)
+  }
+
+  const zombieCount = zombies?.length || 0
+  if (zombieCount > 0) {
+    const severity = zombieCount > 10 ? 'warning' : 'info'
+    await logMetric(client, 'zombie_traficos', zombieCount, null, severity, {
+      sample: zombies?.slice(0, 5),
+    })
+    console.log(`   ⚠️ zombie_traficos: ${zombieCount}`)
+    return [{ metric: 'zombie_traficos', severity, count: zombieCount }]
+  }
+
+  console.log(`   ✅ zombie_traficos: none`)
+  return []
+}
+
+// ── Check 7: Missing T-MEC (US/CA origin without ITE/ITR/IMD) ──
+
+async function checkMissingTmec(client) {
+  const usTrafs = await fetchAll(
+    supabase
+      .from('traficos')
+      .select('trafico, regimen, pais_procedencia')
+      .eq('company_id', client)
+      .gte('fecha_llegada', PORTAL_DATE_FROM)
+      .in('pais_procedencia', ['US', 'USA', 'ESTADOS UNIDOS', 'CA', 'CAN', 'CANADA']),
+  )
+  const missingTmec = (usTrafs || []).filter(t => {
+    const r = (t.regimen || '').toUpperCase()
+    return r !== 'ITE' && r !== 'ITR' && r !== 'IMD'
+  })
+  if (missingTmec.length > 0) {
+    await logMetric(client, 'missing_tmec', missingTmec.length, null, 'warning', {
+      sample: missingTmec.slice(0, 5).map(t => t.trafico),
+    })
+    console.log(`   ⚠️ missing_tmec: ${missingTmec.length}`)
+    return [{ metric: 'missing_tmec', severity: 'warning', count: missingTmec.length }]
+  }
+  console.log(`   ✅ missing_tmec: none`)
+  return []
+}
+
+// ── Check 8: Duplicate descriptions on same day ──
+
+async function checkDuplicateDescriptions(client) {
+  const recentTrafs = await fetchAll(
+    supabase
+      .from('traficos')
+      .select('trafico, descripcion_mercancia, fecha_llegada')
+      .eq('company_id', client)
+      .gte('fecha_llegada', new Date(Date.now() - 30 * 86400000).toISOString()),
+  )
+  const dayDescMap = new Map()
+  const dupDescs = []
+  for (const t of (recentTrafs || [])) {
+    const day = (t.fecha_llegada || '').split('T')[0]
+    const desc = (t.descripcion_mercancia || '').toLowerCase().trim()
+    if (!day || !desc) continue
+    const key = `${day}:${desc}`
+    if (dayDescMap.has(key)) {
+      dupDescs.push({ trafico: t.trafico, dup_of: dayDescMap.get(key), day, desc: desc.substring(0, 40) })
+    } else {
+      dayDescMap.set(key, t.trafico)
+    }
+  }
+  if (dupDescs.length > 0) {
+    await logMetric(client, 'duplicate_descriptions', dupDescs.length, null, 'info', {
+      sample: dupDescs.slice(0, 5),
+    })
+    console.log(`   ⚠️ duplicate_descriptions: ${dupDescs.length}`)
+    return [{ metric: 'duplicate_descriptions', severity: 'info', count: dupDescs.length }]
+  }
+  console.log(`   ✅ duplicate_descriptions: none`)
+  return []
+}
+
 // ── Client clave mapping ──
 // aduanet_facturas uses clave_cliente (numeric string), not company_id slug
 
@@ -410,11 +656,82 @@ function getClientClave(companyId) {
 
 // ── Main ──
 
+const CHECK_DEFINITIONS = [
+  { name: 'row_counts',             fn: checkRowCounts },
+  { name: 'expediente_coverage',    fn: checkCoverage },
+  { name: 'high_value_outliers',    fn: checkHighValueOutliers },
+  { name: 'duplicate_pedimentos',   fn: checkDuplicatePedimentos },
+  { name: 'stale_traficos',         fn: checkStaleTraficos },
+  { name: 'zombie_traficos',        fn: checkZombies },
+  { name: 'missing_tmec',           fn: checkMissingTmec },
+  { name: 'duplicate_descriptions', fn: checkDuplicateDescriptions },
+]
+
+function alertLinesForCheck(name, rows) {
+  const lines = []
+  if (!Array.isArray(rows)) return lines
+  switch (name) {
+    case 'row_counts':
+      for (const r of rows) {
+        if (r.severity === 'critical') {
+          lines.push(`🔴 <b>${r.table}</b>: rows ${r.current_value} (was ${r.previous_value}, ${r.delta_pct > 0 ? '+' : ''}${r.delta_pct}%)`)
+        }
+      }
+      break
+    case 'expediente_coverage':
+      for (const r of rows) {
+        if (r.severity === 'critical') {
+          lines.push(`🔴 <b>expediente coverage</b>: ${r.current_value}% (was ${r.previous_value}%)`)
+        }
+      }
+      break
+    case 'high_value_outliers':
+      for (const r of rows) {
+        if (r.severity !== 'ok') {
+          lines.push(`⚠️ <b>valor alto</b>: ${r.count} factura(s) > 2x promedio 90d`)
+        }
+      }
+      break
+    case 'duplicate_pedimentos':
+      for (const r of rows) {
+        if (r.severity !== 'ok') {
+          lines.push(`🔴 <b>pedimentos duplicados</b>: ${r.count}`)
+        }
+      }
+      break
+    case 'stale_traficos':
+      for (const r of rows) {
+        if (r.severity === 'critical') {
+          lines.push(`🔴 <b>tráficos estancados</b>: ${r.count} sin pedimento > 7 días`)
+        } else if (r.severity === 'warning') {
+          lines.push(`⚠️ <b>tráficos estancados</b>: ${r.count} sin pedimento > 7 días`)
+        }
+      }
+      break
+    case 'zombie_traficos':
+      for (const r of rows) {
+        lines.push(`🟡 <b>zombies</b>: ${r.count} tráficos "En Proceso" > 30 días`)
+      }
+      break
+    case 'missing_tmec':
+      for (const r of rows) {
+        lines.push(`💰 <b>T-MEC faltante</b>: ${r.count} de US/CA sin régimen preferencial`)
+      }
+      break
+    case 'duplicate_descriptions':
+      for (const r of rows) {
+        lines.push(`⚠️ <b>posible doble entrada</b>: ${r.count} con misma descripción en mismo día`)
+      }
+      break
+  }
+  return lines
+}
+
 async function run() {
   const startTime = Date.now()
   const prefix = DRY_RUN ? '[DRY-RUN] ' : ''
 
-  console.log(`\n🔍 ${prefix}CRUZ — Anomaly Detector`)
+  console.log(`\n🔍 ${prefix}PORTAL — Anomaly Detector`)
   console.log(`   ${nowCST()}`)
   console.log(`   Patente 3596 · Aduana 240`)
   console.log('═'.repeat(55))
@@ -422,160 +739,93 @@ async function run() {
   await logPipeline('startup', 'success', { mode: DRY_RUN ? 'dry-run' : 'production', clients: CLIENTS })
 
   const allAlerts = []
+  const allOutcomes = []
 
   for (const client of CLIENTS) {
     console.log(`\n── Cliente: ${client.toUpperCase()}`)
 
-    const rowResults = await checkRowCounts(client)
-    const coverageResults = await checkCoverage(client)
-    const outlierResults = await checkHighValueOutliers(client)
-    const dupeResults = await checkDuplicatePedimentos(client)
-    const staleResults = await checkStaleTraficos(client)
-
-    // Collect alerts (warning + critical only)
     const clientAlerts = []
+    const failedChecks = []
 
-    for (const r of rowResults) {
-      if (r.severity === 'critical') {
-        clientAlerts.push(`🔴 <b>${r.table}</b>: rows ${r.current_value} (was ${r.previous_value}, ${r.delta_pct > 0 ? '+' : ''}${r.delta_pct}%)`)
+    for (const { name, fn } of CHECK_DEFINITIONS) {
+      const outcome = await runCheck(name, client, () => fn(client))
+      allOutcomes.push(outcome)
+      if (outcome.status === 'fail') {
+        failedChecks.push({ name, error: outcome.error })
+        continue
       }
+      const lines = alertLinesForCheck(name, outcome.result)
+      for (const l of lines) clientAlerts.push(l)
     }
 
-    for (const r of coverageResults) {
-      if (r.severity === 'critical') {
-        clientAlerts.push(`🔴 <b>expediente coverage</b>: ${r.current_value}% (was ${r.previous_value}%)`)
-      }
-    }
-
-    for (const r of outlierResults) {
-      if (r.severity !== 'ok') {
-        clientAlerts.push(`⚠️ <b>valor alto</b>: ${r.count} factura(s) > 2x promedio 90d`)
-      }
-    }
-
-    for (const r of dupeResults) {
-      if (r.severity !== 'ok') {
-        clientAlerts.push(`🔴 <b>pedimentos duplicados</b>: ${r.count}`)
-      }
-    }
-
-    for (const r of staleResults) {
-      if (r.severity === 'critical') {
-        clientAlerts.push(`🔴 <b>tráficos estancados</b>: ${r.count} sin pedimento > 7 días`)
-      } else if (r.severity === 'warning') {
-        clientAlerts.push(`⚠️ <b>tráficos estancados</b>: ${r.count} sin pedimento > 7 días`)
-      }
-    }
-
-    // ── Check 6: Zombie tráficos (En Proceso > 30 days) ──
-    console.log('   Check 6: zombie_traficos...')
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
-    const { data: zombies } = await supabase
-      .from('traficos')
-      .select('trafico, fecha_llegada')
-      .eq('company_id', client)
-      .neq('estatus', 'Cruzado')
-      .lt('fecha_llegada', thirtyDaysAgo)
-      .gte('fecha_llegada', PORTAL_DATE_FROM)
-      .limit(100)
-    const zombieCount = zombies?.length || 0
-    if (zombieCount > 0) {
-      clientAlerts.push(`🟡 <b>zombies</b>: ${zombieCount} tráficos "En Proceso" > 30 días`)
-      await logMetric(client, 'zombie_traficos', zombieCount, null, zombieCount > 10 ? 'warning' : 'info', { sample: zombies?.slice(0, 5) })
-      console.log(`   ⚠️ zombie_traficos: ${zombieCount}`)
-    } else {
-      console.log(`   ✅ zombie_traficos: none`)
-    }
-
-    // ── Check 7: Missing T-MEC (from US/CA without T-MEC flag) ──
-    console.log('   Check 7: missing_tmec...')
-    const usTrafs = await fetchAll(supabase
-      .from('traficos')
-      .select('trafico, regimen, pais_procedencia')
-      .eq('company_id', client)
-      .gte('fecha_llegada', PORTAL_DATE_FROM)
-      .in('pais_procedencia', ['US', 'USA', 'ESTADOS UNIDOS', 'CA', 'CAN', 'CANADA']))
-    const missingTmec = (usTrafs || []).filter(t => {
-      const r = (t.regimen || '').toUpperCase()
-      return r !== 'ITE' && r !== 'ITR' && r !== 'IMD'
-    })
-    if (missingTmec.length > 0) {
-      clientAlerts.push(`💰 <b>T-MEC faltante</b>: ${missingTmec.length} de US/CA sin régimen preferencial`)
-      await logMetric(client, 'missing_tmec', missingTmec.length, null, 'warning', { sample: missingTmec.slice(0, 5).map(t => t.trafico) })
-      console.log(`   ⚠️ missing_tmec: ${missingTmec.length}`)
-    } else {
-      console.log(`   ✅ missing_tmec: none`)
-    }
-
-    // ── Check 8: Duplicate descriptions on same day (double entry) ──
-    console.log('   Check 8: duplicate_descriptions...')
-    const recentTrafs = await fetchAll(supabase
-      .from('traficos')
-      .select('trafico, descripcion_mercancia, fecha_llegada')
-      .eq('company_id', client)
-      .gte('fecha_llegada', new Date(Date.now() - 30 * 86400000).toISOString()))
-    const dayDescMap = new Map()
-    const dupDescs = []
-    for (const t of (recentTrafs || [])) {
-      const day = (t.fecha_llegada || '').split('T')[0]
-      const desc = (t.descripcion_mercancia || '').toLowerCase().trim()
-      if (!day || !desc) continue
-      const key = `${day}:${desc}`
-      if (dayDescMap.has(key)) {
-        dupDescs.push({ trafico: t.trafico, dup_of: dayDescMap.get(key), day, desc: desc.substring(0, 40) })
-      } else {
-        dayDescMap.set(key, t.trafico)
-      }
-    }
-    if (dupDescs.length > 0) {
-      clientAlerts.push(`⚠️ <b>posible doble entrada</b>: ${dupDescs.length} con misma descripción en mismo día`)
-      await logMetric(client, 'duplicate_descriptions', dupDescs.length, null, 'info', { sample: dupDescs.slice(0, 5) })
-      console.log(`   ⚠️ duplicate_descriptions: ${dupDescs.length}`)
-    } else {
-      console.log(`   ✅ duplicate_descriptions: none`)
-    }
-
-    if (clientAlerts.length > 0) {
-      allAlerts.push({ client, alerts: clientAlerts })
+    if (clientAlerts.length > 0 || failedChecks.length > 0) {
+      allAlerts.push({ client, alerts: clientAlerts, failedChecks })
     }
   }
 
-  // Summary
+  // Aggregate summary — one line operators can grep.
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-  console.log('\n' + '═'.repeat(55))
+  const passed = allOutcomes.filter(o => o.status === 'ok').length
+  const failed = allOutcomes.filter(o => o.status === 'fail').length
+  const totalAlerts = allAlerts.reduce((n, a) => n + a.alerts.length, 0)
 
-  await logPipeline('complete', allAlerts.length > 0 ? 'partial' : 'success', {
-    clients_checked: CLIENTS.length,
-    alerts: allAlerts.length,
+  console.log('\n' + '═'.repeat(55))
+  structLog('info', null, null, 'summary', {
+    clients: CLIENTS.length,
+    checks_run: allOutcomes.length,
+    passed,
+    failed,
+    alerts: totalAlerts,
     duration_s: parseFloat(elapsed),
   })
 
-  // Telegram — only if there are alerts (no spam when healthy)
-  if (allAlerts.length > 0) {
+  await logPipeline('complete', failed > 0 ? 'partial' : (totalAlerts > 0 ? 'partial' : 'success'), {
+    clients_checked: CLIENTS.length,
+    checks_run: allOutcomes.length,
+    passed,
+    failed,
+    alerts: totalAlerts,
+    duration_s: parseFloat(elapsed),
+  })
+
+  // Telegram — only if there are anomalies OR failed checks. Silent when healthy.
+  const shouldAlert = allAlerts.length > 0 || failed > 0
+  if (shouldAlert) {
     const lines = [
       `🚨 <b>ANOMALY DETECTOR — ALERTA</b>`,
       `${nowCST()}`,
       '',
     ]
 
-    for (const { client, alerts } of allAlerts) {
+    for (const { client, alerts, failedChecks } of allAlerts) {
       lines.push(`<b>${client.toUpperCase()}</b>:`)
       for (const a of alerts) lines.push(`  ${a}`)
+      for (const f of failedChecks) {
+        lines.push(`  ⛔ <b>check[${f.name}] falló</b>: ${f.error}`)
+      }
       lines.push('')
     }
 
-    lines.push(`— CRUZ 🦀`)
+    lines.push(`checks ${passed}/${allOutcomes.length} pasaron · ${totalAlerts} anomalía(s) · ${elapsed}s`)
+    lines.push(`— PORTAL 🦀`)
     await sendTelegram(lines.join('\n'))
-    console.log(`\n⚠️  ${allAlerts.reduce((n, a) => n + a.alerts.length, 0)} anomalía(s) detectada(s) — alerta enviada`)
+    console.log(`\n⚠️  ${totalAlerts} anomalía(s), ${failed} check(s) fallaron — alerta enviada`)
 
-    // Log to Operational Brain
+    // Log to Operational Brain (best-effort)
     try {
       const { logDecision } = require('./decision-logger')
-      const totalAnomalies = allAlerts.reduce((n, a) => n + a.alerts.length, 0)
-      await logDecision({ decision_type: 'anomaly_resolution', decision: `${totalAnomalies} anomalías detectadas`, reasoning: allAlerts.map(a => `${a.client}: ${a.alerts.map(al => al.metric).join(', ')}`).join('; ') })
-    } catch {}
+      await logDecision({
+        decision_type: 'anomaly_resolution',
+        decision: `${totalAlerts} anomalías detectadas, ${failed} checks fallaron`,
+        reasoning: allAlerts
+          .map(a => `${a.client}: ${[...a.alerts, ...a.failedChecks.map(f => `FAIL:${f.name}`)].join(', ')}`)
+          .join('; '),
+      })
+    } catch {
+      // Decision logger is best-effort; never blocks the run.
+    }
   } else {
-    console.log(`\n✅ Sin anomalías. Duración: ${elapsed}s`)
+    console.log(`\n✅ Sin anomalías. ${passed}/${allOutcomes.length} checks pasaron. Duración: ${elapsed}s`)
   }
 }
 

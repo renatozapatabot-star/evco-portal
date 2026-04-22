@@ -51,10 +51,12 @@ export async function detectDormantClients(
   const threshold = clampThreshold(thresholdDays)
   const cutoffMs = Date.now() - threshold * 86_400_000
 
+  // companies real columns: company_id, name, rfc, active.
+  // No razon_social, no is_active (those are phantoms — M15 sweep).
   const companiesQ = supabase
     .from('companies')
-    .select('company_id, razon_social, name, rfc, is_active')
-    .eq('is_active', true)
+    .select('company_id, name, rfc, active')
+    .eq('active', true)
     .limit(500)
 
   // If a specific companyId is provided (rare — Eagle View reuse), pin to it.
@@ -64,7 +66,6 @@ export async function detectDormantClients(
 
   type CompanyRow = {
     company_id: string
-    razon_social: string | null
     name: string | null
     rfc: string | null
   }
@@ -107,7 +108,7 @@ export async function detectDormantClients(
 
     results.push({
       clienteId: c.company_id,
-      clienteName: c.razon_social ?? c.name ?? c.company_id,
+      clienteName: c.name ?? c.company_id,
       lastActivityAt: lastTrafRow.created_at,
       diasSinMovimiento: dias,
       lastInvoiceAmount: invRow?.total != null ? Number(invRow.total) : null,

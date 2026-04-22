@@ -143,11 +143,14 @@ export async function composeTrace(
         .limit(500),
     ),
     safeSelect<Record<string, unknown>>(() =>
+      // expediente_documentos real cols: id, doc_type, file_name, uploaded_by,
+      // uploaded_at. `pedimento_id` stores the trafico slug (the link column).
+      // Legacy phantom cols: document_type, created_at, trafico_id.
       supabase
         .from('expediente_documentos')
-        .select('id, file_name, document_type, doc_type, uploaded_by, created_at')
-        .eq('trafico_id', traficoId)
-        .order('created_at', { ascending: false })
+        .select('id, file_name, doc_type, uploaded_by, uploaded_at')
+        .eq('pedimento_id', traficoId)
+        .order('uploaded_at', { ascending: false })
         .limit(200),
     ),
     safeSelect<Record<string, unknown>>(() =>
@@ -222,11 +225,11 @@ export async function composeTrace(
   }
 
   for (const r of docs) {
-    const at = pickString(r, ['created_at'])
+    const at = pickString(r, ['uploaded_at'])
     if (!at) continue
     const fileName =
       pickString(r, ['file_name']) ?? 'documento'
-    const docType = pickString(r, ['document_type', 'doc_type'])
+    const docType = pickString(r, ['doc_type'])
     events.push({
       id: `doc:${String(r.id)}`,
       at,

@@ -103,68 +103,64 @@ describe('V1.5 F15 · suggestClientePatterns — aggregation', () => {
   })
 
   it('matches cliente by prefix and aggregates fracción, supplier, UMC, avg value', async () => {
+    // Fixture reflects REAL schema (post-M15 sweep):
+    //   companies: name (not razon_social), no updated_at → created_at
+    //   traficos: trafico (not cve_trafico)
+    //   globalpc_facturas: folio, cve_trafico, cve_proveedor, valor_comercial,
+    //                       moneda + separate globalpc_proveedores join for nombre
+    //   globalpc_partidas: folio + cve_producto (no cve_trafico/fraccion/umc)
+    //   globalpc_productos: cve_producto → fraccion + umt (the real enrichment)
     const sb = {
       from: makeFrom({
         companies: [
           {
             company_id: 'evco',
-            razon_social: 'EVCO Plastics de México',
-            name: 'EVCO',
+            name: 'EVCO Plastics de México',
             clave_cliente: '9254',
             rfc: 'EVC010101AAA',
-            updated_at: '2026-04-10T00:00:00Z',
+            created_at: '2026-04-10T00:00:00Z',
           },
         ],
         traficos: [
           {
             id: 't1',
-            cve_trafico: 'T-1',
+            trafico: 'T-1',
             created_at: '2026-04-08T00:00:00Z',
             assigned_to_operator_id: 'op-eduardo',
             company_id: 'evco',
           },
           {
             id: 't2',
-            cve_trafico: 'T-2',
+            trafico: 'T-2',
             created_at: '2026-04-01T00:00:00Z',
             assigned_to_operator_id: 'op-eduardo',
             company_id: 'evco',
           },
           {
             id: 't3',
-            cve_trafico: 'T-3',
+            trafico: 'T-3',
             created_at: '2026-03-25T00:00:00Z',
             assigned_to_operator_id: 'op-claudia',
             company_id: 'evco',
           },
         ],
         globalpc_facturas: [
-          {
-            cve_trafico: 'T-1',
-            iValorComercial: 40000,
-            sCveMoneda: 'USD',
-            sCveProveedor: 'PRV_1',
-            nombre_proveedor: 'Celanese',
-          },
-          {
-            cve_trafico: 'T-2',
-            iValorComercial: 44000,
-            sCveMoneda: 'USD',
-            sCveProveedor: 'PRV_1',
-            nombre_proveedor: 'Celanese',
-          },
-          {
-            cve_trafico: 'T-3',
-            iValorComercial: 42000,
-            sCveMoneda: 'MXN',
-            sCveProveedor: 'PRV_2',
-            nombre_proveedor: 'Dow',
-          },
+          { folio: 101, cve_trafico: 'T-1', cve_proveedor: 'PRV_1', valor_comercial: 40000, moneda: 'USD', company_id: 'evco' },
+          { folio: 102, cve_trafico: 'T-2', cve_proveedor: 'PRV_1', valor_comercial: 44000, moneda: 'USD', company_id: 'evco' },
+          { folio: 103, cve_trafico: 'T-3', cve_proveedor: 'PRV_2', valor_comercial: 42000, moneda: 'MXN', company_id: 'evco' },
         ],
         globalpc_partidas: [
-          { cve_trafico: 'T-1', fraccion_arancelaria: '3902.10.01', umc: 'KG', cve_umc: '1' },
-          { cve_trafico: 'T-2', fraccion_arancelaria: '3902.10.01', umc: 'KG', cve_umc: '1' },
-          { cve_trafico: 'T-3', fraccion_arancelaria: '3901.20.01', umc: 'KG', cve_umc: '1' },
+          { folio: 101, cve_producto: 'SKU_A', company_id: 'evco' },
+          { folio: 102, cve_producto: 'SKU_A', company_id: 'evco' },
+          { folio: 103, cve_producto: 'SKU_B', company_id: 'evco' },
+        ],
+        globalpc_productos: [
+          { cve_producto: 'SKU_A', fraccion: '3902.10.01', umt: 'KG', company_id: 'evco' },
+          { cve_producto: 'SKU_B', fraccion: '3901.20.01', umt: 'KG', company_id: 'evco' },
+        ],
+        globalpc_proveedores: [
+          { cve_proveedor: 'PRV_1', nombre: 'Celanese', company_id: 'evco' },
+          { cve_proveedor: 'PRV_2', nombre: 'Dow', company_id: 'evco' },
         ],
         operators: [{ id: 'op-eduardo', full_name: 'Eduardo Méndez' }],
       }),
@@ -193,11 +189,10 @@ describe('V1.5 F15 · suggestClientePatterns — aggregation', () => {
         companies: [
           {
             company_id: 'mafesa',
-            razon_social: 'MAFESA',
             name: 'MAFESA',
             clave_cliente: '4598',
             rfc: 'MAF010101BBB',
-            updated_at: '2026-04-01T00:00:00Z',
+            created_at: '2026-04-01T00:00:00Z',
           },
         ],
         traficos: [],
@@ -227,19 +222,17 @@ describe('V1.5 F15 · suggestClientePatterns — aggregation', () => {
       companies: [
         {
           company_id: 'evco',
-          razon_social: 'EVCO Plastics',
-          name: 'EVCO',
+          name: 'EVCO Plastics',
           clave_cliente: '9254',
           rfc: 'EVC010101AAA',
-          updated_at: '2026-04-10T00:00:00Z',
+          created_at: '2026-04-10T00:00:00Z',
         },
         {
           company_id: 'evolent',
-          razon_social: 'Evolent SA',
-          name: 'Evolent',
+          name: 'Evolent SA',
           clave_cliente: '1000',
           rfc: 'EVO010101CCC',
-          updated_at: '2026-04-09T00:00:00Z',
+          created_at: '2026-04-09T00:00:00Z',
         },
       ],
       traficos: [],

@@ -4787,3 +4787,172 @@ Phase 3 #1 is 100% demo-safe:
 | Wire a cron | §43.5 example + `.claude/rules/operational-resilience.md` |
 | Understand tenant isolation enforcement | §43.4 + `.claude/rules/tenant-isolation.md` |
 
+
+## §44 — Morning Briefing Cron (Phase 3 #2, Internal-Only)
+
+The first production cron that consumes the Phase 2 autonomous agent
+via the Phase 3 #1 natural-language tool layer. Sends a structured
+Spanish briefing to **Tito + Renato IV only** every morning at 06:30
+Laredo time.
+
+### §44.1 — Files
+
+| File | Role |
+|---|---|
+| `src/lib/aguila/briefing.ts` | Pure formatter. `composeMorningBriefing(input) → { text_html, text_plain, headline_es, decision_log_entry, degraded }` — unit-tested with fixtures |
+| `src/lib/aguila/__tests__/briefing.test.ts` | 13 tests — structure, caps, calm day, degraded, HTML escape, 4096-char truncation |
+| `scripts/morning-briefing.js` | Thin I/O orchestrator. Uses `tsx/cjs` to load the TS formatter + tools |
+
+### §44.2 — Pipeline
+
+```
+tsx-loader ─► getFullIntelligence('evco', windowDays=14)   ┐
+            └► getTenantAnomalies('evco', windowDays=14)   ┴─► composeMorningBriefing
+                                                               │
+                                                               ├─► sendInternalTelegram(html) → INTERNAL_BRIEFING_CHAT_ID
+                                                               └─► insert into agent_decisions
+                                                                      (workflow='morning_briefing',
+                                                                       action_taken=<telegram_sent|send_failed:*|dry_run>,
+                                                                       autonomy_level=0)
+```
+
+The `runJob` heartbeat wraps everything — writes `job_runs`, fires a
+red Telegram alert on crash, exits non-zero so PM2 / cron monitoring
+notices.
+
+### §44.3 — Environment variables
+
+| Var | Required | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project |
+| `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-side reads + agent_decisions insert |
+| `TELEGRAM_BOT_TOKEN` | yes in prod | Bot sending credential |
+| `INTERNAL_BRIEFING_CHAT_ID` | yes in prod | **Tito + Renato IV private chat**. No fallback to ops — if unset, send is skipped and logged. |
+| `TELEGRAM_SILENT` | optional | Set `true` to disable all Telegram sends (dev mode) |
+
+`INTERNAL_BRIEFING_CHAT_ID` is deliberately a *separate* env var from
+`TELEGRAM_CHAT_ID` (the ops-wide fallback in `scripts/lib/telegram.js`)
+so no amount of misconfiguration routes an internal briefing to an
+ops-wide channel.
+
+### §44.4 — Flags
+
+```bash
+# Live run (PM2 defaults)
+node scripts/morning-briefing.js
+
+# Dry-run — no Telegram, no insert, prints briefing to stdout
+node scripts/morning-briefing.js --dry-run
+
+# Override tenant + window
+node scripts/morning-briefing.js --tenant=mafesa --window=30
+```
+
+### §44.5 — PM2 registration (Throne)
+
+```bash
+pm2 start scripts/morning-briefing.js \
+  --name morning-briefing \
+  --cron "30 6 * * 1-6" \
+  --no-autorestart
+pm2 save
+```
+
+Cron format `"30 6 * * 1-6"` = 06:30 Monday–Saturday. System timezone
+on Throne is America/Chicago per ops setup. `--no-autorestart` because
+it's a one-shot daily job, not a long-running daemon.
+
+### §44.6 — Sample output
+
+Dry-run against live EVCO (2026-04-22):
+
+```
+☀️ Briefing matutino · mié, 22 de abr de 2026
+Cliente: evco · modo interno
+
+📊 Panorama
+evco: 4 anomalías · Proveedor nuevo (4). · verde base 100%.
+
+⚠️ Anomalías (top 3)
+• Proveedor nuevo · 4 casos — PRV_2525, PRV_2518, TAUR
+
+✅ Recomendaciones (top 3)
+📝 [media] Valida proveedor nuevo MONR antes de escalar volumen.
+📝 [media] Valida proveedor nuevo PRV_2518 antes de escalar volumen.
+📝 [media] Valida proveedor nuevo PRV_2525 antes de escalar volumen.
+
+Reporte automático · solo interno · no enviar a clientes.
+```
+
+Telegram renders the HTML equivalent — `<b>` for headers, `<i>` for
+hints. Emoji priority markers: 🚨 alta · 📝 media · 📎 baja.
+
+### §44.7 — Failure modes + recovery
+
+| Failure | Behavior | Recovery |
+|---|---|---|
+| Both tool calls fail | `degraded=true`, headline says "no se pudo generar el panorama", briefing still sent if Telegram OK | Investigate upstream: `getCrossingInsights` / agent. `sync_log` + `job_runs` have evidence. |
+| Intelligence fails, anomalies OK | Degraded-but-useful briefing with the anomalies section only | Same — investigate one upstream, briefing still lands. |
+| Telegram API error | `action_taken='send_failed:http_<code>'` logged to `agent_decisions`; job succeeds (non-critical path) | Check `TELEGRAM_BOT_TOKEN` + `INTERNAL_BRIEFING_CHAT_ID`. Rerun with `--dry-run` first. |
+| Env missing | Skip silently with reason logged (`missing_token` / `missing_chat` / `silent_mode`) | Same — not a crash; the insert still captures what *would* have been sent. |
+| Full crash | `runJob` fires red Telegram alert to the ops chat + `process.exit(1)` | PM2 sees non-zero exit, doesn't autorestart. Operator reviews `job_runs` + log output. |
+
+### §44.8 — Safety contract
+
+- **Internal only.** `INTERNAL_BRIEFING_CHAT_ID` is a dedicated env var.
+  No path routes the briefing to a client-facing channel.
+- **Read-only against production.** The only write is the
+  `agent_decisions` insert — that's the briefing's own telemetry.
+- **No autonomous action.** `autonomy_level=0` on every row. The
+  briefing proposes; humans act.
+- **HTML-escaped throughout.** Every user-/DB-provided string passes
+  through `escapeHtml` before insertion into the Telegram HTML body.
+- **Hard-capped at 4096 chars** (Telegram limit). Truncation tries to
+  land on a newline boundary; falls back to a hard cut with `…`.
+- **Deterministic.** Pure formatter + pinned inputs. Same data in →
+  same briefing out → same decision_log entry. Safe for learning-loop
+  replay.
+
+### §44.9 — What gets logged to `agent_decisions`
+
+Every successful run inserts one row:
+
+```
+cycle_id:        morning-briefing-<epoch_ms>
+trigger_type:    'cron'
+trigger_id:      'morning_briefing:YYYY-MM-DD'
+company_id:      'evco'              (or --tenant override)
+workflow:        'morning_briefing'
+decision:        headline_es          (one line)
+reasoning:       text_plain           (full briefing body)
+confidence:      1.0                  (deterministic formatter)
+autonomy_level:  0                    (propose-only)
+action_taken:    'telegram_sent' | 'send_failed:<reason>' | 'dry_run'
+processing_ms:   <elapsed>
+```
+
+This matches the schema `scripts/cruz-agent.js` writes to, so the
+future learning loop (Phase 3 #5) can union these rows with agent
+decisions from other workflows.
+
+### §44.10 — Extending: new tenants / alternate windows
+
+- **Multi-tenant**: run one PM2 process per tenant with different
+  `--tenant=` flags. Each writes its own row to `agent_decisions` so
+  the learning loop can stratify by tenant. Keep `INTERNAL_BRIEFING_CHAT_ID`
+  scoped to Renato + Tito even across tenants — this is a broker-
+  internal surface, not a per-tenant surface.
+- **Shorter window**: pass `--window=7` for a tighter "last-7-days"
+  lens. Default 14 mirrors the 14-day sync-log retention window.
+- **Alternate cadence**: clone the PM2 entry with a different cron
+  expression (e.g. Sunday evening recap). The same formatter renders
+  every variant.
+
+### §44.11 — What's next
+
+| Phase 3 # | Builds on this | Entry |
+|---|---|---|
+| #3 Agent decision logger | Every `runIntelligenceAgent` call persists so Phase 4 learning loop has broad evidence, not just morning briefings | new `src/lib/intelligence/decision-log.ts` |
+| #4 Mensajería draft composer | When `band_es === 'baja'` + active trafico → auto-draft to operator inbox; Tito approves before client send | §43.5 example |
+| #5 Learning loop | Compare past predictions against actual `semaforo` outcomes; surface misses to tune rule weights in Phase 4 | new `src/lib/intelligence/learning.ts` |
+

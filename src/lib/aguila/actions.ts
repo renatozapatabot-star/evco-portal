@@ -85,6 +85,13 @@ export type OpenOcaRequestPayload = z.infer<typeof openOcaRequestPayload>
 
 // ─── Row shape ─────────────────────────────────────────────────────
 
+export type AgentActionStatus =
+  | 'proposed'
+  | 'committed'
+  | 'cancelled'
+  | 'executed'
+  | 'execute_failed'
+
 export interface AgentActionRow {
   id: string
   created_at: string
@@ -94,12 +101,19 @@ export interface AgentActionRow {
   kind: AgentActionKind
   payload: Record<string, unknown>
   summary_es: string
-  status: 'proposed' | 'committed' | 'cancelled'
+  status: AgentActionStatus
   commit_deadline_at: string
   committed_at: string | null
   cancelled_at: string | null
   cancel_reason_es: string | null
   decision_id: string | null
+  /** Populated by the operator execute surface after 20260422210000. */
+  executed_at?: string | null
+  executed_by?: string | null
+  executed_by_role?: string | null
+  execute_attempts?: number | null
+  execute_error_es?: string | null
+  execute_result?: Record<string, unknown> | null
 }
 
 // ─── Result envelopes ──────────────────────────────────────────────
@@ -267,4 +281,157 @@ export async function getAction(
   actionId: string,
 ): Promise<AgentActionRow | null> {
   return loadRow(supabase, companyId, actionId)
+}
+
+// ─── Operator-queue helpers (internal roles only) ──────────────────
+//
+// These bypass the per-tenant filter because the operator surface at
+// `/operador/actions` is gated to operator/admin/broker roles
+// (see src/lib/route-guards.ts · requireOperator). Internal roles can
+// see every tenant's actions — same contract as mensajeria threads.
+// NEVER call these from a client-role code path.
+
+/**
+ * Load a single action by id without the tenant filter. For use from
+ * internal (operator/admin/broker) surfaces only — the calling route
+ * MUST gate access via `requireOperator()` before invoking.
+ */
+export async function getActionAdmin(
+  supabase: SupabaseClient,
+  actionId: string,
+): Promise<AgentActionRow | null> {
+  const { data } = await supabase
+    .from('agent_actions')
+    .select('*')
+    .eq('id', actionId)
+    .maybeSingle()
+  return (data as AgentActionRow | null) ?? null
+}
+
+export interface ListActionsAdminInput {
+  statuses?: ReadonlyArray<AgentActionStatus>
+  kinds?: ReadonlyArray<AgentActionKind>
+  companyId?: string
+  /** Hard cap to keep the page snappy. Default 200. */
+  limit?: number
+}
+
+/**
+ * List actions for the operator queue. No tenant filter — internal
+ * only. Default sort: oldest-committed first so the FIFO gets worked.
+ */
+export async function listActionsAdmin(
+  supabase: SupabaseClient,
+  input: ListActionsAdminInput,
+): Promise<AgentActionRow[]> {
+  const limit = Math.min(Math.max(input.limit ?? 200, 1), 1000)
+  let q = supabase.from('agent_actions').select('*').order('created_at', { ascending: true }).limit(limit)
+  if (input.statuses && input.statuses.length > 0) {
+    q = q.in('status', input.statuses as string[])
+  }
+  if (input.kinds && input.kinds.length > 0) {
+    q = q.in('kind', input.kinds as string[])
+  }
+  if (input.companyId) {
+    q = q.eq('company_id', input.companyId)
+  }
+  const { data } = await q
+  return (data as AgentActionRow[] | null) ?? []
+}
+
+export type MarkExecuteResult =
+  | { ok: true; action: AgentActionRow; already: boolean }
+  | {
+      ok: false
+      error: 'not_found' | 'invalid_transition' | 'update_failed'
+      detail?: string
+    }
+
+/**
+ * Flip `committed → executed` (or `execute_failed → executed` on retry).
+ * Idempotent: a second call on an already-executed row returns
+ * `already: true`. Never transitions away from `executed` or terminal
+ * `cancelled`.
+ */
+export async function markExecuted(
+  supabase: SupabaseClient,
+  actionId: string,
+  input: {
+    executorId: string | null
+    executorRole: string
+    result: Record<string, unknown>
+  },
+): Promise<MarkExecuteResult> {
+  const row = await getActionAdmin(supabase, actionId)
+  if (!row) return { ok: false, error: 'not_found' }
+  if (row.status === 'executed') return { ok: true, action: row, already: true }
+  if (row.status !== 'committed' && row.status !== 'execute_failed') {
+    return { ok: false, error: 'invalid_transition' }
+  }
+
+  const now = new Date().toISOString()
+  const nextAttempts = (row.execute_attempts ?? 0) + 1
+  const { data, error } = await supabase
+    .from('agent_actions')
+    .update({
+      status: 'executed',
+      executed_at: now,
+      executed_by: input.executorId,
+      executed_by_role: input.executorRole,
+      execute_attempts: nextAttempts,
+      execute_error_es: null,
+      execute_result: input.result,
+    })
+    .eq('id', actionId)
+    .in('status', ['committed', 'execute_failed'])
+    .select('*')
+    .single()
+
+  if (error || !data) {
+    const after = await getActionAdmin(supabase, actionId)
+    if (after?.status === 'executed') return { ok: true, action: after, already: true }
+    return { ok: false, error: 'update_failed', detail: error?.message }
+  }
+  return { ok: true, action: data as AgentActionRow, already: false }
+}
+
+/**
+ * Flip `committed → execute_failed` (or keep it in execute_failed on
+ * repeated failure). Records the error so the queue surface can show
+ * why the retry is needed.
+ */
+export async function markExecuteFailed(
+  supabase: SupabaseClient,
+  actionId: string,
+  input: {
+    executorId: string | null
+    executorRole: string
+    errorEs: string
+  },
+): Promise<MarkExecuteResult> {
+  const row = await getActionAdmin(supabase, actionId)
+  if (!row) return { ok: false, error: 'not_found' }
+  if (row.status === 'executed' || row.status === 'cancelled') {
+    return { ok: false, error: 'invalid_transition' }
+  }
+
+  const nextAttempts = (row.execute_attempts ?? 0) + 1
+  const { data, error } = await supabase
+    .from('agent_actions')
+    .update({
+      status: 'execute_failed',
+      executed_by: input.executorId,
+      executed_by_role: input.executorRole,
+      execute_attempts: nextAttempts,
+      execute_error_es: input.errorEs.slice(0, 500),
+    })
+    .eq('id', actionId)
+    .in('status', ['committed', 'execute_failed'])
+    .select('*')
+    .single()
+
+  if (error || !data) {
+    return { ok: false, error: 'update_failed', detail: error?.message }
+  }
+  return { ok: true, action: data as AgentActionRow, already: false }
 }

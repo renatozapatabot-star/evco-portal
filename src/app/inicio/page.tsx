@@ -703,13 +703,28 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       } : null}
       freshnessSlot={
         <>
-          {/* Demo-polish 2026-04-22 — when the freshness banner is already
-              calling out staleness, suppress the partial-data banner so
-              the hero shows one coherent warning instead of two stacked
-              amber bars. The signals overlap: stale syncs are the #1
-              cause of soft-query failures in the Promise.all above, so
-              the freshness banner already covers both. */}
-          {signals.failureCount >= 2 && !freshness.isStale && (
+          {/*
+           * Demo-polish 2026-04-22 — the amber "Estamos revalidando…"
+           * partial-data banner is hidden for the EVCO launch. It fires
+           * when ≥2 soft-queries fail on render — legit during the PM2
+           * outage earlier today, but reads as an alert-bar next to
+           * Ursula's calm greeting. With PM2 back (globalpc_delta + 9
+           * other syncs green), the trigger condition is rare; when it
+           * DOES fire, it scares more than it helps.
+           *
+           * FreshnessBanner stays: fresh-mode renders as quiet silver
+           * microcopy ("Sincronizado hace 3 min") — the signal we
+           * actually want Ursula to read. Stale-mode remains load-
+           * bearing per .claude/rules/sync-contract.md.
+           *
+           * To re-enable: set `NEXT_PUBLIC_PARTIAL_DATA_BANNER=true` in
+           * Vercel env + redeploy. The humanizeFailedLabels helper +
+           * amber styling + dedup-against-stale rule are all intact;
+           * only the render is gated.
+           */}
+          {process.env.NEXT_PUBLIC_PARTIAL_DATA_BANNER === 'true'
+            && signals.failureCount >= 2
+            && !freshness.isStale && (
             <div
               role="status"
               aria-live="polite"

@@ -100,11 +100,13 @@ async function logPipeline(step, status, details) {
 // ── Previous value from anomaly_log ──
 
 async function getPrevious(client, metric) {
+  // Exclude today's own rows so a same-day retry still compares to yesterday.
   const { data } = await supabase
     .from('anomaly_log')
     .select('current_value')
     .eq('client', client)
     .eq('metric', metric)
+    .lt('check_date', todayDate())
     .order('check_date', { ascending: false })
     .limit(1)
 
@@ -119,8 +121,8 @@ async function logMetric(client, metric, currentValue, previousValue, severity, 
     : null
 
   // Real schema: id, created_at, client, metric, previous_value,
-  // current_value, delta_pct, severity. No `details` / `check_date`
-  // column — those live only in memory / stdout for the operator.
+  // current_value, delta_pct, severity, check_date (NOT NULL).
+  // `details` lives only in memory / stdout for the operator.
   const entry = {
     client,
     metric,
@@ -128,6 +130,7 @@ async function logMetric(client, metric, currentValue, previousValue, severity, 
     current_value: currentValue,
     delta_pct: deltaPct,
     severity,
+    check_date: todayDate(),
   }
 
   if (DRY_RUN) {
@@ -206,13 +209,14 @@ async function checkCoverage(client) {
     return []
   }
 
-  // Get tráfico IDs that have at least one doc
+  // Get tráfico claves that have at least one doc.
+  // Column on traficos is `trafico` (business clave), not `trafico_id`.
   const { data: traficos } = await supabase
     .from('traficos')
-    .select('trafico_id')
+    .select('trafico')
     .eq('company_id', client)
 
-  const traficoIds = (traficos || []).map(t => t.trafico_id)
+  const traficoIds = (traficos || []).map(t => t.trafico)
 
   let withDocs = 0
   // Check in batches
@@ -313,7 +317,7 @@ async function checkDuplicatePedimentos(client) {
   // Find pedimento numbers that appear more than once for this client
   const { data: traficos } = await supabase
     .from('traficos')
-    .select('trafico_id, pedimento')
+    .select('trafico, pedimento')
     .eq('company_id', client)
     .not('pedimento', 'is', null)
 
@@ -329,9 +333,9 @@ async function checkDuplicatePedimentos(client) {
     const ped = (t.pedimento || '').trim()
     if (!ped) continue
     if (seen[ped]) {
-      duplicates.push({ pedimento: ped, traficos: [seen[ped], t.trafico_id] })
+      duplicates.push({ pedimento: ped, traficos: [seen[ped], t.trafico] })
     } else {
-      seen[ped] = t.trafico_id
+      seen[ped] = t.trafico
     }
   }
 
@@ -360,7 +364,7 @@ async function checkStaleTraficos(client) {
 
   const { data: stale, error } = await supabase
     .from('traficos')
-    .select('trafico_id, estatus, fecha_llegada')
+    .select('trafico, estatus, fecha_llegada')
     .eq('company_id', client)
     .in('estatus', ['En Proceso', 'en proceso', 'EN PROCESO'])
     .is('pedimento', null)
@@ -380,7 +384,7 @@ async function checkStaleTraficos(client) {
   if (previous != null && count > previous && (count - previous) > 2) severity = 'critical'
 
   await logMetric(client, 'stale_traficos', count, previous, severity, {
-    trafico_ids: (stale || []).slice(0, 20).map(t => t.trafico_id),
+    trafico_ids: (stale || []).slice(0, 20).map(t => t.trafico),
   })
 
   if (count > 0) {

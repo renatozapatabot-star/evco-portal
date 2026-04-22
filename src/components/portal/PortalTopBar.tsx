@@ -33,7 +33,7 @@ export function PortalTopBar({
   onLogout,
   homeHref = '/inicio',
   lastCross,
-  searchPlaceholder = 'Busca un SKU, pedimento, embarque, Anexo 24…',
+  searchPlaceholder = 'Buscar pedimento, embarque, expediente, proveedor…',
   rightExtras,
 }: PortalTopBarProps) {
   const [pulse, setPulse] = useState(false)

@@ -151,8 +151,8 @@ export function PortalDashboard({
         lastCross={lastCross}
         searchPlaceholder={
           isClient
-            ? 'Busca un embarque, pedimento, o pregunta al Agente…'
-            : 'Busca un SKU, pedimento, embarque, Anexo 24…'
+            ? 'Buscar pedimento, embarque, expediente… o pregúntale al Agente'
+            : 'Buscar SKU, pedimento, embarque, Anexo 24…'
         }
       />
 

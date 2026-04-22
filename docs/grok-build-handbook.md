@@ -4247,3 +4247,1327 @@ not where to look.
 | Asked to ship something fast | §36.6 "when you're unsure" |
 
 ---
+
+## §42 — Autonomous Agent Core (Phase 2)
+
+Phase 2 turns the Phase 1 primitives into real agentic capability. Four
+new modules compose on top of §37's building blocks:
+
+- `src/lib/intelligence/recommend.ts` — **pure** rule-based recommender
+- `src/lib/intelligence/full-insight.ts` — composer: SKU/trafico → full bundle
+- `src/lib/intelligence/anomaly-report.ts` — structured anomaly scan
+- `src/lib/intelligence/agent.ts` — orchestrator: one call, complete report
+
+Together they answer the question every downstream surface keeps asking:
+
+> "Given these signals, what should the operator DO?"
+
+Phase 2's contract: **proposals only, never execution.** The agent
+recommends; humans authorize every action. This boundary is permanent
+and matches the approval gate in CLAUDE.md.
+
+---
+
+### §42.1 — `recommendNextAction` (pure)
+
+Pure function. Input = structured signals. Output = `Recommendation[]`
+sorted by priority desc, subject asc.
+
+```ts
+import { recommendNextAction } from '@/lib/intelligence/recommend'
+
+const recs = recommendNextAction({
+  prediction,            // VerdePrediction — optional
+  streak,                // PartStreak — optional
+  proveedor,             // ProveedorHealth — optional
+  fraccionHealth,        // FraccionHealth — optional
+  anomalies,             // Anomaly[] — optional
+  volume,                // VolumeSummary — optional
+})
+// [{ kind, priority, subject, action_es, rationale_es, metadata }, ...]
+```
+
+**Rule set** (transparent by design):
+
+| Rule fires when... | Kind | Priority |
+|---|---|---|
+| streak ≥ 6 verdes + band `high` | `celebrate_streak` | low |
+| `just_broke_streak` | `watch_broken_streak` | medium |
+| prediction band `low` + ≥ 3 crossings | `prioritize_rojo_review` | **high** |
+| proveedor pct_verde < 75% + ≥ 5 crossings | `review_supplier_slip` | medium |
+| fracción chapter < 75% + ≥ 10 crossings | `escalate_fraccion_risk` | medium |
+| anomaly `new_proveedor` | `validate_new_proveedor` | medium |
+| anomaly `volume_spike` | `investigate_volume_spike` | medium |
+| volume delta_pct < -40 + prior ≥ 5 | `monitor_volume_drop` | low |
+| (no other rule fires) | `no_action` | low |
+
+**Always returns at least one recommendation** — the `no_action`
+fallback keeps consumers from rendering empty lists.
+
+---
+
+### §42.2 — `buildFullCrossingInsight` (DB-facing composer)
+
+Takes a target (SKU or trafico) and returns the complete insight bundle:
+
+```ts
+import { buildFullCrossingInsight } from '@/lib/intelligence/full-insight'
+
+// SKU target
+const insight = await buildFullCrossingInsight(supabase, 'evco', {
+  type: 'sku',
+  cveProducto: '6600-1108',
+})
+
+// Trafico target — picks the dominant SKU from the trafico's partidas
+const shipment = await buildFullCrossingInsight(supabase, 'evco', {
+  type: 'trafico',
+  traficoId: '9254-X3435',
+})
+```
+
+**Returns `FullCrossingInsight | null`:**
+```ts
+{
+  target,               // the original InsightTarget
+  cve_producto,         // resolved SKU (dominant for trafico targets)
+  generated_at,
+  company_id,
+  signals: {
+    prediction,         // VerdePrediction — the headline number
+    streak,             // PartStreak — the SKU's streak
+    proveedor,          // ProveedorHealth | null — dominant supplier
+    fraccionHealth,     // FraccionHealth | null — chapter-level
+    baselinePct,        // tenant-wide verde rate floor
+    fraccion,           // 'XXXX.XX.XX' — the SKU's fracción
+  },
+  explanation,          // ExplainOutput from explain.ts
+  one_line,             // ≤ 160-char format for Telegram/lists
+  plain_text,           // multi-line for email/Mensajería/PDF
+  recommendations,      // Recommendation[] from §42.1
+  summary_es,           // single-sentence Spanish takeaway
+}
+```
+
+`null` is returned when the target has no signal (SKU never crossed,
+trafico has zero facturas, tenant is empty). Consumers fall through to
+the pre-activation empty state.
+
+---
+
+### §42.3 — `generateAnomalyReport` (DB-facing wrapper)
+
+Wraps `getCrossingInsights`, groups anomalies by kind, attaches
+recommendations, emits a Spanish `summary_es`.
+
+```ts
+import { generateAnomalyReport } from '@/lib/intelligence/anomaly-report'
+
+const report = await generateAnomalyReport(supabase, 'evco', {
+  windowDays: 30,      // default 90
+  now: Date.now(),
+})
+```
+
+**Returns `AnomalyReport`** (always — even on calm):
+```ts
+{
+  generated_at,
+  company_id,
+  window_days,
+  groups: [             // sorted high-priority kinds first
+    { kind, label_es, anomalies: [...], max_score },
+  ],
+  total_count,
+  recommendations,      // from recommendNextAction
+  summary_es,           // "evco: 3 anomalías · Proveedor nuevo (2), Salto de volumen (1)."
+  insights,             // raw InsightsPayload for drill-down
+}
+```
+
+Group ordering uses a priority table:
+```
+semaforo_rate_drop (5) > proveedor_slip (4) > new_proveedor (3)
+                       > volume_spike (2) > streak_break (1)
+```
+
+---
+
+### §42.4 — `runIntelligenceAgent` (orchestrator)
+
+One entry point. Four modes. A single well-formed report per call.
+
+```ts
+import { runIntelligenceAgent } from '@/lib/intelligence/agent'
+
+// Mode 1: full tenant scan — anomalies + watch SKUs + focus bundles
+const scan = await runIntelligenceAgent(supabase, 'evco', 'tenant_scan')
+
+// Mode 2: SKU-focused insight
+const skuReport = await runIntelligenceAgent(supabase, 'evco', {
+  type: 'sku',
+  cveProducto: '6600-1108',
+})
+
+// Mode 3: trafico-focused insight
+const traficoReport = await runIntelligenceAgent(supabase, 'evco', {
+  type: 'trafico',
+  traficoId: '9254-X3435',
+})
+
+// Mode 4: anomalies-only (faster, lighter)
+const alerts = await runIntelligenceAgent(supabase, 'evco', 'anomaly_only')
+```
+
+**Report shape by mode** (discriminated on `mode_label`):
+
+| Mode | mode_label | Unique fields |
+|---|---|---|
+| `tenant_scan` | `'tenant_scan'` | `insights`, `anomaly_report`, `focus_insights[]` |
+| `anomaly_only` | `'anomaly_only'` | `anomaly_report` |
+| `{type:'sku'}` | `'sku_focus'` | `insight: FullCrossingInsight \| null` |
+| `{type:'trafico'}` | `'trafico_focus'` | `insight: FullCrossingInsight \| null` |
+
+Every report shares: `generated_at`, `company_id`, `window_days`,
+`recommendations[]`, `summary_es`.
+
+**Tenant scan focus**: the agent automatically expands the top-N
+lowest-probability `watch_predictions` into full insights (default 3,
+configurable via `opts.topFocusCount`). This is where a Grok agent
+gets the most leverage — one call, complete situational report.
+
+---
+
+### §42.5 — "How would a Grok agent call this?"
+
+Three realistic workflows the new agent unlocks:
+
+#### Morning briefing (cron → Telegram headline)
+
+```ts
+// scripts/morning-briefing.js
+import { runIntelligenceAgent } from '@/lib/intelligence/agent'
+
+const report = await runIntelligenceAgent(sb, 'evco', 'tenant_scan', {
+  windowDays: 14,
+  topFocusCount: 3,
+})
+
+// Telegram headline
+await sendTelegram(`📊 ${report.summary_es}`)
+
+// Detail drill-in
+for (const focus of report.focus_insights) {
+  await sendTelegram(focus.plain_text)
+}
+for (const rec of report.recommendations.filter(r => r.priority === 'high')) {
+  await sendTelegram(`🚨 ${rec.action_es}`)
+}
+```
+
+#### CRUZ AI tool (`/api/cruz-ai/tools/explain-shipment`)
+
+```ts
+// Operator asks CRUZ AI: "¿Cómo se ve el tráfico 9254-X3435?"
+const report = await runIntelligenceAgent(sb, session.companyId, {
+  type: 'trafico',
+  traficoId: 'X3435',
+})
+
+// Safe to return the full bundle — all Spanish, all explained
+return NextResponse.json({
+  summary: report.summary_es,
+  detail: report.insight?.plain_text,
+  actions: report.recommendations,
+})
+```
+
+#### Mensajería draft composer (operator reviews before send)
+
+```ts
+// scripts/compose-shipment-heads-up.js
+const report = await runIntelligenceAgent(sb, 'evco', {
+  type: 'sku',
+  cveProducto: sku,
+})
+
+if (report.insight?.signals.prediction.band === 'low') {
+  // Draft goes to operator Mensajería inbox, NOT sent to client yet.
+  // Tito or Renato IV approves before any client-facing send.
+  await mensajeriaInsertDraft({
+    company_id: 'evco',
+    subject: `Preparación preventiva · ${sku}`,
+    body_es: report.insight.plain_text,
+    priority: 'medium',
+  })
+}
+```
+
+---
+
+### §42.6 — Demo-safety contract
+
+Phase 2 is **100% demo-safe** by construction:
+
+1. No new DB writes. Every module is read-only.
+2. No external side effects (no Telegram, no email, no Mensajería sends).
+   Scripts that *use* the agent's output must wire those separately.
+3. No UI changes. Client surfaces untouched. `/admin/intelligence`
+   still reads the Phase 1 `getCrossingInsights` directly.
+4. Existing public API unchanged. `getVerdeProbabilityForSku` now
+   internally delegates to `computeSkuSignals`, but its return type
+   and behavior are identical.
+5. Every new module has ≥ 6 tests with fixture or mocked inputs.
+   Total intelligence-layer tests: 115 (up from 76 before Phase 2).
+
+**What's safe to ship immediately**: anywhere calling
+`getCrossingInsights`, `getVerdeProbabilityForSku`, or
+`getVerdeProbabilityForTrafico` can be upgraded to
+`runIntelligenceAgent` without surface changes — the prior outputs
+are subsets of the richer report.
+
+---
+
+### §42.7 — Safety invariants
+
+These invariants apply to every Phase 2 primitive and every future
+extension:
+
+- **Tenant isolation first.** Every DB-facing entry point takes
+  `companyId` as a required positional arg. No defaults. No "current
+  tenant" lookups inside this module.
+- **Return null, never throw.** Missing signal → `null`. Empty tenant
+  → structured empty report. Failed fetch → empty defaults. The
+  calling UI must always be able to render *something*.
+- **Pure composers are pure.** `recommendNextAction` takes primitives
+  and returns primitives. No I/O. No `Date.now()` side-effects except
+  through an explicit option.
+- **Spanish copy belongs to the recommender.** `action_es` +
+  `rationale_es` are the source of truth. Consumers do not rewrite;
+  they render.
+- **No ML.** Every rule is a transparent threshold an operator can
+  reason about. When we add ML, it gets its own module with a
+  training pipeline — not mixed in with the rule layer.
+- **No Telegram.** No `sendTelegram` imports in `src/lib/intelligence/`.
+  Callers can wire notifications. The intelligence layer proposes.
+
+---
+
+### §42.8 — Where to read next
+
+| You want to... | Read |
+|---|---|
+| Add a new recommendation rule | `recommend.ts` — fixture-test in `__tests__/recommend.test.ts` |
+| Add a new agent mode | `agent.ts` — discriminated union `AgentMode` + matching builder |
+| Add a new anomaly kind | `crossing-insights.ts` §detectAnomalies + label in `anomaly-report.ts` |
+| Expose agent to CRUZ AI | Wrap `runIntelligenceAgent` in `src/lib/aguila/tools.ts` |
+| Use the agent in a cron | Example in §42.5 above |
+| Understand tenant isolation | `.claude/rules/tenant-isolation.md` + §37.1 |
+
+
+## §43 — CRUZ AI Natural-Language Interface (Phase 3 #1)
+
+Phase 3 #1 bridges the Phase 2 agent to natural-language surfaces. Four
+new tools in `src/lib/aguila/tools.ts` wrap `runIntelligenceAgent` and
+emit Spanish-first structured responses consumable by CRUZ AI chat,
+scripts, API routes, or future Mensajería composers.
+
+### §43.1 — The four new tools
+
+Each tool exists in two shapes:
+
+- **Standalone** — called directly from scripts / API routes / cron.
+  Signature: `(supabase, companyId, ...args) → Promise<AgentToolResponse<T>>`.
+- **CRUZ AI tool** — registered in `TOOL_DEFINITIONS`, dispatched by
+  `runTool(name, args, ctx)` with `AguilaCtx` handling tenant scope.
+
+| Standalone function | Tool name | Agent mode | Response shape |
+|---|---|---|---|
+| `analyzeTrafico(sb, companyId, traficoId)` | `analyze_trafico` | `{ type: 'trafico' }` | `FocusResponseEs` |
+| `analyzePedimento(sb, companyId, pedimento)` | `analyze_pedimento` | `{ type: 'trafico' }` (after pedimento→trafico resolution) | `FocusResponseEs` |
+| `getTenantAnomalies(sb, companyId, opts?)` | `tenant_anomalies` | `'anomaly_only'` | `AnomalyOnlyResponseEs` |
+| `getFullIntelligence(sb, companyId, query?, opts?)` | `intelligence_scan` | `'tenant_scan'` or `'anomaly_only'` based on query keywords | `TenantScanResponseEs \| AnomalyOnlyResponseEs` |
+
+Every response is wrapped in the unified envelope:
+
+```ts
+interface AgentToolResponse<T> {
+  success: boolean
+  data: T | null
+  error: string | null
+}
+```
+
+### §43.2 — Spanish response shapes
+
+**FocusResponseEs** — for SKU or tráfico focus:
+```ts
+{
+  type: 'sku_focus' | 'trafico_focus',
+  headline_es: 'Tráfico T-1 · SKU dominante SKU-HOT · 95% probabilidad verde · confianza alta',
+  summary_es: '…',
+  cve_producto: 'SKU-HOT',
+  trafico_id: 'T-1' | null,
+  probability_pct: 95,
+  band_es: 'alta' | 'media' | 'baja',
+  proveedor: 'PRV_1 · 98% verde (12 cruces)' | null,
+  fraccion: '3903.20.01' | null,
+  factors: [
+    { label_es: '5 verdes consecutivos (+15 pp)', impact_pp: 15, tone: 'positive' },
+    …
+  ],
+  recommendations: [
+    { priority_es: 'alta' | 'media' | 'baja', action_es: '…', rationale_es: '…' },
+    …
+  ],
+  next_steps_es: ['1. …', '2. …', '3. …'],   // top 3 recs as imperative bullets
+}
+```
+
+**TenantScanResponseEs** — for panoramic scans:
+```ts
+{
+  type: 'tenant_scan',
+  headline_es: '…',
+  summary_es: '…',
+  company_id: 'evco',
+  baseline_verde_pct: 88,
+  anomaly_count: 3,
+  anomaly_groups_es: [ { label_es: 'Proveedor nuevo', count: 2 }, … ],
+  top_focus_es: [
+    { cve_producto, probability_pct, band_es, summary_es },  // top-N watch SKUs
+    …
+  ],
+  recommendations: [ … ],
+}
+```
+
+**AnomalyOnlyResponseEs** — lighter, anomalies-only:
+```ts
+{
+  type: 'anomaly_only',
+  headline_es: '…',
+  summary_es: '…',
+  company_id: 'evco',
+  anomaly_count: 3,
+  anomaly_groups_es: [
+    { label_es: 'Proveedor nuevo', count: 2, top_subjects: ['PRV_NEW', 'PRV_X'] },
+    …
+  ],
+  recommendations: [ … ],
+}
+```
+
+### §43.3 — Example Spanish queries
+
+Real chat queries a user might send to CRUZ AI, and which tool Claude
+(the router model) is expected to pick:
+
+| User says (Spanish) | Tool selected | Args |
+|---|---|---|
+| "¿Cómo se ve el tráfico T-1?" | `analyze_trafico` | `{ traficoId: 'T-1' }` |
+| "Analiza el pedimento 26 24 3596 6500441" | `analyze_pedimento` | `{ pedimentoNumber: '26 24 3596 6500441' }` |
+| "¿Hay anomalías?" / "¿Qué alertas tengo?" | `tenant_anomalies` | `{}` |
+| "¿Cómo está la operación?" / "Dame un panorama" | `intelligence_scan` | `{ query: '…' }` |
+| "Revisa proveedores nuevos de los últimos 30 días" | `tenant_anomalies` | `{ windowDays: 30 }` |
+
+The `intelligence_scan` tool's `query` field lets the router pass the
+raw message through; the tool's keyword heuristic ("anomalía", "alerta",
+"problema") picks the right agent mode without extra LLM hops.
+
+### §43.4 — Tenant isolation guarantees
+
+All four exec wrappers call `resolveScopedCompanyId` which:
+
+- For client / warehouse roles: pins to `ctx.companyId`, ignores `clientFilter`.
+- For internal roles (admin/broker/contabilidad) with a resolvable
+  `clientFilter`: runs on the resolved tenant.
+- For internal roles **without** `clientFilter`: **refused** with
+  `AguilaForbiddenError('agent:tenant_required')`. Agent scans demand a
+  concrete tenant — an "all clients" scan would leak cross-tenant
+  signals into one report.
+- Unknown `clientFilter` values are **refused** (same
+  `AguilaForbiddenError` as the pre-existing
+  `scope:unknown_client:<slug>` path).
+
+### §43.5 — Example call sites
+
+#### Script — morning briefing
+
+```ts
+// scripts/morning-briefing.js
+import { getFullIntelligence } from '@/lib/aguila/tools'
+import { createClient } from '@supabase/supabase-js'
+
+const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const res = await getFullIntelligence(sb, 'evco', undefined, { windowDays: 14 })
+
+if (!res.success || !res.data) { /* alert + exit */ }
+await sendTelegram(`📊 ${res.data.headline_es}`)
+for (const rec of res.data.recommendations.filter(r => r.priority_es === 'alta')) {
+  await sendTelegram(`🚨 ${rec.action_es}`)
+}
+```
+
+#### API route — `/api/cruz-ai/explain-trafico`
+
+```ts
+// src/app/api/cruz-ai/explain-trafico/route.ts
+import { analyzeTrafico } from '@/lib/aguila/tools'
+import { getSession } from '@/lib/auth/session-guards'
+
+export async function POST(req: Request) {
+  const session = await getSession()
+  const { traficoId } = await req.json()
+  const res = await analyzeTrafico(supabase, session.companyId, traficoId)
+  return Response.json(res)   // same { success, data, error } shape
+}
+```
+
+#### Future (Phase 3 #4) — Mensajería draft composer
+
+```ts
+// scripts/compose-preventive-heads-up.js
+const res = await analyzeTrafico(sb, 'evco', traficoId)
+if (res.data?.band_es === 'baja') {
+  // Insert to operator Mensajería inbox, NOT client-facing.
+  // Tito/Renato IV approves before any client-facing send.
+  await mensajeriaInsertDraft({
+    subject: `Preparación preventiva · ${traficoId}`,
+    body_es: [
+      res.data.summary_es,
+      '',
+      'Próximos pasos:',
+      ...res.data.next_steps_es,
+    ].join('\n'),
+  })
+}
+```
+
+### §43.6 — Demo-safety contract
+
+Phase 3 #1 is 100% demo-safe:
+
+1. **No new DB writes.** Every tool is read-only (the `analyzePedimento`
+   lookup against `traficos` is a SELECT).
+2. **No external side effects.** No Telegram, no Mensajería, no email.
+   Scripts wire notifications separately.
+3. **No UI surface changes.** CRUZ AI chat route code untouched; only
+   the tool library grew.
+4. **Public tool API backward-compatible.** Existing tools (`query_*`,
+   `route_mention`) unchanged. The `ToolName` union gained 4 values;
+   no existing caller breaks.
+5. **Tenant isolation preserved.** Existing `resolveClientScope` is
+   reused; no new tenant-handling code paths.
+6. **21 new tests** — isolation + formatter edges + error envelopes.
+   Full test count: 1427/1427.
+
+### §43.7 — Extending: how to add a new agent-tool
+
+1. Add a new case to the `AgentMode` union in `src/lib/intelligence/agent.ts`
+   (if the mode doesn't exist yet) + its builder.
+2. Add a Spanish response type + formatter in the Phase 3 section of
+   `tools.ts` (`format<Mode>` function).
+3. Export a standalone function `doTheThing(sb, companyId, ...args)`
+   that returns `AgentToolResponse<T>`.
+4. Register a new entry in `TOOL_DEFINITIONS` + extend the `ToolName`
+   union + add a `case` in `runTool`.
+5. Add an `exec<Thing>` wrapper that calls `resolveScopedCompanyId`
+   then the standalone function.
+6. Write tests under `src/lib/aguila/__tests__/tools.<thing>.test.ts`
+   mocking `runIntelligenceAgent`.
+
+### §43.8 — Where to read next
+
+| Task | Read |
+|---|---|
+| Understand the underlying agent | §42 Autonomous Agent Core |
+| Add a new agent mode | `src/lib/intelligence/agent.ts` + §42.4 |
+| Write a Mensajería composer | §43.5 + `.claude/rules/client-accounting-ethics.md` for copy tone |
+| Wire a cron | §43.5 example + `.claude/rules/operational-resilience.md` |
+| Understand tenant isolation enforcement | §43.4 + `.claude/rules/tenant-isolation.md` |
+
+
+## §44 — Morning Briefing Cron (Phase 3 #2, Internal-Only)
+
+The first production cron that consumes the Phase 2 autonomous agent
+via the Phase 3 #1 natural-language tool layer. Sends a structured
+Spanish briefing to **Tito + Renato IV only** every morning at 06:30
+Laredo time.
+
+### §44.1 — Files
+
+| File | Role |
+|---|---|
+| `src/lib/aguila/briefing.ts` | Pure formatter. `composeMorningBriefing(input) → { text_html, text_plain, headline_es, decision_log_entry, degraded }` — unit-tested with fixtures |
+| `src/lib/aguila/__tests__/briefing.test.ts` | 13 tests — structure, caps, calm day, degraded, HTML escape, 4096-char truncation |
+| `scripts/morning-briefing.js` | Thin I/O orchestrator. Uses `tsx/cjs` to load the TS formatter + tools |
+
+### §44.2 — Pipeline
+
+```
+tsx-loader ─► getFullIntelligence('evco', windowDays=14)   ┐
+            └► getTenantAnomalies('evco', windowDays=14)   ┴─► composeMorningBriefing
+                                                               │
+                                                               ├─► sendInternalTelegram(html) → INTERNAL_BRIEFING_CHAT_ID
+                                                               └─► insert into agent_decisions
+                                                                      (workflow='morning_briefing',
+                                                                       action_taken=<telegram_sent|send_failed:*|dry_run>,
+                                                                       autonomy_level=0)
+```
+
+The `runJob` heartbeat wraps everything — writes `job_runs`, fires a
+red Telegram alert on crash, exits non-zero so PM2 / cron monitoring
+notices.
+
+### §44.3 — Environment variables
+
+| Var | Required | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project |
+| `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-side reads + agent_decisions insert |
+| `TELEGRAM_BOT_TOKEN` | yes in prod | Bot sending credential |
+| `INTERNAL_BRIEFING_CHAT_ID` | yes in prod | **Tito + Renato IV private chat**. No fallback to ops — if unset, send is skipped and logged. |
+| `TELEGRAM_SILENT` | optional | Set `true` to disable all Telegram sends (dev mode) |
+
+`INTERNAL_BRIEFING_CHAT_ID` is deliberately a *separate* env var from
+`TELEGRAM_CHAT_ID` (the ops-wide fallback in `scripts/lib/telegram.js`)
+so no amount of misconfiguration routes an internal briefing to an
+ops-wide channel.
+
+### §44.4 — Flags
+
+```bash
+# Live run (PM2 defaults)
+node scripts/morning-briefing.js
+
+# Dry-run — no Telegram, no insert, prints briefing to stdout
+node scripts/morning-briefing.js --dry-run
+
+# Override tenant + window
+node scripts/morning-briefing.js --tenant=mafesa --window=30
+```
+
+### §44.5 — PM2 registration (Throne)
+
+```bash
+pm2 start scripts/morning-briefing.js \
+  --name morning-briefing \
+  --cron "30 6 * * 1-6" \
+  --no-autorestart
+pm2 save
+```
+
+Cron format `"30 6 * * 1-6"` = 06:30 Monday–Saturday. System timezone
+on Throne is America/Chicago per ops setup. `--no-autorestart` because
+it's a one-shot daily job, not a long-running daemon.
+
+### §44.6 — Sample output
+
+Dry-run against live EVCO (2026-04-22):
+
+```
+☀️ Briefing matutino · mié, 22 de abr de 2026
+Cliente: evco · modo interno
+
+📊 Panorama
+evco: 4 anomalías · Proveedor nuevo (4). · verde base 100%.
+
+⚠️ Anomalías (top 3)
+• Proveedor nuevo · 4 casos — PRV_2525, PRV_2518, TAUR
+
+✅ Recomendaciones (top 3)
+📝 [media] Valida proveedor nuevo MONR antes de escalar volumen.
+📝 [media] Valida proveedor nuevo PRV_2518 antes de escalar volumen.
+📝 [media] Valida proveedor nuevo PRV_2525 antes de escalar volumen.
+
+Reporte automático · solo interno · no enviar a clientes.
+```
+
+Telegram renders the HTML equivalent — `<b>` for headers, `<i>` for
+hints. Emoji priority markers: 🚨 alta · 📝 media · 📎 baja.
+
+### §44.7 — Failure modes + recovery
+
+| Failure | Behavior | Recovery |
+|---|---|---|
+| Both tool calls fail | `degraded=true`, headline says "no se pudo generar el panorama", briefing still sent if Telegram OK | Investigate upstream: `getCrossingInsights` / agent. `sync_log` + `job_runs` have evidence. |
+| Intelligence fails, anomalies OK | Degraded-but-useful briefing with the anomalies section only | Same — investigate one upstream, briefing still lands. |
+| Telegram API error | `action_taken='send_failed:http_<code>'` logged to `agent_decisions`; job succeeds (non-critical path) | Check `TELEGRAM_BOT_TOKEN` + `INTERNAL_BRIEFING_CHAT_ID`. Rerun with `--dry-run` first. |
+| Env missing | Skip silently with reason logged (`missing_token` / `missing_chat` / `silent_mode`) | Same — not a crash; the insert still captures what *would* have been sent. |
+| Full crash | `runJob` fires red Telegram alert to the ops chat + `process.exit(1)` | PM2 sees non-zero exit, doesn't autorestart. Operator reviews `job_runs` + log output. |
+
+### §44.8 — Safety contract
+
+- **Internal only.** `INTERNAL_BRIEFING_CHAT_ID` is a dedicated env var.
+  No path routes the briefing to a client-facing channel.
+- **Read-only against production.** The only write is the
+  `agent_decisions` insert — that's the briefing's own telemetry.
+- **No autonomous action.** `autonomy_level=0` on every row. The
+  briefing proposes; humans act.
+- **HTML-escaped throughout.** Every user-/DB-provided string passes
+  through `escapeHtml` before insertion into the Telegram HTML body.
+- **Hard-capped at 4096 chars** (Telegram limit). Truncation tries to
+  land on a newline boundary; falls back to a hard cut with `…`.
+- **Deterministic.** Pure formatter + pinned inputs. Same data in →
+  same briefing out → same decision_log entry. Safe for learning-loop
+  replay.
+
+### §44.9 — What gets logged to `agent_decisions`
+
+Every successful run inserts one row:
+
+```
+cycle_id:        morning-briefing-<epoch_ms>
+trigger_type:    'cron'
+trigger_id:      'morning_briefing:YYYY-MM-DD'
+company_id:      'evco'              (or --tenant override)
+workflow:        'morning_briefing'
+decision:        headline_es          (one line)
+reasoning:       text_plain           (full briefing body)
+confidence:      1.0                  (deterministic formatter)
+autonomy_level:  0                    (propose-only)
+action_taken:    'telegram_sent' | 'send_failed:<reason>' | 'dry_run'
+processing_ms:   <elapsed>
+```
+
+This matches the schema `scripts/cruz-agent.js` writes to, so the
+future learning loop (Phase 3 #5) can union these rows with agent
+decisions from other workflows.
+
+### §44.10 — Extending: new tenants / alternate windows
+
+- **Multi-tenant**: run one PM2 process per tenant with different
+  `--tenant=` flags. Each writes its own row to `agent_decisions` so
+  the learning loop can stratify by tenant. Keep `INTERNAL_BRIEFING_CHAT_ID`
+  scoped to Renato + Tito even across tenants — this is a broker-
+  internal surface, not a per-tenant surface.
+- **Shorter window**: pass `--window=7` for a tighter "last-7-days"
+  lens. Default 14 mirrors the 14-day sync-log retention window.
+- **Alternate cadence**: clone the PM2 entry with a different cron
+  expression (e.g. Sunday evening recap). The same formatter renders
+  every variant.
+
+### §44.11 — What's next
+
+| Phase 3 # | Builds on this | Entry |
+|---|---|---|
+| #3 Agent decision logger | Every `runIntelligenceAgent` call persists so Phase 4 learning loop has broad evidence, not just morning briefings | new `src/lib/intelligence/decision-log.ts` |
+| #4 Mensajería draft composer | When `band_es === 'baja'` + active trafico → auto-draft to operator inbox; Tito approves before client send | §43.5 example |
+| #5 Learning loop | Compare past predictions against actual `semaforo` outcomes; surface misses to tune rule weights in Phase 4 | new `src/lib/intelligence/learning.ts` |
+
+
+## §45 — Decision Logger (Phase 3 #3)
+
+Persistent record of every agent decision + CRUZ AI tool call.
+Foundation for the Phase 3 #5 learning loop: we can't measure rule
+accuracy if we don't store what the agent proposed and compare it
+against reality.
+
+### §45.1 — Files
+
+| File | Role |
+|---|---|
+| `supabase/migrations/20260422120000_agent_decisions_tool_columns.sql` | Adds tool_name/tool_input/tool_output/human_feedback/outcome/outcome_recorded_at columns + two indexes |
+| `src/lib/intelligence/decision-log.ts` | The logger module — `logDecision`, `withDecisionLog`, `getRecentDecisions`, `getDecisionHistory`, `recordOutcome`, `recordHumanFeedback`, `truncateJson` |
+| `src/lib/intelligence/__tests__/decision-log.test.ts` | 22 unit tests |
+| `src/lib/aguila/__tests__/tools.decision-log.test.ts` | 6 integration tests — every CRUZ AI exec tool actually writes a row |
+| `scripts/morning-briefing.js` | Updated to route its own write through `logDecision` so the briefing shows up in the same query path |
+
+### §45.2 — Schema extensions (all nullable)
+
+```sql
+ALTER TABLE agent_decisions
+  ADD COLUMN IF NOT EXISTS tool_name    text,         -- 'analyze_trafico', 'morning_briefing', …
+  ADD COLUMN IF NOT EXISTS tool_input   jsonb,        -- structured call arguments
+  ADD COLUMN IF NOT EXISTS tool_output  jsonb,        -- structured response (truncated ≤ 8 KB)
+  ADD COLUMN IF NOT EXISTS human_feedback  jsonb,     -- { sentiment, note_es, reviewer_id, reviewed_at, corrected_action_es }
+  ADD COLUMN IF NOT EXISTS outcome              text, -- 'verde' | 'amarillo' | 'rojo' | 'approved' | 'rejected' | 'ignored'
+  ADD COLUMN IF NOT EXISTS outcome_recorded_at  timestamptz;
+
+CREATE INDEX agent_decisions_company_created_idx
+  ON agent_decisions (company_id, created_at DESC);
+
+CREATE INDEX agent_decisions_tool_created_idx
+  ON agent_decisions (tool_name, created_at DESC)
+  WHERE tool_name IS NOT NULL;
+```
+
+All columns are nullable — legacy rows (pre-Phase-3 cron decisions
+from `cruz-agent.js` etc.) coexist unchanged. No backfill required.
+
+### §45.3 — The five primitives
+
+```ts
+import {
+  logDecision,
+  withDecisionLog,
+  getRecentDecisions,
+  getDecisionHistory,
+  recordOutcome,
+  recordHumanFeedback,
+} from '@/lib/intelligence/decision-log'
+```
+
+**`logDecision(supabase, entry)`** — raw insert. Returns inserted id or
+`null` on failure (error is logged, never thrown). Use when you already
+have a prepared entry; most callers should prefer `withDecisionLog`.
+
+**`withDecisionLog(supabase, ctx, fn)`** — higher-order wrapper. Runs
+`fn()`, records:
+  - `processing_ms` = elapsed wall-clock
+  - `tool_output` = return value (truncated if > 8 KB JSON)
+  - `decision` = headline picked from `output.data.headline_es` or
+    `output.summary_es` (or an error label if `fn` threw)
+  - `action_taken` = `'completed'` or `'error:<message>'`
+  - Re-throws the caller's error unchanged.
+
+**`getRecentDecisions(supabase, companyId, { limit? })`** — latest N
+decisions for a tenant (default 20, clamped to [1, 500]). Order:
+`created_at DESC`.
+
+**`getDecisionHistory(supabase, companyId, opts)`** — filtered query.
+Supported filters: `toolName`, `workflow`, `outcome`, `outcomePending`,
+`before`, `after`, `limit`.
+
+**`recordOutcome(supabase, decisionId, outcome)`** — late-binding write.
+Phase 3 #5 learning loop calls this when a predicted-verde SKU actually
+crosses.
+
+**`recordHumanFeedback(supabase, decisionId, feedback)`** — reviewer
+capture. Shape: `{ sentiment, note_es?, reviewer_id?, corrected_action_es? }`.
+`reviewed_at` is auto-set if omitted.
+
+### §45.4 — Where logging happens today
+
+Every CRUZ AI exec tool goes through `withDecisionLog` (Phase 3 #1
+tools are now fully wired):
+
+| Tool | workflow | tool_name | trigger_id |
+|---|---|---|---|
+| `analyze_trafico` | `cruz_ai_chat` | `analyze_trafico` | tráfico id |
+| `analyze_pedimento` | `cruz_ai_chat` | `analyze_pedimento` | pedimento number |
+| `tenant_anomalies` | `cruz_ai_chat` | `tenant_anomalies` | (null) |
+| `intelligence_scan` | `cruz_ai_chat` | `intelligence_scan` | (null) |
+| Morning briefing | `morning_briefing` | `morning_briefing` | `morning_briefing:YYYY-MM-DD` |
+
+Standalone library calls (`analyzeTrafico(sb, …)` etc. called directly
+from scripts / API routes) do NOT auto-log — the caller threads logging
+by wrapping with `withDecisionLog`. This keeps the library primitives
+pure and opt-in for logging.
+
+### §45.5 — Example usage
+
+#### Script — wrap an ad-hoc agent call
+
+```ts
+import { runIntelligenceAgent } from '@/lib/intelligence/agent'
+import { withDecisionLog } from '@/lib/intelligence/decision-log'
+
+const report = await withDecisionLog(
+  supabase,
+  {
+    companyId: 'evco',
+    toolName: 'tenant_scan',
+    workflow: 'weekly_deep_review',
+    triggerType: 'script',
+    cycleId: `weekly-${date}`,
+    toolInput: { windowDays: 30 },
+  },
+  () => runIntelligenceAgent(supabase, 'evco', 'tenant_scan', { windowDays: 30 }),
+)
+```
+
+#### Admin route — review recent decisions
+
+```ts
+import { getRecentDecisions } from '@/lib/intelligence/decision-log'
+
+const decisions = await getRecentDecisions(supabase, session.companyId, {
+  limit: 50,
+})
+return Response.json({ decisions })
+```
+
+#### Feedback capture — operator says "good call"
+
+```ts
+import { recordHumanFeedback } from '@/lib/intelligence/decision-log'
+
+await recordHumanFeedback(supabase, decisionId, {
+  sentiment: 'positive',
+  note_es: 'Ursula confirmó que sí había problema con ese proveedor.',
+  reviewer_id: session.userId,
+})
+```
+
+#### Learning loop — record actual outcome
+
+```ts
+import { recordOutcome } from '@/lib/intelligence/decision-log'
+
+// 3 days after the prediction, we observe the real semáforo value.
+await recordOutcome(supabase, decisionId, 'rojo')
+// Phase 3 #5 learning loop can now join prediction vs outcome.
+```
+
+### §45.6 — Tenant isolation contract
+
+- Every query (`getRecentDecisions`, `getDecisionHistory`) requires
+  `companyId` as a positional arg. Empty/missing → returns `[]`.
+- Writes carry `company_id` explicitly via the entry object. The
+  migration preserves the `company_id NOT NULL` invariant from Block EE.
+- The two supporting indexes (`agent_decisions_company_created_idx`,
+  `agent_decisions_tool_created_idx`) make the common query patterns
+  (latest-N per tenant, history by tool name) sub-millisecond.
+
+### §45.7 — Size + safety discipline
+
+- **`truncateJson`** runs on `tool_input` + `tool_output` at insert
+  time. Threshold = 8 KB UTF-8 bytes. Over-limit payloads become
+  `{ _truncated: true, _original_bytes, _preview }` — the full
+  response never lands in the row, so a misbehaving tool can't bloat
+  the table.
+- **Insert failures are swallowed** with a `console.error` trace.
+  Telemetry that breaks the caller is worse than telemetry that
+  occasionally misses a row.
+- **Thrown errors are re-thrown** by `withDecisionLog` so the caller
+  sees the same stack trace; only the logging side-effect swallows.
+- **Secrets never leak.** The tool layer never stores service-role
+  keys / session tokens in `tool_input` because the exec wrappers
+  only pass the user-facing args (traficoId, clientFilter, etc.).
+
+### §45.8 — The learning loop (Phase 3 #5 preview)
+
+Once decisions have real outcomes attached, the loop can:
+
+```ts
+// Pull predictions from the last 30 days that now have outcomes.
+const scored = await getDecisionHistory(supabase, 'evco', {
+  toolName: 'analyze_trafico',
+  after: thirtyDaysAgo,
+  outcome: undefined, // we want BOTH pending + completed, filter below
+})
+const completed = scored.filter(r => r.outcome != null)
+
+// For each, compare predicted band vs actual outcome.
+// Surface misses (predicted 'high' band → actual 'rojo') so the
+// predictor weights can be tuned in a Phase 4 learning block.
+```
+
+### §45.9 — Running the migration
+
+Local (against linked dev project):
+```bash
+npx supabase db push
+# verify — should show 6 new columns on agent_decisions
+```
+
+The migration is idempotent (`ADD COLUMN IF NOT EXISTS`,
+`CREATE INDEX IF NOT EXISTS`) — safe to re-run. No backfill
+required since every new column is nullable.
+
+### §45.10 — Where to read next
+
+| Task | Read |
+|---|---|
+| Write a new agent cron that logs | §42.5 + §45.3 `withDecisionLog` |
+| Wire a feedback UI | §45.3 `recordHumanFeedback` + `.claude/rules/client-accounting-ethics.md` for copy tone |
+| Query decision history for analytics | §45.3 `getDecisionHistory` |
+| Phase 3 #5 learning loop | §45.8 preview |
+
+
+## §47 — Mensajería Draft Composer (Phase 3 #4)
+
+Rule-based Spanish message composer. Takes structured agent signals
+(from Phase 2/3 #1 primitives) and produces draft messages for clients,
+internal operators, and drivers. **Never sends.** Every draft lives in
+`agent_decisions` (via Phase 3 #3 logger) awaiting human approval.
+
+### §47.1 — Files
+
+| File | Role |
+|---|---|
+| `src/lib/aguila/mensajeria/templates.ts` | 5 pure Spanish templates + `personalizeDraft` + `toneGuard` |
+| `src/lib/aguila/mensajeria/draft-composer.ts` | `draftMensajeria` orchestrator + `suggestMessageType` |
+| `src/lib/aguila/mensajeria/__tests__/draft-composer.test.ts` | 36 unit tests |
+| `src/lib/aguila/tools.ts` | `draft_mensajeria` tool registration + exec wrapper + re-exports |
+
+### §47.2 — Five templates
+
+| Type | Audience | Sender line | Triggered when |
+|---|---|---|---|
+| `preventive_alert` | client | "Renato Zapata & Company" | Low verde band OR broken streak |
+| `document_request` | client | "Renato Zapata & Company" | Prediction factor mentions missing docs / factura / certificado |
+| `status_update` | client | "Renato Zapata & Company" | Caller provides `pedimento_number` + `status_es` |
+| `anomaly_escalation` | internal | (no brand line — internal) | Anomaly (new_proveedor, volume_spike, etc.) |
+| `driver_dispatch` | driver | (imperative, name + lane) | Caller provides full dispatch bindings |
+
+Every template is a pure function `(bindings) => RenderedMessage`.
+Deterministic — same inputs always produce the same draft, which makes
+the learning-loop replay (Phase 3 #5) reliable.
+
+### §47.3 — `suggestMessageType` routing
+
+Pure rules, first match wins:
+
+```
+driver_context                 → driver_dispatch / driver
+has_status_transition          → status_update / client
+anomaly_kind                   → anomaly_escalation / internal
+missing_docs                   → document_request / client
+band_es==='baja' | broken      → preventive_alert / client
+rec.kind in {prioritize_rojo_  → preventive_alert / client
+review, validate_new_proveedor}
+(otherwise)                    → null
+```
+
+Callers can override the suggestion by passing `messageType` on a
+`trafico`/`sku` `DraftRequest`.
+
+### §47.4 — `toneGuard` contract (client-facing only)
+
+Runs on `audience === 'client'` drafts:
+
+1. **Denylist:** `urgente`, `urgent`, `vencido`, `overdue`, `past due`,
+   `critical`, `crítico`, `riesgo alto`, `red alert`, `!!`, warning emoji.
+2. **Shouting detector:** two+ consecutive ALL-CAPS words of 4+ letters.
+   Single ALL-CAPS words (SKU codes like `SKU-DIRECT`) slip through —
+   the guard fires only on real shouting like `ATENCIÓN INMEDIATA`.
+3. Internal + driver drafts **bypass the guard** — they can use the full
+   palette, including `⚠️` and `URGENTE` when an operator needs it.
+
+Issues surface as `tone_issues: string[]` on the response. By default,
+a draft with tone issues does NOT write a full `withDecisionLog` row —
+it writes a minimal `logDecision` row with `action_taken='blocked:tone_guard'`
+so the learning loop can see which inputs produced bad copy. Pass
+`{ logToneIssues: true }` to override (useful for tests + admin tooling).
+
+### §47.5 — `draftMensajeria` — the main entry point
+
+```ts
+import { draftMensajeria } from '@/lib/aguila/tools'  // re-exported
+// or directly:
+import { draftMensajeria } from '@/lib/aguila/mensajeria/draft-composer'
+
+// Fetches full insight via buildFullCrossingInsight, picks template,
+// binds, runs tone guard, logs via withDecisionLog.
+const res = await draftMensajeria(supabase, 'evco', {
+  kind: 'trafico',
+  traficoId: 'T-1',
+  productName: 'Granular de polietileno',
+})
+// res.data.draft.body_es = full Spanish message ready for review
+// res.data.message_type = 'preventive_alert'
+// res.data.tone_issues = []  (when clean)
+// res.data.decision_log_id = null when logged via withDecisionLog,
+//                            or the row id when logged minimally.
+```
+
+Six request shapes supported:
+
+```ts
+type DraftRequest =
+  | { kind: 'trafico'; traficoId; messageType?; productName? }
+  | { kind: 'sku'; cveProducto; messageType?; productName? }
+  | { kind: 'anomaly'; anomaly: { kind, subject, detail_es, score, action_es? } }
+  | { kind: 'status'; pedimento_number; status_es; trafico_id?; fecha_programada? }
+  | { kind: 'driver'; dispatch: DriverDispatchBindings }
+  | { kind: 'bindings'; bindings: TemplateBindings }  // escape hatch
+```
+
+### §47.6 — Decision Logger integration
+
+Three distinct log paths, all via Phase 3 #3 primitives:
+
+1. **Happy path** (clean tone, draft composed)
+   → `withDecisionLog` wraps the compose step.
+   Row: `tool_name='draft_mensajeria'`, `workflow='mensajeria_draft'`,
+   `autonomy_level=0`, `action_taken='completed'`.
+
+2. **Tone-issue blocked** (guard fired, draft suppressed)
+   → `logDecision` minimal row.
+   Row: same, but `action_taken='blocked:tone_guard'` and
+   `tool_output = { blocked: true, tone_issues, message_type }`.
+
+3. **Approval** (future, when a review UI ships)
+   → `recordHumanFeedback(id, { sentiment: 'positive', reviewer_id })`
+   attaches the approval to the original draft row.
+
+4. **Send outcome** (future Phase 3 #5)
+   → `recordOutcome(id, 'sent'|'rejected'|'superseded')` closes the loop.
+
+### §47.7 — CRUZ AI tool registration
+
+Registered as `draft_mensajeria` in `TOOL_DEFINITIONS`. Claude (the chat
+router) picks it when the user says things like:
+
+| User says (Spanish) | Args the router passes |
+|---|---|
+| "Prepara un borrador para el tráfico T-1" | `{ traficoId: 'T-1' }` |
+| "Redacta una alerta preventiva para SKU-HOT" | `{ traficoId: '...' , messageType: 'preventive_alert', productName: '...' }` |
+| "Escala la anomalía del proveedor nuevo PRV_NEW" | `{ anomalyKind: 'new_proveedor', anomalySubject: 'PRV_NEW', anomalyDetail: '...' }` |
+| "Avisa al cliente que el pedimento cruzó" | `{ pedimentoNumber: '...', statusEs: 'Cruzado' }` |
+
+Exec wrapper `execDraftMensajeria` resolves scope via
+`resolveScopedCompanyId` (same contract as Phase 3 #1 tools — client
+sessions pinned to their own company, internal roles require
+`clientFilter`, unknown filter → refused).
+
+### §47.8 — Script example — nightly proactive drafts
+
+```js
+// scripts/nightly-preventive-drafts.js
+require('tsx/cjs')
+const { createClient } = require('@supabase/supabase-js')
+const { runJob } = require('./lib/job-runner')
+const { runIntelligenceAgent } = require('../src/lib/intelligence/agent')
+const { draftMensajeria } = require('../src/lib/aguila/mensajeria/draft-composer')
+
+runJob('nightly-preventive-drafts', async () => {
+  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  const scan = await runIntelligenceAgent(sb, 'evco', 'tenant_scan', { windowDays: 14, topFocusCount: 3 })
+  if (scan.mode_label !== 'tenant_scan') return { rowsProcessed: 0 }
+
+  let drafts = 0
+  for (const insight of scan.focus_insights) {
+    if (insight.signals.prediction.band !== 'low') continue
+    const res = await draftMensajeria(sb, 'evco', {
+      kind: 'sku',
+      cveProducto: insight.cve_producto,
+    })
+    if (res.success && res.data) drafts++
+  }
+  return { rowsProcessed: drafts, metadata: { scanned: scan.focus_insights.length } }
+})
+```
+
+All drafts land in `agent_decisions`; the operator review UI (future)
+reads them via `getDecisionHistory({ toolName: 'draft_mensajeria' })`
+and flips each through `recordHumanFeedback` on approval.
+
+### §47.9 — Safety contract — 100% demo-safe
+
+- **No sends.** Nothing in Phase 3 #4 calls Telegram / Mensajería / email
+  / WhatsApp. The composer produces text and logs.
+- **No client-facing UI changes.** The review surface is a future phase;
+  until it ships, drafts are observable only by internal queries on
+  `agent_decisions`.
+- **No new DB tables.** Phase 3 #4 writes through the existing
+  `agent_decisions` table (Phase 3 #3 migration). Zero schema risk.
+- **Tenant isolation.** `companyId` required on every entry point;
+  exec wrapper forces internal roles to pass `clientFilter`.
+- **No LLM calls.** Templates are deterministic Spanish strings with
+  data binding. No hallucination surface.
+- **Tone guard.** Client-facing drafts pass through `toneGuard` before
+  being logged as full drafts; failed guard drafts land as
+  `blocked:tone_guard` rows for the learning loop.
+- **Brand invariant.** Client-facing templates hard-code
+  "Renato Zapata & Company" as sender; internal operator names never
+  leak to client copy (per CLAUDE.md Mensajería rules).
+
+### §47.10 — What Phase 3 #4 does NOT do
+
+Explicit scope cuts — these belong to future phases:
+
+- **Review UI** for approving/rejecting drafts (admin surface work).
+- **Sending** approved drafts over Mensajería / WhatsApp / email
+  (existing Mensajería pipeline or a dedicated sender).
+- **LLM wording polish** via Sonnet (Phase 3 #4c enhancement).
+- **Multi-language variants** (English for US-side drivers, etc.).
+- **Attachment generation** (PDFs, invoices — needs the doc library).
+- **Auto-compose from briefing recs** (Phase 3 #2 briefing could hand
+  high-priority recs to this composer, flagged as Phase 3 #4b).
+
+### §47.11 — Where to read next
+
+| Task | Read |
+|---|---|
+| Build the review UI | §45.3 `getDecisionHistory`, `recordHumanFeedback` + §47.6 |
+| Add a new template | §47.2 + `src/lib/aguila/mensajeria/templates.ts` — follow the 5 existing patterns |
+| Add a new routing rule | `suggestMessageType` in `draft-composer.ts` — keep it pure + add a test |
+| Wire into a nightly cron | §47.8 example + `.claude/rules/operational-resilience.md` |
+| Understand why NO sends in Phase 3 #4 | CLAUDE.md "APPROVAL GATE — NON-NEGOTIABLE" |
+
+
+## §48 — Learning Loop (Phase 3 #5)
+
+Closes the cycle. Phase 3 #3 logged every agent decision. Phase 3 #4
+added draft composition that logs its own outputs + human feedback.
+Phase 3 #5 reads it all back, computes metrics, proposes improvements.
+
+**The agent proposes; humans ratify.** Every suggestion points to a
+specific file + rule to review. No rule weights, template strings, or
+confidence thresholds are mutated automatically. That boundary is
+permanent.
+
+### §48.1 — Files
+
+| File | Role |
+|---|---|
+| `src/lib/aguila/learning/loop.ts` | Core engine — metrics, suggestion rules, report composer, `analyzeDecisions`, `generateWeeklyReport` |
+| `src/lib/aguila/learning/__tests__/loop.test.ts` | 37 unit tests — every pure function exercised with fixtures |
+| `src/lib/aguila/tools.ts` | `learning_report` tool registration + exec wrapper + re-exports |
+
+### §48.2 — Four metric axes
+
+All derived from existing `agent_decisions` rows — no new tables.
+
+```ts
+interface LearningMetrics {
+  window:              { days, generated_at, company_id }
+  sample_size:         { total, with_outcome, with_feedback }
+  prediction_accuracy: {
+    overall: { total, verde_count, verde_rate },
+    by_band: {
+      alta:  { total, verde_count, verde_rate, predicted_rate_mid, gap_pp },
+      media: {...},
+      baja:  {...},
+    }
+  }
+  tool_acceptance:     { by_tool: [{ tool_name, total, positive, negative, neutral, no_feedback, acceptance_rate }] }
+  draft_approval:      { by_type: [{ message_type, total, approved, rejected, no_outcome, approval_rate }], blocked_by_tone_guard }
+  tone_guard:          { total_attempts, blocked, block_rate }
+}
+```
+
+**Band midpoints** used for the prediction gap:
+```
+alta  = 95  (band 92–99)
+media = 86  (band 80–91)
+baja  = 60  (band <80)
+```
+
+`gap_pp = actual_verde_rate_pct - predicted_rate_mid`. Negative gap on `alta` = overconfidence.
+
+### §48.3 — Six suggestion rules
+
+Deterministic, explainable. Each fires when a threshold is crossed AND
+enough evidence exists (sample sizes are deliberately conservative).
+
+| Rule | Priority | Fires when | Proposed action |
+|---|---|---|---|
+| `prediction_overconfidence` | alta | band `alta` verde_rate < 90% AND n ≥ 10 | Review `predictVerdeProbability` rule weights |
+| `prediction_underconfidence` | media | band `baja` verde_rate > 80% AND n ≥ 10 | Recalibrate — rules too pessimistic |
+| `tool_low_acceptance` | media | any tool `acceptance_rate < 0.6` AND feedback count ≥ 5 | Review that tool's output shape + Spanish copy |
+| `draft_low_approval` | media | any `message_type` `approval_rate < 0.7` AND n ≥ 5 | Edit the template in `templates.ts` |
+| `tone_guard_drift` | baja | tone_guard `block_rate > 10%` AND total ≥ 20 | Investigate upstream — unsanitized product names? |
+| `sample_size_low` | baja | total decisions < 10 | Flag: metrics untrustworthy, wait for more data |
+
+Every suggestion carries `{ id, kind, priority, subject, finding_es, suggested_action_es, evidence }` so the review UI can group + dedupe across runs via `id`.
+
+### §48.4 — Report composer
+
+`composeReport(metrics, suggestions)` returns `{ summary_es, text_plain, text_html }`:
+
+- **Plain + HTML** both produced (Telegram parse_mode='HTML' uses the HTML, email + logs use plain)
+- **HTML-escaped** throughout — company names, tool names, any free-text field
+- **4000-char hard cap** with newline-boundary truncation (Telegram 4096 limit minus headroom)
+- **Summary leads with a high-priority finding** when one exists, otherwise falls back to verde rate or sample size
+
+### §48.5 — Public API
+
+Three entry points, all re-exported from `@/lib/aguila/tools`:
+
+```ts
+// Full analysis — fetch decisions + compute metrics + suggestions + compose
+const report = await analyzeDecisions(supabase, 'evco', { windowDays: 7 })
+
+// Same as above but logs the run itself to agent_decisions
+// (tool_name='learning_loop', autonomy_level=0) and returns the
+// standard AgentToolResponse envelope
+const res = await generateWeeklyReport(supabase, 'evco', { windowDays: 7 })
+// res.data.metrics · res.data.suggestions · res.data.text_plain · res.data.text_html
+
+// Pure functions — also re-exported for testability + future UIs
+computePredictionAccuracy(rows)
+computeToolAcceptance(rows)
+computeDraftApproval(rows)
+computeToneGuardTrend(rows)
+suggestAdjustments(metrics)
+composeReport(metrics, suggestions)
+```
+
+### §48.6 — CRUZ AI tool registration
+
+Registered as `learning_report`. Claude picks it when the user asks:
+
+| User says (Spanish) | Args |
+|---|---|
+| "Dame el reporte de aprendizaje" | `{}` |
+| "¿Cómo ha estado el desempeño del agente esta semana?" | `{}` |
+| "Reporte de los últimos 30 días" | `{ windowDays: 30 }` |
+| "Aprendizaje para MAFESA" (internal role) | `{ clientFilter: 'mafesa' }` |
+
+Scope resolution via `resolveScopedCompanyId` — same contract as the other agent tools. Internal roles without `clientFilter` → refused.
+
+### §48.7 — Script example — weekly cron (Phase 3 #5b follow-up)
+
+Not shipped in Phase 3 #5 itself; pattern documented here for the cron we'll wire next:
+
+```js
+// scripts/weekly-learning-report.js
+require('tsx/cjs')
+const { createClient } = require('@supabase/supabase-js')
+const { runJob } = require('./lib/job-runner')
+const { generateWeeklyReport } = require('../src/lib/aguila/tools')
+
+runJob('weekly-learning-report', async () => {
+  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  const res = await generateWeeklyReport(sb, 'evco', { windowDays: 7 })
+  if (!res.success || !res.data) return { rowsProcessed: 0 }
+
+  // Reuse the same INTERNAL_BRIEFING_CHAT_ID channel as morning-briefing.
+  // Never a client-facing channel — this is meta-observability.
+  await sendInternalTelegram(res.data.text_html)
+  return { rowsProcessed: 1, metadata: {
+    suggestions: res.data.suggestions.length,
+    window_days: 7,
+  }}
+})
+```
+
+PM2 registration (Throne, when ready):
+```bash
+pm2 start scripts/weekly-learning-report.js \
+  --name weekly-learning-report \
+  --cron "0 7 * * 1" \
+  --no-autorestart
+pm2 save
+```
+
+Cron `"0 7 * * 1"` = Mondays 07:00 Laredo time.
+
+### §48.8 — Safety contract — 100% demo-safe
+
+| Concern | Mitigation |
+|---|---|
+| Autonomous rule mutation | **Does not happen.** Learning loop produces suggestions with file+rule pointers; humans edit + commit. `autonomy_level=0` on every logged report. |
+| New DB tables | None. Reads existing `agent_decisions`, writes one report row per run via `withDecisionLog` (Phase 3 #3). |
+| Cross-tenant contamination | Every orchestrator takes `companyId` as a required positional arg. `getDecisionHistory` filters at the SQL layer. Internal-role tool usage requires `clientFilter`. |
+| LLM hallucination | **No LLM calls.** Every metric + rule + Spanish phrase is deterministic. Same rows in → same report out. |
+| Runaway report size | Report is hard-capped at 4000 chars; `tool_output` on the logged row is 8 KB-truncated by `truncateJson` (Phase 3 #3). |
+| HTML injection | All injected strings pass through `escapeHtml` before landing in `text_html`. |
+| Premature action | `sample_size_low` rule fires whenever total < 10 so reviewers know when metrics are too thin to trust. |
+
+### §48.9 — What Phase 3 #5 does NOT do
+
+Explicit scope cuts — these belong to later phases:
+
+- **Autonomous mutations** — never. No phase will touch rule weights / templates / thresholds without human review.
+- **Weekly send cron** (Phase 3 #5b) — cleanly split so the pure report can be tested independently of Telegram I/O.
+- **Review UI for suggestions** — admin-page work; queries via `getDecisionHistory({ toolName: 'learning_loop' })`.
+- **Per-anomaly feedback** — current feedback is decision-level; if we ever want per-anomaly sentiment, that's a schema-extension conversation.
+- **Trend visualizations** (week-over-week deltas, sparklines) — metric shape supports this; UI layer only.
+- **Recommendation kind tracking** — could be added; current metrics cover the broader tool acceptance signal.
+
+### §48.10 — Where to read next
+
+| Task | Read |
+|---|---|
+| Add a new metric axis | §48.2 + fixture pattern in `loop.test.ts` |
+| Add a new suggestion rule | `suggestAdjustments` in `loop.ts` — keep it pure + evidence-carrying |
+| Wire the weekly cron | §48.7 example + `.claude/rules/operational-resilience.md` |
+| Build a review UI | §45.3 query helpers + §48.2 response shape |
+| Understand why NO autonomous mutation | CLAUDE.md approval-gate rule + Phase 3 autonomy contract |
+

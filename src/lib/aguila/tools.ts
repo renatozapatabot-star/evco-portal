@@ -4,6 +4,13 @@ import type { PortalRole } from '@/lib/session'
 import { AguilaForbiddenError, canSeeAllClients, canSeeFinance } from './roles'
 import { resolveMentions, type MentionResult } from './mentions'
 import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
+import {
+  runIntelligenceAgent,
+  type AgentReport,
+} from '@/lib/intelligence/agent'
+import type { Recommendation } from '@/lib/intelligence/recommend'
+import type { FullCrossingInsight } from '@/lib/intelligence/full-insight'
+import { withDecisionLog } from '@/lib/intelligence/decision-log'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +32,12 @@ export type ToolName =
   | 'query_financiero'
   | 'query_expedientes'
   | 'route_mention'
+  | 'analyze_trafico'
+  | 'analyze_pedimento'
+  | 'tenant_anomalies'
+  | 'intelligence_scan'
+  | 'draft_mensajeria'
+  | 'learning_report'
 
 /**
  * Anthropic tool definitions. Kept deliberately small so Haiku picks the
@@ -100,6 +113,89 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
         rawMessage: { type: 'string', description: 'Texto completo del mensaje del usuario.' },
       },
       required: ['rawMessage'],
+    },
+  },
+  {
+    name: 'analyze_trafico',
+    description:
+      'Análisis completo de un tráfico (shipment): predicción verde, racha, proveedor dominante, fracción, recomendaciones accionables. Úsalo cuando el usuario pregunte "¿cómo se ve el tráfico X?" o similar.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        traficoId: { type: 'string', description: 'Clave del tráfico (cve_trafico).' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+      required: ['traficoId'],
+    },
+  },
+  {
+    name: 'analyze_pedimento',
+    description:
+      'Análisis completo de un pedimento: resuelve el tráfico asociado y devuelve predicción + recomendaciones. Espera el pedimento en formato "DD AD PPPP SSSSSSS" o el número sin espacios.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        pedimentoNumber: { type: 'string', description: 'Número de pedimento.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+      required: ['pedimentoNumber'],
+    },
+  },
+  {
+    name: 'tenant_anomalies',
+    description:
+      'Lista las anomalías operativas del cliente en la ventana reciente (proveedor nuevo, salto de volumen, racha rota, etc.) con resumen en español.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 90.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'intelligence_scan',
+    description:
+      'Escaneo completo de inteligencia para el tenant: verde base, anomalías, top SKUs en riesgo y recomendaciones priorizadas. Úsalo para preguntas abiertas tipo "¿cómo está la operación?" o "dame un panorama".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Consulta libre del usuario (opcional). Si menciona "anomalías" o "alertas" se restringe al modo anomaly_only.' },
+        windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 90.' },
+        topFocusCount: { type: 'number', description: 'Número máximo de SKUs foco a expandir. Default 3.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'draft_mensajeria',
+    description:
+      'Genera un borrador de mensaje en español (cliente / interno / conductor) — NO envía. Escenarios: heads-up preventivo de cruce, solicitud de documentos, actualización de estatus de pedimento, escalación de anomalía, despacho de conductor. Úsalo cuando el usuario pida "prepara un borrador", "redacta una alerta", o similar. Todo borrador queda persistido en agent_decisions y espera aprobación humana antes de enviarse.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        traficoId: { type: 'string', description: 'Tráfico destino (enruta a preventive_alert / document_request según señales).' },
+        pedimentoNumber: { type: 'string', description: 'Pedimento destino (útil para status_update tras transición de estatus).' },
+        statusEs: { type: 'string', description: 'Estatus en español para una actualización de pedimento (ej. "En proceso", "Cruzado", "Liberado").' },
+        anomalyKind: { type: 'string', description: 'Cuando se escala una anomalía: tipo (new_proveedor, volume_spike, etc.).' },
+        anomalySubject: { type: 'string', description: 'Sujeto de la anomalía (proveedor, SKU, etc.).' },
+        anomalyDetail: { type: 'string', description: 'Detalle en español de la anomalía.' },
+        messageType: { type: 'string', description: 'Tipo forzado: preventive_alert | document_request | status_update | anomaly_escalation | driver_dispatch.' },
+        productName: { type: 'string', description: 'Nombre amigable del producto (reemplaza el SKU crudo en copy cliente).' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'learning_report',
+    description:
+      'Genera un reporte de aprendizaje (semanal por defecto): precisión de predicciones, aceptación por herramienta, aprobación por plantilla de borrador, tendencia del tone-guard + sugerencias accionables. Solo lectura — propone ajustes, no los aplica. Úsalo para preguntas tipo "¿cómo ha estado el desempeño del agente?" o "dame el reporte de aprendizaje".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 7. Rango 1..90.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
     },
   },
 ]
@@ -422,6 +518,18 @@ export async function runTool(
         return { tool, result: await execQueryExpedientes(args as ExpedientesArgs, ctx) }
       case 'route_mention':
         return { tool, result: await execRouteMention(args as MentionArgs, ctx) }
+      case 'analyze_trafico':
+        return { tool, result: await execAnalyzeTrafico(args as AnalyzeTraficoArgs, ctx) }
+      case 'analyze_pedimento':
+        return { tool, result: await execAnalyzePedimento(args as AnalyzePedimentoArgs, ctx) }
+      case 'tenant_anomalies':
+        return { tool, result: await execTenantAnomalies(args as TenantAnomaliesArgs, ctx) }
+      case 'intelligence_scan':
+        return { tool, result: await execIntelligenceScan(args as IntelligenceScanArgs, ctx) }
+      case 'draft_mensajeria':
+        return { tool, result: await execDraftMensajeria(args as DraftMensajeriaArgs, ctx) }
+      case 'learning_report':
+        return { tool, result: await execLearningReport(args as LearningReportArgs, ctx) }
       default:
         return { tool, result: null, error: `unknown_tool:${tool}` }
     }
@@ -437,3 +545,613 @@ export async function runTool(
     return { tool, result: { error: 'tool_failed', message: msg }, error: msg }
   }
 }
+
+// =============================================================================
+// PHASE 3 #1 — CRUZ AI Natural-Language Intelligence Interface
+// =============================================================================
+//
+// Layer on top of the Phase 2 autonomous agent. Every tool below:
+//   1. Calls `runIntelligenceAgent` under the hood (no new DB logic).
+//   2. Returns a consistent `{ success, data, error }` envelope.
+//   3. Shapes the agent's structured output into operator-friendly Spanish.
+//   4. Is exported as a standalone function (testable + callable from
+//      scripts / other modules) AND registered as an Anthropic tool
+//      (callable by CRUZ AI chat routing).
+//
+// Safety:
+//   - Read-only. No writes, no external side effects (no Telegram, no
+//     Mensajería sends). Scripts that act on this output wire those
+//     separately behind the approval gate.
+//   - Tenant isolation enforced via `resolveClientScope`. Clients + warehouse
+//     cannot override scope; internals can pass `clientFilter` to inspect a
+//     specific tenant (or omit it to refuse — we never run an agent scan
+//     against `null` tenant).
+
+/** Unified response envelope for every agent-tool. */
+export interface AgentToolResponse<T> {
+  success: boolean
+  data: T | null
+  error: string | null
+}
+
+// ── Types: focus responses ─────────────────────────────────────────
+
+export interface FocusResponseEs {
+  type: 'sku_focus' | 'trafico_focus'
+  headline_es: string
+  summary_es: string
+  cve_producto: string
+  trafico_id: string | null
+  probability_pct: number
+  band_es: 'alta' | 'media' | 'baja'
+  proveedor: string | null
+  fraccion: string | null
+  factors: Array<{
+    label_es: string
+    impact_pp: number
+    tone: 'positive' | 'negative' | 'neutral'
+  }>
+  recommendations: Array<{
+    priority_es: 'alta' | 'media' | 'baja'
+    action_es: string
+    rationale_es: string
+  }>
+  next_steps_es: string[]
+}
+
+export interface TenantScanResponseEs {
+  type: 'tenant_scan'
+  headline_es: string
+  summary_es: string
+  company_id: string
+  baseline_verde_pct: number
+  anomaly_count: number
+  anomaly_groups_es: Array<{ label_es: string; count: number }>
+  top_focus_es: Array<{
+    cve_producto: string
+    probability_pct: number
+    band_es: 'alta' | 'media' | 'baja'
+    summary_es: string
+  }>
+  recommendations: Array<{
+    priority_es: 'alta' | 'media' | 'baja'
+    action_es: string
+    rationale_es: string
+  }>
+}
+
+export interface AnomalyOnlyResponseEs {
+  type: 'anomaly_only'
+  headline_es: string
+  summary_es: string
+  company_id: string
+  anomaly_count: number
+  anomaly_groups_es: Array<{
+    label_es: string
+    count: number
+    top_subjects: string[]
+  }>
+  recommendations: Array<{
+    priority_es: 'alta' | 'media' | 'baja'
+    action_es: string
+    rationale_es: string
+  }>
+}
+
+export type IntelligenceResponseEs =
+  | FocusResponseEs
+  | TenantScanResponseEs
+  | AnomalyOnlyResponseEs
+
+// ── Spanish formatting helpers ─────────────────────────────────────
+
+function bandEs(band: 'high' | 'medium' | 'low'): 'alta' | 'media' | 'baja' {
+  return band === 'high' ? 'alta' : band === 'medium' ? 'media' : 'baja'
+}
+
+function priorityEs(p: Recommendation['priority']): 'alta' | 'media' | 'baja' {
+  return p === 'high' ? 'alta' : p === 'medium' ? 'media' : 'baja'
+}
+
+function formatProveedor(insight: FullCrossingInsight): string | null {
+  const prov = insight.signals.proveedor
+  if (!prov) return null
+  return prov.pct_verde != null
+    ? `${prov.cve_proveedor} · ${prov.pct_verde}% verde (${prov.total_crossings} cruces)`
+    : prov.cve_proveedor
+}
+
+function formatFocus(
+  insight: FullCrossingInsight,
+  type: 'sku_focus' | 'trafico_focus',
+  traficoId: string | null,
+): FocusResponseEs {
+  const pct = Math.round(insight.signals.prediction.probability * 100)
+  const bEs = bandEs(insight.signals.prediction.band)
+
+  return {
+    type,
+    headline_es:
+      type === 'trafico_focus' && traficoId
+        ? `Tráfico ${traficoId} · SKU dominante ${insight.cve_producto} · ${pct}% probabilidad verde · confianza ${bEs}`
+        : `SKU ${insight.cve_producto} · ${pct}% probabilidad verde · confianza ${bEs}`,
+    summary_es: insight.summary_es,
+    cve_producto: insight.cve_producto,
+    trafico_id: traficoId,
+    probability_pct: pct,
+    band_es: bEs,
+    proveedor: formatProveedor(insight),
+    fraccion: insight.signals.fraccion,
+    factors: insight.explanation.bullets.map((b) => ({
+      label_es: b.label,
+      impact_pp: b.signed_delta,
+      tone: b.tone,
+    })),
+    recommendations: insight.recommendations
+      .filter((r) => r.kind !== 'no_action')
+      .map((r) => ({
+        priority_es: priorityEs(r.priority),
+        action_es: r.action_es,
+        rationale_es: r.rationale_es,
+      })),
+    next_steps_es: insight.recommendations
+      .filter((r) => r.kind !== 'no_action')
+      .slice(0, 3)
+      .map((r, i) => `${i + 1}. ${r.action_es}`),
+  }
+}
+
+function formatTenantScan(report: AgentReport): TenantScanResponseEs {
+  if (report.mode_label !== 'tenant_scan') {
+    throw new Error('formatTenantScan: wrong mode_label')
+  }
+  return {
+    type: 'tenant_scan',
+    headline_es: report.summary_es,
+    summary_es: report.anomaly_report.summary_es,
+    company_id: report.company_id,
+    baseline_verde_pct: report.insights.baseline_verde_pct,
+    anomaly_count: report.insights.anomalies.length,
+    anomaly_groups_es: report.anomaly_report.groups.map((g) => ({
+      label_es: g.label_es,
+      count: g.anomalies.length,
+    })),
+    top_focus_es: report.focus_insights.map((f) => ({
+      cve_producto: f.cve_producto,
+      probability_pct: Math.round(f.signals.prediction.probability * 100),
+      band_es: bandEs(f.signals.prediction.band),
+      summary_es: f.summary_es,
+    })),
+    recommendations: report.recommendations
+      .filter((r) => r.kind !== 'no_action')
+      .map((r) => ({
+        priority_es: priorityEs(r.priority),
+        action_es: r.action_es,
+        rationale_es: r.rationale_es,
+      })),
+  }
+}
+
+function formatAnomalyOnly(report: AgentReport): AnomalyOnlyResponseEs {
+  if (report.mode_label !== 'anomaly_only') {
+    throw new Error('formatAnomalyOnly: wrong mode_label')
+  }
+  return {
+    type: 'anomaly_only',
+    headline_es: report.summary_es,
+    summary_es: report.anomaly_report.summary_es,
+    company_id: report.company_id,
+    anomaly_count: report.anomaly_report.total_count,
+    anomaly_groups_es: report.anomaly_report.groups.map((g) => ({
+      label_es: g.label_es,
+      count: g.anomalies.length,
+      top_subjects: g.anomalies.slice(0, 3).map((a) => a.subject),
+    })),
+    recommendations: report.recommendations
+      .filter((r) => r.kind !== 'no_action')
+      .map((r) => ({
+        priority_es: priorityEs(r.priority),
+        action_es: r.action_es,
+        rationale_es: r.rationale_es,
+      })),
+  }
+}
+
+// ── Standalone exports ─────────────────────────────────────────────
+
+/**
+ * Natural-language analysis of a single tráfico. Delegates to the
+ * autonomous intelligence agent and formats the output in Spanish.
+ */
+export async function analyzeTrafico(
+  supabase: SupabaseClient,
+  companyId: string,
+  traficoId: string,
+): Promise<AgentToolResponse<FocusResponseEs>> {
+  const cleanId = (traficoId ?? '').trim()
+  if (!companyId) {
+    return { success: false, data: null, error: 'invalid_companyId' }
+  }
+  if (!cleanId) {
+    return { success: false, data: null, error: 'invalid_traficoId' }
+  }
+
+  try {
+    const report = await runIntelligenceAgent(supabase, companyId, {
+      type: 'trafico',
+      traficoId: cleanId,
+    })
+
+    if (report.mode_label !== 'trafico_focus' || !report.insight) {
+      return {
+        success: true,
+        data: null,
+        error: `Tráfico ${cleanId} sin señal en la ventana — aún no hay base para análisis.`,
+      }
+    }
+
+    return { success: true, data: formatFocus(report.insight, 'trafico_focus', cleanId), error: null }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, data: null, error: msg }
+  }
+}
+
+/**
+ * Resolve a pedimento number to its parent tráfico and run the analyzer.
+ * Accepts either the SAT-spaced form "DD AD PPPP SSSSSSS" or a
+ * whitespace-collapsed variant (we normalize before query).
+ */
+export async function analyzePedimento(
+  supabase: SupabaseClient,
+  companyId: string,
+  pedimentoNumber: string,
+): Promise<AgentToolResponse<FocusResponseEs>> {
+  if (!companyId) {
+    return { success: false, data: null, error: 'invalid_companyId' }
+  }
+  const clean = (pedimentoNumber ?? '').trim()
+  if (!clean) {
+    return { success: false, data: null, error: 'invalid_pedimentoNumber' }
+  }
+
+  try {
+    // Try the pedimento exactly as provided first (SAT canonical form
+    // preserves spaces). If no match, try the collapsed form.
+    const { data, error } = await supabase
+      .from('traficos')
+      .select('trafico, pedimento')
+      .eq('company_id', companyId)
+      .or(`pedimento.eq.${clean},pedimento.eq.${clean.replace(/\s+/g, '')}`)
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      return { success: false, data: null, error: `traficos:${error.message}` }
+    }
+    const traficoId = (data as { trafico?: string | null } | null)?.trafico
+    if (!traficoId) {
+      return {
+        success: true,
+        data: null,
+        error: `Pedimento ${clean} no encontrado para este cliente.`,
+      }
+    }
+
+    return analyzeTrafico(supabase, companyId, traficoId)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, data: null, error: msg }
+  }
+}
+
+/**
+ * Tenant-wide anomaly summary. Lighter than a full scan; returns just
+ * the anomalies + derived recommendations.
+ */
+export async function getTenantAnomalies(
+  supabase: SupabaseClient,
+  companyId: string,
+  opts: { windowDays?: number } = {},
+): Promise<AgentToolResponse<AnomalyOnlyResponseEs>> {
+  if (!companyId) {
+    return { success: false, data: null, error: 'invalid_companyId' }
+  }
+  try {
+    const report = await runIntelligenceAgent(supabase, companyId, 'anomaly_only', {
+      windowDays: opts.windowDays,
+    })
+    return { success: true, data: formatAnomalyOnly(report), error: null }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, data: null, error: msg }
+  }
+}
+
+/**
+ * General-purpose entry point. The free-form Spanish `query` selects the
+ * agent mode:
+ *   - mentions "anomalía", "alerta", "problema" → anomaly_only
+ *   - otherwise → tenant_scan (full panorama with focus insights)
+ *
+ * Designed for CRUZ AI chat routing: Claude picks this tool for open
+ * questions like "¿cómo está la operación?" and passes the user's raw
+ * message as `query` so we can pick the right depth.
+ */
+export async function getFullIntelligence(
+  supabase: SupabaseClient,
+  companyId: string,
+  query: string | undefined,
+  opts: { windowDays?: number; topFocusCount?: number } = {},
+): Promise<AgentToolResponse<TenantScanResponseEs | AnomalyOnlyResponseEs>> {
+  if (!companyId) {
+    return { success: false, data: null, error: 'invalid_companyId' }
+  }
+
+  const q = (query ?? '').toLowerCase()
+  const anomalyOnly = /anomal[ií]a|alerta|problema|alerta/i.test(q)
+
+  try {
+    if (anomalyOnly) {
+      const report = await runIntelligenceAgent(supabase, companyId, 'anomaly_only', {
+        windowDays: opts.windowDays,
+      })
+      return { success: true, data: formatAnomalyOnly(report), error: null }
+    }
+
+    const report = await runIntelligenceAgent(supabase, companyId, 'tenant_scan', {
+      windowDays: opts.windowDays,
+      topFocusCount: opts.topFocusCount,
+    })
+    return { success: true, data: formatTenantScan(report), error: null }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, data: null, error: msg }
+  }
+}
+
+// ── Tool executors (CRUZ AI entry points) ──────────────────────────
+
+interface AnalyzeTraficoArgs { traficoId?: string; clientFilter?: string }
+interface AnalyzePedimentoArgs { pedimentoNumber?: string; clientFilter?: string }
+interface TenantAnomaliesArgs { windowDays?: number; clientFilter?: string }
+interface IntelligenceScanArgs {
+  query?: string
+  windowDays?: number
+  topFocusCount?: number
+  clientFilter?: string
+}
+
+async function resolveScopedCompanyId(
+  ctx: AguilaCtx,
+  clientFilter: string | undefined,
+): Promise<string> {
+  const scope = await resolveClientScope(ctx, clientFilter)
+  if (scope.allClients || !scope.companyId) {
+    // Agent scans demand a concrete tenant. An unscoped "all clients" scan
+    // would leak cross-tenant signals into one report. Refuse instead.
+    throw new AguilaForbiddenError('agent:tenant_required')
+  }
+  return scope.companyId
+}
+
+async function execAnalyzeTrafico(args: AnalyzeTraficoArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  const traficoId = String(args.traficoId ?? '')
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'analyze_trafico',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      triggerId: traficoId || undefined,
+      toolInput: { traficoId, clientFilter: args.clientFilter ?? null },
+    },
+    () => analyzeTrafico(supabaseAdmin, companyId, traficoId),
+  )
+}
+
+async function execAnalyzePedimento(args: AnalyzePedimentoArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  const pedimentoNumber = String(args.pedimentoNumber ?? '')
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'analyze_pedimento',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      triggerId: pedimentoNumber || undefined,
+      toolInput: { pedimentoNumber, clientFilter: args.clientFilter ?? null },
+    },
+    () => analyzePedimento(supabaseAdmin, companyId, pedimentoNumber),
+  )
+}
+
+async function execTenantAnomalies(args: TenantAnomaliesArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'tenant_anomalies',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      toolInput: { windowDays: args.windowDays ?? null, clientFilter: args.clientFilter ?? null },
+    },
+    () => getTenantAnomalies(supabaseAdmin, companyId, {
+      windowDays: args.windowDays,
+    }),
+  )
+}
+
+async function execIntelligenceScan(args: IntelligenceScanArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'intelligence_scan',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      toolInput: {
+        query: args.query ?? null,
+        windowDays: args.windowDays ?? null,
+        topFocusCount: args.topFocusCount ?? null,
+        clientFilter: args.clientFilter ?? null,
+      },
+    },
+    () => getFullIntelligence(supabaseAdmin, companyId, args.query, {
+      windowDays: args.windowDays,
+      topFocusCount: args.topFocusCount,
+    }),
+  )
+}
+
+// ── Phase 3 #4 — draft_mensajeria exec wrapper + re-export ───────
+
+interface DraftMensajeriaArgs {
+  traficoId?: string
+  pedimentoNumber?: string
+  statusEs?: string
+  anomalyKind?: string
+  anomalySubject?: string
+  anomalyDetail?: string
+  messageType?:
+    | 'preventive_alert'
+    | 'document_request'
+    | 'status_update'
+    | 'anomaly_escalation'
+    | 'driver_dispatch'
+  productName?: string
+  clientFilter?: string
+}
+
+/**
+ * Build a DraftRequest from the flat Anthropic-tool args shape. Priority
+ * ordering (first match wins so the router can pick a lane from natural
+ * language without ambiguous fallbacks):
+ *
+ *   1. anomalyKind present        → anomaly_escalation
+ *   2. pedimentoNumber + statusEs → status_update
+ *   3. traficoId present          → trafico-based composition
+ *   4. nothing above              → error (insufficient context)
+ */
+function buildDraftRequestFromArgs(
+  args: DraftMensajeriaArgs,
+):
+  | import('./mensajeria/draft-composer').DraftRequest
+  | { error: string } {
+  if (args.anomalyKind) {
+    return {
+      kind: 'anomaly',
+      anomaly: {
+        kind: args.anomalyKind,
+        subject: String(args.anomalySubject ?? 'desconocido'),
+        detail_es: String(args.anomalyDetail ?? 'Anomalía reportada'),
+        score: 0.5,
+      },
+    }
+  }
+  if (args.pedimentoNumber && args.statusEs) {
+    return {
+      kind: 'status',
+      pedimento_number: String(args.pedimentoNumber),
+      status_es: String(args.statusEs),
+      trafico_id: args.traficoId ?? null,
+    }
+  }
+  if (args.traficoId) {
+    return {
+      kind: 'trafico',
+      traficoId: String(args.traficoId),
+      messageType: args.messageType,
+      productName: args.productName,
+    }
+  }
+  return { error: 'Contexto insuficiente para componer un borrador.' }
+}
+
+async function execDraftMensajeria(args: DraftMensajeriaArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  const request = buildDraftRequestFromArgs(args)
+  if ('error' in request) {
+    return { success: false, data: null, error: request.error }
+  }
+  // Dynamic import to keep the module-load graph shallow — draft-composer
+  // imports tools (for the AgentToolResponse type); this indirection
+  // avoids cycle warnings in some bundlers.
+  const { draftMensajeria } = await import('./mensajeria/draft-composer')
+  return draftMensajeria(supabaseAdmin, companyId, request)
+}
+
+// Re-export the standalone composer + its types so callers outside the
+// aguila tool dispatcher (scripts, API routes, future briefing cron)
+// import from one canonical path.
+export {
+  draftMensajeria,
+  suggestMessageType,
+} from './mensajeria/draft-composer'
+export type {
+  DraftRequest,
+  DraftMensajeriaOptions,
+  DraftMensajeriaResponse,
+  SuggestSignals,
+  MessageTypeSuggestion,
+  AnomalyInput,
+} from './mensajeria/draft-composer'
+export type {
+  MessageType,
+  Audience,
+  RenderedMessage,
+  TemplateBindings,
+} from './mensajeria/templates'
+
+// ── Phase 3 #5 — learning_report exec wrapper + re-export ────────
+
+interface LearningReportArgs {
+  windowDays?: number
+  clientFilter?: string
+}
+
+async function execLearningReport(args: LearningReportArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  // Dynamic import keeps the module-load graph shallow — `loop.ts`
+  // imports `AgentToolResponse` from this file; indirection avoids
+  // cycle warnings in some bundlers.
+  const { generateWeeklyReport } = await import('./learning/loop')
+  return generateWeeklyReport(supabaseAdmin, companyId, {
+    windowDays: args.windowDays,
+  })
+}
+
+// Re-export the learning engine so callers outside the aguila tool
+// dispatcher (scripts, API routes, future weekly cron) import from
+// one canonical path.
+export {
+  analyzeDecisions,
+  generateWeeklyReport,
+  computePredictionAccuracy,
+  computeToolAcceptance,
+  computeDraftApproval,
+  computeToneGuardTrend,
+  suggestAdjustments,
+  composeReport,
+} from './learning/loop'
+export type {
+  LearningMetrics,
+  LearningReport,
+  Suggestion,
+  SuggestionKind,
+  SuggestionPriority,
+  PredictionBand,
+  PredictionBandStat,
+  PredictionAccuracyMetric,
+  ToolAcceptanceMetric,
+  ToolAcceptanceEntry,
+  DraftApprovalMetric,
+  DraftApprovalEntry,
+  ToneGuardMetric,
+  AnalyzeDecisionsOptions,
+} from './learning/loop'

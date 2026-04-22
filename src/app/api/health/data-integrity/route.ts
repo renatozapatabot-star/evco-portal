@@ -204,13 +204,23 @@ interface SyncTypeReading {
   health: Health
 }
 
+// Sync-types without any run in this window are treated as retired and
+// excluded from the verdict. Rationale: the probe previously pulled the
+// last 1000 rows across all time, which classified long-retired cron
+// jobs as `red` (last success > 24h ago) and turned the whole verdict
+// red even when every active sync was green. If a legitimate sync runs
+// less often than weekly, widen this window explicitly.
+const SYNC_TYPE_ACTIVE_WINDOW_DAYS = 7
+
 async function probeSyncTypes(): Promise<SyncTypeReading[]> {
   try {
+    const sinceIso = new Date(Date.now() - SYNC_TYPE_ACTIVE_WINDOW_DAYS * 86_400_000).toISOString()
     const { data } = await supabase
       .from('sync_log')
       .select('sync_type, status, started_at, completed_at')
+      .gte('started_at', sinceIso)
       .order('started_at', { ascending: false })
-      .limit(1000)
+      .limit(5000)
     if (!data) return []
 
     const bySyncType = new Map<string, Array<{ status: string | null; completed_at: string | null; started_at: string | null }>>()

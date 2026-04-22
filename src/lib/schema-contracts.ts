@@ -2,9 +2,9 @@
  * Schema contracts — compile-time real-column guards.
  *
  * Problem this module solves:
- *   Supabase queries like `.from('traficos').select('proveedor, fecha_pago')`
- *   compile fine even when `proveedor` isn't a real column. Production
- *   gets a silent PostgREST 400 that the soft-query wrapper swallows.
+ *   Supabase queries that reference phantom column names compile fine
+ *   even when the column doesn't exist. Production gets a silent
+ *   PostgREST 400 that the soft-query wrapper swallows.
  *   The class of bug took 3 marathons (M12 + M14 + M15 + M16) to fully
  *   eradicate. Never again.
  *

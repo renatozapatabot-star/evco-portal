@@ -76,7 +76,7 @@ Target length: 12-15 minutes. Under 10 = shallow. Over 20 = lost them.
 
 Watch for: her eyes going to the greeting first, then the nav tiles,
 then the freshness badge. If she asks "qué es eso verde arriba?" —
-answer: "Tu patente está viva. 98% de liberación inmediata."
+answer: "Tu patente está viva. 99.8% de liberación inmediata — 2,548 verdes de 2,552 cruces."
 
 **Do NOT** point out every metric. Let her ask.
 
@@ -113,7 +113,8 @@ hoy. La semana que cruces un trailer nuevo, se agrega en menos de
 > clasificó 1,687 fracciones arancelarias únicas. Cada una con su
 > fundamento legal, revisada por Tito, trazable al segundo."
 
-**Action:** use the search bar. Type `XR-` and watch the autocomplete.
+**Action:** use the search bar. Type `6600-1108` or `PC-10FRN` (real
+EVCO SKUs with rich crossing history) and click a result to drill in.
 Click any result → `/catalogo/partes/[cveProducto]`.
 
 **The moment that lands:** the classification card with fracción +

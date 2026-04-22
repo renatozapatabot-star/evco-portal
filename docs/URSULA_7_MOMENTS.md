@@ -23,19 +23,23 @@ proves this isn't Figma — it's a live app connected to real data.
 
 ---
 
-### 2 · The catálogo search (the AI is real)
+### 2 · The catálogo search (the AI + her actual data)
 
-**What:** `/catalogo` → type 2 characters of any SKU → autocomplete
-hits → click → see the classified fracción arancelaria + fundamento
-legal + 4 historic cruces.
+**What:** `/catalogo` → type a real SKU prefix (`6600-1108` or
+`PC-10FRN`) → click a result → see the classified fracción arancelaria
++ fundamento legal + a table of real past pedimentos with
+real semáforos.
 
-**Why it matters:** The AI output is the one thing a skeptic
-immediately tests. When they see it returns a citeable legal
-foundation and a history of previous successful crossings, not
-just "3901.20.01", the credibility moves from abstract to concrete.
+**Why it matters:** The AI output is the thing a skeptic immediately
+tests. When the drill-down shows *her actual pedimento history* —
+pedimento `4008110` from Y1598, pedimento `4008385` from Y1844, all
+verde — the credibility moves from abstract to concrete. This moment
+is live post-M12; pre-M12 the table was silently empty due to a
+phantom-column bug.
 
-**What to say:** "Este fundamento se escribió en 2 minutos. Antes
-tomaba 22."
+**What to say:** "Este fundamento se escribió en 2 minutos. Y cada
+pedimento de abajo es tu historia real con el SAT — 99.8% verde
+sostenido."
 
 ---
 

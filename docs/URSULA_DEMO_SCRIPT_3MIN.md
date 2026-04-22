@@ -26,8 +26,8 @@
 Say *(pointing to the greeting)*:
 
 > "Esto es lo que ves cada mañana a las 11 PM desde tu teléfono.
-> EVCO Plastics, en vivo. 98% liberación inmediata — esa es tu
-> patente haciendo su trabajo."
+> EVCO Plastics, en vivo. 99.8% liberación inmediata — 2,548 verdes
+> de 2,552 cruces. Esa es tu patente haciendo su trabajo."
 
 **Do not click anything.** Let her see the 4 nav tiles + freshness
 badge for 5 seconds.
@@ -41,13 +41,21 @@ Say:
 > "148,537 SKUs. Todos clasificados con IA, revisados por Tito.
 > Busca cualquier parte por clave, por descripción, por fracción."
 
-**Action:** type `XR-` (or any known SKU). Click any result.
+**Action:** type `6600-1108` (or `PC-10FRN` — both return real EVCO
+SKUs with rich crossing history). Click any result.
 
 When the part detail loads, say:
 
 > "Aquí está la fracción arancelaria propuesta por la IA, con el
-> fundamento legal del CAAAREM — y los últimos 4 cruces del mismo
-> SKU, todos con semáforo verde. 22 minutos antes, 2 minutos hoy."
+> fundamento legal del CAAAREM — y los pedimentos reales de los
+> últimos cruces. Cada pedimento formateado SAT-canónico, cada
+> semáforo auditable. 22 minutos antes, 2 minutos hoy."
+
+**M12 signal (post-phantom-column fix):** the table now shows real
+pedimento numbers (DD AD PPPP SSSSSSS), real fechas, real semáforos
+per row. Pre-M12 this was silently empty. Point at the pedimento
+column — "cada uno tiene su registro SAT completo" — and let the
+density speak.
 
 ## 1:15 – 2:00 · `/anexo-24` — the SAT moment
 

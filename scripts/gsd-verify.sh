@@ -331,6 +331,38 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# 12c. Broad phantom-column ratchet (M15)
+#   Runs the live-schema phantom scanner and compares its count against
+#   a baseline. Number of open phantom sites can only go DOWN. Introducing
+#   a new phantom reference fails this gate.
+#
+#   Baseline: see PHANTOM_BASELINE below. Update when the real schema
+#   changes (a new column ships) or after a paydown ship. Never bump up
+#   silently — that hides regressions.
+#
+#   Skipped when SUPABASE_SERVICE_ROLE_KEY is unavailable (the scanner
+#   needs it to two-stage verify each column against PostgREST).
+# --------------------------------------------------------------------------
+header "Schema — Broad phantom-column ratchet (M15)"
+PHANTOM_BASELINE=25
+if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && [ -f .env.local ] && [ -f scripts/audit-phantom-columns.mjs ]; then
+  PHANTOM_COUNT=$(node --env-file=.env.local scripts/audit-phantom-columns.mjs 2>/dev/null \
+    | grep -E "^Total:" | grep -oE "[0-9]+" | head -1 || echo "")
+  if [ -z "$PHANTOM_COUNT" ]; then
+    warn "Phantom scanner returned no count — check scripts/audit-phantom-columns.mjs locally"
+  elif [ "$PHANTOM_COUNT" -le "$PHANTOM_BASELINE" ]; then
+    pass "Phantom-column sites: $PHANTOM_COUNT (baseline $PHANTOM_BASELINE — ratchet holds)"
+    if [ "$PHANTOM_COUNT" -lt "$PHANTOM_BASELINE" ]; then
+      echo "      NOTE: count dropped by $((PHANTOM_BASELINE - PHANTOM_COUNT)). Lower PHANTOM_BASELINE in scripts/gsd-verify.sh to $PHANTOM_COUNT."
+    fi
+  else
+    fail "Phantom-column regression — $PHANTOM_COUNT sites (baseline $PHANTOM_BASELINE). Run: node scripts/audit-phantom-columns.mjs"
+  fi
+else
+  warn "Phantom scanner skipped (needs .env.local + SUPABASE_SERVICE_ROLE_KEY)"
+fi
+
+# --------------------------------------------------------------------------
 # 13. No console.log in Production
 # --------------------------------------------------------------------------
 header "Code Quality — Console Logs"

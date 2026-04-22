@@ -23,6 +23,15 @@ const TRAFICO_RX = /\bY-?\d{3,6}\b/g
 // 1-2 decimals, then MXN or USD. No flat ×0.16 shortcuts here —
 // whatever the text says is what we show.
 const AMOUNT_RX = /\$?(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*(MXN|USD)\b/g
+// RFC (Mexican tax id). Moral persons: 3 letters + 6 digits + 3 alphanum
+// (12 chars). Natural persons: 4 letters + 6 digits + 3 alphanum (13 chars).
+// `&` and `Ñ` are valid in moral-person stems; use a leading char class
+// that admits both.
+const RFC_RX = /\b[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}\b/g
+// PRV_N supplier codes — GlobalPC's legacy code for proveedores whose
+// real name hasn't been resolved yet. Ursula sees real names most
+// places, but AI tool output still surfaces these for unresolved rows.
+const PRV_CODE_RX = /\bPRV_\d{1,6}\b/g
 
 const MAX_REFS_PER_KIND = 10
 
@@ -37,6 +46,7 @@ export interface DataRefs {
   pedimentos: string[]
   fracciones: string[]
   amounts: DataRefAmount[]
+  suppliers: string[]
 }
 
 export const EMPTY_DATA_REFS: DataRefs = {
@@ -44,6 +54,7 @@ export const EMPTY_DATA_REFS: DataRefs = {
   pedimentos: [],
   fracciones: [],
   amounts: [],
+  suppliers: [],
 }
 
 /**
@@ -55,6 +66,7 @@ export function extractDataRefs(texts: ReadonlyArray<string | null | undefined>)
   const pedimentos = new Set<string>()
   const fracciones = new Set<string>()
   const traficos = new Set<string>()
+  const suppliers = new Set<string>()
   const amountsSeen = new Set<string>()
   const amounts: DataRefAmount[] = []
 
@@ -67,6 +79,8 @@ export function extractDataRefs(texts: ReadonlyArray<string | null | undefined>)
       const id = match[0].startsWith('Y-') ? match[0] : `Y-${match[0].slice(1)}`
       traficos.add(id)
     }
+    for (const match of raw.matchAll(RFC_RX)) suppliers.add(match[0])
+    for (const match of raw.matchAll(PRV_CODE_RX)) suppliers.add(match[0])
     for (const match of raw.matchAll(AMOUNT_RX)) {
       const key = `${match[1]}|${match[2]}`
       if (amountsSeen.has(key)) continue
@@ -86,6 +100,7 @@ export function extractDataRefs(texts: ReadonlyArray<string | null | undefined>)
     pedimentos: Array.from(pedimentos).slice(0, MAX_REFS_PER_KIND),
     fracciones: Array.from(fracciones).slice(0, MAX_REFS_PER_KIND),
     amounts: amounts.slice(0, MAX_REFS_PER_KIND),
+    suppliers: Array.from(suppliers).slice(0, MAX_REFS_PER_KIND),
   }
 }
 

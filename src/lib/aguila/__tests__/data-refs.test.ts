@@ -76,4 +76,38 @@ describe('extractDataRefs', () => {
     expect(r.fracciones).toEqual(['3901.20.01'])
     expect(r.amounts[0]).toMatchObject({ currency: 'MXN', value: 5000 })
   })
+
+  it('extracts 13-character natural-person RFCs', () => {
+    const r = extractDataRefs(['Proveedor con RFC MELA850512H21 ya registrado.'])
+    expect(r.suppliers).toEqual(['MELA850512H21'])
+  })
+
+  it('extracts 12-character moral-person RFCs', () => {
+    const r = extractDataRefs(['Factura de EVP920101XYZ por 5,000 MXN.'])
+    expect(r.suppliers).toEqual(['EVP920101XYZ'])
+  })
+
+  it('extracts PRV_ supplier codes', () => {
+    const r = extractDataRefs(['Proveedor PRV_1234 aún sin nombre resuelto; ver PRV_56.'])
+    expect(r.suppliers).toEqual(['PRV_1234', 'PRV_56'])
+  })
+
+  it('deduplicates repeated supplier references', () => {
+    const r = extractDataRefs([
+      'PRV_1234 — primera mención.',
+      'PRV_1234 — segunda mención.',
+    ])
+    expect(r.suppliers).toEqual(['PRV_1234'])
+  })
+
+  it('ignores short sequences that look RFC-ish but are not', () => {
+    const r = extractDataRefs(['Codigo ABC12 no es RFC.'])
+    expect(r.suppliers).toEqual([])
+  })
+
+  it('caps supplier list at MAX_REFS_PER_KIND', () => {
+    const many = Array.from({ length: 20 }, (_, i) => `PRV_${i + 1000}`).join(' ')
+    const r = extractDataRefs([many])
+    expect(r.suppliers.length).toBe(DATA_REFS_CONSTANTS.MAX_REFS_PER_KIND)
+  })
 })

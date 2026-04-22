@@ -1,12 +1,20 @@
 'use client'
 
+import Link from 'next/link'
 import { useRef, useState } from 'react'
+import {
+  traficoHref,
+  fraccionHref,
+  pedimentoHref,
+  supplierHref,
+} from '@/lib/aguila/ref-links'
 
 interface DataRefs {
   traficos: string[]
   pedimentos: string[]
   fracciones: string[]
   amounts: Array<{ value: number; currency: string; raw: string }>
+  suppliers: string[]
 }
 
 export function AduanaAskPanel() {
@@ -231,15 +239,29 @@ export function AduanaAskPanel() {
       )}
 
       {dataRefs && hasAnyRef(dataRefs) && (
-        <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div
+          style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}
+          aria-label="Referencias detectadas"
+        >
           {dataRefs.traficos.map(t => (
-            <span key={`t-${t}`} style={chipStyle}>Tráfico {t}</span>
+            <Link key={`t-${t}`} href={traficoHref(t)} style={chipStyle} prefetch={false}>
+              Tráfico {t}
+            </Link>
           ))}
           {dataRefs.pedimentos.map(p => (
-            <span key={`p-${p}`} style={chipStyle}>Pedimento {p}</span>
+            <Link key={`p-${p}`} href={pedimentoHref(p)} style={chipStyle} prefetch={false}>
+              Pedimento {p}
+            </Link>
           ))}
           {dataRefs.fracciones.map(f => (
-            <span key={`f-${f}`} style={chipStyle}>Fracción {f}</span>
+            <Link key={`f-${f}`} href={fraccionHref(f)} style={chipStyle} prefetch={false}>
+              Fracción {f}
+            </Link>
+          ))}
+          {dataRefs.suppliers.map(s => (
+            <Link key={`s-${s}`} href={supplierHref(s)} style={chipStyle} prefetch={false}>
+              Proveedor {s}
+            </Link>
           ))}
         </div>
       )}
@@ -277,10 +299,17 @@ const chipStyle: React.CSSProperties = {
   fontSize: 'var(--aguila-fs-compact)',
   color: 'var(--portal-fg-3)',
   fontFamily: 'var(--font-jetbrains-mono), monospace',
+  textDecoration: 'none',
+  cursor: 'pointer',
 }
 
 function hasAnyRef(r: DataRefs): boolean {
-  return r.traficos.length > 0 || r.pedimentos.length > 0 || r.fracciones.length > 0
+  return (
+    r.traficos.length > 0 ||
+    r.pedimentos.length > 0 ||
+    r.fracciones.length > 0 ||
+    r.suppliers.length > 0
+  )
 }
 
 function labelForTool(name: string): string {

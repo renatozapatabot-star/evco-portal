@@ -5176,6 +5176,7 @@ required since every new column is nullable.
 | Query decision history for analytics | §45.3 `getDecisionHistory` |
 | Phase 3 #5 learning loop | §45.8 preview |
 
+
 ## §47 — Mensajería Draft Composer (Phase 3 #4)
 
 Rule-based Spanish message composer. Takes structured agent signals
@@ -5388,4 +5389,185 @@ Explicit scope cuts — these belong to future phases:
 | Wire into a nightly cron | §47.8 example + `.claude/rules/operational-resilience.md` |
 | Understand why NO sends in Phase 3 #4 | CLAUDE.md "APPROVAL GATE — NON-NEGOTIABLE" |
 
+
+## §48 — Learning Loop (Phase 3 #5)
+
+Closes the cycle. Phase 3 #3 logged every agent decision. Phase 3 #4
+added draft composition that logs its own outputs + human feedback.
+Phase 3 #5 reads it all back, computes metrics, proposes improvements.
+
+**The agent proposes; humans ratify.** Every suggestion points to a
+specific file + rule to review. No rule weights, template strings, or
+confidence thresholds are mutated automatically. That boundary is
+permanent.
+
+### §48.1 — Files
+
+| File | Role |
+|---|---|
+| `src/lib/aguila/learning/loop.ts` | Core engine — metrics, suggestion rules, report composer, `analyzeDecisions`, `generateWeeklyReport` |
+| `src/lib/aguila/learning/__tests__/loop.test.ts` | 37 unit tests — every pure function exercised with fixtures |
+| `src/lib/aguila/tools.ts` | `learning_report` tool registration + exec wrapper + re-exports |
+
+### §48.2 — Four metric axes
+
+All derived from existing `agent_decisions` rows — no new tables.
+
+```ts
+interface LearningMetrics {
+  window:              { days, generated_at, company_id }
+  sample_size:         { total, with_outcome, with_feedback }
+  prediction_accuracy: {
+    overall: { total, verde_count, verde_rate },
+    by_band: {
+      alta:  { total, verde_count, verde_rate, predicted_rate_mid, gap_pp },
+      media: {...},
+      baja:  {...},
+    }
+  }
+  tool_acceptance:     { by_tool: [{ tool_name, total, positive, negative, neutral, no_feedback, acceptance_rate }] }
+  draft_approval:      { by_type: [{ message_type, total, approved, rejected, no_outcome, approval_rate }], blocked_by_tone_guard }
+  tone_guard:          { total_attempts, blocked, block_rate }
+}
+```
+
+**Band midpoints** used for the prediction gap:
+```
+alta  = 95  (band 92–99)
+media = 86  (band 80–91)
+baja  = 60  (band <80)
+```
+
+`gap_pp = actual_verde_rate_pct - predicted_rate_mid`. Negative gap on `alta` = overconfidence.
+
+### §48.3 — Six suggestion rules
+
+Deterministic, explainable. Each fires when a threshold is crossed AND
+enough evidence exists (sample sizes are deliberately conservative).
+
+| Rule | Priority | Fires when | Proposed action |
+|---|---|---|---|
+| `prediction_overconfidence` | alta | band `alta` verde_rate < 90% AND n ≥ 10 | Review `predictVerdeProbability` rule weights |
+| `prediction_underconfidence` | media | band `baja` verde_rate > 80% AND n ≥ 10 | Recalibrate — rules too pessimistic |
+| `tool_low_acceptance` | media | any tool `acceptance_rate < 0.6` AND feedback count ≥ 5 | Review that tool's output shape + Spanish copy |
+| `draft_low_approval` | media | any `message_type` `approval_rate < 0.7` AND n ≥ 5 | Edit the template in `templates.ts` |
+| `tone_guard_drift` | baja | tone_guard `block_rate > 10%` AND total ≥ 20 | Investigate upstream — unsanitized product names? |
+| `sample_size_low` | baja | total decisions < 10 | Flag: metrics untrustworthy, wait for more data |
+
+Every suggestion carries `{ id, kind, priority, subject, finding_es, suggested_action_es, evidence }` so the review UI can group + dedupe across runs via `id`.
+
+### §48.4 — Report composer
+
+`composeReport(metrics, suggestions)` returns `{ summary_es, text_plain, text_html }`:
+
+- **Plain + HTML** both produced (Telegram parse_mode='HTML' uses the HTML, email + logs use plain)
+- **HTML-escaped** throughout — company names, tool names, any free-text field
+- **4000-char hard cap** with newline-boundary truncation (Telegram 4096 limit minus headroom)
+- **Summary leads with a high-priority finding** when one exists, otherwise falls back to verde rate or sample size
+
+### §48.5 — Public API
+
+Three entry points, all re-exported from `@/lib/aguila/tools`:
+
+```ts
+// Full analysis — fetch decisions + compute metrics + suggestions + compose
+const report = await analyzeDecisions(supabase, 'evco', { windowDays: 7 })
+
+// Same as above but logs the run itself to agent_decisions
+// (tool_name='learning_loop', autonomy_level=0) and returns the
+// standard AgentToolResponse envelope
+const res = await generateWeeklyReport(supabase, 'evco', { windowDays: 7 })
+// res.data.metrics · res.data.suggestions · res.data.text_plain · res.data.text_html
+
+// Pure functions — also re-exported for testability + future UIs
+computePredictionAccuracy(rows)
+computeToolAcceptance(rows)
+computeDraftApproval(rows)
+computeToneGuardTrend(rows)
+suggestAdjustments(metrics)
+composeReport(metrics, suggestions)
+```
+
+### §48.6 — CRUZ AI tool registration
+
+Registered as `learning_report`. Claude picks it when the user asks:
+
+| User says (Spanish) | Args |
+|---|---|
+| "Dame el reporte de aprendizaje" | `{}` |
+| "¿Cómo ha estado el desempeño del agente esta semana?" | `{}` |
+| "Reporte de los últimos 30 días" | `{ windowDays: 30 }` |
+| "Aprendizaje para MAFESA" (internal role) | `{ clientFilter: 'mafesa' }` |
+
+Scope resolution via `resolveScopedCompanyId` — same contract as the other agent tools. Internal roles without `clientFilter` → refused.
+
+### §48.7 — Script example — weekly cron (Phase 3 #5b follow-up)
+
+Not shipped in Phase 3 #5 itself; pattern documented here for the cron we'll wire next:
+
+```js
+// scripts/weekly-learning-report.js
+require('tsx/cjs')
+const { createClient } = require('@supabase/supabase-js')
+const { runJob } = require('./lib/job-runner')
+const { generateWeeklyReport } = require('../src/lib/aguila/tools')
+
+runJob('weekly-learning-report', async () => {
+  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  const res = await generateWeeklyReport(sb, 'evco', { windowDays: 7 })
+  if (!res.success || !res.data) return { rowsProcessed: 0 }
+
+  // Reuse the same INTERNAL_BRIEFING_CHAT_ID channel as morning-briefing.
+  // Never a client-facing channel — this is meta-observability.
+  await sendInternalTelegram(res.data.text_html)
+  return { rowsProcessed: 1, metadata: {
+    suggestions: res.data.suggestions.length,
+    window_days: 7,
+  }}
+})
+```
+
+PM2 registration (Throne, when ready):
+```bash
+pm2 start scripts/weekly-learning-report.js \
+  --name weekly-learning-report \
+  --cron "0 7 * * 1" \
+  --no-autorestart
+pm2 save
+```
+
+Cron `"0 7 * * 1"` = Mondays 07:00 Laredo time.
+
+### §48.8 — Safety contract — 100% demo-safe
+
+| Concern | Mitigation |
+|---|---|
+| Autonomous rule mutation | **Does not happen.** Learning loop produces suggestions with file+rule pointers; humans edit + commit. `autonomy_level=0` on every logged report. |
+| New DB tables | None. Reads existing `agent_decisions`, writes one report row per run via `withDecisionLog` (Phase 3 #3). |
+| Cross-tenant contamination | Every orchestrator takes `companyId` as a required positional arg. `getDecisionHistory` filters at the SQL layer. Internal-role tool usage requires `clientFilter`. |
+| LLM hallucination | **No LLM calls.** Every metric + rule + Spanish phrase is deterministic. Same rows in → same report out. |
+| Runaway report size | Report is hard-capped at 4000 chars; `tool_output` on the logged row is 8 KB-truncated by `truncateJson` (Phase 3 #3). |
+| HTML injection | All injected strings pass through `escapeHtml` before landing in `text_html`. |
+| Premature action | `sample_size_low` rule fires whenever total < 10 so reviewers know when metrics are too thin to trust. |
+
+### §48.9 — What Phase 3 #5 does NOT do
+
+Explicit scope cuts — these belong to later phases:
+
+- **Autonomous mutations** — never. No phase will touch rule weights / templates / thresholds without human review.
+- **Weekly send cron** (Phase 3 #5b) — cleanly split so the pure report can be tested independently of Telegram I/O.
+- **Review UI for suggestions** — admin-page work; queries via `getDecisionHistory({ toolName: 'learning_loop' })`.
+- **Per-anomaly feedback** — current feedback is decision-level; if we ever want per-anomaly sentiment, that's a schema-extension conversation.
+- **Trend visualizations** (week-over-week deltas, sparklines) — metric shape supports this; UI layer only.
+- **Recommendation kind tracking** — could be added; current metrics cover the broader tool acceptance signal.
+
+### §48.10 — Where to read next
+
+| Task | Read |
+|---|---|
+| Add a new metric axis | §48.2 + fixture pattern in `loop.test.ts` |
+| Add a new suggestion rule | `suggestAdjustments` in `loop.ts` — keep it pure + evidence-carrying |
+| Wire the weekly cron | §48.7 example + `.claude/rules/operational-resilience.md` |
+| Build a review UI | §45.3 query helpers + §48.2 response shape |
+| Understand why NO autonomous mutation | CLAUDE.md approval-gate rule + Phase 3 autonomy contract |
 

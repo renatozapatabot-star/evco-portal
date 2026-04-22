@@ -37,6 +37,7 @@ export type ToolName =
   | 'tenant_anomalies'
   | 'intelligence_scan'
   | 'draft_mensajeria'
+  | 'learning_report'
 
 /**
  * Anthropic tool definitions. Kept deliberately small so Haiku picks the
@@ -181,6 +182,18 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
         anomalyDetail: { type: 'string', description: 'Detalle en español de la anomalía.' },
         messageType: { type: 'string', description: 'Tipo forzado: preventive_alert | document_request | status_update | anomaly_escalation | driver_dispatch.' },
         productName: { type: 'string', description: 'Nombre amigable del producto (reemplaza el SKU crudo en copy cliente).' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'learning_report',
+    description:
+      'Genera un reporte de aprendizaje (semanal por defecto): precisión de predicciones, aceptación por herramienta, aprobación por plantilla de borrador, tendencia del tone-guard + sugerencias accionables. Solo lectura — propone ajustes, no los aplica. Úsalo para preguntas tipo "¿cómo ha estado el desempeño del agente?" o "dame el reporte de aprendizaje".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 7. Rango 1..90.' },
         clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
       },
     },
@@ -515,6 +528,8 @@ export async function runTool(
         return { tool, result: await execIntelligenceScan(args as IntelligenceScanArgs, ctx) }
       case 'draft_mensajeria':
         return { tool, result: await execDraftMensajeria(args as DraftMensajeriaArgs, ctx) }
+      case 'learning_report':
+        return { tool, result: await execLearningReport(args as LearningReportArgs, ctx) }
       default:
         return { tool, result: null, error: `unknown_tool:${tool}` }
     }
@@ -993,6 +1008,7 @@ async function execIntelligenceScan(args: IntelligenceScanArgs, ctx: AguilaCtx) 
     }),
   )
 }
+
 // ── Phase 3 #4 — draft_mensajeria exec wrapper + re-export ───────
 
 interface DraftMensajeriaArgs {
@@ -1092,3 +1108,50 @@ export type {
   TemplateBindings,
 } from './mensajeria/templates'
 
+// ── Phase 3 #5 — learning_report exec wrapper + re-export ────────
+
+interface LearningReportArgs {
+  windowDays?: number
+  clientFilter?: string
+}
+
+async function execLearningReport(args: LearningReportArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  // Dynamic import keeps the module-load graph shallow — `loop.ts`
+  // imports `AgentToolResponse` from this file; indirection avoids
+  // cycle warnings in some bundlers.
+  const { generateWeeklyReport } = await import('./learning/loop')
+  return generateWeeklyReport(supabaseAdmin, companyId, {
+    windowDays: args.windowDays,
+  })
+}
+
+// Re-export the learning engine so callers outside the aguila tool
+// dispatcher (scripts, API routes, future weekly cron) import from
+// one canonical path.
+export {
+  analyzeDecisions,
+  generateWeeklyReport,
+  computePredictionAccuracy,
+  computeToolAcceptance,
+  computeDraftApproval,
+  computeToneGuardTrend,
+  suggestAdjustments,
+  composeReport,
+} from './learning/loop'
+export type {
+  LearningMetrics,
+  LearningReport,
+  Suggestion,
+  SuggestionKind,
+  SuggestionPriority,
+  PredictionBand,
+  PredictionBandStat,
+  PredictionAccuracyMetric,
+  ToolAcceptanceMetric,
+  ToolAcceptanceEntry,
+  DraftApprovalMetric,
+  DraftApprovalEntry,
+  ToneGuardMetric,
+  AnalyzeDecisionsOptions,
+} from './learning/loop'

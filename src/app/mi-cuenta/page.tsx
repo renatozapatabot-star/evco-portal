@@ -27,6 +27,8 @@ import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { computeARAging, type AgingResult } from '@/lib/contabilidad/aging'
 import { readFreshness } from '@/lib/cockpit/freshness'
+import { readClientPosition, type ClientPosition } from '@/lib/trade-index/query'
+import { TradeIndexCard } from '@/components/trade-index/TradeIndexCard'
 import { resolveMiCuentaAccess } from './access'
 import {
   PageShell,
@@ -95,16 +97,20 @@ export default async function MiCuentaPage() {
     ar: Awaited<ReturnType<typeof computeARAging>>
     freshness: Awaited<ReturnType<typeof readFreshness>>
     name: string
+    tradeIndex: ClientPosition
   }
   type FetchFailure = { ok: false; message: string }
   const fetched: FetchSuccess | FetchFailure = await (async () => {
     try {
-      const [ar, freshness, name] = await Promise.all([
+      const [ar, freshness, name, tradeIndex] = await Promise.all([
         computeARAging(supabase, scopedCompanyId),
         readFreshness(supabase, companyId),
         readDisplayName(supabase, companyId),
+        // Internal roles viewing broker aggregate → pass empty string so
+        // the primitive returns the empty shape (no client to scope to).
+        readClientPosition(supabase, isClient ? companyId : ''),
       ])
-      return { ok: true, ar, freshness, name }
+      return { ok: true, ar, freshness, name, tradeIndex }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       const digest =
@@ -122,7 +128,7 @@ export default async function MiCuentaPage() {
     return <CockpitErrorCard message={`No se pudo cargar tu cuenta: ${fetched.message}`} />
   }
 
-  const { ar, freshness, name } = fetched
+  const { ar, freshness, name, tradeIndex } = fetched
 
   // Fire-and-forget audit log — records WHO viewed, not WHAT they saw.
   // Failures swallowed to avoid blocking the render path. See
@@ -146,6 +152,15 @@ export default async function MiCuentaPage() {
       {/* Open invoices — the top debtors slice, relabeled for the
           client surface. No "overdue" language; days since emission. */}
       <OpenInvoicesSection ar={ar} isClient={isClient} />
+
+      {/* Trade Index — client's position vs fleet (calm, k-anon gated).
+          Rendered for client + internal QA. See .claude/rules/client-
+          accounting-ethics.md §tone for the silver-only contract. */}
+      {isClient && (
+        <div style={{ marginTop: 'var(--aguila-gap-section, 32px)' }}>
+          <TradeIndexCard position={tradeIndex} isClient={isClient} />
+        </div>
+      )}
 
       {/* Always-paired Mensajería CTA — Anabel is the human for anything
           the numbers don't explain. */}

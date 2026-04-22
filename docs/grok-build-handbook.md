@@ -2152,3 +2152,2098 @@ slip through layers 1, 2, and 3 to reach production. That's not going
 to happen on a well-maintained checkout.
 
 ---
+
+## 34. V2 Intelligence Layer — how to read + extend
+
+The V2 intelligence layer is a rule-based signal engine on top of the
+M16-clean data layer. No ML, no magic constants, no hidden state. Every
+signal is a pure function over an enriched crossing stream; every
+signal is testable with a fixture; every signal has a humanized Spanish
+explanation for the operator.
+
+### 34.1 — The three layers
+
+```
+DB layer              lib layer                   UI layer
+(Supabase)   →        (pure aggregators)    →     (admin surface)
+
+traficos                                          /admin/intelligence
+facturas      ──────► crossing-insights.ts  ────► AguilaMetric hero
+partidas                 · computePartStreaks     AguilaInsightCard grid
+productos                · computeProveedorHealth GlassCard fracción tiles
+                         · computeFraccionHealth  Sparkline 7-day trend
+                         · computeVolumeSummary
+                         · predictVerdeProbability
+                         · detectAnomalies
+                                   │
+                         getCrossingInsights(sb, companyId)
+                           └── orchestrates the 3 DB hops
+                               (partidas → facturas → traficos → productos)
+                               and returns InsightsPayload.
+```
+
+**The boundary is strict.** The DB orchestrator does I/O; the
+aggregators are pure; the UI reads a frozen payload. Tests exist
+only for the aggregators — the orchestrator is thin by design so
+its coverage comes from the surrounding pieces.
+
+### 34.2 — Signals available today
+
+| Signal | Pure fn | What it captures |
+|---|---|---|
+| `PartStreak[]` | `computePartStreaks` | Per-SKU: current verde streak, longest streak in window, just-broken flag |
+| `ProveedorHealth[]` | `computeProveedorHealth` | Per-supplier: verde/amarillo/rojo counts + pct_verde |
+| `FraccionHealth[]` | `computeFraccionHealth` | Per 2-digit HTS chapter: same counts + pct_verde |
+| `VolumeSummary` | `computeVolumeSummary` | WoW delta + 7-day daily series for sparklines |
+| `VerdePrediction` | `predictVerdeProbability` | Rule-based next-crossing verde probability for a single SKU |
+| `Anomaly[]` | `detectAnomalies` | 4 rules: proveedor_slip · streak_break · volume_spike · new_proveedor |
+
+### 34.3 — How to add a new anomaly rule
+
+1. **Append the kind to the `Anomaly.kind` union** in
+   `src/lib/intelligence/crossing-insights.ts`.
+2. **Add a rule block inside `detectAnomalies()`** — same structure as
+   the existing four: compute aggregates, apply threshold, push an
+   `Anomaly` with `kind`, `subject`, humanized `detail`, numeric
+   `score` (0..1), `occurred_at`, and any useful `metadata`.
+3. **Document the rule in the top-of-function JSDoc** — operators
+   should read the comment and know what fires. No magic.
+4. **Write at least 3 tests** in `crossing-insights.test.ts`:
+   - Fires correctly on canonical positive fixture
+   - Does NOT fire under the natural guard (sample size, threshold)
+   - Does NOT fire on a negative variant the rule should ignore
+5. **Update `anomalyKindLabel()`** in `/admin/intelligence/page.tsx`
+   to return a humanized Spanish label for the new kind.
+6. **Optionally add a deep-link action** if the anomaly has a
+   drill-down (SKU → /catalogo/partes, proveedor → /proveedores).
+7. **Run the full gate:** `tsc --noEmit` + `vitest run src/lib/intelligence`
+   + `bash scripts/gsd-verify.sh --ratchets-only`.
+
+### 34.4 — How to add a new signal type (not an anomaly)
+
+A signal (like `FraccionHealth` or `VerdePrediction`) is a richer
+structure than a single-fire anomaly. Pattern:
+
+1. **Define the interface** in the Types section.
+2. **Add it to `InsightsPayload`** as an array/object field.
+3. **Write a pure aggregator** (e.g. `computeFraccionHealth`) that
+   takes a crossing stream and returns the signal shape.
+4. **Wire into `getCrossingInsights`** — compute it after the enriched
+   stream is built; include it in the returned payload.
+5. **Extend the empty payload** so error-path callers still compile.
+6. **Render it in `/admin/intelligence/page.tsx`** — new section with
+   `SectionTitle` + either `AguilaInsightCard` grid (for per-item
+   details) or a direct `GlassCard` grid (for summary tiles).
+7. **Tests, same as above.**
+
+### 34.5 — The predictor design philosophy
+
+`predictVerdeProbability` is **explainable** by construction. Every
+factor is:
+
+- **Additive** — contributions sum to a signed pp delta on the
+  baseline. Users can reason about marginal changes.
+- **Bounded** — each factor caps at a sensible magnitude
+  (streak +15, proveedor +10/-10, fraccion -10, break -15). No single
+  factor can dominate.
+- **Transparent** — every factor emits a `detail` string with the
+  actual input and the pp contribution. The UI can render the
+  breakdown without re-computing it.
+
+When adding a new factor:
+
+1. Pick a direction (positive or negative) and a magnitude
+   (small = 3-5 pp, medium = 5-10, large = 10-15).
+2. Apply a sample-size guard — factors that fire on 1 crossing are
+   noise; factors that fire on ≥ 3 are signal.
+3. Compose into the existing `factors.push(…)` calls. Don't mutate
+   the probability directly — let `totalDelta` do the sum.
+4. Document the factor + magnitude in the JSDoc rule list.
+
+**Never add a factor that isn't explainable in one sentence.** If you
+can't describe it, it shouldn't be in a rule-based predictor.
+
+### 34.6 — Tenant safety in the intelligence layer
+
+Every DB query in `getCrossingInsights` enforces `.eq('company_id',
+companyId)`. The aggregators are pure — no tenant logic. This means
+the intelligence layer cannot leak cross-tenant data even under
+adversarial input.
+
+The API route `GET /api/intelligence/insights` gates via
+`requireAdminSession()` + allows admins/brokers to override
+`?company_id=` for oversight. Client sessions ignore the override
+(no escalation path). Mirrors the `/api/catalogo/partes/[cve]`
+contract.
+
+### 34.7 — Performance contract
+
+`getCrossingInsights(sb, companyId, { windowDays: 90 })` runs in
+≈500 ms against 22K EVCO partidas via:
+
+- 1 fetch to `globalpc_partidas` (cap 5000)
+- 1-2 chunked fetches to `globalpc_facturas` (500/page)
+- 1-2 chunked fetches to `traficos` (500/page)
+- 1-2 chunked fetches to `globalpc_productos` (500/page) — added in V2.O
+
+The `/api/intelligence/insights` route sets
+`Cache-Control: private, max-age=60, stale-while-revalidate=300` so
+the dashboard poll doesn't hammer the engine. 60 seconds is short
+enough that Tito sees fresh signals within 2 minutes; 300 seconds
+keeps the stale-while-revalidate path smooth.
+
+**If you add a new DB hop:** keep it chunked (`.in` with slices of
+500) and add a `.limit()` on every query. Never do a raw `.select('*')`
+on a tenant-scoped table without a company_id filter.
+
+---
+
+## 35. Admin intelligence page — primitive composition
+
+`/admin/intelligence/page.tsx` is the canonical V2 surface. This
+section documents every primitive it composes and how they fit
+together.
+
+### 35.1 — Page structure
+
+```
+<PageShell title subtitle maxWidth=1100>
+  ┌─ Hero metrics row (5× AguilaMetric, auto-fit grid)
+  │   Rachas verdes · Rachas rotas · Proveedores top · Anomalías · Volumen 7d
+  │
+  ┌─ Empty-state fallback (GlassCard hero) — only when totalSignals=0
+  │
+  ┌─ 7-day trend (GlassCard hero + Sparkline) — V2.O
+  │   Big mono number + baseline + delta + 7-point Sparkline
+  │
+  ┌─ Cruzó Verde Predictor (AguilaInsightCard grid) — V2.O
+  │   top_predictions (tone=opportunity) + watch_predictions (tone=watch)
+  │
+  ┌─ Fracción chapter health (GlassCard secondary grid) — V2.O
+  │   Per-chapter tiles with pct_verde + V/A/R breakdown
+  │
+  ┌─ Green streak opportunities (AguilaInsightCard grid)
+  │   green_streaks · tone=opportunity
+  │
+  ┌─ Broken streaks (AguilaInsightCard grid + AguilaStreakBar)
+  │   broken_streaks · tone=watch
+  │
+  ┌─ Proveedor health (AguilaInsightCard grid)
+  │   top_proveedores (opportunity) + watch_proveedores (watch)
+  │
+  ┌─ Rule-based anomalies (AguilaInsightCard grid)
+  │   anomalies · tone varies by score (≥0.6 anomaly, else watch)
+  │
+  └─ Window selector footer (30d / 90d / 180d links)
+</PageShell>
+```
+
+### 35.2 — Primitive tone vocabulary
+
+`AguilaInsightCard` supports four tones mapping to the portal's
+semantic palette:
+
+| Tone | When to use | Color |
+|---|---|---|
+| `opportunity` | Top performers, green streaks, top suppliers, high predictions | green |
+| `watch` | At-risk items, broken streaks, watch suppliers, medium predictions | amber |
+| `anomaly` | Severe signals (score ≥ 0.6), hard alerts | red |
+| `neutral` | Info-only, baseline, historical | silver |
+
+Never use raw hex or red/amber inline. Compose through the tone prop
+so future theme changes cascade automatically.
+
+### 35.3 — The empty-state contract
+
+When all 8 signal counts are zero, render the calm empty-state
+GlassCard with copy:
+
+> "Sin señales en este período. El motor necesita al menos 3 cruces
+> verdes por SKU para detectar una racha, y 3 cruces por proveedor
+> por semana para comparar semáforos. Amplía la ventana para ver
+> señales históricas."
+
+Never a red "NO DATA" — the engine has explicit minimum-sample
+thresholds, and the copy educates the operator on why silence means
+"not yet enough" rather than "broken".
+
+### 35.4 — Extending the page with a new section
+
+Template (copy this block and adjust):
+
+```tsx
+{/* New signal — SignalName */}
+{insights.new_signal.length > 0 && (
+  <section style={{ marginBottom: 24 }}>
+    <SectionTitle>Signal · Spanish subtitle</SectionTitle>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: 12,
+      }}
+    >
+      {insights.new_signal.map((s) => (
+        <AguilaInsightCard
+          key={`signal-${s.subject}`}
+          tone="opportunity"
+          eyebrow="short label"
+          headline={s.subject}
+          body={s.detail}
+          meta={fmtDateShort(s.last_date)}
+          action={{ label: 'Ver', href: `/route/${s.subject}` }}
+        />
+      ))}
+    </div>
+  </section>
+)}
+```
+
+Always:
+- **Guard render** behind `length > 0` — no empty sections
+- **Grid pattern** `repeat(auto-fit, minmax(320px, 1fr))` for consistency
+- **`gap: 12`** — matches the rest of the page
+- **`SectionTitle`** local helper — uppercase portal-eyebrow styling
+- **Deep-link action** when the row has a drill-down target
+
+### 35.5 — Sparkline composition pattern
+
+The 7-day trend card uses:
+
+```tsx
+<Sparkline
+  data={insights.volume.daily_series.map((d) => d.count)}
+  tone={delta >= 0 ? 'green' : 'silver'}
+  height={56}
+  showTooltip
+  highlightToday
+  ariaLabel="descriptive label for screen readers"
+/>
+```
+
+**Tones map to semantic direction:** green for positive delta,
+silver for neutral/flat, red reserved for sharp drops. Never use
+`red` for normal-state data — the client surfaces have this rule and
+admin/intelligence respects it too (calm-tone even on operator-only
+surfaces).
+
+### 35.6 — When NOT to add a new section
+
+- **Don't split a section** to fit aesthetic taste. If two signals
+  are semantically similar (green_streaks vs. top_predictions), keep
+  them grouped or make the grouping explicit with eyebrows.
+- **Don't add a section without data.** The empty-state contract
+  already handles "no signal for this tenant" — don't clutter with
+  "Coming soon" sections.
+- **Don't add charts that don't add information.** The 7-day
+  Sparkline shows what the number can't (pattern shape). A bar chart
+  of `top_proveedores` counts adds nothing a table doesn't.
+
+### 35.7 — Wire order matters
+
+The page renders sections top-down. Order signals by **what the
+operator acts on first**:
+
+1. Anomalies that might fire today (7-day trend + predictor watch)
+2. Opportunities (green_streaks + top_predictions)
+3. Health views (fraccion_health + proveedor_health)
+4. Watch lists (broken_streaks + watch_proveedores)
+5. Raw anomaly feed (sorted by score desc)
+
+The V2.O wire above follows this — predictions come right after the
+7-day hero because they're the most actionable forward-looking signal.
+
+---
+
+## 36. How Grok agents should work with this codebase
+
+This section is for YOU, Grok. Read it first. Every convention below
+exists because a past agent (human or AI) broke it and we paid for it
+in a real incident. Follow them and you ship with us.
+
+### 36.1 — The three questions to answer before any edit
+
+1. **What surface am I touching?** Client (`/inicio`, `/catalogo`,
+   `/mi-cuenta`, `/embarques`, `/anexo-24`, `/mensajeria`, `/cruz`)?
+   Operator (`/operador/*`, `/admin/eagle`, `/bodega/*`)? Admin-only
+   (`/admin/*`)? Public (`/pitch`, `/demo`)? Every surface has
+   different rules. See §36.4 for the per-surface guardrails.
+
+2. **Does a primitive for this already exist?** Grep before writing.
+   §37 lists every canonical primitive. If there's already a
+   `formatPedimento`, use it. If there's already a
+   `resolvePartidaLinks`, don't re-implement the 2-hop. Parallel
+   implementations drift over time and create the exact class of bug
+   that took 16 marathons to clean up (the phantom-column saga).
+
+3. **Am I about to introduce a phantom column?** If the answer is
+   "I don't know" — you need to check §28.2 (real-schema cheat sheet)
+   first. `PHANTOM_BASELINE=0` in `scripts/gsd-verify.sh`. Any new
+   phantom fails ship. The schema-contracts module at
+   `src/lib/schema-contracts.ts` can give you compile-time safety —
+   use `col('traficos', 'trafico')` inside a select() to get a TS
+   error when you typo.
+
+### 36.2 — The session start ritual
+
+Every session (human or AI), before the first edit:
+
+```bash
+cd ~/evco-portal
+git status                  # know what's in-flight
+git branch --show-current   # know where you are
+npx tsc --noEmit            # know the type state
+```
+
+Then read:
+
+1. `.claude/rules/core-invariants.md` — hard invariants (35 of them)
+2. This handbook's §28 (phantom-column guide), §29 (data-flow
+   invariants), §33 (guard-rail inventory), §36 (this section)
+3. `docs/grok-build-handbook.md` for the task-specific recipe
+
+Don't skim. The invariants exist because each one was violated once
+and cost real money or a client's trust.
+
+### 36.3 — Commit discipline
+
+Every commit passes pre-commit hooks automatically. Your responsibility:
+
+- **Atomic**: one commit = one conceptual change. Don't mix a bug fix
+  with a refactor.
+- **Descriptive**: title in the form `<type>(<scope>): <what>`.
+  Types: feat, fix, docs, test, chore, refactor, style. Scope: the
+  module or area (e.g. `intelligence`, `admin/intelligence`, `lib`).
+  Full example: `feat(intelligence): V2.O — Fracción Health + 7-day series`.
+- **Body explains WHY, not WHAT**. Git diff already shows what
+  changed. Commit body answers "why does this need to exist?" and
+  "what breaks if I revert it?".
+- **Never commit to main directly** unless the current session has
+  been working on main throughout (stream consistency matters more
+  than the rule here). Otherwise, create a branch:
+  `git checkout -b <meaningful-name>`. The branch name should describe
+  what ships (e.g. `v2-intelligence-phase-1-overnight`).
+- **Never force-push main**. Never skip pre-commit hooks
+  (`--no-verify`). Never bypass gsd-verify ratchets. Each of these
+  caught a real regression we would otherwise have shipped.
+
+### 36.4 — Per-surface guardrails
+
+| Surface | Rules | Common mistake |
+|---|---|---|
+| Client (`/inicio`, `/catalogo`, `/anexo-24`, `/mi-cuenta`, `/embarques`, `/mensajeria`, `/cruz`) | Calm tone only · no compliance anxiety (MVE countdowns, red deadlines) · certainty not urgency · tenant-scoped by session.companyId · must render without crashing even when empty | Surfacing a SEV-2 alert on a client page "because it's useful info" |
+| Operator (`/operador/*`, `/admin/eagle`) | Internal-tier signals OK (deltas, severity ribbons, amber/red tones) · still tenant-scoped by default · admin can override via `?company_id=` | Forgetting to gate admin bypass behind `role === 'admin'` |
+| Admin-only (`/admin/*`) | Role-gated at the page level (`requireAdminSession` or explicit redirect) · can cross tenants for oversight · never render a client-role user | Leaving the redirect off; client visiting `/admin/intelligence` |
+| API routes | Use `requireAdminSession` / `requireClientSession` / `requireAnySession` guards · return via `ApiResponse<T>` helpers · never trust cookie-read company_id (verify from session) | Reading `company_id` from a cookie without verifying |
+| Shared lib | Pure when possible · tenant-scoped when DB · side-effects ONLY via explicit helpers (logDecision, sendTelegram) · pure functions are the unit-test target | Adding I/O to what should be a pure aggregator |
+| Cron scripts | Telegram alert on failure · log to sync_log · pm2 save after process change · no silent catch | Swallowing the error in a .catch(() => {}) |
+
+### 36.5 — The "grep first" reflex
+
+Before writing code, answer these with a grep:
+
+- Is there already a helper for this? `grep -rn "functionName" src/`
+- Where is this column used? `grep -rn "column_name" src/`
+- Does this table exist in our schema? `grep -n "tableName" src/lib/schema-contracts.ts`
+- What's the canonical pattern for this kind of query? §31 recipes
+
+When the grep returns 0 hits — that's the moment to decide "create a
+new primitive" vs "keep it inline." Generally, if the same shape will
+appear in 2+ places, extract into `src/lib/` now. If it's genuinely
+one-off, keep it inline with a comment explaining why.
+
+### 36.6 — When you're unsure
+
+Three acceptable escape hatches:
+
+1. **Read more context.** `CLAUDE.md`, `.claude/rules/*.md`, and this
+   handbook cover ~95% of cases. The answer is usually documented.
+
+2. **Ask once, specifically.** If after reading you're still unsure
+   about a destructive action (tenant schema migration, rate change,
+   sending to a client), ask. Don't ask 5 questions; ask the 1 that
+   unblocks you.
+
+3. **Do the smallest safe thing.** If the task is ambiguous and you
+   can't reach the owner, ship the smallest version that works and
+   add a `// TODO: [ambiguous] ...` comment describing what would
+   need to change for the larger version.
+
+### 36.7 — Anti-patterns we will revert on sight
+
+These happen often enough to enumerate:
+
+- **Inline custom glass styles.** All glass chemistry comes from
+  `<GlassCard>`. Inline `background: rgba(...)` on a card = revert.
+- **Raw hex colors.** Design-system tokens only. `#C9A84C` = revert.
+  Exception: M12+ legacy code inside `src/components/aguila/` that
+  defines the tokens.
+- **`.select('*')` on tenant-scoped tables without a tenant filter.**
+  Cross-tenant leak in waiting. Revert + reopen with a scoped query.
+- **`any` without a linked issue.** Every `any` needs a
+  `// TS-ANY-ISSUE: #NNN — reason` comment or it goes away.
+- **`console.log` in production code.** Use structured logger or
+  remove. The ratchet already blocks this; don't bypass it in a
+  JSDoc either (we got caught on that once — the grep is greedy).
+- **"Value × 0.16" IVA calculation.** Always use `calculateIVA` from
+  `src/lib/financial/calculations.ts`. The cascading base
+  (valor_aduana + DTA + IGI) is the correct formula. Flat rate
+  under-declares by 5-15% per pedimento.
+- **Strip spaces from pedimento numbers.** Storage stores the
+  7-digit consecutivo; display goes through `formatPedimento()`.
+  Never concatenate raw.
+- **Strip dots from fracciones.** Same rule. Always
+  `formatFraccion()`.
+- **Hardcoding `'9254'` or `'EVCO'`.** Multi-tenant safety. Use
+  `session.companyId` or parameterize.
+
+### 36.8 — When your test fails
+
+Three debugging order:
+
+1. **Read the assertion carefully.** The test names tell you the
+   contract; the assertion tells you the expected value. If your
+   change broke the test, the test is probably right — it's a
+   regression fence, not a preference.
+2. **Check fixture freshness.** If a schema changed, test fixtures
+   might need updates (see the M15 `company-name` + `suggest` test
+   rewrites for precedent).
+3. **Only THEN consider updating the test.** If you're updating a
+   test, write the commit body explaining why the old assertion was
+   wrong. "Test was too strict" is not a reason; "Test was fixed to
+   match the new column shape after the M15 schema rename" is.
+
+### 36.9 — What constitutes "done"
+
+A task is done when ALL are true:
+
+- [ ] Code compiles (`tsc --noEmit` zero errors)
+- [ ] Tests pass (`vitest run` all green)
+- [ ] Ratchets pass (`gsd-verify --ratchets-only` zero failures)
+- [ ] Pre-commit hook passes (automatic in this repo)
+- [ ] Commit message is atomic + descriptive
+- [ ] Scope honored (didn't touch surfaces outside the ask)
+- [ ] New primitives documented in §37 or inline JSDoc
+- [ ] Tests added for any new pure function
+
+If any is false, the task isn't done. Don't report completion until
+it is.
+
+---
+
+## 37. Core Primitives Reference
+
+The primitives below are the `src/lib/` building blocks an agent should
+reach for FIRST. Each has tests; most have a handbook section; all are
+tenant-safe by design. Sorted by domain.
+
+### 37.1 — Format helpers (pure, zero I/O)
+
+**`formatPedimento(raw, fallback?, defaults?)`** — `src/lib/format/pedimento.ts`
+
+Renders a pedimento as canonical `DD AD PPPP SSSSSSS`. Accepts bare
+15-digit, dotted, or 7-digit consecutivo with `defaults = { dd, ad, pppp }`.
+Returns the fallback (default `'—'`) when input is unparseable.
+
+```ts
+import { formatPedimento } from '@/lib/format/pedimento'
+formatPedimento('26243596 6500441')   // → "26 24 3596 6500441"
+formatPedimento('6500441', '—', { dd: '26', ad: '24', pppp: '3596' })
+  // → "26 24 3596 6500441"  (reconstruction path)
+formatPedimento(null)                 // → "—"
+```
+
+Also exports: `parsePedimento`, `formatPedimentoCompact`,
+`isValidPedimento`.
+
+**`formatFraccion(raw)`** — `src/lib/format/fraccion.ts`
+
+Renders a fracción as `XXXX.XX.XX` or `XXXX.XX.XX.XX` (with NICO).
+Accepts dotted or bare-digit input. Returns `null` on unparseable.
+
+```ts
+formatFraccion('3903200199')   // → "3903.20.01.99"
+formatFraccion('3903.20.01')   // → "3903.20.01"  (passthrough)
+formatFraccion('xyz')          // → null
+```
+
+**`cleanCompanyDisplayName(rawName)`** — `src/lib/format/company-name.ts`
+
+Strips legal suffixes ("S.A. DE C.V.", "GRUPO", etc.) for display.
+Preserves MAFESA as-is (specific fixture). Title-cases first letter.
+
+### 37.2 — Schema contracts (compile-time phantom defense)
+
+**`col(table, column)` / `cols(table, list)`** — `src/lib/schema-contracts.ts`
+
+Compile-time guard — passes through the column name but fails `tsc`
+on phantom names. See §28.4 for full story.
+
+```ts
+import { col, cols } from '@/lib/schema-contracts'
+sb.from('traficos').select(col('traficos', 'trafico'))    // OK
+sb.from('traficos').select(col('traficos', 'proveedor'))  // TS ERROR
+sb.from('traficos').select(cols('traficos', 'trafico, pedimento'))
+```
+
+Also exports: `TRAFICOS_COLUMNS`, `GLOBALPC_*_COLUMNS`, etc. (real-schema
+tuples), `SchemaTable`, `SchemaColumnMap`, `realColumns(table)`.
+
+### 37.3 — Tenant-scoped queries
+
+**`getScopedFrom(supabase, table, companyId, opts?)`** — `src/lib/queries/tenant-scoped.ts`
+
+Returns a supabase builder with `company_id` pre-applied. Use for
+single-table reads. Throws if `companyId` is null unless
+`opts.mode === 'all-tenants'` (admin bypass).
+
+```ts
+import { getScopedFrom } from '@/lib/queries/tenant-scoped'
+const { data } = await getScopedFrom(sb, 'traficos', session.companyId)
+  .select('trafico, pedimento, fecha_cruce')
+  .order('fecha_cruce', { ascending: false })
+  .limit(10)
+```
+
+Also exports: `getTenantScopedQuery` (variant with implicit `.select('*')`),
+`assertScopeMode(role, mode)` (gate admin bypass).
+
+### 37.4 — Canonical cross-table joins
+
+**`resolvePartidaLinks(sb, companyId, partidas)`** — `src/lib/queries/partidas-trafico-link.ts`
+
+Given partidas (with `folio`), resolves the 2-hop join to traficos.
+Returns `byFolio: Map<folio, { cve_trafico, pedimento, fecha_cruce,
+fecha_llegada, semaforo, fecha_facturacion, valor_comercial }>`.
+
+```ts
+const links = await resolvePartidaLinks(sb, companyId, partidas)
+for (const p of partidas) {
+  const link = p.folio != null ? links.byFolio.get(p.folio) : null
+  // link.pedimento, link.semaforo, link.fecha_cruce, ...
+}
+```
+
+**`partidasByTrafico(sb, companyId, traficoId, opts?)`** — `src/lib/queries/partidas-by-trafico.ts`
+
+The inverse direction: given a trafico id, return all its partidas
+fully enriched (fraccion + descripcion + umt from productos,
+valor_comercial computed from cantidad × precio_unitario).
+
+```ts
+const partidas = await partidasByTrafico(sb, companyId, '9254-X3435')
+// Each partida has: id, folio, cve_producto, cantidad, precio_unitario,
+// fraccion, descripcion, umt, pais_origen, valor_comercial (computed)
+```
+
+Both helpers are tenant-scoped at every hop. Do not reinvent these.
+
+### 37.5 — Financial calculations
+
+**`calculateDTA(input)` / `calculateIGI(input)` / `calculateIVA(input)` / `calculatePedimento(input)`** — `src/lib/financial/calculations.ts`
+
+The ONLY places customs tax formulas live. Always use these — never
+hand-roll `iva = value × 0.16` or `dta = value × 0.008`. The
+cascading IVA base (`valor_aduana + DTA + IGI`) is enforced here.
+
+```ts
+import { calculatePedimento } from '@/lib/financial/calculations'
+import { getDTARates, getIVARate, getExchangeRate } from '@/lib/rates'
+
+const [rates, ivaRate, fx] = await Promise.all([
+  getDTARates(), getIVARate(), getExchangeRate(),
+])
+const calc = calculatePedimento({
+  valor_usd: 10000,
+  tipo_cambio: fx.rate,
+  regimen: 'A1',
+  igi_rate: 0.05,
+  tmec_eligible: true,
+  rates,
+  iva_rate: ivaRate,
+})
+// calc.total_taxes_mxn, calc.total_landed_mxn, calc.tmec_savings_mxn, ...
+```
+
+All helpers throw on invalid inputs (negative values, rate > 1).
+Step-level helpers are also exported for auditing each calculation.
+
+### 37.6 — Rates config (system_config)
+
+**`getDTARates()`, `getIVARate()`, `getExchangeRate()`** — `src/lib/rates.ts`
+
+Read rates from the `system_config` table. Throws on missing OR expired
+(`valid_to < now`) — the "refuse to calculate" rule. Never hardcode.
+
+```ts
+const { rate: fx } = await getExchangeRate()    // Banxico rate
+const iva = await getIVARate()                   // 0.16
+const rates = await getDTARates()                // { A1, IN, IT, ... }
+```
+
+### 37.7 — V2 Intelligence Layer
+
+**`computePartStreaks(crossings)`, `computeProveedorHealth(crossings)`, `computeFraccionHealth(crossings)`, `computeVolumeSummary(crossings, now?)`, `predictVerdeProbability(input)`, `detectAnomalies(crossings, now?)`** — `src/lib/intelligence/crossing-insights.ts`
+
+Pure aggregators. Caller builds a crossing stream (typically via
+`resolvePartidaLinks`), passes it in, receives structured signals. See
+§34 for the design philosophy + how to extend.
+
+**`getCrossingInsights(sb, companyId, opts?)`** — same file — thin
+orchestrator, handles all DB fetches, returns the full `InsightsPayload`.
+
+**`getVerdeProbabilityForSku(sb, companyId, cveProducto, opts?)`** /
+**`getVerdeProbabilityForTrafico(sb, companyId, traficoId, opts?)`** — `src/lib/intelligence/predict-by-id.ts`
+
+DB-facing wrappers. Take an identifier, return a full `VerdePrediction`
+(probability, band, explainable factors). Returns `null` when the SKU
+has no crossings in window.
+
+### 37.8 — Auth + API response
+
+**`requireAdminSession()`, `requireClientSession()`, `requireAnySession()`, `requireOneOf([...])`** — `src/lib/auth/session-guards.ts`
+
+Auth guards for API routes. Return `{ session, error }` — error is
+a `NextResponse` with the right status if the guard fails.
+
+```ts
+export async function GET(req: NextRequest) {
+  const { session, error } = await requireAdminSession()
+  if (error) return error
+  // ... session.role is 'admin' | 'broker', session.companyId set
+}
+```
+
+Also exports: `unauthorized()`, `forbidden()`.
+
+**`ok(data)`, `notFound(msg?)`, `validationError(msg)`, `internalError(msg)`, `conflict(msg)`, `fail(code, msg, status)`** — `src/lib/api/response.ts`
+
+Canonical `{ data, error }` response helpers. Use for every route
+return. Never hand-roll response shape.
+
+```ts
+return ok(payload)
+return validationError('cve_producto required')
+return notFound()   // default message
+return internalError(err.message)
+```
+
+### 37.9 — Cockpit queries (soft wrappers)
+
+**`softCount`, `softData`, `softFirst`** — `src/lib/cockpit/safe-query.ts`
+
+Wrap a Supabase query in a try/catch + log. Returns 0/[]/null on any
+error. Use for cockpit SSR queries where a single bad query must not
+crash the page. The soft-wrapper silently swallows phantom errors —
+rely on the phantom scanner + schema-contracts for the real defense.
+
+```ts
+const count = await softCount(
+  sb.from('traficos').select('*', { count: 'exact', head: true })
+    .eq('company_id', companyId).eq('estatus', 'En Proceso'),
+  0, // fallback
+)
+```
+
+### 37.10 — Decision + operator audit log
+
+**`logDecision(input)`** — `src/lib/decision-logger.ts`
+
+Append a row to `operational_decisions`. Use for every automated
+judgment (classification pick, risk assessment, AI response) so the
+audit trail has the input data + reasoning.
+
+**`logOperatorAction(input)`** — `src/lib/operator-actions.ts`
+
+Append to `operator_actions`. Use for every human-authorized
+mutation so we know who changed what.
+
+Both are append-only; never deleted.
+
+### 37.11 — Client-facing UI primitives (read-only from agent scope)
+
+You shouldn't touch client surfaces, but if you need to understand
+what's rendered, these are the building blocks:
+
+- `<PageShell>` — every authenticated route's outer wrapper
+- `<GlassCard tier=hero|secondary|tertiary>` — THE glass surface
+- `<AguilaMetric>` — numeric KPI tile with sub-label + tone
+- `<AguilaInsightCard tone=opportunity|watch|anomaly|neutral>` — V2
+- `<AguilaStreakBar values={...}>` — green-streak visual
+- `<Sparkline data={...} tone tone>` — mini-chart
+- `<StatusBadge status={...}>` — status → semantic pill
+- `<SemaforoPill value={0|1|2|null}>` — customs semáforo
+- `<FreshnessBanner>` — sync-contract freshness signal
+
+Client-surface rules: calm tone only, no compliance anxiety, silver
+chrome with at most 1 semantic color per view. See core-invariants #24.
+
+### 37.12 — Canonical grep targets
+
+Quick reference for "where is X defined":
+
+| You want | Look in |
+|---|---|
+| Real-schema columns for a table | `src/lib/schema-contracts.ts` |
+| Tenant-scoped query helper | `src/lib/queries/tenant-scoped.ts` |
+| Partida → trafico join | `src/lib/queries/partidas-trafico-link.ts` |
+| Trafico → partidas join | `src/lib/queries/partidas-by-trafico.ts` |
+| DTA / IGI / IVA formulas | `src/lib/financial/calculations.ts` |
+| Rates (DTA/IVA/FX) | `src/lib/rates.ts` |
+| Pedimento / fracción format | `src/lib/format/{pedimento,fraccion}.ts` |
+| Customs intelligence signals | `src/lib/intelligence/crossing-insights.ts` |
+| Predict-by-id wrappers | `src/lib/intelligence/predict-by-id.ts` |
+| Session guards | `src/lib/auth/session-guards.ts` |
+| API response helpers | `src/lib/api/response.ts` |
+| Cockpit soft-wrappers | `src/lib/cockpit/safe-query.ts` |
+| Decision / operator audit | `src/lib/{decision-logger,operator-actions}.ts` |
+| Glass chemistry tokens | `src/lib/design-system.ts` |
+| Telegram sender | `src/lib/telegram/send.ts` |
+| Auto-logger (leads) | `src/lib/leads/activities.ts` |
+| V1 design primitives | `src/components/aguila/` |
+
+### 37.13 — When to add a new primitive vs inline
+
+Ship a new primitive when:
+- The shape will appear in **2+ call sites**, or will in the next phase
+- The shape has a **non-obvious invariant** (tenant safety, cascading
+  formula, format normalization) worth centralizing
+- The shape is **testable in isolation** — pure function, single
+  concern
+
+Keep it inline when:
+- It's **genuinely one-off** and unlikely to repeat
+- The "abstraction" would hide real locality (e.g. a one-line
+  filter that depends on three local variables)
+- There's no clear test boundary
+
+When in doubt, inline first. A second copy-paste is the signal to
+extract — not a speculative abstraction.
+
+---
+
+## 38. Recommended Patterns — Do this · Don't do this
+
+Every pattern below is pulled from a real commit in our history. The
+"don't" is what the codebase looked like before the fix; the "do" is
+what shipped. Follow the "do" column.
+
+### 38.1 — Partidas → trafico join (phantom-column trap)
+
+**❌ Don't (phantom columns, silently returned empty for months)**
+
+```ts
+// Seen pre-M12 in multiple files, including the Anexo 24 ingest path.
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('cve_trafico, descripcion, valor_comercial, fecha_llegada')
+  .eq('company_id', companyId)
+// PostgREST returns 400 "column does not exist"; softCount catches;
+// user sees empty state with no error. Bug lived 3 marathons.
+```
+
+**✅ Do (canonical 2-hop via shared helper)**
+
+```ts
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
+
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario')
+  .eq('company_id', companyId)
+  .limit(5000)
+
+const links = await resolvePartidaLinks(supabase, companyId, partidas ?? [])
+for (const p of partidas ?? []) {
+  const link = p.folio != null ? links.byFolio.get(p.folio) : null
+  // link.cve_trafico · link.pedimento · link.fecha_cruce · link.semaforo · ...
+}
+```
+
+**Why:** partidas has no `cve_trafico` / `descripcion` / `valor_comercial`
+/ `fecha_llegada` — those are phantoms (see §28.2). The real path is
+`partidas.folio → facturas.folio + cve_trafico → traficos.trafico`.
+The helper chunks `.in()` by 500 to stay under PostgREST URL limits
+and tenant-scopes every hop.
+
+### 38.2 — Inverse direction (trafico → partidas)
+
+**❌ Don't (another phantom)**
+
+```ts
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('id, fraccion, descripcion, cantidad, valor_comercial')
+  .eq('cve_trafico', traficoId)   // phantom: partidas has no cve_trafico
+  .limit(2000)
+```
+
+**✅ Do (canonical 3-hop via shared helper)**
+
+```ts
+import { partidasByTrafico } from '@/lib/queries/partidas-by-trafico'
+
+const partidas = await partidasByTrafico(supabase, companyId, traficoId, {
+  limit: 2000,
+})
+// Each partida: id, folio, cve_producto, cantidad, precio_unitario,
+// fraccion, descripcion, umt, pais_origen, valor_comercial (computed).
+```
+
+**Why:** fraccion + descripcion live on `globalpc_productos`, not
+partidas. `partidasByTrafico` handles the 3-hop: trafico → facturas
+→ partidas → productos. `valor_comercial` computed per-partida from
+cantidad × precio_unitario (facturas carries folio-level valor, not
+partida-level).
+
+### 38.3 — Company display name
+
+**❌ Don't (3 phantom columns)**
+
+```ts
+const { data: c } = await supabase
+  .from('companies')
+  .select('name, razon_social, nombre_comercial')   // 2/3 are phantom
+  .eq('company_id', companyId)
+  .maybeSingle<{ name?: string; razon_social?: string; nombre_comercial?: string }>()
+
+const display =
+  c?.nombre_comercial ?? c?.razon_social ?? c?.name ?? 'Sin nombre'
+// razon_social + nombre_comercial don't exist. Query 400s.
+// display='Sin nombre' for every tenant.
+```
+
+**✅ Do (real column only)**
+
+```ts
+const { data: c } = await supabase
+  .from('companies')
+  .select('name')
+  .eq('company_id', companyId)
+  .maybeSingle<{ name: string | null }>()
+
+const display = c?.name ?? companyId   // fall back to slug, not a literal string
+```
+
+**Why:** `companies` has just `name` — see §28.2. When in doubt, use
+`cleanCompanyDisplayName(rawName)` from `src/lib/format/company-name.ts`
+to strip legal suffixes ("S.A. DE C.V.", "GRUPO", ...) for display.
+
+### 38.4 — IVA calculation (the #1 customs bug)
+
+**❌ Don't (flat rate — under-declares 5-15%)**
+
+```ts
+// Seen in pre-M10 drafts.
+const iva = invoice_value_mxn * 0.16
+// Flat 16% on invoice value. WRONG — doesn't include DTA + IGI in base.
+// Under-declares IVA owed to SAT. Patente exposure.
+```
+
+**✅ Do (cascading base via helper)**
+
+```ts
+import { calculatePedimento } from '@/lib/financial/calculations'
+import { getDTARates, getIVARate, getExchangeRate } from '@/lib/rates'
+
+const [rates, ivaRate, fx] = await Promise.all([
+  getDTARates(), getIVARate(), getExchangeRate(),
+])
+const calc = calculatePedimento({
+  valor_usd,
+  tipo_cambio: fx.rate,
+  regimen,           // 'A1' | 'IN' | 'IT' | ...
+  igi_rate,          // from fraction's tariff_rates entry
+  tmec_eligible,     // from certificado de origen status
+  rates,
+  iva_rate: ivaRate,
+})
+// calc.iva.iva_base_mxn == valor_aduana + DTA + IGI
+// calc.iva.iva_mxn     == base × iva_rate
+// calc.total_landed_mxn == all-in, cascade correct
+```
+
+**Why:** The SAT requires cascading base: `IVA = (valor_aduana + DTA
++ IGI) × iva_rate`. Getting this wrong means every pedimento
+under-declares IVA. See core-invariant #9. The helper also throws on
+`iva_rate > 1` (catches "passed 16 instead of 0.16"). Never hardcode
+rates — they come from `system_config` via the rates module (core
+invariant #17).
+
+### 38.5 — Client surface tone (certainty, not anxiety)
+
+**❌ Don't (MVE anxiety on client surface)**
+
+```ts
+// Seen in a pre-M15 client-facing surface draft.
+<div style={{ color: 'var(--portal-status-red-fg)' }}>
+  MVE vence en {days} días · ACCIÓN REQUERIDA
+</div>
+```
+
+**✅ Do (calm tone + operator-facing urgency only)**
+
+```ts
+// Silver chrome on /mi-cuenta; pair A/R number with Mensajería CTA.
+<AguilaMetric
+  label="Saldo pendiente"
+  value={fmtUSD(saldo)}
+  tone="neutral"
+  sub="¿dudas? Anabel responde"
+/>
+```
+
+**Why:** Client portal shows certainty, never anxiety. MVE countdowns,
+"overdue", "urgent" belong on operator surfaces only. See
+core-invariant #24 + `.claude/rules/client-accounting-ethics.md` +
+§35.2 tone vocabulary.
+
+### 38.6 — Tenant-scoped query (cross-tenant leak defense)
+
+**❌ Don't (forgot .eq company_id — cross-tenant leak)**
+
+```ts
+// Seen pre-Block EE in multiple sync scripts (2026-04-17 contamination).
+const { data: traficos } = await supabase
+  .from('traficos')
+  .select('*')
+  .order('fecha_cruce', { ascending: false })
+  .limit(100)
+// Service-role key bypasses RLS. No company_id filter = returns every
+// tenant's data. Real incident: Tornillo parts visible on EVCO's catalog.
+```
+
+**✅ Do (scoped helper)**
+
+```ts
+import { getScopedFrom } from '@/lib/queries/tenant-scoped'
+
+const { data: traficos } = await getScopedFrom(
+  supabase,
+  'traficos',
+  session.companyId,
+)
+  .select('trafico, pedimento, fecha_cruce')
+  .order('fecha_cruce', { ascending: false })
+  .limit(100)
+// company_id filter applied at construction. Throws on null companyId
+// unless mode='all-tenants' (admin oversight bypass).
+```
+
+**Why:** RLS is the hard wall, app-layer filter is defense-in-depth
+(core-invariant #14). The helper makes the right thing easy and the
+wrong thing impossible to write accidentally.
+
+### 38.7 — Anomaly rule addition
+
+**❌ Don't (inline magic in the detector)**
+
+```ts
+// Inside detectAnomalies:
+if (ratio > 3) {
+  anomalies.push({
+    kind: 'my_new_rule' as any,
+    subject: '...',
+    detail: 'something happened',
+    score: 1,   // arbitrary
+    occurred_at: new Date().toISOString(),
+    metadata: {},
+  })
+}
+// Missing: JSDoc rule doc, Spanish detail, sample-size guard,
+// score bounds (0..1), test coverage, UI label.
+```
+
+**✅ Do (follow the 7-step recipe from §34.3)**
+
+```ts
+// 1. Extend Anomaly.kind union with 'my_new_rule'
+// 2. Append rule block to detectAnomalies with:
+//    - Sample-size guard (≥3 prior, avoid noise)
+//    - Humanized Spanish detail
+//    - Score 0..1 (Math.min(1, magnitude/N))
+//    - Useful metadata for downstream
+// 3. Document in detectAnomalies JSDoc (rule list with thresholds)
+// 4. Write 3 tests: fires correctly · does NOT fire under guard
+//    · does NOT fire on negative variant
+// 5. Add anomalyKindLabel('my_new_rule') → Spanish label
+// 6. Optionally deep-link action in /admin/intelligence
+// 7. Run full gate (tsc, vitest, gsd-verify)
+```
+
+**Why:** Anomalies reach operators' eyes. Unbounded scores wreck the
+sort order; missing guards create noise fatigue; no test leaves the
+rule undocumented. See §34.3 for the full recipe.
+
+### 38.8 — Crossing-stream composition
+
+**❌ Don't (copy-paste the stream build across 3 call sites)**
+
+```ts
+// Same ~20 lines appeared in getCrossingInsights, predict-by-id,
+// and the admin page before extraction.
+const enriched = partidas
+  .map((p) => {
+    const link = p.folio != null ? links.byFolio.get(p.folio) : null
+    if (!link || !link.fecha_cruce) return null
+    return {
+      cve_producto: p.cve_producto,
+      cve_proveedor: p.cve_proveedor,
+      fecha_cruce: link.fecha_cruce,
+      semaforo:
+        link.semaforo === 0 || link.semaforo === 1 || link.semaforo === 2
+          ? (link.semaforo as SemaforoValue)
+          : null,
+    }
+  })
+  .filter((x): x is NonNullable<typeof x> => x !== null)
+```
+
+**✅ Do (pure composer)**
+
+```ts
+import { buildCrossingStream, projectForPartStreaks, projectForProveedorHealth }
+  from '@/lib/intelligence/crossing-stream'
+
+const stream = buildCrossingStream({ partidas, links, fraccionByCve })
+const streaks = computePartStreaks(projectForPartStreaks(stream))
+const prov    = computeProveedorHealth(projectForProveedorHealth(stream))
+```
+
+**Why:** Three copies of the composition drifted over time. One
+pure composer + four projection helpers centralizes the semantics
+(drop unfiled, coerce semaforo, optional fraccion). Shipped Day 2 of
+the Grok Build sprint — future intelligence signals pass through the
+same composer.
+
+### 38.9 — Predictor explanation rendering
+
+**❌ Don't (ad-hoc string concatenation per surface)**
+
+```ts
+// Inside the admin page — fine for one surface, bad when Mensajería,
+// Telegram, and email all want the same content.
+const topFactors = p.factors
+  .slice()
+  .sort((a, b) => Math.abs(b.delta_pp) - Math.abs(a.delta_pp))
+  .slice(0, 2)
+const body = `${p.summary}. ${topFactors.map((f) => f.detail).join(' · ')}.`
+```
+
+**✅ Do (structured renderer — pure, framework-agnostic)**
+
+```ts
+import {
+  explainVerdePrediction,
+  explainVerdePredictionOneLine,
+  explainVerdePredictionPlainText,
+} from '@/lib/intelligence/explain'
+
+// Structured output for any UI:
+const out = explainVerdePrediction(prediction)
+// { headline, probability_pct, confidence_band_label, bullets, meta }
+
+// Terse Telegram / list row (≤160 chars, auto-truncates):
+const line = explainVerdePredictionOneLine(prediction)
+
+// Plain-text email / PDF block:
+const text = explainVerdePredictionPlainText(prediction)
+```
+
+**Why:** Multiple consumers need the same factor breakdown in
+different formats. A pure renderer with three variants prevents each
+consumer from re-implementing the sort + tone + singular/plural logic.
+Tested exhaustively (17 tests in `explain.test.ts`).
+
+### 38.10 — Inline vs extract decision
+
+**When to inline:**
+- Genuinely one-off logic (single call site)
+- Depends on 3+ local variables — abstraction hides locality
+- Trivial: `.trim().toUpperCase()` doesn't need a helper
+
+**When to extract (into `src/lib/`):**
+- Same shape will appear in **2+ call sites** (second copy = extract)
+- Has a **non-obvious invariant**: tenant safety, cascading formula,
+  format normalization, multi-hop join
+- **Testable in isolation** — pure function, single concern
+- Will be **called by future agents** who shouldn't have to re-derive
+  the shape
+
+**Real extractions this repo has done:**
+
+| Primitive | Trigger | Location |
+|---|---|---|
+| `resolvePartidaLinks` | 3 drifting copies found in M12 phantom sweep | `src/lib/queries/partidas-trafico-link.ts` |
+| `partidasByTrafico` | Needed by pedimento export + preview + classification in same PR | `src/lib/queries/partidas-by-trafico.ts` |
+| `calculatePedimento` | Pre-emptive — cascading formula non-obvious | `src/lib/financial/calculations.ts` |
+| `buildCrossingStream` | 3 copies drifting across intelligence paths | `src/lib/intelligence/crossing-stream.ts` |
+| `cleanCompanyDisplayName` | MAFESA preservation fixture needed centralization | `src/lib/format/company-name.ts` |
+| `getScopedFrom` | Every tenant-scoped read was hand-rolling `.eq company_id` | `src/lib/queries/tenant-scoped.ts` |
+
+**Real inlines that stayed inline:**
+
+| Helper | Why inline | Location |
+|---|---|---|
+| `volumeTone(deltaPct)` | Used in 1 place, 1 var → string literal | `/admin/intelligence/page.tsx` |
+| `fraccionTone(pct)` | Single-use tone mapping | `/admin/intelligence/page.tsx` |
+| `anomalyKindLabel(kind)` | UI-specific Spanish label — would bloat lib | `/admin/intelligence/page.tsx` |
+
+**The rule**: "I'm typing this same shape for the second time" is the
+trigger. "I might need this later" is not.
+
+---
+
+## 39. Error Handling, Predictability & Safety Rules
+
+Every rule below exists because a silent failure cost us hours of
+confusion or a Telegram alert at 3 AM. The common thread: **failures
+must be visible OR explicitly tolerated — never both, never neither.**
+
+### 39.1 — The three failure modes
+
+Every function in this codebase falls into one of three modes:
+
+| Mode | When to use | Behavior |
+|---|---|---|
+| **Fail loud** | Business-critical calculations, tenant safety, schema contracts | Throw on invalid input; let the error propagate |
+| **Fail soft (logged)** | Cockpit SSR queries, optional enrichments, best-effort reads | Catch, log to `sync_log` / `logQuietFailure`, return default (0 / [] / null) |
+| **Refuse to calculate** | Any computation depending on stale/missing config (rates, FX, SAT values) | Throw a specific error before performing the calculation |
+
+Pick one per function. Mixing modes within a single function is the
+source of 80% of "the error disappeared and now it's back" bug reports.
+
+### 39.2 — Refuse-to-calculate pattern
+
+Any function computing financial values must **refuse** to proceed
+when input data is stale, missing, or out of expected range. Silent
+computation with stale data is worse than visible refusal.
+
+**Canonical example (`src/lib/rates.ts`):**
+
+```ts
+export async function getDTARates(): Promise<DTARates> {
+  const { data } = await supabase
+    .from('system_config')
+    .select('value, valid_to')
+    .eq('key', 'dta_rates')
+    .single()
+
+  if (!data) throw new Error('DTA rates not found in system_config')
+  if (data.valid_to && new Date(data.valid_to) < new Date()) {
+    throw new Error('DTA rates expired — update system_config')
+  }
+  return data.value as DTARates
+}
+```
+
+**Follow-up guard inside `calculateIVA`:**
+
+```ts
+if (iva_rate > 1) {
+  throw new Error(
+    `calculateIVA: iva_rate looks like a percentage (got ${iva_rate}). ` +
+      `Expected decimal ≤ 1 (e.g. 0.16).`,
+  )
+}
+```
+
+**Rules:**
+- Error messages are **specific** — they name the input and the
+  expected shape.
+- Error messages are in **English** (internal diagnostics) — user-
+  facing strings translate at the UI boundary.
+- Never use `throw new Error('something went wrong')`. If you need
+  to say "something went wrong," you don't have enough context to
+  write the line yet.
+
+### 39.3 — Fail-loud vs soft-wrapper strategy
+
+**Fail loud** (production throws reach users as a 500 → should be
+rare):
+- `lib/rates.ts` (missing/expired config)
+- `lib/financial/calculations.ts` (invalid inputs)
+- `lib/queries/tenant-scoped.ts` (null companyId in tenant mode)
+- `lib/auth/session-guards.ts` (forgery attempt → returns a 401
+  NextResponse, not a throw — but the effect is the same:
+  request aborts)
+
+**Fail soft** (with `logQuietFailure` so the error isn't invisible):
+
+```ts
+import { softCount, softData } from '@/lib/cockpit/safe-query'
+
+// Every SSR query on /inicio, /operador/inicio, /admin/eagle.
+const traficos = await softData(
+  supabase.from('traficos').select('trafico').eq('company_id', companyId).limit(10),
+  [],     // default value when the query fails
+  { label: 'cockpit.inicio.traficos' },   // routes to logQuietFailure
+)
+```
+
+**The contract:**
+- `softData` / `softCount` / `softFirst` swallow the error AND log it
+  to `sync_log` via `logQuietFailure`. They do NOT silently return
+  zero without a trace.
+- Use ONLY in places where one bad query must not crash the page
+  (cockpits). Everywhere else, fail loud.
+- Never wrap a `calculateIVA` / `calculateDTA` in a soft-wrapper.
+  Wrong numbers reaching a client are worse than a visible error.
+
+### 39.4 — Idempotency rules
+
+Every mutation that can be retried (cron scripts, API writes,
+Mensajería sends, pedimento submissions) must be **idempotent** —
+running it twice produces the same effect as running it once.
+
+**Primary key strategy:**
+- `workflow_events` with `trigger_id + event_type + payload-hash` —
+  upsert on conflict. Example: `permit_expiry_alert_60` for a
+  producto fires exactly once, even if the cron retries.
+- `operational_decisions` append-only — never deduplicated at write
+  (auditors want to see every AI decision, including retries).
+- `audit_log` append-only, same reason.
+- `leads_activities` idempotent on `(lead_id, event_type, stage_at)`.
+
+**Check before acting:**
+
+```ts
+// Inside a cron — already-sent alerts live in workflow_events.
+const { data: seen } = await supabase
+  .from('workflow_events')
+  .select('event_type, trigger_id')
+  .in('event_type', ['permit_expiry_alert_60', 'permit_expiry_alert_30'])
+  .in('trigger_id', candidates.map((c) => c.producto_id))
+const seenSet = new Set(
+  (seen ?? []).map((s) => `${s.trigger_id}:${s.event_type}`),
+)
+for (const c of candidates) {
+  const key = `${c.producto_id}:permit_expiry_alert_${c.tripwire}`
+  if (seenSet.has(key)) continue
+  await sendAlert(c)                // only fires once
+  await supabase.from('workflow_events').insert({ ... })
+}
+```
+
+**The rule**: if the operation could be retried (cron, user-initiated
+mutation with retry UI), design the deduplication before the write.
+Retrofitting idempotency after the fact is harder than adding a
+`unique index`.
+
+### 39.5 — Telegram alert contract
+
+Every PM2 cron script MUST:
+
+1. **Log its run** — `heartbeat_log` insert with script name + status
+2. **Fire a Telegram alert on failure** — RED emoji + script name +
+   specific error message
+3. **Fire a GREEN success ping** — only at defined intervals (daily
+   summary). Never on every run (alert fatigue).
+4. **Exit non-zero on failure** — let PM2 see the failure so it can
+   restart per its policy.
+
+**Canonical template** (`.claude/rules/operational-resilience.md`):
+
+```js
+import { sendTelegram } from './lib/telegram.js'
+import { logHeartbeat } from './lib/heartbeat.js'
+
+const SCRIPT_NAME = 'globalpc-delta-sync'
+
+async function main() {
+  // ... actual work ...
+  const rowsChanged = await syncGlobalpc()
+  return { rowsChanged }
+}
+
+main()
+  .then(async (result) => {
+    await logHeartbeat({ script: SCRIPT_NAME, status: 'success', meta: result })
+    // Daily summary only (suppress per-run green pings):
+    const hourUtc = new Date().getUTCHours()
+    if (hourUtc === 12) {
+      await sendTelegram(`🟢 ${SCRIPT_NAME}: synced ${result.rowsChanged} rows today.`)
+    }
+  })
+  .catch(async (err) => {
+    await logHeartbeat({ script: SCRIPT_NAME, status: 'failed', error: err.message })
+    await sendTelegram(`🔴 ${SCRIPT_NAME} failed: ${err.message}`)
+    process.exit(1)   // PM2 sees failure + can restart
+  })
+```
+
+**Verification:**
+
+```bash
+grep -c "sendTelegram" scripts/<new-script>.js   # >= 1
+grep -c "process.exit(1)" scripts/<new-script>.js   # >= 1
+grep -c "heartbeat" scripts/<new-script>.js   # >= 1
+```
+
+`scripts/alert-coverage-audit.js` gates this at ship time: 28 of 29
+PM2 scripts must have ≥ 3/4 failure signals. A new script without
+these will fail the alert-coverage ratchet.
+
+### 39.6 — 5-second cancellation window (automations)
+
+Every automation that sends a message to a client must:
+
+1. **Draft first, send second** — write to a `*_drafts` table with
+   status `'pending_tito_review'`
+2. **Surface to operator** for review
+3. **After approval**, queue with a **5-second cancellation window**
+   before actual send
+4. **Render the window visibly** — the operator sees a countdown and
+   a red "Cancelar" button
+
+Real example: `/admin/aprobar` + `Mensajería` composer + `drafts`
+auto-approve flow. The 5-second window is not cosmetic — Tito has
+actually cancelled in production during that window, and the draft
+was preserved.
+
+See `core-invariants.md #22` and `CLAUDE.md §APPROVAL GATE` for the
+authoritative rule.
+
+### 39.7 — 8-item definition of "done" for agent tasks
+
+Before you report a task complete, verify ALL of these:
+
+- [ ] **tsc --noEmit** — zero errors
+- [ ] **vitest run** — all suites green (including any new tests)
+- [ ] **gsd-verify --ratchets-only** — zero failures
+- [ ] **Pre-commit hook** — passes (runs automatically)
+- [ ] **Scope honored** — only surfaces you were asked to touch
+  changed
+- [ ] **New primitives documented** — §37 reference updated OR inline
+  JSDoc on the new exports
+- [ ] **Tests added** for any new pure function (≥3 tests each: happy
+  path + edge case + regression guard)
+- [ ] **Commit message atomic + descriptive** — `type(scope): what`
+  title + WHY body
+
+If any check fails, the task is **in progress**, not done. Don't
+report completion until all 8 are green.
+
+### 39.8 — Predictability principles
+
+**1. Same input → same output.** Pure functions (aggregators,
+format helpers, calculators) must be deterministic. If timezone
+matters, accept a `now` parameter and default to `Date.now()`.
+
+**2. No hidden I/O.** If a function reads from `fetch` or
+`supabase`, its name should make that obvious
+(`getCrossingInsights`, not `crossingInsights`). Pure helpers stay
+pure.
+
+**3. No magic constants.** Rates from `system_config`. Thresholds in
+named constants with JSDoc. `igi_rate = 0.05` without context is a
+code smell; `FALLBACK_IGI_RATE = 0.05` with "used when tariff_rates
+has no entry" comment is documentation.
+
+**4. Structured errors over generic throws.** Where an error might
+be caught and branched on, return a typed error shape
+(`{ code, message }`) instead of relying on `err.message` matching.
+See `ApiResponse<T>` in `src/lib/api/response.ts`.
+
+**5. Idempotency at the boundary.** Retries happen; plan for them.
+Every mutation that could fire twice needs deduplication — unique
+index, upsert on conflict, or a `.in()` check before insert.
+
+**6. Never bypass a ratchet.** If the hex-count ratchet fails, fix
+the hex. Don't bump the baseline up to paper over the regression.
+The baseline only goes DOWN — that's the whole contract. Same for
+`PHANTOM_BASELINE=0`, `scripts/silent-catch` baseline 153, etc.
+
+### 39.9 — The "loud but recoverable" pattern
+
+Some errors are BOTH loud (log + alert) AND recoverable (retry +
+fall-through). Pattern:
+
+```ts
+try {
+  const rate = await getExchangeRate()
+  return calculate(rate)
+} catch (err) {
+  // Loud: operator + on-call see this.
+  await sendTelegram(`🔴 FX lookup failed: ${err.message}. Using cached rate.`)
+  await logHeartbeat({
+    script: 'pedimento-calculator',
+    status: 'degraded',
+    error: err.message,
+  })
+  // Recoverable: fall back to last-known-good.
+  const fallback = await getLastKnownRate()
+  if (!fallback) throw err   // no fallback → re-throw loud
+  return calculate(fallback.rate)
+}
+```
+
+**Rule**: if you write a catch block, answer BOTH:
+- Is this recoverable? If yes, document the fall-back path.
+- Is this visible? If yes, where does the signal go (Telegram /
+  sync_log / logQuietFailure)?
+
+A bare `catch (err) {}` with no answer to either = deleted on sight.
+
+### 39.10 — Session guard contract
+
+Every API route starts with a session guard. The guards return
+`{ session, error }`; `error` is a `NextResponse` ready to return.
+
+```ts
+import { requireAdminSession, requireClientSession, requireOneOf }
+  from '@/lib/auth/session-guards'
+
+export async function GET(req: NextRequest) {
+  const { session, error } = await requireAdminSession()
+  if (error) return error
+  // session.role ∈ {admin, broker}, session.companyId set
+}
+```
+
+**Rules:**
+- Never parse the `portal_session` cookie inline — always route
+  through a guard.
+- Never read `user_role` / `company_id` from **raw cookies** — those
+  are forgeable. Always use `session.role` / `session.companyId`.
+- Admin override via `?company_id=` is legitimate ONLY after
+  `assertScopeMode(session.role, requestedMode)` check.
+
+See `core-invariants.md #14` and §33 layer 2.
+
+### 39.11 — When in doubt, fail loud
+
+Every time we've chosen "soft" when we should have chosen "loud," we
+paid for it. The phantom-column saga took 16 marathons to clean up
+because soft-wrappers swallowed 400s silently. The null-company_id
+leak took a 303,656-row retag because sync scripts swallowed missing
+inputs silently.
+
+**Default is loud.** Prove you need soft before choosing it.
+
+---
+
+## 40. End-to-end Agent Workflows
+
+This section walks through four common agent tasks step-by-step, with
+the exact commands + files + gates at each step. Use these as
+templates when asked to do the same thing. Every step is
+demo-safe (only `src/lib/` + `docs/` + `src/app/admin/*` touched).
+
+### 40.1 — How to add a new anomaly rule end-to-end
+
+Suppose the request is: "Add an anomaly that fires when a SKU's
+fracción chapter drops below 70% verde for the first time in the
+window."
+
+**Step 1 — Grep to confirm this isn't already covered.**
+
+```bash
+grep -n "fraccion.*anomaly\|chapter.*anomaly" src/lib/intelligence/
+grep -n "new_proveedor\|volume_spike\|streak_break" src/lib/intelligence/crossing-insights.ts
+```
+
+Result: no existing rule. Proceed.
+
+**Step 2 — Extend the `Anomaly.kind` union.**
+
+File: `src/lib/intelligence/crossing-insights.ts`
+
+```ts
+export interface Anomaly {
+  kind:
+    | 'semaforo_rate_drop'
+    | 'proveedor_slip'
+    | 'streak_break'
+    | 'volume_spike'
+    | 'new_proveedor'
+    | 'fraccion_chapter_slip'   // NEW
+  // ...
+}
+```
+
+**Step 3 — Append a rule block to `detectAnomalies`.**
+
+Same file, inside `detectAnomalies`, AFTER existing rules, BEFORE the
+`anomalies.sort(...)` line:
+
+```ts
+// ── Fraccion chapter slip (new) ─────────────────────────────────
+// Fires when a chapter in the current window has pct_verde < 70%
+// AND at least 5 crossings (noise guard). Score scales with how
+// far below 70 the rate is (max 30 pp = score 1.0).
+const byChapter = new Map<string, { verde: number; total: number; last: string | null }>()
+for (const c of crossings) {
+  if (!c.fraccion || !c.fecha_cruce) continue
+  const digits = c.fraccion.replace(/\D/g, '').slice(0, 2)
+  if (!digits) continue
+  const agg = byChapter.get(digits) ?? { verde: 0, total: 0, last: null as string | null }
+  agg.total += 1
+  if (c.semaforo === 0) agg.verde += 1
+  if (!agg.last || c.fecha_cruce > agg.last) agg.last = c.fecha_cruce
+  byChapter.set(digits, agg)
+}
+for (const [chapter, a] of byChapter) {
+  if (a.total < 5) continue
+  const pct = (a.verde / a.total) * 100
+  if (pct >= 70) continue
+  anomalies.push({
+    kind: 'fraccion_chapter_slip',
+    subject: chapter,
+    detail: `Capítulo ${chapter} a ${Math.round(pct)}% verde (${a.verde}/${a.total} cruces). Revisar clasificación + proveedores del capítulo.`,
+    score: Math.min(1, (70 - pct) / 30),
+    occurred_at: a.last ?? new Date(now).toISOString(),
+    metadata: { chapter, pct_verde: Math.round(pct), total: a.total },
+  })
+}
+```
+
+Note: `crossings` here needs a `fraccion` field. Since the rule
+needs it, either:
+(a) **plumb fraccion through `detectAnomalies`'s input type** (preferred — single place), OR
+(b) **compute it inline from a fraccionByCve map** if you're avoiding a signature change
+
+Preferred path: update the input type of `detectAnomalies`:
+
+```ts
+export function detectAnomalies(
+  crossings: Array<{
+    cve_producto: string | null
+    cve_proveedor: string | null
+    fraccion?: string | null   // NEW, optional for back-compat
+    fecha_cruce: string | null
+    semaforo: SemaforoValue
+  }>,
+  now: number = Date.now(),
+): Anomaly[] {
+```
+
+And verify every caller (`getCrossingInsights`, `predict-by-id`) already
+has `fraccion` available in its enriched stream (yes — `buildCrossingStream`
+already attaches it from `fraccionByCve`).
+
+**Step 4 — Update the JSDoc rule list.**
+
+Top of `detectAnomalies`, add to the numbered rule list:
+
+```ts
+ *   5. `fraccion_chapter_slip` — tariff chapter whose current verde
+ *      rate dropped below 70% with ≥ 5 crossings in window. Score
+ *      scales with how far below 70 (30pp below = 1.0).
+```
+
+**Step 5 — Add 3 tests.**
+
+File: `src/lib/intelligence/__tests__/crossing-insights.test.ts`
+
+```ts
+it('fires fraccion_chapter_slip when chapter has ≥ 5 cruces @ < 70%', () => {
+  const rows = [
+    // Chapter 39, 3 of 5 verde = 60% → fires
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(3), semaforo: 0 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.30.01',
+      fecha_cruce: ago(4), semaforo: 0 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.40.01',
+      fecha_cruce: ago(5), semaforo: 0 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.50.01',
+      fecha_cruce: ago(6), semaforo: 2 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.60.01',
+      fecha_cruce: ago(7), semaforo: 2 as const },
+  ]
+  const anomalies = detectAnomalies(rows, now)
+  const slip = anomalies.find((a) => a.kind === 'fraccion_chapter_slip')
+  expect(slip?.subject).toBe('39')
+  expect(slip?.score).toBeGreaterThan(0)
+})
+
+it('does NOT fire fraccion_chapter_slip under 5 crossings', () => {
+  const rows = [
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(3), semaforo: 2 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(4), semaforo: 2 as const },
+  ]
+  expect(detectAnomalies(rows, now).find((a) => a.kind === 'fraccion_chapter_slip'))
+    .toBeUndefined()
+})
+
+it('does NOT fire fraccion_chapter_slip at ≥ 70% verde', () => {
+  const rows = [
+    // 8 verde / 10 = 80% — above threshold
+    ...Array.from({ length: 8 }, (_, i) => ({
+      cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(i + 1), semaforo: 0 as const,
+    })),
+    ...Array.from({ length: 2 }, (_, i) => ({
+      cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(i + 10), semaforo: 2 as const,
+    })),
+  ]
+  expect(detectAnomalies(rows, now).find((a) => a.kind === 'fraccion_chapter_slip'))
+    .toBeUndefined()
+})
+```
+
+**Step 6 — Add the Spanish UI label.**
+
+File: `src/app/admin/intelligence/page.tsx`
+
+```ts
+function anomalyKindLabel(kind: string): string {
+  switch (kind) {
+    // ...existing cases...
+    case 'fraccion_chapter_slip': return 'Capítulo en caída'
+    default: return kind.replace(/_/g, ' ')
+  }
+}
+```
+
+**Step 7 — Run the gate.**
+
+```bash
+npx tsc --noEmit                             # 0 errors
+npx vitest run src/lib/intelligence          # all green (incl. 3 new)
+bash scripts/gsd-verify.sh --ratchets-only   # 0 failures
+```
+
+**Step 8 — Commit.**
+
+```
+feat(intelligence): add fraccion_chapter_slip anomaly rule
+
+Fires when a 2-digit HTS chapter's verde rate drops < 70% with
+≥ 5 crossings in the window. Score scales linearly to 30pp-below.
+Surfaced in /admin/intelligence with Spanish label "Capítulo en caída".
+
+3 tests added (fires · <5 cruces guard · ≥70% guard).
+
+Follows the §34.3 anomaly-rule recipe end-to-end.
+```
+
+See §34.3 for the rule-addition recipe in abstract.
+
+### 40.2 — How to add a new insight card end-to-end
+
+Request: "Add a card to /admin/intelligence showing the top 5 fracciones
+by T-MEC savings potential."
+
+**Step 1 — Understand what's in the data.**
+
+T-MEC eligibility lives on `traficos.predicted_tmec` (boolean). Savings
+is the IGI that WOULD have been paid at the general rate. For a fracción
+chapter, savings = Σ (valor_comercial × igi_rate × predicted_tmec).
+
+**Step 2 — Extend the intelligence engine.**
+
+File: `src/lib/intelligence/crossing-insights.ts`
+
+Add:
+
+```ts
+export interface TmecSavingsByChapter {
+  chapter: string
+  tmec_crossings: number
+  total_crossings: number
+  estimated_savings_usd: number
+  last_fecha_cruce: string | null
+}
+```
+
+Add to `InsightsPayload`:
+
+```ts
+/** Top fracción chapters by T-MEC savings potential. */
+tmec_savings_by_chapter: TmecSavingsByChapter[]
+```
+
+Add a pure aggregator + orchestrator wire-up. (See §34.4 — full
+7-step signal recipe.)
+
+**Step 3 — Render the card.**
+
+File: `src/app/admin/intelligence/page.tsx`
+
+```tsx
+{insights.tmec_savings_by_chapter.length > 0 && (
+  <section style={{ marginBottom: 24 }}>
+    <SectionTitle>Ahorro T-MEC por capítulo</SectionTitle>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+      gap: 12,
+    }}>
+      {insights.tmec_savings_by_chapter.map((t) => (
+        <AguilaInsightCard
+          key={`tmec-${t.chapter}`}
+          tone="opportunity"
+          eyebrow={`Cap. ${t.chapter}`}
+          headline={`$${t.estimated_savings_usd.toLocaleString('en-US')} USD`}
+          body={`${t.tmec_crossings} / ${t.total_crossings} cruces T-MEC · ahorro estimado en ventana.`}
+          meta={t.last_fecha_cruce ? `Último · ${fmtDateShort(t.last_fecha_cruce)}` : undefined}
+        />
+      ))}
+    </div>
+  </section>
+)}
+```
+
+See §35.4 template for the section boilerplate.
+
+**Step 4 — Tests + gate + commit.**
+
+See §40.1 step 7-8 for the gate + commit pattern.
+
+### 40.3 — How to extend the Verde predictor with a new factor
+
+Request: "Add a factor that rewards SKUs whose last-3 crossings were
+all verde in the last 30 days."
+
+**Step 1 — Document the factor in the predictor JSDoc.**
+
+File: `src/lib/intelligence/crossing-insights.ts` —
+`predictVerdeProbability` JSDoc. Add to the numbered rule list:
+
+```
+ *   +5pp recent_momentum: last 3 crossings in last 30 days all verde
+```
+
+**Step 2 — Add the factor block inside `predictVerdeProbability`.**
+
+Insert before the `totalDelta` sum:
+
+```ts
+// 6. Recent momentum — last 3 in last 30 days all verde.
+// This rewards SKUs that are on a hot streak regardless of longer-term
+// streak stats. Stackable with existing streak (+15 cap) factor.
+if (streak.last_fecha_cruce) {
+  const lastMs = new Date(streak.last_fecha_cruce).getTime()
+  const thirtyDaysAgo = Date.now() - 30 * 86_400_000
+  if (
+    Number.isFinite(lastMs) &&
+    lastMs >= thirtyDaysAgo &&
+    streak.current_verde_streak >= 3
+  ) {
+    factors.push({
+      factor: 'recent_momentum',
+      delta_pp: 5,
+      detail: `Últimos 3 cruces verdes en 30 días (+5 pp)`,
+    })
+  }
+}
+```
+
+**Step 3 — Ensure the total-factor sum respects the [5, 99] clip.**
+
+Already handled by `Math.max(5, Math.min(99, baselinePct + totalDelta))`.
+The new factor stacks inside the existing clip — no change needed.
+
+**Step 4 — Add 3 tests.**
+
+File: `crossing-insights.test.ts`
+
+```ts
+it('recent_momentum adds +5pp when last 3 are verde in last 30d', () => {
+  const p = predictVerdeProbability({
+    streak: streak({
+      current_verde_streak: 3, total_crossings: 3,
+      last_fecha_cruce: new Date().toISOString(),
+    }),
+    proveedor: null, fraccionHealth: null, baselinePct: 85,
+  })
+  expect(p.factors.find((f) => f.factor === 'recent_momentum')?.delta_pp).toBe(5)
+})
+
+it('recent_momentum does NOT fire when streak < 3', () => {
+  const p = predictVerdeProbability({
+    streak: streak({
+      current_verde_streak: 2, total_crossings: 2,
+      last_fecha_cruce: new Date().toISOString(),
+    }),
+    proveedor: null, fraccionHealth: null, baselinePct: 85,
+  })
+  expect(p.factors.find((f) => f.factor === 'recent_momentum')).toBeUndefined()
+})
+
+it('recent_momentum does NOT fire when last crossing > 30 days old', () => {
+  const p = predictVerdeProbability({
+    streak: streak({
+      current_verde_streak: 3, total_crossings: 3,
+      last_fecha_cruce: new Date(Date.now() - 45 * 86_400_000).toISOString(),
+    }),
+    proveedor: null, fraccionHealth: null, baselinePct: 85,
+  })
+  expect(p.factors.find((f) => f.factor === 'recent_momentum')).toBeUndefined()
+})
+```
+
+**Step 5 — Gate + commit.** Same as §40.1 step 7-8.
+
+See §34.5 — predictor design philosophy. Every new factor must be:
+additive, bounded, transparent.
+
+### 40.4 — How to safely add a new financial calculation
+
+Request: "Compute the anticipated DTA savings if a pedimento were
+reclassified from A1 → IN (IMMEX)."
+
+**Step 1 — Add the function to `src/lib/financial/calculations.ts`.**
+
+```ts
+export interface CompareRegimeSavingsInput {
+  valor_usd: number
+  tipo_cambio: number
+  current_regimen: PedimentoRegime
+  proposed_regimen: PedimentoRegime
+  rates: DTARates
+}
+
+export interface CompareRegimeSavingsResult {
+  current_dta_mxn: number
+  proposed_dta_mxn: number
+  savings_mxn: number
+  savings_usd: number
+  /** True when proposed < current (positive savings). */
+  beneficial: boolean
+  explanation: string
+}
+
+/**
+ * Compare DTA between two regimes for the same pedimento. Useful for
+ * "what-if" reclassification simulations. Both DTA calls share the
+ * same valor_aduana calculation.
+ */
+export function compareRegimeSavings(
+  input: CompareRegimeSavingsInput,
+): CompareRegimeSavingsResult {
+  const { valor_usd, tipo_cambio, current_regimen, proposed_regimen, rates } = input
+
+  const current = calculateDTA({ valor_usd, tipo_cambio, regimen: current_regimen, rates })
+  const proposed = calculateDTA({ valor_usd, tipo_cambio, regimen: proposed_regimen, rates })
+
+  const savings_mxn = Math.round((current.dta_mxn - proposed.dta_mxn) * 100) / 100
+  const savings_usd = tipo_cambio > 0
+    ? Math.round((savings_mxn / tipo_cambio) * 100) / 100
+    : 0
+
+  return {
+    current_dta_mxn: current.dta_mxn,
+    proposed_dta_mxn: proposed.dta_mxn,
+    savings_mxn,
+    savings_usd,
+    beneficial: savings_mxn > 0,
+    explanation: savings_mxn > 0
+      ? `Ahorro potencial de $${savings_mxn.toLocaleString('es-MX')} MXN cambiando de ${current_regimen} a ${proposed_regimen}.`
+      : savings_mxn < 0
+        ? `Cambiar de ${current_regimen} a ${proposed_regimen} costaría $${Math.abs(savings_mxn).toLocaleString('es-MX')} MXN adicionales.`
+        : `DTA idéntico para ${current_regimen} y ${proposed_regimen}.`,
+  }
+}
+```
+
+**Step 2 — Add 3 tests covering the 3 outcomes.**
+
+```ts
+describe('compareRegimeSavings', () => {
+  it('A1 → IN on high-value pedimento shows positive savings', () => {
+    const out = compareRegimeSavings({
+      valor_usd: 1_000_000, tipo_cambio: 17,
+      current_regimen: 'A1', proposed_regimen: 'IN',
+      rates: RATES,
+    })
+    // A1 DTA = 17M × 0.008 = 136,000 MXN
+    // IN DTA = 408 MXN fixed
+    expect(out.current_dta_mxn).toBe(136000)
+    expect(out.proposed_dta_mxn).toBe(408)
+    expect(out.savings_mxn).toBe(135592)
+    expect(out.beneficial).toBe(true)
+    expect(out.explanation).toMatch(/Ahorro potencial/)
+  })
+
+  it('IN → A1 on low-value pedimento shows a cost (negative)', () => {
+    const out = compareRegimeSavings({
+      valor_usd: 1000, tipo_cambio: 17,
+      current_regimen: 'IN', proposed_regimen: 'A1',
+      rates: RATES,
+    })
+    // A1 DTA = 17,000 × 0.008 = 136 MXN
+    // IN DTA = 408 MXN fixed
+    // savings = 408 - 136 = 272 (proposed cheaper → beneficial)
+    expect(out.beneficial).toBe(true)  // actually A1 IS cheaper for low value
+  })
+
+  it('same regime → zero savings', () => {
+    const out = compareRegimeSavings({
+      valor_usd: 10000, tipo_cambio: 17,
+      current_regimen: 'A1', proposed_regimen: 'A1',
+      rates: RATES,
+    })
+    expect(out.savings_mxn).toBe(0)
+    expect(out.beneficial).toBe(false)
+    expect(out.explanation).toMatch(/idéntico/)
+  })
+})
+```
+
+**Step 3 — Update `src/lib/validation/request-body.ts`?** No — this
+is a pure computation, not an API route. If it's exposed as a route
+later, the route uses `parseRequestBody` with a zod schema for the
+input.
+
+**Step 4 — Gate + commit.**
+
+```
+feat(financial): compareRegimeSavings — A1 vs IN DTA what-if
+
+Pure function comparing DTA for the same pedimento across two
+regimes. Returns MXN + USD savings, a beneficial boolean, and a
+humanized Spanish explanation. Both DTA calls share the same
+valor_aduana calculation so the result isolates the regime delta.
+
+3 tests (high-value A1→IN saves · low-value IN→A1 changes direction
+· same-regime trivially zero). Surface this in the pedimento
+simulator or as a CRUZ AI tool in a follow-up.
+```
+
+### 40.5 — Common "oh no" recovery paths
+
+**I committed to the wrong branch.**
+
+```bash
+git log --oneline HEAD~3..HEAD   # confirm
+git reset --soft HEAD~N          # un-commit, keep changes staged
+# Switch to the right branch
+git checkout correct-branch
+git commit -c ORIG_HEAD           # re-commit with same message
+```
+
+**I added a phantom column and the ratchet is blocking ship.**
+
+Run the scanner, fix the site:
+
+```bash
+node scripts/audit-phantom-columns.mjs
+# Find your site, reference §28.2 for the real column, fix, re-run.
+```
+
+**My test is failing but the code looks right.**
+
+See §36.8 debugging order: (1) read the assertion carefully
+(regression fence, not preference), (2) check fixture freshness
+(schema may have changed), (3) only THEN consider updating the test
+with a commit message explaining WHY.
+
+**I broke a soft-wrapper and now a cockpit page crashes.**
+
+Never remove `softCount` / `softData` / `softFirst` from a cockpit
+SSR query. If the underlying query is wrong, fix THAT — the
+soft-wrapper is defense, not the problem. See §39.3.
+
+**I need to change a rate in system_config.**
+
+Insert a new row with updated `valid_to`. Never update in-place —
+the config is audit-logged. See the SQL migration pattern in
+`supabase/migrations/*_seed_config*.sql` for precedent.
+
+---
+
+## 41. Quick Reference by Task
+
+Single-table index. Start here when you know what you want to do but
+not where to look.
+
+### "I want to..."
+
+| Task | Primitive / File | Handbook § |
+|---|---|---|
+| **Formatting** | | |
+| Render a pedimento correctly | `formatPedimento` in `src/lib/format/pedimento.ts` | §37.1 |
+| Render a fracción correctly | `formatFraccion` in `src/lib/format/fraccion.ts` | §37.1 |
+| Clean a company display name | `cleanCompanyDisplayName` | §37.1 |
+| **Querying Supabase** | | |
+| Scope a single-table read to a tenant | `getScopedFrom` | §37.3, §38.6 |
+| Allow admin bypass on a scoped read | `getScopedFrom(..., { mode: 'all-tenants' })` + `assertScopeMode` | §37.3 |
+| Join partidas → trafico (2-hop) | `resolvePartidaLinks` | §37.4, §38.1 |
+| List partidas for a trafico (3-hop) | `partidasByTrafico` | §37.4, §38.2 |
+| Catch phantom columns at compile time | `col` / `cols` from `src/lib/schema-contracts.ts` | §28.4, §37.2 |
+| Soft-wrap a cockpit query | `softData` / `softCount` / `softFirst` | §37.9, §39.3 |
+| **Financial** | | |
+| Compute DTA for a pedimento | `calculateDTA` | §37.5, §38.4 |
+| Compute IGI (with T-MEC handling) | `calculateIGI` | §37.5 |
+| Compute IVA with cascading base | `calculateIVA` (NEVER flat × 0.16) | §37.5, §38.4 |
+| End-to-end pedimento calc | `calculatePedimento` | §37.5, §40.4 |
+| Read rates from system_config | `getDTARates` / `getIVARate` / `getExchangeRate` | §37.6, §39.2 |
+| **V2 Intelligence** | | |
+| Build an enriched crossing stream | `buildCrossingStream` + `projectFor*` | §37.7, §38.8 |
+| Compute SKU verde streaks | `computePartStreaks` | §37.7 |
+| Compute proveedor health | `computeProveedorHealth` | §37.7 |
+| Compute per-chapter fraccion health | `computeFraccionHealth` | §37.7, §34 |
+| Compute volume summary + 7-day series | `computeVolumeSummary` | §37.7 |
+| Predict next-crossing verde probability | `predictVerdeProbability` | §37.7, §34.5 |
+| Detect anomalies from a stream | `detectAnomalies` | §37.7, §34 |
+| Predict verde for a SKU id | `getVerdeProbabilityForSku` | §37.7 |
+| Predict verde for a trafico id | `getVerdeProbabilityForTrafico` | §37.7 |
+| Render a prediction for UI | `explainVerdePrediction` | §37.7, §38.9 |
+| Render a prediction one-line (Telegram) | `explainVerdePredictionOneLine` | §38.9 |
+| Render a prediction plain-text (email) | `explainVerdePredictionPlainText` | §38.9 |
+| Fetch full intelligence payload | `getCrossingInsights` | §34, §37.7 |
+| **API routes** | | |
+| Build a route handler response | `ok` / `notFound` / `validationError` / ... | §37.8 |
+| Parse + validate a JSON body with Zod | `parseRequestBody` | §37.x, §39.10 |
+| Guard auth on a route | `requireAdminSession` / `requireClientSession` / etc. | §37.8, §39.10 |
+| Safely parse a JSON string | `safeJsonParse` | §37.x |
+| Validate a value against a schema | `validateWithSchema` | §37.x |
+| **Audit + logging** | | |
+| Log an automated decision | `logDecision` | §37.10 |
+| Log a human-authorized mutation | `logOperatorAction` | §37.10 |
+| **Workflows** | | |
+| Add a new anomaly rule | — | §34.3, §40.1 |
+| Add a new insight card | — | §35.4, §40.2 |
+| Extend the Verde predictor | — | §34.5, §40.3 |
+| Add a new financial calculation | — | §40.4 |
+| Add a schema column | `docs/MIGRATING_SCHEMA.md` | — |
+| **Understanding the codebase** | | |
+| What columns are on a table? | — | §28.2 |
+| How does entity X join to entity Y? | — | §31 |
+| What are the data-flow invariants? | — | §29 |
+| What anomalies have we seen before? | — | §32 |
+| What guard-rails exist at each layer? | — | §33 |
+| How does the intelligence layer work? | — | §34 |
+| **Troubleshooting** | | |
+| My test is failing | — | §36.8 |
+| I added a phantom column | `node scripts/audit-phantom-columns.mjs` | §28, §40.5 |
+| I committed to the wrong branch | — | §40.5 |
+| A cockpit is crashing | — | §39.3, §40.5 |
+| Pre-commit hook blocking me | — | §36.4, §36.7 |
+| **Sandbox (isolated exploration)** | | |
+| Exercise a primitive with a fixture | `scripts/agent-sandbox/run-*.ts` | sandbox README |
+| Live DB integrity probe | `node --env-file=.env.local scripts/_m16-crosslink-audit.mjs` | — |
+| Demo-critical stress test | `node --env-file=.env.local scripts/_m16-stress-test.mjs` | — |
+| **Auto-generated reference** | | |
+| Browse every primitive's signature | `npm run docs:api` → `docs/api/index.html` | Quick Start §9 |
+
+### "What do I run before…"
+
+| Before | Run |
+|---|---|
+| Any edit | `git status` · `git branch --show-current` · `npx tsc --noEmit` |
+| First commit of a session | Re-read `§36.1` + `§36.4` per-surface guardrails |
+| Committing | `bash scripts/gsd-verify.sh --ratchets-only` |
+| Shipping | `npm run ship` (runs all gates + live smoke + baseline write) |
+| Pushing to a branch | `npx vitest run` + `bash scripts/gsd-verify.sh --ratchets-only` |
+| Merging to main | Re-read handoff + post-demo greenlight from Tito / Renato IV |
+
+### "Where do I read next"
+
+| If you're… | Start with |
+|---|---|
+| A Grok agent new to this repo | `docs/GROK_QUICK_START.md` |
+| About to write an API route | §37.8 + §39.10 + §40 (closest recipe) |
+| About to touch the intelligence layer | §34 + §35 + §40.1–40.3 |
+| About to add a financial calculation | §37.5 + §38.4 + §40.4 |
+| About to change the database schema | `docs/MIGRATING_SCHEMA.md` |
+| Debugging a silent failure | §39 + §32 + the `sync_log` entries |
+| Unsure whether to extract into `src/lib/` | §37.13 + §38.10 |
+| Asked to ship something fast | §36.6 "when you're unsure" |
+
+---

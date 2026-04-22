@@ -77,3 +77,7 @@ tmp/
 # These can contain pasted secrets or proprietary context; never commit.
 .aider*
 schema_*.sql
+
+# Auto-generated API docs — regenerable via `npm run docs:api`.
+# Output is HTML + assets (~5 MB); no need to version-control it.
+docs/api/

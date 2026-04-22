@@ -12,8 +12,13 @@ import {
   computePartStreaks,
   computeProveedorHealth,
   computeVolumeSummary,
+  computeFraccionHealth,
+  predictVerdeProbability,
   detectAnomalies,
   type SemaforoValue,
+  type PartStreak,
+  type ProveedorHealth,
+  type FraccionHealth,
 } from '../crossing-insights'
 
 function crossing(
@@ -431,5 +436,268 @@ describe('computeVolumeSummary', () => {
     expect(v.recent_7d).toBe(1)
     expect(v.prior_7d).toBe(4)
     expect(v.delta_pct).toBe(-75)
+  })
+
+  it('emits a 7-point daily series oldest → newest', () => {
+    const v = computeVolumeSummary(
+      [
+        { fecha_cruce: ago(0), semaforo: 0 },
+        { fecha_cruce: ago(0), semaforo: 0 },
+        { fecha_cruce: ago(2), semaforo: 1 },
+        { fecha_cruce: ago(6), semaforo: 0 },
+      ],
+      now,
+    )
+    expect(v.daily_series).toHaveLength(7)
+    // Newest bucket is index 6 (today) — should have count 2, verde 100%.
+    expect(v.daily_series[6].count).toBe(2)
+    expect(v.daily_series[6].verde_pct).toBe(100)
+    // 2 days ago (index 4): count 1, verde 0% (1 amarillo).
+    expect(v.daily_series[4].count).toBe(1)
+    expect(v.daily_series[4].verde_pct).toBe(0)
+    // 6 days ago (index 0): count 1, verde 100%.
+    expect(v.daily_series[0].count).toBe(1)
+    expect(v.daily_series[0].verde_pct).toBe(100)
+    // Days with no crossings: count 0, verde_pct null.
+    expect(v.daily_series[1].count).toBe(0)
+    expect(v.daily_series[1].verde_pct).toBeNull()
+  })
+})
+
+describe('computeFraccionHealth', () => {
+  it('returns empty when no crossings have fraccion', () => {
+    expect(
+      computeFraccionHealth([
+        { fraccion: null, fecha_cruce: '2026-04-18', semaforo: 0 },
+      ]),
+    ).toEqual([])
+  })
+
+  it('groups by 2-digit chapter and counts semáforo per chapter', () => {
+    const out = computeFraccionHealth([
+      { fraccion: '3903.20.01', fecha_cruce: '2026-04-18', semaforo: 0 },
+      { fraccion: '3903.30.01', fecha_cruce: '2026-04-17', semaforo: 0 },
+      { fraccion: '3903.20.01', fecha_cruce: '2026-04-16', semaforo: 2 },
+      { fraccion: '8471.30.01', fecha_cruce: '2026-04-15', semaforo: 0 },
+    ])
+    const ch39 = out.find((f) => f.chapter === '39')
+    expect(ch39).toBeDefined()
+    expect(ch39!.total_crossings).toBe(3)
+    expect(ch39!.verde_count).toBe(2)
+    expect(ch39!.rojo_count).toBe(1)
+    expect(ch39!.pct_verde).toBe(67)
+    expect(ch39!.last_fecha_cruce).toBe('2026-04-18')
+
+    const ch84 = out.find((f) => f.chapter === '84')
+    expect(ch84).toBeDefined()
+    expect(ch84!.total_crossings).toBe(1)
+    expect(ch84!.pct_verde).toBe(100)
+  })
+
+  it('normalizes bare-digit fracciones (no dots)', () => {
+    const out = computeFraccionHealth([
+      { fraccion: '39032001', fecha_cruce: '2026-04-18', semaforo: 0 },
+      { fraccion: '84713001', fecha_cruce: '2026-04-15', semaforo: 2 },
+    ])
+    expect(out.find((f) => f.chapter === '39')?.pct_verde).toBe(100)
+    expect(out.find((f) => f.chapter === '84')?.pct_verde).toBe(0)
+  })
+
+  it('sorts by total_crossings descending', () => {
+    const out = computeFraccionHealth([
+      { fraccion: '8471.30.01', fecha_cruce: '2026-04-15', semaforo: 0 },
+      { fraccion: '3903.20.01', fecha_cruce: '2026-04-18', semaforo: 0 },
+      { fraccion: '3903.30.01', fecha_cruce: '2026-04-17', semaforo: 0 },
+      { fraccion: '3903.20.01', fecha_cruce: '2026-04-16', semaforo: 2 },
+    ])
+    expect(out[0].chapter).toBe('39')
+    expect(out[0].total_crossings).toBe(3)
+    expect(out[1].chapter).toBe('84')
+  })
+})
+
+describe('predictVerdeProbability', () => {
+  function streak(overrides: Partial<PartStreak>): PartStreak {
+    return {
+      cve_producto: 'SKU-A',
+      current_verde_streak: 0,
+      longest_verde_streak: 0,
+      just_broke_streak: false,
+      last_semaforo: null,
+      last_fecha_cruce: null,
+      total_crossings: 0,
+      ...overrides,
+    }
+  }
+  function proveedor(overrides: Partial<ProveedorHealth>): ProveedorHealth {
+    return {
+      cve_proveedor: 'PRV_1',
+      total_crossings: 10,
+      verde_count: 9,
+      amarillo_count: 1,
+      rojo_count: 0,
+      pct_verde: 90,
+      last_fecha_cruce: null,
+      ...overrides,
+    }
+  }
+  function fraccion(overrides: Partial<FraccionHealth>): FraccionHealth {
+    return {
+      chapter: '39',
+      total_crossings: 20,
+      verde_count: 19,
+      amarillo_count: 1,
+      rojo_count: 0,
+      pct_verde: 95,
+      last_fecha_cruce: null,
+      ...overrides,
+    }
+  }
+
+  it('returns the baseline when no streak + no proveedor signal', () => {
+    const p = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 0, total_crossings: 1 }),
+      proveedor: null,
+      fraccionHealth: null,
+      baselinePct: 85,
+    })
+    // No positive factors, no negative factors → probability = baseline.
+    expect(p.probability).toBe(0.85)
+    expect(p.baseline_pct).toBe(85)
+  })
+
+  it('adds streak contribution capped at +15pp', () => {
+    const p = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 10, total_crossings: 10 }),
+      proveedor: null,
+      fraccionHealth: null,
+      baselinePct: 85,
+    })
+    // 10 × 5 = 50, capped at 15. Plus sample_confidence +3 (≥5 cruces).
+    expect(p.factors.find((f) => f.factor === 'streak')?.delta_pp).toBe(15)
+    expect(p.probability).toBe(1.03 > 0.99 ? 0.99 : 1.03)
+    expect(p.band).toBe('high')
+  })
+
+  it('adds +10pp for excellent proveedor (≥95% verde)', () => {
+    const p = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 0, total_crossings: 2 }),
+      proveedor: proveedor({ pct_verde: 98, total_crossings: 20 }),
+      fraccionHealth: null,
+      baselinePct: 85,
+    })
+    expect(p.factors.find((f) => f.factor === 'proveedor')?.delta_pp).toBe(10)
+  })
+
+  it('subtracts -15pp for just_broke_streak', () => {
+    const p = predictVerdeProbability({
+      streak: streak({
+        current_verde_streak: 0,
+        longest_verde_streak: 6,
+        just_broke_streak: true,
+        total_crossings: 7,
+      }),
+      proveedor: null,
+      fraccionHealth: null,
+      baselinePct: 85,
+    })
+    expect(p.factors.find((f) => f.factor === 'streak_break')?.delta_pp).toBe(-15)
+    expect(p.probability).toBe(0.73) // 85 + 3 (sample) - 15 (break) = 73
+  })
+
+  it('subtracts -10pp for risky fracción chapter (<90%)', () => {
+    const p = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 2, total_crossings: 3 }),
+      proveedor: null,
+      fraccionHealth: fraccion({ pct_verde: 75, total_crossings: 20 }),
+      baselinePct: 85,
+    })
+    expect(p.factors.find((f) => f.factor === 'fraccion_risk')?.delta_pp).toBe(-10)
+  })
+
+  it('ignores proveedor with fewer than 3 crossings (noise guard)', () => {
+    const p = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 1, total_crossings: 1 }),
+      proveedor: proveedor({ pct_verde: 100, total_crossings: 1 }),
+      fraccionHealth: null,
+      baselinePct: 85,
+    })
+    // streak(1)*5=5, no sample boost, no proveedor factor → 90
+    expect(p.factors.find((f) => f.factor === 'proveedor')).toBeUndefined()
+  })
+
+  it('clips result to [5, 99]', () => {
+    // Extreme positive case
+    const hi = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 100, total_crossings: 100 }),
+      proveedor: proveedor({ pct_verde: 100, total_crossings: 100 }),
+      fraccionHealth: fraccion({ pct_verde: 100 }),
+      baselinePct: 85,
+    })
+    expect(hi.probability).toBeLessThanOrEqual(0.99)
+    expect(hi.probability).toBeGreaterThan(0.95)
+
+    // Extreme negative case
+    const lo = predictVerdeProbability({
+      streak: streak({
+        current_verde_streak: 0,
+        longest_verde_streak: 6,
+        just_broke_streak: true,
+        total_crossings: 10,
+      }),
+      proveedor: proveedor({ pct_verde: 50, total_crossings: 20 }),
+      fraccionHealth: fraccion({ pct_verde: 60 }),
+      baselinePct: 50,
+    })
+    expect(lo.probability).toBeGreaterThanOrEqual(0.05)
+    expect(lo.band).toBe('low')
+  })
+
+  it('emits Spanish summary with the probability + band', () => {
+    const p = predictVerdeProbability({
+      streak: streak({ current_verde_streak: 4, total_crossings: 5 }),
+      proveedor: proveedor({ pct_verde: 96, total_crossings: 10 }),
+      fraccionHealth: null,
+      baselinePct: 85,
+    })
+    expect(p.summary).toMatch(/Probabilidad \d+% de cruzar verde/)
+    expect(p.summary).toMatch(/confianza (alta|media|baja)/)
+  })
+
+  it('classifies bands ≥92 high · ≥80 medium · <80 low', () => {
+    // high
+    expect(
+      predictVerdeProbability({
+        streak: streak({ current_verde_streak: 3, total_crossings: 10 }),
+        proveedor: proveedor({ pct_verde: 98, total_crossings: 20 }),
+        fraccionHealth: null,
+        baselinePct: 85,
+      }).band,
+    ).toBe('high')
+
+    // medium
+    expect(
+      predictVerdeProbability({
+        streak: streak({ total_crossings: 5 }),
+        proveedor: null,
+        fraccionHealth: null,
+        baselinePct: 85,
+      }).band,
+    ).toBe('medium')
+
+    // low
+    expect(
+      predictVerdeProbability({
+        streak: streak({
+          current_verde_streak: 0,
+          longest_verde_streak: 6,
+          just_broke_streak: true,
+          total_crossings: 8,
+        }),
+        proveedor: proveedor({ pct_verde: 60, total_crossings: 20 }),
+        fraccionHealth: null,
+        baselinePct: 85,
+      }).band,
+    ).toBe('low')
   })
 })

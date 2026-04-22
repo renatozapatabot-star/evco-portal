@@ -1,0 +1,43 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/lib/format/pedimento.ts",
+    "src/lib/format/fraccion.ts",
+    "src/lib/format/company-name.ts",
+    "src/lib/schema-contracts.ts",
+    "src/lib/queries/tenant-scoped.ts",
+    "src/lib/queries/partidas-trafico-link.ts",
+    "src/lib/queries/partidas-by-trafico.ts",
+    "src/lib/financial/calculations.ts",
+    "src/lib/rates.ts",
+    "src/lib/intelligence/crossing-insights.ts",
+    "src/lib/intelligence/crossing-stream.ts",
+    "src/lib/intelligence/predict-by-id.ts",
+    "src/lib/intelligence/explain.ts",
+    "src/lib/api/response.ts",
+    "src/lib/auth/session-guards.ts",
+    "src/lib/validation/request-body.ts",
+    "src/lib/cockpit/safe-query.ts",
+    "src/lib/decision-logger.ts",
+    "src/lib/operator-actions.ts"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "name": "EVCO Portal — Grok Build Primitive Reference",
+  "readme": "docs/GROK_QUICK_START.md",
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "hideGenerator": true,
+  "includeVersion": false,
+  "searchInComments": true,
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "sort": ["source-order"],
+  "theme": "default",
+  "githubPages": false,
+  "skipErrorChecking": true,
+  "logLevel": "Warn"
+}

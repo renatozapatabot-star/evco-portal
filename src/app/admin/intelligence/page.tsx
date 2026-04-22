@@ -24,6 +24,7 @@ import {
   AguilaMetric,
   AguilaInsightCard,
   AguilaStreakBar,
+  Sparkline,
 } from '@/components/aguila'
 import {
   getCrossingInsights,
@@ -69,7 +70,11 @@ export default async function IntelligencePage({
       top_proveedores: [],
       watch_proveedores: [],
       anomalies: [],
-      volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null },
+      volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null, daily_series: [] },
+      fraccion_health: [],
+      top_predictions: [],
+      watch_predictions: [],
+      baseline_verde_pct: 0,
     }
   }
 
@@ -77,7 +82,11 @@ export default async function IntelligencePage({
     insights.green_streaks.length +
     insights.broken_streaks.length +
     insights.watch_proveedores.length +
-    insights.anomalies.length
+    insights.anomalies.length +
+    insights.top_predictions.length +
+    insights.watch_predictions.length +
+    insights.fraccion_health.length +
+    insights.volume.daily_series.length
 
   return (
     <PageShell
@@ -141,6 +150,199 @@ export default async function IntelligencePage({
             señales históricas.
           </p>
         </GlassCard>
+      )}
+
+      {/* 7-day trend — volume sparkline + verde overlay */}
+      {insights.volume.daily_series.length > 0 && (
+        <section style={{ marginBottom: 24 }}>
+          <SectionTitle>Últimos 7 días · volumen diario</SectionTitle>
+          <GlassCard tier="hero" padding={20}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: 16,
+                flexWrap: 'wrap',
+                marginBottom: 12,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 'var(--portal-fs-display)',
+                    fontFamily: 'var(--portal-font-mono)',
+                    fontWeight: 700,
+                    letterSpacing: '-0.02em',
+                    color: 'var(--portal-fg-1)',
+                    lineHeight: 1,
+                  }}
+                >
+                  {insights.volume.recent_7d}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 'var(--portal-fs-meta)',
+                    color: 'var(--portal-fg-4)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  cruces últimos 7 días
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: 'var(--portal-fs-sm)',
+                  color: 'var(--portal-fg-3)',
+                  maxWidth: 320,
+                  textAlign: 'right',
+                }}
+              >
+                Baseline verde · {insights.baseline_verde_pct}% (ventana{' '}
+                {windowDays} días)
+                {insights.volume.delta_pct != null && (
+                  <>
+                    {' · '}
+                    {insights.volume.delta_pct > 0 ? '↑' : insights.volume.delta_pct < 0 ? '↓' : '='}{' '}
+                    {Math.abs(insights.volume.delta_pct)}% vs. semana previa
+                  </>
+                )}
+              </div>
+            </div>
+            <Sparkline
+              data={insights.volume.daily_series.map((d) => d.count)}
+              tone={
+                insights.volume.delta_pct != null && insights.volume.delta_pct >= 0
+                  ? 'green'
+                  : 'silver'
+              }
+              height={56}
+              showTooltip
+              highlightToday
+              ariaLabel="Volumen diario últimos 7 días"
+            />
+          </GlassCard>
+        </section>
+      )}
+
+      {/* Cruzó Verde Predictor — top + watch */}
+      {(insights.top_predictions.length > 0 || insights.watch_predictions.length > 0) && (
+        <section style={{ marginBottom: 24 }}>
+          <SectionTitle>Predictor Cruzó Verde · próximo cruce</SectionTitle>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: 12,
+            }}
+          >
+            {insights.top_predictions.map((p) => (
+              <AguilaInsightCard
+                key={`pred-top-${p.cve_producto}`}
+                tone="opportunity"
+                eyebrow={`${Math.round(p.probability * 100)}% probable verde`}
+                headline={p.cve_producto}
+                body={buildPredictorBody(p)}
+                meta={predictorMeta(p)}
+                action={{
+                  label: 'Ver parte',
+                  href: `/catalogo/partes/${encodeURIComponent(p.cve_producto)}`,
+                }}
+              />
+            ))}
+            {insights.watch_predictions.map((p) => (
+              <AguilaInsightCard
+                key={`pred-watch-${p.cve_producto}`}
+                tone="watch"
+                eyebrow={`${Math.round(p.probability * 100)}% probable verde · watch`}
+                headline={p.cve_producto}
+                body={buildPredictorBody(p)}
+                meta={predictorMeta(p)}
+                action={{
+                  label: 'Ver parte',
+                  href: `/catalogo/partes/${encodeURIComponent(p.cve_producto)}`,
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Fracción chapter health */}
+      {insights.fraccion_health.length > 0 && (
+        <section style={{ marginBottom: 24 }}>
+          <SectionTitle>Salud por fracción arancelaria · capítulos</SectionTitle>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: 10,
+            }}
+          >
+            {insights.fraccion_health.map((f) => (
+              <GlassCard
+                key={`fraccion-${f.chapter}`}
+                tier="secondary"
+                padding={16}
+                aria-label={`Capítulo ${f.chapter}`}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    marginBottom: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 'var(--portal-fs-lg)',
+                      fontWeight: 700,
+                      fontFamily: 'var(--portal-font-mono)',
+                      color: 'var(--portal-fg-1)',
+                    }}
+                  >
+                    Cap. {f.chapter}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 'var(--portal-fs-sm)',
+                      fontFamily: 'var(--portal-font-mono)',
+                      fontWeight: 600,
+                      color: fraccionTone(f.pct_verde),
+                    }}
+                  >
+                    {f.pct_verde ?? '—'}%
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: 'var(--portal-fs-meta)',
+                    color: 'var(--portal-fg-4)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {f.total_crossings} cruce{f.total_crossings === 1 ? '' : 's'} · V {f.verde_count} · A {f.amarillo_count} · R {f.rojo_count}
+                </div>
+                {f.last_fecha_cruce && (
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontSize: 'var(--portal-fs-tiny)',
+                      color: 'var(--portal-fg-5)',
+                      fontFamily: 'var(--portal-font-mono)',
+                    }}
+                  >
+                    Último · {fmtDateShort(f.last_fecha_cruce)}
+                  </div>
+                )}
+              </GlassCard>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Green streak opportunities */}
@@ -401,4 +603,33 @@ function anomalyKindLabel(kind: string): string {
     case 'semaforo_rate_drop': return 'Semáforo en caída'
     default: return kind.replace(/_/g, ' ')
   }
+}
+
+function buildPredictorBody(p: InsightsPayload['top_predictions'][number]): string {
+  // Concatenate top 2 factors with +/- signs into a compact body line.
+  const topFactors = p.factors
+    .slice()
+    .sort((a, b) => Math.abs(b.delta_pp) - Math.abs(a.delta_pp))
+    .slice(0, 2)
+  if (topFactors.length === 0) {
+    return `Baseline ${p.baseline_pct}% · sin factores modificadores en ventana.`
+  }
+  const summary = topFactors.map((f) => f.detail).join(' · ')
+  return `${p.summary}. ${summary}.`
+}
+
+function predictorMeta(p: InsightsPayload['top_predictions'][number]): string {
+  const bits: string[] = []
+  if (p.cve_proveedor) bits.push(`Prov · ${p.cve_proveedor}`)
+  bits.push(`${p.total_crossings} cruces ventana`)
+  if (p.last_fecha_cruce) bits.push(`Último · ${fmtDateShort(p.last_fecha_cruce)}`)
+  return bits.join(' · ')
+}
+
+function fraccionTone(pct: number | null): string {
+  if (pct == null) return 'var(--portal-fg-4)'
+  if (pct >= 95) return 'var(--portal-status-green-fg)'
+  if (pct >= 85) return 'var(--portal-fg-2)'
+  if (pct >= 75) return 'var(--portal-status-amber-fg)'
+  return 'var(--portal-status-red-fg)'
 }

@@ -97,6 +97,53 @@ export interface VolumeSummary {
   ratio: number | null
   /** Signed pp change · null when prior=0 */
   delta_pct: number | null
+  /** 7-point daily series — one element per day, oldest → newest.
+   *  index 0 = 7 days ago; index 6 = yesterday. Each element is a
+   *  { date, count, verde_pct } triple for sparkline rendering. */
+  daily_series: Array<{ date: string; count: number; verde_pct: number | null }>
+}
+
+/** Fracción chapter health — semáforo rate aggregated by the first
+ *  two digits of the fracción arancelaria (SAT chapter). Surfaces
+ *  tariff-class risk concentrations: "every HTS 39.x.x shipment
+ *  this month went verde". */
+export interface FraccionHealth {
+  /** 2-digit chapter (e.g. "39", "40", "84"). */
+  chapter: string
+  /** Partida count within the chapter. */
+  total_crossings: number
+  verde_count: number
+  amarillo_count: number
+  rojo_count: number
+  /** verde_count / total · null when total=0 */
+  pct_verde: number | null
+  /** Most-recent cruce ISO date within the chapter. */
+  last_fecha_cruce: string | null
+}
+
+/** Cruzó Verde predictor — early signal blending SKU + proveedor +
+ *  fracción signals into an explainable probability. Not ML; a
+ *  transparent rule-weighted score that operators can reason about. */
+export interface VerdePrediction {
+  cve_producto: string
+  /** 0..1 probability the next crossing of this SKU ends verde. */
+  probability: number
+  /** Human-readable confidence band. */
+  band: 'high' | 'medium' | 'low'
+  /** One-sentence Spanish summary for the insight card. */
+  summary: string
+  /** Signed contributions summing to (probability - baseline). Each
+   *  entry is `{ factor, delta_pp, detail }` where delta_pp is signed
+   *  percentage points. Lets the UI render an explainable breakdown. */
+  factors: Array<{ factor: string; delta_pp: number; detail: string }>
+  /** Baseline portal-wide verde rate used as the starting point. */
+  baseline_pct: number
+  /** Proveedor that drove most of the signal (for display). */
+  cve_proveedor: string | null
+  /** Most-recent cruce iso for this SKU. */
+  last_fecha_cruce: string | null
+  /** Total crossings observed in window. */
+  total_crossings: number
 }
 
 export interface InsightsPayload {
@@ -114,6 +161,14 @@ export interface InsightsPayload {
   anomalies: Anomaly[]
   /** Week-over-week partida volume summary. */
   volume: VolumeSummary
+  /** Fracción chapter health (top 10 by volume). Tariff-class risk lens. */
+  fraccion_health: FraccionHealth[]
+  /** Top 5 SKUs with highest predicted next-crossing verde probability. */
+  top_predictions: VerdePrediction[]
+  /** SKUs with LOW predicted verde probability — operator watch list. */
+  watch_predictions: VerdePrediction[]
+  /** Portal-wide verde rate used as the predictor baseline. */
+  baseline_verde_pct: number
 }
 
 // ── Pure aggregation helpers (unit-testable) ───────────────────────
@@ -440,7 +495,7 @@ export function detectAnomalies(
  * Pure — no DB dependency.
  */
 export function computeVolumeSummary(
-  crossings: Array<{ fecha_cruce: string | null }>,
+  crossings: Array<{ fecha_cruce: string | null; semaforo?: SemaforoValue }>,
   now: number = Date.now(),
 ): VolumeSummary {
   const SEVEN_D = 7 * 86_400_000
@@ -448,16 +503,221 @@ export function computeVolumeSummary(
   const cutoffPrior = now - 2 * SEVEN_D
   let recent = 0
   let prior = 0
+
+  // Daily series — 7 days, oldest first. Each bucket captures count +
+  // verde rate so the UI can render a dual sparkline (volume bar +
+  // verde line).
+  const daily: Array<{ date: string; count: number; verdeCount: number; totalWithSemaforo: number }> = []
+  const DAY_MS = 86_400_000
+  // Anchor the bucket to the start of each calendar day (UTC-agnostic
+  // here — the UI renders with America/Chicago tz when displaying).
+  const todayUtcStartMs =
+    Math.floor(now / DAY_MS) * DAY_MS
+  for (let i = 6; i >= 0; i--) {
+    const bucketStart = todayUtcStartMs - i * DAY_MS
+    daily.push({
+      date: new Date(bucketStart).toISOString().slice(0, 10),
+      count: 0,
+      verdeCount: 0,
+      totalWithSemaforo: 0,
+    })
+  }
+
   for (const c of crossings) {
     if (!c.fecha_cruce) continue
     const ts = new Date(c.fecha_cruce).getTime()
     if (!Number.isFinite(ts)) continue
     if (ts >= cutoffRecent) recent += 1
     else if (ts >= cutoffPrior) prior += 1
+
+    // Daily bucketing: find which of the 7 buckets (if any) this falls in.
+    if (ts >= cutoffRecent && ts < now + DAY_MS) {
+      const bucketStart = Math.floor(ts / DAY_MS) * DAY_MS
+      const idx = Math.floor((bucketStart - (todayUtcStartMs - 6 * DAY_MS)) / DAY_MS)
+      if (idx >= 0 && idx < 7) {
+        daily[idx].count += 1
+        if (c.semaforo === 0) daily[idx].verdeCount += 1
+        if (c.semaforo === 0 || c.semaforo === 1 || c.semaforo === 2) {
+          daily[idx].totalWithSemaforo += 1
+        }
+      }
+    }
   }
+
+  const daily_series = daily.map((d) => ({
+    date: d.date,
+    count: d.count,
+    verde_pct:
+      d.totalWithSemaforo > 0
+        ? Math.round((d.verdeCount / d.totalWithSemaforo) * 100)
+        : null,
+  }))
+
   const ratio = prior > 0 ? recent / prior : null
   const delta_pct = prior > 0 ? Math.round(((recent - prior) / prior) * 100) : null
-  return { recent_7d: recent, prior_7d: prior, ratio, delta_pct }
+  return { recent_7d: recent, prior_7d: prior, ratio, delta_pct, daily_series }
+}
+
+/**
+ * Aggregate semáforo counts per fracción chapter (first 2 digits of
+ * the HTS code — e.g. "39" = plastics, "84" = mechanical machinery).
+ * Pure — no DB dependency. Caller supplies crossings already enriched
+ * with fraccion (from a products join).
+ */
+export function computeFraccionHealth(
+  crossings: Array<{
+    fraccion: string | null
+    fecha_cruce: string | null
+    semaforo: SemaforoValue
+  }>,
+): FraccionHealth[] {
+  const byChapter = new Map<
+    string,
+    { verde: number; amarillo: number; rojo: number; total: number; lastDate: string | null }
+  >()
+  for (const row of crossings) {
+    if (!row.fraccion) continue
+    // Normalize: strip dots, take first 2 digits. "3903.20.01" → "39".
+    const digits = row.fraccion.replace(/\D/g, '')
+    if (digits.length < 2) continue
+    const chapter = digits.slice(0, 2)
+    const agg = byChapter.get(chapter) ?? {
+      verde: 0,
+      amarillo: 0,
+      rojo: 0,
+      total: 0,
+      lastDate: null,
+    }
+    agg.total += 1
+    if (row.semaforo === 0) agg.verde += 1
+    else if (row.semaforo === 1) agg.amarillo += 1
+    else if (row.semaforo === 2) agg.rojo += 1
+    if (row.fecha_cruce && (!agg.lastDate || row.fecha_cruce > agg.lastDate)) {
+      agg.lastDate = row.fecha_cruce
+    }
+    byChapter.set(chapter, agg)
+  }
+
+  const out: FraccionHealth[] = []
+  for (const [chapter, a] of byChapter) {
+    out.push({
+      chapter,
+      total_crossings: a.total,
+      verde_count: a.verde,
+      amarillo_count: a.amarillo,
+      rojo_count: a.rojo,
+      pct_verde: a.total > 0 ? Math.round((a.verde / a.total) * 100) : null,
+      last_fecha_cruce: a.lastDate,
+    })
+  }
+  out.sort((a, b) => b.total_crossings - a.total_crossings)
+  return out
+}
+
+/**
+ * Cruzó Verde predictor — rule-based early signal for a single SKU's
+ * next-crossing verde probability. Explainable, not ML.
+ *
+ * Factors (each contributes signed percentage points to the baseline):
+ *   +5 pp   for every verde in current streak (capped at +15)
+ *   +10 pp  if proveedor pct_verde ≥ 95%
+ *    +5 pp  if proveedor pct_verde 85-94%
+ *    0 pp   proveedor 75-84% (neutral)
+ *   -10 pp  if proveedor pct_verde < 75%
+ *   -15 pp  if just_broke_streak
+ *   -10 pp  if fracción chapter pct_verde < 90%
+ *   +3 pp   if SKU has ≥ 5 total crossings (signal confidence)
+ *
+ * Result clipped to [5, 99]. Bands: ≥ 92 = high, 80-91 = medium, < 80 = low.
+ */
+export function predictVerdeProbability(input: {
+  streak: PartStreak
+  proveedor: ProveedorHealth | null
+  fraccionHealth: FraccionHealth | null
+  baselinePct: number
+}): VerdePrediction {
+  const { streak, proveedor, fraccionHealth, baselinePct } = input
+  const factors: VerdePrediction['factors'] = []
+
+  // 1. Streak contribution (capped).
+  const streakDelta = Math.min(streak.current_verde_streak * 5, 15)
+  if (streakDelta > 0) {
+    factors.push({
+      factor: 'streak',
+      delta_pp: streakDelta,
+      detail: `${streak.current_verde_streak} verdes consecutivos (+${streakDelta} pp)`,
+    })
+  }
+
+  // 2. Proveedor health.
+  if (proveedor && proveedor.pct_verde != null && proveedor.total_crossings >= 3) {
+    let provDelta = 0
+    if (proveedor.pct_verde >= 95) provDelta = 10
+    else if (proveedor.pct_verde >= 85) provDelta = 5
+    else if (proveedor.pct_verde >= 75) provDelta = 0
+    else provDelta = -10
+    if (provDelta !== 0) {
+      factors.push({
+        factor: 'proveedor',
+        delta_pp: provDelta,
+        detail: `Proveedor ${proveedor.cve_proveedor} @ ${proveedor.pct_verde}% verde (${provDelta >= 0 ? '+' : ''}${provDelta} pp)`,
+      })
+    }
+  }
+
+  // 3. Broken-streak penalty.
+  if (streak.just_broke_streak) {
+    factors.push({
+      factor: 'streak_break',
+      delta_pp: -15,
+      detail: `Racha reciente rota (-15 pp)`,
+    })
+  }
+
+  // 4. Fracción chapter risk.
+  if (
+    fraccionHealth &&
+    fraccionHealth.pct_verde != null &&
+    fraccionHealth.pct_verde < 90 &&
+    fraccionHealth.total_crossings >= 5
+  ) {
+    factors.push({
+      factor: 'fraccion_risk',
+      delta_pp: -10,
+      detail: `Capítulo ${fraccionHealth.chapter} @ ${fraccionHealth.pct_verde}% (-10 pp)`,
+    })
+  }
+
+  // 5. Signal confidence boost.
+  if (streak.total_crossings >= 5) {
+    factors.push({
+      factor: 'sample_confidence',
+      delta_pp: 3,
+      detail: `${streak.total_crossings} cruces en ventana (+3 pp)`,
+    })
+  }
+
+  const totalDelta = factors.reduce((s, f) => s + f.delta_pp, 0)
+  const probabilityPct = Math.max(5, Math.min(99, baselinePct + totalDelta))
+  const probability = probabilityPct / 100
+
+  const band: VerdePrediction['band'] =
+    probabilityPct >= 92 ? 'high' : probabilityPct >= 80 ? 'medium' : 'low'
+
+  const summaryBand = band === 'high' ? 'alta' : band === 'medium' ? 'media' : 'baja'
+  const summary = `Probabilidad ${probabilityPct}% de cruzar verde · confianza ${summaryBand}`
+
+  return {
+    cve_producto: streak.cve_producto,
+    probability,
+    band,
+    summary,
+    factors,
+    baseline_pct: baselinePct,
+    cve_proveedor: proveedor?.cve_proveedor ?? null,
+    last_fecha_cruce: streak.last_fecha_cruce,
+    total_crossings: streak.total_crossings,
+  }
 }
 
 // ── DB-facing entry points ─────────────────────────────────────────
@@ -488,7 +748,11 @@ export async function getCrossingInsights(
     top_proveedores: [],
     watch_proveedores: [],
     anomalies: [],
-    volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null },
+    volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null, daily_series: [] },
+    fraccion_health: [],
+    top_predictions: [],
+    watch_predictions: [],
+    baseline_verde_pct: 0,
   }
   if (!companyId) return empty
 
@@ -519,10 +783,33 @@ export async function getCrossingInsights(
   )
   if (links.byFolio.size === 0) return empty
 
-  // 3. Build the enriched crossing stream.
+  // 2.5. Enrich cve_producto → fraccion via globalpc_productos. This is
+  //     the canonical 3rd hop (partidas.cve_producto → productos.fraccion)
+  //     documented in handbook §28.3. Chunked .in() to stay under
+  //     PostgREST URL limits on wide tenants.
+  const distinctCves = Array.from(
+    new Set(partidas.map((p) => p.cve_producto).filter((c): c is string => !!c)),
+  )
+  const fraccionByCve = new Map<string, string | null>()
+  if (distinctCves.length > 0) {
+    for (let i = 0; i < distinctCves.length; i += 500) {
+      const slice = distinctCves.slice(i, i + 500)
+      const { data: prods } = await supabase
+        .from('globalpc_productos')
+        .select('cve_producto, fraccion')
+        .eq('company_id', companyId)
+        .in('cve_producto', slice)
+      for (const row of (prods ?? []) as Array<{ cve_producto: string | null; fraccion: string | null }>) {
+        if (row.cve_producto) fraccionByCve.set(row.cve_producto, row.fraccion)
+      }
+    }
+  }
+
+  // 3. Build the enriched crossing stream (now with fraccion).
   const enriched: Array<{
     cve_producto: string | null
     cve_proveedor: string | null
+    fraccion: string | null
     fecha_cruce: string | null
     semaforo: SemaforoValue
   }> = partidas
@@ -532,6 +819,7 @@ export async function getCrossingInsights(
       return {
         cve_producto: p.cve_producto,
         cve_proveedor: p.cve_proveedor,
+        fraccion: p.cve_producto ? fraccionByCve.get(p.cve_producto) ?? null : null,
         fecha_cruce: link.fecha_cruce,
         semaforo:
           link.semaforo === 0 || link.semaforo === 1 || link.semaforo === 2
@@ -562,9 +850,83 @@ export async function getCrossingInsights(
   )
   const anomalies = detectAnomalies(enriched, now)
   const volume = computeVolumeSummary(
-    enriched.map((c) => ({ fecha_cruce: c.fecha_cruce })),
+    enriched.map((c) => ({ fecha_cruce: c.fecha_cruce, semaforo: c.semaforo })),
     now,
   )
+
+  const fraccionHealthAll = computeFraccionHealth(
+    enriched.map((c) => ({
+      fraccion: c.fraccion,
+      fecha_cruce: c.fecha_cruce,
+      semaforo: c.semaforo,
+    })),
+  )
+  const fraccion_health = fraccionHealthAll.slice(0, 10)
+
+  // Baseline verde pct — portal-wide rate across the enriched stream.
+  // Used as the predictor starting point. Cap denom to 1 to avoid /0.
+  const totalWithSemaforo = enriched.filter(
+    (c) => c.semaforo === 0 || c.semaforo === 1 || c.semaforo === 2,
+  ).length
+  const verdeCount = enriched.filter((c) => c.semaforo === 0).length
+  const baseline_verde_pct =
+    totalWithSemaforo > 0
+      ? Math.round((verdeCount / totalWithSemaforo) * 100)
+      : 85 // sane fallback when a fresh tenant has no signal
+
+  // Predictions — one per SKU-with-signal (≥ 2 crossings in window).
+  const proveedorByCve = new Map<string, ProveedorHealth>()
+  for (const p of proveedores) proveedorByCve.set(p.cve_proveedor, p)
+  const fraccionByCveProduct = new Map<string, string | null>(fraccionByCve)
+  const fraccionByChapter = new Map<string, FraccionHealth>()
+  for (const f of fraccionHealthAll) fraccionByChapter.set(f.chapter, f)
+  // Map each cve_producto to its most-frequent proveedor in the stream.
+  const topProvByCve = new Map<string, string>()
+  const provCountByCve = new Map<string, Map<string, number>>()
+  for (const c of enriched) {
+    if (!c.cve_producto || !c.cve_proveedor) continue
+    const counts = provCountByCve.get(c.cve_producto) ?? new Map<string, number>()
+    counts.set(c.cve_proveedor, (counts.get(c.cve_proveedor) ?? 0) + 1)
+    provCountByCve.set(c.cve_producto, counts)
+  }
+  for (const [cve, counts] of provCountByCve) {
+    let best: string | null = null
+    let bestN = 0
+    for (const [prov, n] of counts) {
+      if (n > bestN) {
+        bestN = n
+        best = prov
+      }
+    }
+    if (best) topProvByCve.set(cve, best)
+  }
+
+  const predictions: VerdePrediction[] = streaks
+    .filter((s) => s.total_crossings >= 2)
+    .map((s) => {
+      const topProv = topProvByCve.get(s.cve_producto) ?? null
+      const proveedor = topProv ? proveedorByCve.get(topProv) ?? null : null
+      const fraccion = fraccionByCveProduct.get(s.cve_producto) ?? null
+      const digits = fraccion?.replace(/\D/g, '') ?? ''
+      const chapter = digits.length >= 2 ? digits.slice(0, 2) : null
+      const fraccionHealth = chapter ? fraccionByChapter.get(chapter) ?? null : null
+      return predictVerdeProbability({
+        streak: s,
+        proveedor,
+        fraccionHealth,
+        baselinePct: baseline_verde_pct,
+      })
+    })
+
+  const top_predictions = predictions
+    .filter((p) => p.band === 'high')
+    .sort((a, b) => b.probability - a.probability)
+    .slice(0, 5)
+
+  const watch_predictions = predictions
+    .filter((p) => p.band === 'low')
+    .sort((a, b) => a.probability - b.probability)
+    .slice(0, 5)
 
   const green_streaks = streaks
     .filter((s) => s.current_verde_streak >= 3)
@@ -589,5 +951,9 @@ export async function getCrossingInsights(
     watch_proveedores,
     anomalies,
     volume,
+    fraccion_health,
+    top_predictions,
+    watch_predictions,
+    baseline_verde_pct,
   }
 }

@@ -67,36 +67,52 @@ async function fetchLinkedDocs(cveProducto: string, companyId: string): Promise<
   const supabase = createServerClient()
   const docs: LinkedDoc[] = []
 
-  // Recent pedimentos that carry a line item for this part (joined via
-  // globalpc_partidas.cve_producto → cve_trafico → traficos.pedimento).
+  // Recent pedimentos that carry a line item for this part.
+  // M14 fix: partidas has NO cve_trafico column. Real 2-hop join goes
+  // through facturas. Use resolvePartidaLinks (M12) to do it safely.
   try {
     const { data: partidaRows } = await supabase
       .from('globalpc_partidas')
-      .select('cve_trafico, created_at, cantidad, precio_unitario')
+      .select('folio, created_at, cantidad, precio_unitario')
       .eq('cve_producto', cveProducto)
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
       .limit(8)
-    const traficos = Array.from(new Set((partidaRows ?? []).map((r) => r.cve_trafico).filter(Boolean)))
-    if (traficos.length > 0) {
-      const { data: traficoRows } = await supabase
-        .from('traficos')
-        .select('trafico, pedimento, fecha_pago, fecha_cruce')
-        .in('trafico', traficos as string[])
-        .eq('company_id', companyId)
-      for (const t of (traficoRows ?? [])) {
+
+    if ((partidaRows ?? []).length > 0) {
+      const { resolvePartidaLinks } = await import(
+        '@/lib/queries/partidas-trafico-link'
+      )
+      const links = await resolvePartidaLinks(
+        supabase,
+        companyId,
+        (partidaRows ?? []).map((r) => ({ folio: r.folio })),
+      )
+      // One doc per unique trafico reached through the partidas.
+      const seenTraficos = new Set<string>()
+      for (const p of partidaRows ?? []) {
+        const link = p.folio != null ? links.byFolio.get(p.folio) : null
+        if (!link?.cve_trafico || seenTraficos.has(link.cve_trafico)) continue
+        seenTraficos.add(link.cve_trafico)
         docs.push({
-          id: `pedimento-${t.trafico}`,
+          id: `pedimento-${link.cve_trafico}`,
           kind: 'pedimento',
-          label: t.pedimento ? `Pedimento ${t.pedimento}` : `Embarque ${t.trafico}`,
-          sub: t.fecha_cruce ? `Cruzado ${formatDate(t.fecha_cruce)}` : 'En proceso',
-          href: `/api/pedimento-pdf?trafico=${encodeURIComponent(t.trafico as string)}`,
-          timestamp_iso: t.fecha_cruce ?? t.fecha_pago,
+          label: link.pedimento
+            ? `Pedimento ${link.pedimento}`
+            : `Embarque ${link.cve_trafico}`,
+          sub: link.fecha_cruce
+            ? `Cruzado ${formatDate(link.fecha_cruce)}`
+            : 'En proceso',
+          href: `/api/pedimento-pdf?trafico=${encodeURIComponent(link.cve_trafico)}`,
+          timestamp_iso: link.fecha_cruce ?? link.fecha_facturacion ?? null,
         })
       }
     }
   } catch (err) {
-    console.error('[anexo-24/detail] linked pedimentos failed:', err instanceof Error ? err.message : err)
+    console.error(
+      '[anexo-24/detail] linked pedimentos failed:',
+      err instanceof Error ? err.message : err,
+    )
   }
 
   // OCA opinions for this cve_producto (if the oca_opinions table exists

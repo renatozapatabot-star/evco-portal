@@ -703,7 +703,13 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       } : null}
       freshnessSlot={
         <>
-          {signals.failureCount >= 2 && (
+          {/* Demo-polish 2026-04-22 — when the freshness banner is already
+              calling out staleness, suppress the partial-data banner so
+              the hero shows one coherent warning instead of two stacked
+              amber bars. The signals overlap: stale syncs are the #1
+              cause of soft-query failures in the Promise.all above, so
+              the freshness banner already covers both. */}
+          {signals.failureCount >= 2 && !freshness.isStale && (
             <div
               role="status"
               aria-live="polite"

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRef, useState } from 'react'
 import type { CockpitHeroKPI, ActividadStripItem } from '@/components/aguila'
 import { TimelineModal } from '@/components/cockpit/client/TimelineModal'
@@ -9,6 +10,14 @@ import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentT
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
+
+/** Pre-encoded once — `/cruz` reads `?hello=` as the first agent message
+ *  shown to the user when they land. Keeps the greeting a single sentence,
+ *  calm, invitation-toned. Matches `DEFAULT_HELLO.client` in AsistenteButton
+ *  so the in-content link and the floating button land on the same opening. */
+const ASK_AGENT_HREF =
+  '/cruz?ctx=client&hello=' +
+  encodeURIComponent('¿En qué te puedo apoyar hoy?')
 // AguilaFooter is rendered by DashboardShellClient via AguilaFooterShellFallback —
 // importing/rendering it here would bypass the [data-identity-footer] dedup
 // and double-paint. Removed 2026-04-19 after Chrome audit found the regression.
@@ -98,6 +107,25 @@ export function InicioClientShell({
           </button>
         </>
       )}
+      {/* Demo-polish 2026-04-22 — in-content invitation to the agent
+          chat. Matches the styling of the tasa-de-éxito / próximo-cruce
+          button above so it reads as a first-class summary element.
+          Floating AsistenteButton remains bottom-right; this gives
+          Ursula a hero-level entry point the moment she lands. */}
+      {' · '}
+      <Link
+        href={ASK_AGENT_HREF}
+        style={{
+          color: 'var(--portal-green-2)',
+          textDecoration: 'underline',
+          textDecorationColor: 'var(--portal-green-5)',
+          textUnderlineOffset: '3px',
+          font: 'inherit',
+        }}
+        aria-label="Hablar con el agente IA del portal"
+      >
+        pregúntale al agente →
+      </Link>
     </>
   ) : undefined
 

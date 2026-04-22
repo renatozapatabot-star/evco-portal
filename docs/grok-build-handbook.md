@@ -2921,3 +2921,704 @@ When in doubt, inline first. A second copy-paste is the signal to
 extract — not a speculative abstraction.
 
 ---
+
+## 38. Recommended Patterns — Do this · Don't do this
+
+Every pattern below is pulled from a real commit in our history. The
+"don't" is what the codebase looked like before the fix; the "do" is
+what shipped. Follow the "do" column.
+
+### 38.1 — Partidas → trafico join (phantom-column trap)
+
+**❌ Don't (phantom columns, silently returned empty for months)**
+
+```ts
+// Seen pre-M12 in multiple files, including the Anexo 24 ingest path.
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('cve_trafico, descripcion, valor_comercial, fecha_llegada')
+  .eq('company_id', companyId)
+// PostgREST returns 400 "column does not exist"; softCount catches;
+// user sees empty state with no error. Bug lived 3 marathons.
+```
+
+**✅ Do (canonical 2-hop via shared helper)**
+
+```ts
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
+
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario')
+  .eq('company_id', companyId)
+  .limit(5000)
+
+const links = await resolvePartidaLinks(supabase, companyId, partidas ?? [])
+for (const p of partidas ?? []) {
+  const link = p.folio != null ? links.byFolio.get(p.folio) : null
+  // link.cve_trafico · link.pedimento · link.fecha_cruce · link.semaforo · ...
+}
+```
+
+**Why:** partidas has no `cve_trafico` / `descripcion` / `valor_comercial`
+/ `fecha_llegada` — those are phantoms (see §28.2). The real path is
+`partidas.folio → facturas.folio + cve_trafico → traficos.trafico`.
+The helper chunks `.in()` by 500 to stay under PostgREST URL limits
+and tenant-scopes every hop.
+
+### 38.2 — Inverse direction (trafico → partidas)
+
+**❌ Don't (another phantom)**
+
+```ts
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('id, fraccion, descripcion, cantidad, valor_comercial')
+  .eq('cve_trafico', traficoId)   // phantom: partidas has no cve_trafico
+  .limit(2000)
+```
+
+**✅ Do (canonical 3-hop via shared helper)**
+
+```ts
+import { partidasByTrafico } from '@/lib/queries/partidas-by-trafico'
+
+const partidas = await partidasByTrafico(supabase, companyId, traficoId, {
+  limit: 2000,
+})
+// Each partida: id, folio, cve_producto, cantidad, precio_unitario,
+// fraccion, descripcion, umt, pais_origen, valor_comercial (computed).
+```
+
+**Why:** fraccion + descripcion live on `globalpc_productos`, not
+partidas. `partidasByTrafico` handles the 3-hop: trafico → facturas
+→ partidas → productos. `valor_comercial` computed per-partida from
+cantidad × precio_unitario (facturas carries folio-level valor, not
+partida-level).
+
+### 38.3 — Company display name
+
+**❌ Don't (3 phantom columns)**
+
+```ts
+const { data: c } = await supabase
+  .from('companies')
+  .select('name, razon_social, nombre_comercial')   // 2/3 are phantom
+  .eq('company_id', companyId)
+  .maybeSingle<{ name?: string; razon_social?: string; nombre_comercial?: string }>()
+
+const display =
+  c?.nombre_comercial ?? c?.razon_social ?? c?.name ?? 'Sin nombre'
+// razon_social + nombre_comercial don't exist. Query 400s.
+// display='Sin nombre' for every tenant.
+```
+
+**✅ Do (real column only)**
+
+```ts
+const { data: c } = await supabase
+  .from('companies')
+  .select('name')
+  .eq('company_id', companyId)
+  .maybeSingle<{ name: string | null }>()
+
+const display = c?.name ?? companyId   // fall back to slug, not a literal string
+```
+
+**Why:** `companies` has just `name` — see §28.2. When in doubt, use
+`cleanCompanyDisplayName(rawName)` from `src/lib/format/company-name.ts`
+to strip legal suffixes ("S.A. DE C.V.", "GRUPO", ...) for display.
+
+### 38.4 — IVA calculation (the #1 customs bug)
+
+**❌ Don't (flat rate — under-declares 5-15%)**
+
+```ts
+// Seen in pre-M10 drafts.
+const iva = invoice_value_mxn * 0.16
+// Flat 16% on invoice value. WRONG — doesn't include DTA + IGI in base.
+// Under-declares IVA owed to SAT. Patente exposure.
+```
+
+**✅ Do (cascading base via helper)**
+
+```ts
+import { calculatePedimento } from '@/lib/financial/calculations'
+import { getDTARates, getIVARate, getExchangeRate } from '@/lib/rates'
+
+const [rates, ivaRate, fx] = await Promise.all([
+  getDTARates(), getIVARate(), getExchangeRate(),
+])
+const calc = calculatePedimento({
+  valor_usd,
+  tipo_cambio: fx.rate,
+  regimen,           // 'A1' | 'IN' | 'IT' | ...
+  igi_rate,          // from fraction's tariff_rates entry
+  tmec_eligible,     // from certificado de origen status
+  rates,
+  iva_rate: ivaRate,
+})
+// calc.iva.iva_base_mxn == valor_aduana + DTA + IGI
+// calc.iva.iva_mxn     == base × iva_rate
+// calc.total_landed_mxn == all-in, cascade correct
+```
+
+**Why:** The SAT requires cascading base: `IVA = (valor_aduana + DTA
++ IGI) × iva_rate`. Getting this wrong means every pedimento
+under-declares IVA. See core-invariant #9. The helper also throws on
+`iva_rate > 1` (catches "passed 16 instead of 0.16"). Never hardcode
+rates — they come from `system_config` via the rates module (core
+invariant #17).
+
+### 38.5 — Client surface tone (certainty, not anxiety)
+
+**❌ Don't (MVE anxiety on client surface)**
+
+```ts
+// Seen in a pre-M15 client-facing surface draft.
+<div style={{ color: 'var(--portal-status-red-fg)' }}>
+  MVE vence en {days} días · ACCIÓN REQUERIDA
+</div>
+```
+
+**✅ Do (calm tone + operator-facing urgency only)**
+
+```ts
+// Silver chrome on /mi-cuenta; pair A/R number with Mensajería CTA.
+<AguilaMetric
+  label="Saldo pendiente"
+  value={fmtUSD(saldo)}
+  tone="neutral"
+  sub="¿dudas? Anabel responde"
+/>
+```
+
+**Why:** Client portal shows certainty, never anxiety. MVE countdowns,
+"overdue", "urgent" belong on operator surfaces only. See
+core-invariant #24 + `.claude/rules/client-accounting-ethics.md` +
+§35.2 tone vocabulary.
+
+### 38.6 — Tenant-scoped query (cross-tenant leak defense)
+
+**❌ Don't (forgot .eq company_id — cross-tenant leak)**
+
+```ts
+// Seen pre-Block EE in multiple sync scripts (2026-04-17 contamination).
+const { data: traficos } = await supabase
+  .from('traficos')
+  .select('*')
+  .order('fecha_cruce', { ascending: false })
+  .limit(100)
+// Service-role key bypasses RLS. No company_id filter = returns every
+// tenant's data. Real incident: Tornillo parts visible on EVCO's catalog.
+```
+
+**✅ Do (scoped helper)**
+
+```ts
+import { getScopedFrom } from '@/lib/queries/tenant-scoped'
+
+const { data: traficos } = await getScopedFrom(
+  supabase,
+  'traficos',
+  session.companyId,
+)
+  .select('trafico, pedimento, fecha_cruce')
+  .order('fecha_cruce', { ascending: false })
+  .limit(100)
+// company_id filter applied at construction. Throws on null companyId
+// unless mode='all-tenants' (admin oversight bypass).
+```
+
+**Why:** RLS is the hard wall, app-layer filter is defense-in-depth
+(core-invariant #14). The helper makes the right thing easy and the
+wrong thing impossible to write accidentally.
+
+### 38.7 — Anomaly rule addition
+
+**❌ Don't (inline magic in the detector)**
+
+```ts
+// Inside detectAnomalies:
+if (ratio > 3) {
+  anomalies.push({
+    kind: 'my_new_rule' as any,
+    subject: '...',
+    detail: 'something happened',
+    score: 1,   // arbitrary
+    occurred_at: new Date().toISOString(),
+    metadata: {},
+  })
+}
+// Missing: JSDoc rule doc, Spanish detail, sample-size guard,
+// score bounds (0..1), test coverage, UI label.
+```
+
+**✅ Do (follow the 7-step recipe from §34.3)**
+
+```ts
+// 1. Extend Anomaly.kind union with 'my_new_rule'
+// 2. Append rule block to detectAnomalies with:
+//    - Sample-size guard (≥3 prior, avoid noise)
+//    - Humanized Spanish detail
+//    - Score 0..1 (Math.min(1, magnitude/N))
+//    - Useful metadata for downstream
+// 3. Document in detectAnomalies JSDoc (rule list with thresholds)
+// 4. Write 3 tests: fires correctly · does NOT fire under guard
+//    · does NOT fire on negative variant
+// 5. Add anomalyKindLabel('my_new_rule') → Spanish label
+// 6. Optionally deep-link action in /admin/intelligence
+// 7. Run full gate (tsc, vitest, gsd-verify)
+```
+
+**Why:** Anomalies reach operators' eyes. Unbounded scores wreck the
+sort order; missing guards create noise fatigue; no test leaves the
+rule undocumented. See §34.3 for the full recipe.
+
+### 38.8 — Crossing-stream composition
+
+**❌ Don't (copy-paste the stream build across 3 call sites)**
+
+```ts
+// Same ~20 lines appeared in getCrossingInsights, predict-by-id,
+// and the admin page before extraction.
+const enriched = partidas
+  .map((p) => {
+    const link = p.folio != null ? links.byFolio.get(p.folio) : null
+    if (!link || !link.fecha_cruce) return null
+    return {
+      cve_producto: p.cve_producto,
+      cve_proveedor: p.cve_proveedor,
+      fecha_cruce: link.fecha_cruce,
+      semaforo:
+        link.semaforo === 0 || link.semaforo === 1 || link.semaforo === 2
+          ? (link.semaforo as SemaforoValue)
+          : null,
+    }
+  })
+  .filter((x): x is NonNullable<typeof x> => x !== null)
+```
+
+**✅ Do (pure composer)**
+
+```ts
+import { buildCrossingStream, projectForPartStreaks, projectForProveedorHealth }
+  from '@/lib/intelligence/crossing-stream'
+
+const stream = buildCrossingStream({ partidas, links, fraccionByCve })
+const streaks = computePartStreaks(projectForPartStreaks(stream))
+const prov    = computeProveedorHealth(projectForProveedorHealth(stream))
+```
+
+**Why:** Three copies of the composition drifted over time. One
+pure composer + four projection helpers centralizes the semantics
+(drop unfiled, coerce semaforo, optional fraccion). Shipped Day 2 of
+the Grok Build sprint — future intelligence signals pass through the
+same composer.
+
+### 38.9 — Predictor explanation rendering
+
+**❌ Don't (ad-hoc string concatenation per surface)**
+
+```ts
+// Inside the admin page — fine for one surface, bad when Mensajería,
+// Telegram, and email all want the same content.
+const topFactors = p.factors
+  .slice()
+  .sort((a, b) => Math.abs(b.delta_pp) - Math.abs(a.delta_pp))
+  .slice(0, 2)
+const body = `${p.summary}. ${topFactors.map((f) => f.detail).join(' · ')}.`
+```
+
+**✅ Do (structured renderer — pure, framework-agnostic)**
+
+```ts
+import {
+  explainVerdePrediction,
+  explainVerdePredictionOneLine,
+  explainVerdePredictionPlainText,
+} from '@/lib/intelligence/explain'
+
+// Structured output for any UI:
+const out = explainVerdePrediction(prediction)
+// { headline, probability_pct, confidence_band_label, bullets, meta }
+
+// Terse Telegram / list row (≤160 chars, auto-truncates):
+const line = explainVerdePredictionOneLine(prediction)
+
+// Plain-text email / PDF block:
+const text = explainVerdePredictionPlainText(prediction)
+```
+
+**Why:** Multiple consumers need the same factor breakdown in
+different formats. A pure renderer with three variants prevents each
+consumer from re-implementing the sort + tone + singular/plural logic.
+Tested exhaustively (17 tests in `explain.test.ts`).
+
+### 38.10 — Inline vs extract decision
+
+**When to inline:**
+- Genuinely one-off logic (single call site)
+- Depends on 3+ local variables — abstraction hides locality
+- Trivial: `.trim().toUpperCase()` doesn't need a helper
+
+**When to extract (into `src/lib/`):**
+- Same shape will appear in **2+ call sites** (second copy = extract)
+- Has a **non-obvious invariant**: tenant safety, cascading formula,
+  format normalization, multi-hop join
+- **Testable in isolation** — pure function, single concern
+- Will be **called by future agents** who shouldn't have to re-derive
+  the shape
+
+**Real extractions this repo has done:**
+
+| Primitive | Trigger | Location |
+|---|---|---|
+| `resolvePartidaLinks` | 3 drifting copies found in M12 phantom sweep | `src/lib/queries/partidas-trafico-link.ts` |
+| `partidasByTrafico` | Needed by pedimento export + preview + classification in same PR | `src/lib/queries/partidas-by-trafico.ts` |
+| `calculatePedimento` | Pre-emptive — cascading formula non-obvious | `src/lib/financial/calculations.ts` |
+| `buildCrossingStream` | 3 copies drifting across intelligence paths | `src/lib/intelligence/crossing-stream.ts` |
+| `cleanCompanyDisplayName` | MAFESA preservation fixture needed centralization | `src/lib/format/company-name.ts` |
+| `getScopedFrom` | Every tenant-scoped read was hand-rolling `.eq company_id` | `src/lib/queries/tenant-scoped.ts` |
+
+**Real inlines that stayed inline:**
+
+| Helper | Why inline | Location |
+|---|---|---|
+| `volumeTone(deltaPct)` | Used in 1 place, 1 var → string literal | `/admin/intelligence/page.tsx` |
+| `fraccionTone(pct)` | Single-use tone mapping | `/admin/intelligence/page.tsx` |
+| `anomalyKindLabel(kind)` | UI-specific Spanish label — would bloat lib | `/admin/intelligence/page.tsx` |
+
+**The rule**: "I'm typing this same shape for the second time" is the
+trigger. "I might need this later" is not.
+
+---
+
+## 39. Error Handling, Predictability & Safety Rules
+
+Every rule below exists because a silent failure cost us hours of
+confusion or a Telegram alert at 3 AM. The common thread: **failures
+must be visible OR explicitly tolerated — never both, never neither.**
+
+### 39.1 — The three failure modes
+
+Every function in this codebase falls into one of three modes:
+
+| Mode | When to use | Behavior |
+|---|---|---|
+| **Fail loud** | Business-critical calculations, tenant safety, schema contracts | Throw on invalid input; let the error propagate |
+| **Fail soft (logged)** | Cockpit SSR queries, optional enrichments, best-effort reads | Catch, log to `sync_log` / `logQuietFailure`, return default (0 / [] / null) |
+| **Refuse to calculate** | Any computation depending on stale/missing config (rates, FX, SAT values) | Throw a specific error before performing the calculation |
+
+Pick one per function. Mixing modes within a single function is the
+source of 80% of "the error disappeared and now it's back" bug reports.
+
+### 39.2 — Refuse-to-calculate pattern
+
+Any function computing financial values must **refuse** to proceed
+when input data is stale, missing, or out of expected range. Silent
+computation with stale data is worse than visible refusal.
+
+**Canonical example (`src/lib/rates.ts`):**
+
+```ts
+export async function getDTARates(): Promise<DTARates> {
+  const { data } = await supabase
+    .from('system_config')
+    .select('value, valid_to')
+    .eq('key', 'dta_rates')
+    .single()
+
+  if (!data) throw new Error('DTA rates not found in system_config')
+  if (data.valid_to && new Date(data.valid_to) < new Date()) {
+    throw new Error('DTA rates expired — update system_config')
+  }
+  return data.value as DTARates
+}
+```
+
+**Follow-up guard inside `calculateIVA`:**
+
+```ts
+if (iva_rate > 1) {
+  throw new Error(
+    `calculateIVA: iva_rate looks like a percentage (got ${iva_rate}). ` +
+      `Expected decimal ≤ 1 (e.g. 0.16).`,
+  )
+}
+```
+
+**Rules:**
+- Error messages are **specific** — they name the input and the
+  expected shape.
+- Error messages are in **English** (internal diagnostics) — user-
+  facing strings translate at the UI boundary.
+- Never use `throw new Error('something went wrong')`. If you need
+  to say "something went wrong," you don't have enough context to
+  write the line yet.
+
+### 39.3 — Fail-loud vs soft-wrapper strategy
+
+**Fail loud** (production throws reach users as a 500 → should be
+rare):
+- `lib/rates.ts` (missing/expired config)
+- `lib/financial/calculations.ts` (invalid inputs)
+- `lib/queries/tenant-scoped.ts` (null companyId in tenant mode)
+- `lib/auth/session-guards.ts` (forgery attempt → returns a 401
+  NextResponse, not a throw — but the effect is the same:
+  request aborts)
+
+**Fail soft** (with `logQuietFailure` so the error isn't invisible):
+
+```ts
+import { softCount, softData } from '@/lib/cockpit/safe-query'
+
+// Every SSR query on /inicio, /operador/inicio, /admin/eagle.
+const traficos = await softData(
+  supabase.from('traficos').select('trafico').eq('company_id', companyId).limit(10),
+  [],     // default value when the query fails
+  { label: 'cockpit.inicio.traficos' },   // routes to logQuietFailure
+)
+```
+
+**The contract:**
+- `softData` / `softCount` / `softFirst` swallow the error AND log it
+  to `sync_log` via `logQuietFailure`. They do NOT silently return
+  zero without a trace.
+- Use ONLY in places where one bad query must not crash the page
+  (cockpits). Everywhere else, fail loud.
+- Never wrap a `calculateIVA` / `calculateDTA` in a soft-wrapper.
+  Wrong numbers reaching a client are worse than a visible error.
+
+### 39.4 — Idempotency rules
+
+Every mutation that can be retried (cron scripts, API writes,
+Mensajería sends, pedimento submissions) must be **idempotent** —
+running it twice produces the same effect as running it once.
+
+**Primary key strategy:**
+- `workflow_events` with `trigger_id + event_type + payload-hash` —
+  upsert on conflict. Example: `permit_expiry_alert_60` for a
+  producto fires exactly once, even if the cron retries.
+- `operational_decisions` append-only — never deduplicated at write
+  (auditors want to see every AI decision, including retries).
+- `audit_log` append-only, same reason.
+- `leads_activities` idempotent on `(lead_id, event_type, stage_at)`.
+
+**Check before acting:**
+
+```ts
+// Inside a cron — already-sent alerts live in workflow_events.
+const { data: seen } = await supabase
+  .from('workflow_events')
+  .select('event_type, trigger_id')
+  .in('event_type', ['permit_expiry_alert_60', 'permit_expiry_alert_30'])
+  .in('trigger_id', candidates.map((c) => c.producto_id))
+const seenSet = new Set(
+  (seen ?? []).map((s) => `${s.trigger_id}:${s.event_type}`),
+)
+for (const c of candidates) {
+  const key = `${c.producto_id}:permit_expiry_alert_${c.tripwire}`
+  if (seenSet.has(key)) continue
+  await sendAlert(c)                // only fires once
+  await supabase.from('workflow_events').insert({ ... })
+}
+```
+
+**The rule**: if the operation could be retried (cron, user-initiated
+mutation with retry UI), design the deduplication before the write.
+Retrofitting idempotency after the fact is harder than adding a
+`unique index`.
+
+### 39.5 — Telegram alert contract
+
+Every PM2 cron script MUST:
+
+1. **Log its run** — `heartbeat_log` insert with script name + status
+2. **Fire a Telegram alert on failure** — RED emoji + script name +
+   specific error message
+3. **Fire a GREEN success ping** — only at defined intervals (daily
+   summary). Never on every run (alert fatigue).
+4. **Exit non-zero on failure** — let PM2 see the failure so it can
+   restart per its policy.
+
+**Canonical template** (`.claude/rules/operational-resilience.md`):
+
+```js
+import { sendTelegram } from './lib/telegram.js'
+import { logHeartbeat } from './lib/heartbeat.js'
+
+const SCRIPT_NAME = 'globalpc-delta-sync'
+
+async function main() {
+  // ... actual work ...
+  const rowsChanged = await syncGlobalpc()
+  return { rowsChanged }
+}
+
+main()
+  .then(async (result) => {
+    await logHeartbeat({ script: SCRIPT_NAME, status: 'success', meta: result })
+    // Daily summary only (suppress per-run green pings):
+    const hourUtc = new Date().getUTCHours()
+    if (hourUtc === 12) {
+      await sendTelegram(`🟢 ${SCRIPT_NAME}: synced ${result.rowsChanged} rows today.`)
+    }
+  })
+  .catch(async (err) => {
+    await logHeartbeat({ script: SCRIPT_NAME, status: 'failed', error: err.message })
+    await sendTelegram(`🔴 ${SCRIPT_NAME} failed: ${err.message}`)
+    process.exit(1)   // PM2 sees failure + can restart
+  })
+```
+
+**Verification:**
+
+```bash
+grep -c "sendTelegram" scripts/<new-script>.js   # >= 1
+grep -c "process.exit(1)" scripts/<new-script>.js   # >= 1
+grep -c "heartbeat" scripts/<new-script>.js   # >= 1
+```
+
+`scripts/alert-coverage-audit.js` gates this at ship time: 28 of 29
+PM2 scripts must have ≥ 3/4 failure signals. A new script without
+these will fail the alert-coverage ratchet.
+
+### 39.6 — 5-second cancellation window (automations)
+
+Every automation that sends a message to a client must:
+
+1. **Draft first, send second** — write to a `*_drafts` table with
+   status `'pending_tito_review'`
+2. **Surface to operator** for review
+3. **After approval**, queue with a **5-second cancellation window**
+   before actual send
+4. **Render the window visibly** — the operator sees a countdown and
+   a red "Cancelar" button
+
+Real example: `/admin/aprobar` + `Mensajería` composer + `drafts`
+auto-approve flow. The 5-second window is not cosmetic — Tito has
+actually cancelled in production during that window, and the draft
+was preserved.
+
+See `core-invariants.md #22` and `CLAUDE.md §APPROVAL GATE` for the
+authoritative rule.
+
+### 39.7 — 8-item definition of "done" for agent tasks
+
+Before you report a task complete, verify ALL of these:
+
+- [ ] **tsc --noEmit** — zero errors
+- [ ] **vitest run** — all suites green (including any new tests)
+- [ ] **gsd-verify --ratchets-only** — zero failures
+- [ ] **Pre-commit hook** — passes (runs automatically)
+- [ ] **Scope honored** — only surfaces you were asked to touch
+  changed
+- [ ] **New primitives documented** — §37 reference updated OR inline
+  JSDoc on the new exports
+- [ ] **Tests added** for any new pure function (≥3 tests each: happy
+  path + edge case + regression guard)
+- [ ] **Commit message atomic + descriptive** — `type(scope): what`
+  title + WHY body
+
+If any check fails, the task is **in progress**, not done. Don't
+report completion until all 8 are green.
+
+### 39.8 — Predictability principles
+
+**1. Same input → same output.** Pure functions (aggregators,
+format helpers, calculators) must be deterministic. If timezone
+matters, accept a `now` parameter and default to `Date.now()`.
+
+**2. No hidden I/O.** If a function reads from `fetch` or
+`supabase`, its name should make that obvious
+(`getCrossingInsights`, not `crossingInsights`). Pure helpers stay
+pure.
+
+**3. No magic constants.** Rates from `system_config`. Thresholds in
+named constants with JSDoc. `igi_rate = 0.05` without context is a
+code smell; `FALLBACK_IGI_RATE = 0.05` with "used when tariff_rates
+has no entry" comment is documentation.
+
+**4. Structured errors over generic throws.** Where an error might
+be caught and branched on, return a typed error shape
+(`{ code, message }`) instead of relying on `err.message` matching.
+See `ApiResponse<T>` in `src/lib/api/response.ts`.
+
+**5. Idempotency at the boundary.** Retries happen; plan for them.
+Every mutation that could fire twice needs deduplication — unique
+index, upsert on conflict, or a `.in()` check before insert.
+
+**6. Never bypass a ratchet.** If the hex-count ratchet fails, fix
+the hex. Don't bump the baseline up to paper over the regression.
+The baseline only goes DOWN — that's the whole contract. Same for
+`PHANTOM_BASELINE=0`, `scripts/silent-catch` baseline 153, etc.
+
+### 39.9 — The "loud but recoverable" pattern
+
+Some errors are BOTH loud (log + alert) AND recoverable (retry +
+fall-through). Pattern:
+
+```ts
+try {
+  const rate = await getExchangeRate()
+  return calculate(rate)
+} catch (err) {
+  // Loud: operator + on-call see this.
+  await sendTelegram(`🔴 FX lookup failed: ${err.message}. Using cached rate.`)
+  await logHeartbeat({
+    script: 'pedimento-calculator',
+    status: 'degraded',
+    error: err.message,
+  })
+  // Recoverable: fall back to last-known-good.
+  const fallback = await getLastKnownRate()
+  if (!fallback) throw err   // no fallback → re-throw loud
+  return calculate(fallback.rate)
+}
+```
+
+**Rule**: if you write a catch block, answer BOTH:
+- Is this recoverable? If yes, document the fall-back path.
+- Is this visible? If yes, where does the signal go (Telegram /
+  sync_log / logQuietFailure)?
+
+A bare `catch (err) {}` with no answer to either = deleted on sight.
+
+### 39.10 — Session guard contract
+
+Every API route starts with a session guard. The guards return
+`{ session, error }`; `error` is a `NextResponse` ready to return.
+
+```ts
+import { requireAdminSession, requireClientSession, requireOneOf }
+  from '@/lib/auth/session-guards'
+
+export async function GET(req: NextRequest) {
+  const { session, error } = await requireAdminSession()
+  if (error) return error
+  // session.role ∈ {admin, broker}, session.companyId set
+}
+```
+
+**Rules:**
+- Never parse the `portal_session` cookie inline — always route
+  through a guard.
+- Never read `user_role` / `company_id` from **raw cookies** — those
+  are forgeable. Always use `session.role` / `session.companyId`.
+- Admin override via `?company_id=` is legitimate ONLY after
+  `assertScopeMode(session.role, requestedMode)` check.
+
+See `core-invariants.md #14` and §33 layer 2.
+
+### 39.11 — When in doubt, fail loud
+
+Every time we've chosen "soft" when we should have chosen "loud," we
+paid for it. The phantom-column saga took 16 marathons to clean up
+because soft-wrappers swallowed 400s silently. The null-company_id
+leak took a 303,656-row retag because sync scripts swallowed missing
+inputs silently.
+
+**Default is loud.** Prove you need soft before choosing it.
+
+---

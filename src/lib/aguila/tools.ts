@@ -38,6 +38,11 @@ export type ToolName =
   | 'intelligence_scan'
   | 'draft_mensajeria'
   | 'learning_report'
+  | 'suggest_clasificacion'
+  | 'validate_pedimento'
+  | 'check_tmec_eligibility'
+  | 'search_supplier_history'
+  | 'find_missing_documents'
 
 /**
  * Anthropic tool definitions. Kept deliberately small so Haiku picks the
@@ -196,6 +201,79 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
         windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 7. Rango 1..90.' },
         clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
       },
+    },
+  },
+  {
+    name: 'suggest_clasificacion',
+    description:
+      'Sugiere la fracción arancelaria más probable para una descripción de producto, basada en el historial clasificado del propio cliente. Determinístico — nunca inventa fracciones. Úsalo cuando el usuario pregunte "¿qué fracción aplica para X?" o "clasifícame Y".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        description: { type: 'string', description: 'Descripción del producto en español.' },
+        topN: { type: 'number', description: 'Cantidad de fracciones a sugerir. Default 3, máximo 10.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+      required: ['description'],
+    },
+  },
+  {
+    name: 'validate_pedimento',
+    description:
+      'Validador de pedimento: revisa formato SAT con espacios, base IVA en cascada (valor_aduana + DTA + IGI), etiqueta de moneda y fracción con puntos. Refuse si las tasas del system_config están vencidas. Úsalo cuando el usuario comparta cifras y pida verificar.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        pedimentoNumber: { type: 'string', description: 'Número de pedimento en formato "DD AD PPPP SSSSSSS".' },
+        valorAduanaMxn: { type: 'number', description: 'Valor en aduana en MXN.' },
+        igiMxn: { type: 'number', description: 'IGI en MXN.' },
+        providedIvaMxn: { type: 'number', description: 'IVA declarado en el pedimento (MXN) para comparar.' },
+        dtaKey: { type: 'string', description: 'Clave de régimen DTA (A1, IN, IT). Default A1.' },
+        currency: { type: 'string', description: 'Moneda declarada en la factura: MXN o USD.' },
+        fraccion: { type: 'string', description: 'Fracción arancelaria en formato XXXX.XX.XX.' },
+      },
+      required: ['pedimentoNumber'],
+    },
+  },
+  {
+    name: 'check_tmec_eligibility',
+    description:
+      'Verifica elegibilidad T-MEC para una fracción + origen. Calcula ahorro estimado cuando se provee valor_aduana. Si la tarifa no está en catálogo responde "requiere verificación" — nunca fabrica tasas.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        fraccion: { type: 'string', description: 'Fracción arancelaria en formato XXXX.XX.XX.' },
+        origin: { type: 'string', description: 'País de origen (USA, MEX, CAN o nombre completo).' },
+        valorAduanaMxn: { type: 'number', description: 'Valor en aduana en MXN para estimar ahorro (opcional).' },
+      },
+      required: ['fraccion', 'origin'],
+    },
+  },
+  {
+    name: 'search_supplier_history',
+    description:
+      'Busca historial del proveedor (por RFC, nombre o alias) dentro del tenant: cruces recientes, % verde, aduana preferida y banda de riesgo. Útil antes de activar una nueva compra o al revisar un incidente.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        searchTerm: { type: 'string', description: 'RFC, nombre o alias del proveedor.' },
+        windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 365.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+      required: ['searchTerm'],
+    },
+  },
+  {
+    name: 'find_missing_documents',
+    description:
+      'Revisa el expediente de un tráfico y lista los tipos de documento faltantes (factura, COVE, packing list, BL/AWB, certificado de origen). Úsalo cuando el usuario pregunte "¿qué me falta para X?" o antes de enviar a pedimentación.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        traficoId: { type: 'string', description: 'Clave del tráfico (cve_trafico).' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+      required: ['traficoId'],
     },
   },
 ]
@@ -530,6 +608,16 @@ export async function runTool(
         return { tool, result: await execDraftMensajeria(args as DraftMensajeriaArgs, ctx) }
       case 'learning_report':
         return { tool, result: await execLearningReport(args as LearningReportArgs, ctx) }
+      case 'suggest_clasificacion':
+        return { tool, result: await execSuggestClasificacion(args as SuggestClasificacionArgs, ctx) }
+      case 'validate_pedimento':
+        return { tool, result: await execValidatePedimento(args as ValidatePedimentoArgs) }
+      case 'check_tmec_eligibility':
+        return { tool, result: await execCheckTmec(args as CheckTmecArgs) }
+      case 'search_supplier_history':
+        return { tool, result: await execSearchSupplierHistory(args as SearchSupplierHistoryArgs, ctx) }
+      case 'find_missing_documents':
+        return { tool, result: await execFindMissingDocs(args as FindMissingDocsArgs, ctx) }
       default:
         return { tool, result: null, error: `unknown_tool:${tool}` }
     }
@@ -1155,3 +1243,90 @@ export type {
   ToneGuardMetric,
   AnalyzeDecisionsOptions,
 } from './learning/loop'
+
+// =============================================================================
+// v2 expansion · 2026-04-22 — 5 new broker-value tools
+// =============================================================================
+//
+// Helpers live in ./tool-helpers/*. Each exec wraps the helper with the
+// tenant-scope guard (`resolveScopedCompanyId`) so clients can't override
+// scope via `clientFilter` and admins with an unknown filter are refused
+// rather than silently dropping to an unscoped query.
+
+import { suggestClasificacion } from './tool-helpers/suggest-clasificacion'
+import { validatePedimento } from './tool-helpers/validate-pedimento'
+import { checkTmecEligibility } from './tool-helpers/check-tmec'
+import { searchSupplierHistory } from './tool-helpers/supplier-history'
+import { findMissingDocuments } from './tool-helpers/find-missing-docs'
+
+interface SuggestClasificacionArgs { description?: string; topN?: number; clientFilter?: string }
+interface ValidatePedimentoArgs {
+  pedimentoNumber?: string
+  valorAduanaMxn?: number
+  igiMxn?: number
+  providedIvaMxn?: number
+  dtaKey?: string
+  currency?: 'MXN' | 'USD'
+  fraccion?: string
+}
+interface CheckTmecArgs { fraccion?: string; origin?: string; valorAduanaMxn?: number }
+interface SearchSupplierHistoryArgs { searchTerm?: string; windowDays?: number; clientFilter?: string }
+interface FindMissingDocsArgs { traficoId?: string; clientFilter?: string }
+
+async function execSuggestClasificacion(args: SuggestClasificacionArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  return suggestClasificacion(supabaseAdmin, companyId, {
+    description: String(args.description ?? ''),
+    topN: args.topN,
+  })
+}
+
+async function execValidatePedimento(args: ValidatePedimentoArgs) {
+  return validatePedimento({
+    pedimentoNumber: String(args.pedimentoNumber ?? ''),
+    valorAduanaMxn: args.valorAduanaMxn,
+    igiMxn: args.igiMxn,
+    providedIvaMxn: args.providedIvaMxn,
+    dtaKey: args.dtaKey,
+    currency: args.currency,
+    fraccion: args.fraccion,
+  })
+}
+
+async function execCheckTmec(args: CheckTmecArgs) {
+  return checkTmecEligibility(supabaseAdmin, {
+    fraccion: String(args.fraccion ?? ''),
+    origin: String(args.origin ?? ''),
+    valorAduanaMxn: args.valorAduanaMxn,
+  })
+}
+
+async function execSearchSupplierHistory(args: SearchSupplierHistoryArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  return searchSupplierHistory(supabaseAdmin, companyId, {
+    searchTerm: String(args.searchTerm ?? ''),
+    windowDays: args.windowDays,
+  })
+}
+
+async function execFindMissingDocs(args: FindMissingDocsArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  return findMissingDocuments(supabaseAdmin, companyId, {
+    traficoId: String(args.traficoId ?? ''),
+  })
+}
+
+// Re-export helpers so scripts + future API routes can call them directly
+// without going through the Anthropic tool dispatcher.
+export {
+  suggestClasificacion,
+  validatePedimento,
+  checkTmecEligibility,
+  searchSupplierHistory,
+  findMissingDocuments,
+}
+export type { ClasificacionResult, ClasificacionSuggestion } from './tool-helpers/suggest-clasificacion'
+export type { ValidatePedimentoResult, ValidationCheck } from './tool-helpers/validate-pedimento'
+export type { TmecEligibilityResult } from './tool-helpers/check-tmec'
+export type { SupplierHistoryResult, SupplierHistoryMatch } from './tool-helpers/supplier-history'
+export type { MissingDocsResult } from './tool-helpers/find-missing-docs'

@@ -1796,3 +1796,359 @@ parallel implementation lives forever.
 | 6 | `readFreshness` + `<FreshnessBanner />` | `src/lib/cockpit/freshness.ts` | Sync freshness signal + stale-data banner |
 | 7 | `logDecision` + `logOperatorAction` | `src/lib/decision-logger.ts`, `src/lib/operator-actions.ts` | Every mutation — audit trail |
 | 8 | `ok / notFound / validationError / ...` | `src/lib/api/response.ts` | Every route handler's return |
+| 9 | `partidasByTrafico` | `src/lib/queries/partidas-by-trafico.ts` | 3-hop trafico → partidas → productos (inverse of #2) |
+| 10 | `col / cols / realColumns` + tuples | `src/lib/schema-contracts.ts` | Compile-time phantom guard; any select() column typed against real schema |
+
+---
+
+## 31. Cross-link recipes — how every major entity joins to every other
+
+The portal's data model is a star around the **trafico** (a single
+customs crossing). Everything else orbits. This section is the
+authoritative map of how any entity reaches any other.
+
+### 31.1 — The star topology
+
+```
+                       ┌───────────────────────┐
+                       │     traficos (41)     │
+                       │ trafico · company_id  │
+                       │ pedimento · fecha_*   │
+                       └───────────┬───────────┘
+                                   │
+                    ┌──────────────┼──────────────────┐
+                    │              │                  │
+                    ▼              ▼                  ▼
+       ┌────────────────┐   ┌──────────────┐   ┌───────────────┐
+       │  globalpc_     │   │   entradas   │   │ expediente_   │
+       │  facturas (20) │   │     (39)     │   │ documentos(10)│
+       │ cve_trafico ──┼──┐│ trafico ─────┼──┐│ pedimento_id─┼──┐
+       │ folio          │  ││ (slug)       │  ││ (slug)       │  │
+       └────┬───────────┘  │└──────────────┘  │└───────────────┘ │
+            │              │                  │                  │
+            ▼              └──► trafico slug  │                  │
+     ┌──────────────┐                         │                  │
+     │  globalpc_   │                         │                  │
+     │ partidas(16) │                         │                  │
+     │ folio        │                         │                  │
+     │ cve_producto┼────────┐                 │                  │
+     │ cve_proveedor ──┐    │                 │                  │
+     └──────────────┘  │    │                 │                  │
+                       │    ▼                 │                  │
+                       │  ┌────────────────┐  │                  │
+                       │  │   globalpc_    │  │                  │
+                       │  │ productos (18) │  │                  │
+                       │  │ fraccion       │  │                  │
+                       │  │ descripcion    │  │                  │
+                       │  │ umt            │  │                  │
+                       │  └────────────────┘  │                  │
+                       │                      │                  │
+                       ▼                      ▼                  ▼
+              ┌─────────────────┐      (trafico slug resolves via trafico==X)
+              │   globalpc_     │
+              │ proveedores(15) │
+              │ cve_proveedor   │
+              │ nombre          │
+              │ id_fiscal       │
+              └─────────────────┘
+```
+
+Key: table names are boxes. Arrows show the join column. Column counts
+are parenthetical (from §28.2 SSOT).
+
+### 31.2 — Canonical recipes (copy-paste ready)
+
+**Recipe 1 — Given a trafico, list its fully-enriched partidas:**
+
+```ts
+import { partidasByTrafico } from '@/lib/queries/partidas-by-trafico'
+
+const partidas = await partidasByTrafico(supabase, companyId, traficoId, { limit: 2000 })
+// Each partida has: cve_producto, cantidad, precio_unitario, fraccion,
+// descripcion, umt, pais_origen, valor_comercial (computed).
+```
+
+**Recipe 2 — Given a partida (or batch), find its trafico + pedimento:**
+
+```ts
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
+
+const links = await resolvePartidaLinks(supabase, companyId, partidas)
+// links.byFolio.get(partida.folio) →
+//   { cve_trafico, pedimento, fecha_cruce, fecha_llegada, semaforo,
+//     fecha_facturacion, valor_comercial }
+// links.distinctCveTraficos → deduped list for batch operations
+```
+
+**Recipe 3 — Given a trafico, list its expediente documents:**
+
+```ts
+const { data: docs } = await supabase
+  .from('expediente_documentos')
+  .select('id, doc_type, file_name, file_url, uploaded_at, metadata')
+  .eq('pedimento_id', traficoId)   // trafico slug lives in pedimento_id
+  .eq('company_id', companyId)
+  .order('uploaded_at', { ascending: false })
+```
+
+**Recipe 4 — Given a trafico, list its entradas (arrivals):**
+
+```ts
+const { data: entradas } = await supabase
+  .from('entradas')
+  .select('cve_entrada, tipo_operacion, fecha_ingreso, fecha_llegada_mercancia, peso_bruto, cantidad_bultos')
+  .eq('trafico', traficoId)
+  .eq('company_id', companyId)
+  .order('fecha_ingreso', { ascending: false })
+```
+
+**Recipe 5 — Given a company, list its fracción histogram:**
+
+```ts
+const { data: productos } = await supabase
+  .from('globalpc_productos')
+  .select('cve_producto, fraccion, descripcion')
+  .eq('company_id', companyId)
+  .not('fraccion', 'is', null)
+  .limit(5000)
+// Aggregate by fraccion in JS. Productos is the ONLY real home of
+// fraccion — not partidas, not traficos.
+```
+
+**Recipe 6 — Given a partida, resolve its supplier name:**
+
+```ts
+import { resolveProveedorName } from '@/lib/proveedor-names'
+
+const { data: prov } = await supabase
+  .from('globalpc_proveedores')
+  .select('cve_proveedor, nombre, id_fiscal')   // NOT rfc
+  .eq('company_id', companyId)
+  .eq('cve_proveedor', partida.cve_proveedor)
+  .maybeSingle()
+
+const displayName = resolveProveedorName(partida.cve_proveedor, prov?.nombre)
+// Handles the PRV_#### fallback; never renders raw codes to UI.
+```
+
+**Recipe 7 — Given a company_id (slug), get the display name:**
+
+```ts
+const { data: company } = await supabase
+  .from('companies')
+  .select('name')    // NOT razon_social / nombre_comercial (both phantom)
+  .eq('company_id', companyId)
+  .maybeSingle()
+const displayName = company?.name ?? companyId
+```
+
+**Recipe 8 — Given a partida, get its trafico's pedimento with canonical formatting:**
+
+```ts
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
+import { formatPedimento } from '@/lib/format/pedimento'
+
+const links = await resolvePartidaLinks(supabase, companyId, [partida])
+const link = links.byFolio.get(partida.folio)
+// Storage is 7-digit consecutivo in traficos.pedimento; canonical
+// rendering needs patente/aduana/año context. For full shape:
+const { data: traf } = await supabase.from('traficos')
+  .select('patente, aduana, fecha_llegada').eq('trafico', link?.cve_trafico).maybeSingle()
+const year = traf?.fecha_llegada ? String(new Date(traf.fecha_llegada).getFullYear()).slice(2) : '26'
+const full = formatPedimento(link?.pedimento, '—', {
+  dd: traf?.patente ?? '', ad: traf?.aduana ?? '', pppp: year,
+})
+// Renders as "3596 24 26 6500247" — SAT canonical 4-segment form.
+```
+
+### 31.3 — When to NOT join
+
+- **Don't join partidas → traficos if you only need valor.** Compute
+  `cantidad × precio_unitario` on the partida itself. Facturas's
+  `valor_comercial` is folio-level (entire invoice), not partida-level.
+- **Don't join expediente → traficos just to render the trafico slug.**
+  It's already in `expediente_documentos.pedimento_id` (confusing name,
+  but that's the slug).
+- **Don't join traficos → facturas to get proveedor.** traficos has
+  `proveedores` (plural text). For a single-supplier trafico that's
+  enough; for multi-supplier, go via facturas.cve_proveedor → proveedores.
+
+---
+
+## 32. Anomaly patterns catalog
+
+Every anomaly the codebase has caught (and how to catch the next one).
+
+### 32.1 — Null-leak anomaly (M5)
+
+**Symptom:** A tenant-scoped table has rows with `company_id IS NULL`.
+
+**How it happens:** Sync script writes with a fallback `|| 'unknown'`
+that evaluates to an empty string, or the write skips the `company_id`
+field entirely.
+
+**How to catch:** `scripts/_m16-crosslink-audit.mjs` runs a null check
+across all 8 tenant-scoped tables. Block EE (M17) purged 303,656
+historical null-leak rows; the fix is in the write path now.
+
+**Block pattern:** `grep -rn "company_id: .*|| 'unknown'" scripts/`
+returns zero. Any fallback to a literal string in a company_id write
+is a M16-era regression.
+
+### 32.2 — Phantom-column anomaly (M11 → M16)
+
+**Symptom:** A `.from('table').select('col')` where `col` doesn't exist.
+Returns 400 from PostgREST; soft-query wrapper catches; user sees
+empty state with no error.
+
+**How to catch:**
+- Edit time: `src/lib/schema-contracts.ts` types — `col()` fails at
+  `tsc`.
+- Merge time: `scripts/audit-phantom-columns.mjs` + gsd-verify gate
+  12c — PHANTOM_BASELINE=0.
+- Ratchet: every run compares to baseline; any growth blocks ship.
+
+**Cure:** §28 of this handbook — phantom → real mapping + 2-hop/3-hop
+recipes.
+
+### 32.3 — Cross-tenant join anomaly
+
+**Symptom:** A query joins two tables by a non-unique key
+(`cve_producto`, `folio`) without filtering both sides by company_id.
+Result: a rare cross-client collision leaks data.
+
+**How to catch:** Every hop of every multi-table query applies
+`.eq('company_id', companyId)`. See `partidas-by-trafico.ts` for the
+reference pattern — 3 hops, 3 `.eq` filters.
+
+**Block pattern:** `partidasByTrafico` + `resolvePartidaLinks` both
+enforce this — use the helpers rather than rolling your own.
+
+### 32.4 — Silent soft-wrapper anomaly
+
+**Symptom:** `softCount()` / `softData()` returns 0/[] for a valid
+query that should have results. The error is logged via
+`logQuietFailure` but never surfaces to the UI.
+
+**How to catch:**
+- Dev: check browser console for `[soft-query]` log entries.
+- Prod: `sync_log` + `audit_log` capture errors. Grep for
+  `phantom` / `column does not exist`.
+
+**Cure:** The error message points straight at the problematic column.
+Cross-reference with §28.2 real-schema mapping.
+
+### 32.5 — Stale sync anomaly (M5)
+
+**Symptom:** `traficos.created_at` max age > 48 hours. The PM2 sync
+chain on Throne died silently.
+
+**How to catch:** `FreshnessBanner` on every client surface triggers
+at > 90 min stale. `/api/health/data-integrity` reports sync_log
+health. Telegram pipeline alerts fire before morning report.
+
+**Cure:** Operator: `pm2 restart globalpc-sync && pm2 save` on Throne.
+Code-side has nothing to fix; this is a process issue covered in
+`.claude/rules/operational-resilience.md`.
+
+### 32.6 — Format drift anomaly
+
+**Symptom:** A pedimento stored as "7002732" (7 digits only) or a
+fraccion as "2505909900" (10 digits, no dots) renders with the
+canonical format via the formatters. If a UI path bypasses the
+formatter and concatenates raw, the user sees the wrong shape.
+
+**How to catch:**
+- Always use `formatPedimento()` (see Recipe 8) and `formatFraccion()`.
+- Never inline `${row.pedimento}` — use the formatter.
+
+**Cure:** `src/lib/format/pedimento.ts` + `src/lib/format/fraccion.ts`
+handle every shape. Bare-15-digit, dotted, dotted-NICO, 7-digit-seq +
+defaults, all covered with tests.
+
+### 32.7 — Join cardinality anomaly
+
+**Symptom:** A `.maybeSingle()` on a table with duplicate keys returns
+500 at Supabase PostgREST level. Common on `globalpc_productos` which
+has legacy dupes per `(cve_producto, cve_cliente)`.
+
+**How to catch:** Never use `.maybeSingle()` on productos. Use
+`.order('created_at', { ascending: false }).limit(1).maybeSingle()`
+— the order+limit makes any single-row variant safe.
+
+**Cure:** See learned-rule in CLAUDE.md for the canonical deduplication
+pattern.
+
+---
+
+## 33. Guard-rail inventory (what blocks a regression)
+
+Every merge runs through these checks in order. Know the layer so you
+know what broke when a merge fails.
+
+### Layer 1 — Edit time (IDE + save)
+
+| Guard | File | What it catches |
+|---|---|---|
+| TypeScript strict | `tsconfig.json` | Any `: any` without linked issue, missing null checks, wrong types |
+| schema-contracts col/cols helpers | `src/lib/schema-contracts.ts` | Phantom column names at compile time |
+| Real-column tuples | `src/lib/schema-contracts.ts` | Any typo in a `.select()` string when wrapped in `cols()` — thrown in dev |
+
+### Layer 2 — Pre-commit (before commit lands)
+
+| Guard | Hook | What it catches |
+|---|---|---|
+| TypeScript | `.claude/hooks/pre-commit.sh` | Compile errors |
+| No `CRUD` string | pre-commit | Old brand name reintroduced |
+| No hardcoded `'9254'`/`'EVCO'` | pre-commit | Multi-tenant safety — hardcoded client ids |
+| No `alert()` | pre-commit | Modal via glass primitive instead |
+| No `console.log` | pre-commit | Use structured logger or remove |
+| Spanish lang tag | pre-commit | HTML `lang="es"` present |
+
+### Layer 3 — gsd-verify ratchets (before ship)
+
+| Gate | Baseline | What it catches |
+|---|---|---|
+| Working tree clean | N/A | Uncommitted tracked files shipping via `vercel --prod` |
+| Typecheck | 0 errors | Type safety |
+| ESLint | 0 errors | Lint clean |
+| Production build | N/A | Next.js build-time errors |
+| Tests | all green | Regression test fence |
+| RLS on tables | 0 unprotected | Tenant isolation |
+| No hardcoded hex | ratcheted ↓ | Design-system tokens only |
+| No hardcoded fontSize | ratcheted ↓ | `--aguila-fs-*` / `--portal-fs-*` tokens |
+| No hardcoded rates | 0 | `scripts/lib/rates.js` refuse-to-calculate |
+| Phantom scanner (**M12**) | 0 | Narrow `globalpc_partidas` phantoms |
+| **Phantom scanner (M15/M16) broad** | **0 post-M16** | Any phantom column on any tenant-scoped table |
+| scripts/ silent-catch | ratcheted ↓ | `.catch(() => {})` pattern pruning |
+| /mi-cuenta calm-tone | 0 red/amber | Client-accounting ethical contract |
+| Alert-coverage | ≥ 28/29 | PM2 cron script structured-failure signals |
+| Block-audit | plan complete | No deferrals without user approval |
+
+### Layer 4 — Live smoke (post-deploy)
+
+| Check | Endpoint | What it catches |
+|---|---|---|
+| Portal canary | `portal.renatozapata.com/` | Can't reach the portal |
+| Data integrity | `/api/health/data-integrity` | green / amber / red per tenant |
+| Intelligence feed | (soft) | AI tool layer works |
+| Auth check | `/login` | Session flow works |
+
+### Layer 5 — Runtime (always)
+
+| Guard | File | What it catches |
+|---|---|---|
+| softCount/softData/softFirst | `src/lib/cockpit/safe-query.ts` | Any Supabase error on SSR cockpit queries |
+| `logQuietFailure` | `src/lib/cockpit/safe-query.ts` | Surfaces swallowed errors to sync_log |
+| RLS `FOR ALL USING (false)` | migrations | Every tenant-scoped table has the ceiling |
+| App-layer company_id filter | every read | Defense-in-depth beyond RLS |
+| Session guards (`require*Session`) | `src/lib/auth/session-guards.ts` | Auth at every API route |
+| ApiResponse helpers | `src/lib/api/response.ts` | Consistent error shape |
+| 5s cancellation window on automations | various | Observable + interruptible by Tito |
+| Telegram alert on cron failure | every PM2 script | Silent failure blocked |
+
+**Six defenses, defense-in-depth.** Phantom-column regressions need to
+slip through layers 1, 2, and 3 to reach production. That's not going
+to happen on a well-maintained checkout.
+
+---

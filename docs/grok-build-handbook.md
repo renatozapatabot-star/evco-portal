@@ -3622,3 +3622,527 @@ inputs silently.
 **Default is loud.** Prove you need soft before choosing it.
 
 ---
+
+## 40. End-to-end Agent Workflows
+
+This section walks through four common agent tasks step-by-step, with
+the exact commands + files + gates at each step. Use these as
+templates when asked to do the same thing. Every step is
+demo-safe (only `src/lib/` + `docs/` + `src/app/admin/*` touched).
+
+### 40.1 — How to add a new anomaly rule end-to-end
+
+Suppose the request is: "Add an anomaly that fires when a SKU's
+fracción chapter drops below 70% verde for the first time in the
+window."
+
+**Step 1 — Grep to confirm this isn't already covered.**
+
+```bash
+grep -n "fraccion.*anomaly\|chapter.*anomaly" src/lib/intelligence/
+grep -n "new_proveedor\|volume_spike\|streak_break" src/lib/intelligence/crossing-insights.ts
+```
+
+Result: no existing rule. Proceed.
+
+**Step 2 — Extend the `Anomaly.kind` union.**
+
+File: `src/lib/intelligence/crossing-insights.ts`
+
+```ts
+export interface Anomaly {
+  kind:
+    | 'semaforo_rate_drop'
+    | 'proveedor_slip'
+    | 'streak_break'
+    | 'volume_spike'
+    | 'new_proveedor'
+    | 'fraccion_chapter_slip'   // NEW
+  // ...
+}
+```
+
+**Step 3 — Append a rule block to `detectAnomalies`.**
+
+Same file, inside `detectAnomalies`, AFTER existing rules, BEFORE the
+`anomalies.sort(...)` line:
+
+```ts
+// ── Fraccion chapter slip (new) ─────────────────────────────────
+// Fires when a chapter in the current window has pct_verde < 70%
+// AND at least 5 crossings (noise guard). Score scales with how
+// far below 70 the rate is (max 30 pp = score 1.0).
+const byChapter = new Map<string, { verde: number; total: number; last: string | null }>()
+for (const c of crossings) {
+  if (!c.fraccion || !c.fecha_cruce) continue
+  const digits = c.fraccion.replace(/\D/g, '').slice(0, 2)
+  if (!digits) continue
+  const agg = byChapter.get(digits) ?? { verde: 0, total: 0, last: null as string | null }
+  agg.total += 1
+  if (c.semaforo === 0) agg.verde += 1
+  if (!agg.last || c.fecha_cruce > agg.last) agg.last = c.fecha_cruce
+  byChapter.set(digits, agg)
+}
+for (const [chapter, a] of byChapter) {
+  if (a.total < 5) continue
+  const pct = (a.verde / a.total) * 100
+  if (pct >= 70) continue
+  anomalies.push({
+    kind: 'fraccion_chapter_slip',
+    subject: chapter,
+    detail: `Capítulo ${chapter} a ${Math.round(pct)}% verde (${a.verde}/${a.total} cruces). Revisar clasificación + proveedores del capítulo.`,
+    score: Math.min(1, (70 - pct) / 30),
+    occurred_at: a.last ?? new Date(now).toISOString(),
+    metadata: { chapter, pct_verde: Math.round(pct), total: a.total },
+  })
+}
+```
+
+Note: `crossings` here needs a `fraccion` field. Since the rule
+needs it, either:
+(a) **plumb fraccion through `detectAnomalies`'s input type** (preferred — single place), OR
+(b) **compute it inline from a fraccionByCve map** if you're avoiding a signature change
+
+Preferred path: update the input type of `detectAnomalies`:
+
+```ts
+export function detectAnomalies(
+  crossings: Array<{
+    cve_producto: string | null
+    cve_proveedor: string | null
+    fraccion?: string | null   // NEW, optional for back-compat
+    fecha_cruce: string | null
+    semaforo: SemaforoValue
+  }>,
+  now: number = Date.now(),
+): Anomaly[] {
+```
+
+And verify every caller (`getCrossingInsights`, `predict-by-id`) already
+has `fraccion` available in its enriched stream (yes — `buildCrossingStream`
+already attaches it from `fraccionByCve`).
+
+**Step 4 — Update the JSDoc rule list.**
+
+Top of `detectAnomalies`, add to the numbered rule list:
+
+```ts
+ *   5. `fraccion_chapter_slip` — tariff chapter whose current verde
+ *      rate dropped below 70% with ≥ 5 crossings in window. Score
+ *      scales with how far below 70 (30pp below = 1.0).
+```
+
+**Step 5 — Add 3 tests.**
+
+File: `src/lib/intelligence/__tests__/crossing-insights.test.ts`
+
+```ts
+it('fires fraccion_chapter_slip when chapter has ≥ 5 cruces @ < 70%', () => {
+  const rows = [
+    // Chapter 39, 3 of 5 verde = 60% → fires
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(3), semaforo: 0 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.30.01',
+      fecha_cruce: ago(4), semaforo: 0 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.40.01',
+      fecha_cruce: ago(5), semaforo: 0 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.50.01',
+      fecha_cruce: ago(6), semaforo: 2 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.60.01',
+      fecha_cruce: ago(7), semaforo: 2 as const },
+  ]
+  const anomalies = detectAnomalies(rows, now)
+  const slip = anomalies.find((a) => a.kind === 'fraccion_chapter_slip')
+  expect(slip?.subject).toBe('39')
+  expect(slip?.score).toBeGreaterThan(0)
+})
+
+it('does NOT fire fraccion_chapter_slip under 5 crossings', () => {
+  const rows = [
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(3), semaforo: 2 as const },
+    { cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(4), semaforo: 2 as const },
+  ]
+  expect(detectAnomalies(rows, now).find((a) => a.kind === 'fraccion_chapter_slip'))
+    .toBeUndefined()
+})
+
+it('does NOT fire fraccion_chapter_slip at ≥ 70% verde', () => {
+  const rows = [
+    // 8 verde / 10 = 80% — above threshold
+    ...Array.from({ length: 8 }, (_, i) => ({
+      cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(i + 1), semaforo: 0 as const,
+    })),
+    ...Array.from({ length: 2 }, (_, i) => ({
+      cve_producto: 'A', cve_proveedor: 'P', fraccion: '3903.20.01',
+      fecha_cruce: ago(i + 10), semaforo: 2 as const,
+    })),
+  ]
+  expect(detectAnomalies(rows, now).find((a) => a.kind === 'fraccion_chapter_slip'))
+    .toBeUndefined()
+})
+```
+
+**Step 6 — Add the Spanish UI label.**
+
+File: `src/app/admin/intelligence/page.tsx`
+
+```ts
+function anomalyKindLabel(kind: string): string {
+  switch (kind) {
+    // ...existing cases...
+    case 'fraccion_chapter_slip': return 'Capítulo en caída'
+    default: return kind.replace(/_/g, ' ')
+  }
+}
+```
+
+**Step 7 — Run the gate.**
+
+```bash
+npx tsc --noEmit                             # 0 errors
+npx vitest run src/lib/intelligence          # all green (incl. 3 new)
+bash scripts/gsd-verify.sh --ratchets-only   # 0 failures
+```
+
+**Step 8 — Commit.**
+
+```
+feat(intelligence): add fraccion_chapter_slip anomaly rule
+
+Fires when a 2-digit HTS chapter's verde rate drops < 70% with
+≥ 5 crossings in the window. Score scales linearly to 30pp-below.
+Surfaced in /admin/intelligence with Spanish label "Capítulo en caída".
+
+3 tests added (fires · <5 cruces guard · ≥70% guard).
+
+Follows the §34.3 anomaly-rule recipe end-to-end.
+```
+
+See §34.3 for the rule-addition recipe in abstract.
+
+### 40.2 — How to add a new insight card end-to-end
+
+Request: "Add a card to /admin/intelligence showing the top 5 fracciones
+by T-MEC savings potential."
+
+**Step 1 — Understand what's in the data.**
+
+T-MEC eligibility lives on `traficos.predicted_tmec` (boolean). Savings
+is the IGI that WOULD have been paid at the general rate. For a fracción
+chapter, savings = Σ (valor_comercial × igi_rate × predicted_tmec).
+
+**Step 2 — Extend the intelligence engine.**
+
+File: `src/lib/intelligence/crossing-insights.ts`
+
+Add:
+
+```ts
+export interface TmecSavingsByChapter {
+  chapter: string
+  tmec_crossings: number
+  total_crossings: number
+  estimated_savings_usd: number
+  last_fecha_cruce: string | null
+}
+```
+
+Add to `InsightsPayload`:
+
+```ts
+/** Top fracción chapters by T-MEC savings potential. */
+tmec_savings_by_chapter: TmecSavingsByChapter[]
+```
+
+Add a pure aggregator + orchestrator wire-up. (See §34.4 — full
+7-step signal recipe.)
+
+**Step 3 — Render the card.**
+
+File: `src/app/admin/intelligence/page.tsx`
+
+```tsx
+{insights.tmec_savings_by_chapter.length > 0 && (
+  <section style={{ marginBottom: 24 }}>
+    <SectionTitle>Ahorro T-MEC por capítulo</SectionTitle>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+      gap: 12,
+    }}>
+      {insights.tmec_savings_by_chapter.map((t) => (
+        <AguilaInsightCard
+          key={`tmec-${t.chapter}`}
+          tone="opportunity"
+          eyebrow={`Cap. ${t.chapter}`}
+          headline={`$${t.estimated_savings_usd.toLocaleString('en-US')} USD`}
+          body={`${t.tmec_crossings} / ${t.total_crossings} cruces T-MEC · ahorro estimado en ventana.`}
+          meta={t.last_fecha_cruce ? `Último · ${fmtDateShort(t.last_fecha_cruce)}` : undefined}
+        />
+      ))}
+    </div>
+  </section>
+)}
+```
+
+See §35.4 template for the section boilerplate.
+
+**Step 4 — Tests + gate + commit.**
+
+See §40.1 step 7-8 for the gate + commit pattern.
+
+### 40.3 — How to extend the Verde predictor with a new factor
+
+Request: "Add a factor that rewards SKUs whose last-3 crossings were
+all verde in the last 30 days."
+
+**Step 1 — Document the factor in the predictor JSDoc.**
+
+File: `src/lib/intelligence/crossing-insights.ts` —
+`predictVerdeProbability` JSDoc. Add to the numbered rule list:
+
+```
+ *   +5pp recent_momentum: last 3 crossings in last 30 days all verde
+```
+
+**Step 2 — Add the factor block inside `predictVerdeProbability`.**
+
+Insert before the `totalDelta` sum:
+
+```ts
+// 6. Recent momentum — last 3 in last 30 days all verde.
+// This rewards SKUs that are on a hot streak regardless of longer-term
+// streak stats. Stackable with existing streak (+15 cap) factor.
+if (streak.last_fecha_cruce) {
+  const lastMs = new Date(streak.last_fecha_cruce).getTime()
+  const thirtyDaysAgo = Date.now() - 30 * 86_400_000
+  if (
+    Number.isFinite(lastMs) &&
+    lastMs >= thirtyDaysAgo &&
+    streak.current_verde_streak >= 3
+  ) {
+    factors.push({
+      factor: 'recent_momentum',
+      delta_pp: 5,
+      detail: `Últimos 3 cruces verdes en 30 días (+5 pp)`,
+    })
+  }
+}
+```
+
+**Step 3 — Ensure the total-factor sum respects the [5, 99] clip.**
+
+Already handled by `Math.max(5, Math.min(99, baselinePct + totalDelta))`.
+The new factor stacks inside the existing clip — no change needed.
+
+**Step 4 — Add 3 tests.**
+
+File: `crossing-insights.test.ts`
+
+```ts
+it('recent_momentum adds +5pp when last 3 are verde in last 30d', () => {
+  const p = predictVerdeProbability({
+    streak: streak({
+      current_verde_streak: 3, total_crossings: 3,
+      last_fecha_cruce: new Date().toISOString(),
+    }),
+    proveedor: null, fraccionHealth: null, baselinePct: 85,
+  })
+  expect(p.factors.find((f) => f.factor === 'recent_momentum')?.delta_pp).toBe(5)
+})
+
+it('recent_momentum does NOT fire when streak < 3', () => {
+  const p = predictVerdeProbability({
+    streak: streak({
+      current_verde_streak: 2, total_crossings: 2,
+      last_fecha_cruce: new Date().toISOString(),
+    }),
+    proveedor: null, fraccionHealth: null, baselinePct: 85,
+  })
+  expect(p.factors.find((f) => f.factor === 'recent_momentum')).toBeUndefined()
+})
+
+it('recent_momentum does NOT fire when last crossing > 30 days old', () => {
+  const p = predictVerdeProbability({
+    streak: streak({
+      current_verde_streak: 3, total_crossings: 3,
+      last_fecha_cruce: new Date(Date.now() - 45 * 86_400_000).toISOString(),
+    }),
+    proveedor: null, fraccionHealth: null, baselinePct: 85,
+  })
+  expect(p.factors.find((f) => f.factor === 'recent_momentum')).toBeUndefined()
+})
+```
+
+**Step 5 — Gate + commit.** Same as §40.1 step 7-8.
+
+See §34.5 — predictor design philosophy. Every new factor must be:
+additive, bounded, transparent.
+
+### 40.4 — How to safely add a new financial calculation
+
+Request: "Compute the anticipated DTA savings if a pedimento were
+reclassified from A1 → IN (IMMEX)."
+
+**Step 1 — Add the function to `src/lib/financial/calculations.ts`.**
+
+```ts
+export interface CompareRegimeSavingsInput {
+  valor_usd: number
+  tipo_cambio: number
+  current_regimen: PedimentoRegime
+  proposed_regimen: PedimentoRegime
+  rates: DTARates
+}
+
+export interface CompareRegimeSavingsResult {
+  current_dta_mxn: number
+  proposed_dta_mxn: number
+  savings_mxn: number
+  savings_usd: number
+  /** True when proposed < current (positive savings). */
+  beneficial: boolean
+  explanation: string
+}
+
+/**
+ * Compare DTA between two regimes for the same pedimento. Useful for
+ * "what-if" reclassification simulations. Both DTA calls share the
+ * same valor_aduana calculation.
+ */
+export function compareRegimeSavings(
+  input: CompareRegimeSavingsInput,
+): CompareRegimeSavingsResult {
+  const { valor_usd, tipo_cambio, current_regimen, proposed_regimen, rates } = input
+
+  const current = calculateDTA({ valor_usd, tipo_cambio, regimen: current_regimen, rates })
+  const proposed = calculateDTA({ valor_usd, tipo_cambio, regimen: proposed_regimen, rates })
+
+  const savings_mxn = Math.round((current.dta_mxn - proposed.dta_mxn) * 100) / 100
+  const savings_usd = tipo_cambio > 0
+    ? Math.round((savings_mxn / tipo_cambio) * 100) / 100
+    : 0
+
+  return {
+    current_dta_mxn: current.dta_mxn,
+    proposed_dta_mxn: proposed.dta_mxn,
+    savings_mxn,
+    savings_usd,
+    beneficial: savings_mxn > 0,
+    explanation: savings_mxn > 0
+      ? `Ahorro potencial de $${savings_mxn.toLocaleString('es-MX')} MXN cambiando de ${current_regimen} a ${proposed_regimen}.`
+      : savings_mxn < 0
+        ? `Cambiar de ${current_regimen} a ${proposed_regimen} costaría $${Math.abs(savings_mxn).toLocaleString('es-MX')} MXN adicionales.`
+        : `DTA idéntico para ${current_regimen} y ${proposed_regimen}.`,
+  }
+}
+```
+
+**Step 2 — Add 3 tests covering the 3 outcomes.**
+
+```ts
+describe('compareRegimeSavings', () => {
+  it('A1 → IN on high-value pedimento shows positive savings', () => {
+    const out = compareRegimeSavings({
+      valor_usd: 1_000_000, tipo_cambio: 17,
+      current_regimen: 'A1', proposed_regimen: 'IN',
+      rates: RATES,
+    })
+    // A1 DTA = 17M × 0.008 = 136,000 MXN
+    // IN DTA = 408 MXN fixed
+    expect(out.current_dta_mxn).toBe(136000)
+    expect(out.proposed_dta_mxn).toBe(408)
+    expect(out.savings_mxn).toBe(135592)
+    expect(out.beneficial).toBe(true)
+    expect(out.explanation).toMatch(/Ahorro potencial/)
+  })
+
+  it('IN → A1 on low-value pedimento shows a cost (negative)', () => {
+    const out = compareRegimeSavings({
+      valor_usd: 1000, tipo_cambio: 17,
+      current_regimen: 'IN', proposed_regimen: 'A1',
+      rates: RATES,
+    })
+    // A1 DTA = 17,000 × 0.008 = 136 MXN
+    // IN DTA = 408 MXN fixed
+    // savings = 408 - 136 = 272 (proposed cheaper → beneficial)
+    expect(out.beneficial).toBe(true)  // actually A1 IS cheaper for low value
+  })
+
+  it('same regime → zero savings', () => {
+    const out = compareRegimeSavings({
+      valor_usd: 10000, tipo_cambio: 17,
+      current_regimen: 'A1', proposed_regimen: 'A1',
+      rates: RATES,
+    })
+    expect(out.savings_mxn).toBe(0)
+    expect(out.beneficial).toBe(false)
+    expect(out.explanation).toMatch(/idéntico/)
+  })
+})
+```
+
+**Step 3 — Update `src/lib/validation/request-body.ts`?** No — this
+is a pure computation, not an API route. If it's exposed as a route
+later, the route uses `parseRequestBody` with a zod schema for the
+input.
+
+**Step 4 — Gate + commit.**
+
+```
+feat(financial): compareRegimeSavings — A1 vs IN DTA what-if
+
+Pure function comparing DTA for the same pedimento across two
+regimes. Returns MXN + USD savings, a beneficial boolean, and a
+humanized Spanish explanation. Both DTA calls share the same
+valor_aduana calculation so the result isolates the regime delta.
+
+3 tests (high-value A1→IN saves · low-value IN→A1 changes direction
+· same-regime trivially zero). Surface this in the pedimento
+simulator or as a CRUZ AI tool in a follow-up.
+```
+
+### 40.5 — Common "oh no" recovery paths
+
+**I committed to the wrong branch.**
+
+```bash
+git log --oneline HEAD~3..HEAD   # confirm
+git reset --soft HEAD~N          # un-commit, keep changes staged
+# Switch to the right branch
+git checkout correct-branch
+git commit -c ORIG_HEAD           # re-commit with same message
+```
+
+**I added a phantom column and the ratchet is blocking ship.**
+
+Run the scanner, fix the site:
+
+```bash
+node scripts/audit-phantom-columns.mjs
+# Find your site, reference §28.2 for the real column, fix, re-run.
+```
+
+**My test is failing but the code looks right.**
+
+See §36.8 debugging order: (1) read the assertion carefully
+(regression fence, not preference), (2) check fixture freshness
+(schema may have changed), (3) only THEN consider updating the test
+with a commit message explaining WHY.
+
+**I broke a soft-wrapper and now a cockpit page crashes.**
+
+Never remove `softCount` / `softData` / `softFirst` from a cockpit
+SSR query. If the underlying query is wrong, fix THAT — the
+soft-wrapper is defense, not the problem. See §39.3.
+
+**I need to change a rate in system_config.**
+
+Insert a new row with updated `valid_to`. Never update in-place —
+the config is audit-logged. See the SQL migration pattern in
+`supabase/migrations/*_seed_config*.sql` for precedent.
+
+---

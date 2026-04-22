@@ -4956,3 +4956,223 @@ decisions from other workflows.
 | #4 Mensajería draft composer | When `band_es === 'baja'` + active trafico → auto-draft to operator inbox; Tito approves before client send | §43.5 example |
 | #5 Learning loop | Compare past predictions against actual `semaforo` outcomes; surface misses to tune rule weights in Phase 4 | new `src/lib/intelligence/learning.ts` |
 
+
+## §45 — Decision Logger (Phase 3 #3)
+
+Persistent record of every agent decision + CRUZ AI tool call.
+Foundation for the Phase 3 #5 learning loop: we can't measure rule
+accuracy if we don't store what the agent proposed and compare it
+against reality.
+
+### §45.1 — Files
+
+| File | Role |
+|---|---|
+| `supabase/migrations/20260422120000_agent_decisions_tool_columns.sql` | Adds tool_name/tool_input/tool_output/human_feedback/outcome/outcome_recorded_at columns + two indexes |
+| `src/lib/intelligence/decision-log.ts` | The logger module — `logDecision`, `withDecisionLog`, `getRecentDecisions`, `getDecisionHistory`, `recordOutcome`, `recordHumanFeedback`, `truncateJson` |
+| `src/lib/intelligence/__tests__/decision-log.test.ts` | 22 unit tests |
+| `src/lib/aguila/__tests__/tools.decision-log.test.ts` | 6 integration tests — every CRUZ AI exec tool actually writes a row |
+| `scripts/morning-briefing.js` | Updated to route its own write through `logDecision` so the briefing shows up in the same query path |
+
+### §45.2 — Schema extensions (all nullable)
+
+```sql
+ALTER TABLE agent_decisions
+  ADD COLUMN IF NOT EXISTS tool_name    text,         -- 'analyze_trafico', 'morning_briefing', …
+  ADD COLUMN IF NOT EXISTS tool_input   jsonb,        -- structured call arguments
+  ADD COLUMN IF NOT EXISTS tool_output  jsonb,        -- structured response (truncated ≤ 8 KB)
+  ADD COLUMN IF NOT EXISTS human_feedback  jsonb,     -- { sentiment, note_es, reviewer_id, reviewed_at, corrected_action_es }
+  ADD COLUMN IF NOT EXISTS outcome              text, -- 'verde' | 'amarillo' | 'rojo' | 'approved' | 'rejected' | 'ignored'
+  ADD COLUMN IF NOT EXISTS outcome_recorded_at  timestamptz;
+
+CREATE INDEX agent_decisions_company_created_idx
+  ON agent_decisions (company_id, created_at DESC);
+
+CREATE INDEX agent_decisions_tool_created_idx
+  ON agent_decisions (tool_name, created_at DESC)
+  WHERE tool_name IS NOT NULL;
+```
+
+All columns are nullable — legacy rows (pre-Phase-3 cron decisions
+from `cruz-agent.js` etc.) coexist unchanged. No backfill required.
+
+### §45.3 — The five primitives
+
+```ts
+import {
+  logDecision,
+  withDecisionLog,
+  getRecentDecisions,
+  getDecisionHistory,
+  recordOutcome,
+  recordHumanFeedback,
+} from '@/lib/intelligence/decision-log'
+```
+
+**`logDecision(supabase, entry)`** — raw insert. Returns inserted id or
+`null` on failure (error is logged, never thrown). Use when you already
+have a prepared entry; most callers should prefer `withDecisionLog`.
+
+**`withDecisionLog(supabase, ctx, fn)`** — higher-order wrapper. Runs
+`fn()`, records:
+  - `processing_ms` = elapsed wall-clock
+  - `tool_output` = return value (truncated if > 8 KB JSON)
+  - `decision` = headline picked from `output.data.headline_es` or
+    `output.summary_es` (or an error label if `fn` threw)
+  - `action_taken` = `'completed'` or `'error:<message>'`
+  - Re-throws the caller's error unchanged.
+
+**`getRecentDecisions(supabase, companyId, { limit? })`** — latest N
+decisions for a tenant (default 20, clamped to [1, 500]). Order:
+`created_at DESC`.
+
+**`getDecisionHistory(supabase, companyId, opts)`** — filtered query.
+Supported filters: `toolName`, `workflow`, `outcome`, `outcomePending`,
+`before`, `after`, `limit`.
+
+**`recordOutcome(supabase, decisionId, outcome)`** — late-binding write.
+Phase 3 #5 learning loop calls this when a predicted-verde SKU actually
+crosses.
+
+**`recordHumanFeedback(supabase, decisionId, feedback)`** — reviewer
+capture. Shape: `{ sentiment, note_es?, reviewer_id?, corrected_action_es? }`.
+`reviewed_at` is auto-set if omitted.
+
+### §45.4 — Where logging happens today
+
+Every CRUZ AI exec tool goes through `withDecisionLog` (Phase 3 #1
+tools are now fully wired):
+
+| Tool | workflow | tool_name | trigger_id |
+|---|---|---|---|
+| `analyze_trafico` | `cruz_ai_chat` | `analyze_trafico` | tráfico id |
+| `analyze_pedimento` | `cruz_ai_chat` | `analyze_pedimento` | pedimento number |
+| `tenant_anomalies` | `cruz_ai_chat` | `tenant_anomalies` | (null) |
+| `intelligence_scan` | `cruz_ai_chat` | `intelligence_scan` | (null) |
+| Morning briefing | `morning_briefing` | `morning_briefing` | `morning_briefing:YYYY-MM-DD` |
+
+Standalone library calls (`analyzeTrafico(sb, …)` etc. called directly
+from scripts / API routes) do NOT auto-log — the caller threads logging
+by wrapping with `withDecisionLog`. This keeps the library primitives
+pure and opt-in for logging.
+
+### §45.5 — Example usage
+
+#### Script — wrap an ad-hoc agent call
+
+```ts
+import { runIntelligenceAgent } from '@/lib/intelligence/agent'
+import { withDecisionLog } from '@/lib/intelligence/decision-log'
+
+const report = await withDecisionLog(
+  supabase,
+  {
+    companyId: 'evco',
+    toolName: 'tenant_scan',
+    workflow: 'weekly_deep_review',
+    triggerType: 'script',
+    cycleId: `weekly-${date}`,
+    toolInput: { windowDays: 30 },
+  },
+  () => runIntelligenceAgent(supabase, 'evco', 'tenant_scan', { windowDays: 30 }),
+)
+```
+
+#### Admin route — review recent decisions
+
+```ts
+import { getRecentDecisions } from '@/lib/intelligence/decision-log'
+
+const decisions = await getRecentDecisions(supabase, session.companyId, {
+  limit: 50,
+})
+return Response.json({ decisions })
+```
+
+#### Feedback capture — operator says "good call"
+
+```ts
+import { recordHumanFeedback } from '@/lib/intelligence/decision-log'
+
+await recordHumanFeedback(supabase, decisionId, {
+  sentiment: 'positive',
+  note_es: 'Ursula confirmó que sí había problema con ese proveedor.',
+  reviewer_id: session.userId,
+})
+```
+
+#### Learning loop — record actual outcome
+
+```ts
+import { recordOutcome } from '@/lib/intelligence/decision-log'
+
+// 3 days after the prediction, we observe the real semáforo value.
+await recordOutcome(supabase, decisionId, 'rojo')
+// Phase 3 #5 learning loop can now join prediction vs outcome.
+```
+
+### §45.6 — Tenant isolation contract
+
+- Every query (`getRecentDecisions`, `getDecisionHistory`) requires
+  `companyId` as a positional arg. Empty/missing → returns `[]`.
+- Writes carry `company_id` explicitly via the entry object. The
+  migration preserves the `company_id NOT NULL` invariant from Block EE.
+- The two supporting indexes (`agent_decisions_company_created_idx`,
+  `agent_decisions_tool_created_idx`) make the common query patterns
+  (latest-N per tenant, history by tool name) sub-millisecond.
+
+### §45.7 — Size + safety discipline
+
+- **`truncateJson`** runs on `tool_input` + `tool_output` at insert
+  time. Threshold = 8 KB UTF-8 bytes. Over-limit payloads become
+  `{ _truncated: true, _original_bytes, _preview }` — the full
+  response never lands in the row, so a misbehaving tool can't bloat
+  the table.
+- **Insert failures are swallowed** with a `console.error` trace.
+  Telemetry that breaks the caller is worse than telemetry that
+  occasionally misses a row.
+- **Thrown errors are re-thrown** by `withDecisionLog` so the caller
+  sees the same stack trace; only the logging side-effect swallows.
+- **Secrets never leak.** The tool layer never stores service-role
+  keys / session tokens in `tool_input` because the exec wrappers
+  only pass the user-facing args (traficoId, clientFilter, etc.).
+
+### §45.8 — The learning loop (Phase 3 #5 preview)
+
+Once decisions have real outcomes attached, the loop can:
+
+```ts
+// Pull predictions from the last 30 days that now have outcomes.
+const scored = await getDecisionHistory(supabase, 'evco', {
+  toolName: 'analyze_trafico',
+  after: thirtyDaysAgo,
+  outcome: undefined, // we want BOTH pending + completed, filter below
+})
+const completed = scored.filter(r => r.outcome != null)
+
+// For each, compare predicted band vs actual outcome.
+// Surface misses (predicted 'high' band → actual 'rojo') so the
+// predictor weights can be tuned in a Phase 4 learning block.
+```
+
+### §45.9 — Running the migration
+
+Local (against linked dev project):
+```bash
+npx supabase db push
+# verify — should show 6 new columns on agent_decisions
+```
+
+The migration is idempotent (`ADD COLUMN IF NOT EXISTS`,
+`CREATE INDEX IF NOT EXISTS`) — safe to re-run. No backfill
+required since every new column is nullable.
+
+### §45.10 — Where to read next
+
+| Task | Read |
+|---|---|
+| Write a new agent cron that logs | §42.5 + §45.3 `withDecisionLog` |
+| Wire a feedback UI | §45.3 `recordHumanFeedback` + `.claude/rules/client-accounting-ethics.md` for copy tone |
+| Query decision history for analytics | §45.3 `getDecisionHistory` |
+| Phase 3 #5 learning loop | §45.8 preview |
+

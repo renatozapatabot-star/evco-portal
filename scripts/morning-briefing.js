@@ -53,6 +53,7 @@ const { runJob } = require('./lib/job-runner')
 // Lazy-require TS modules after tsx is registered so the loader catches them.
 const tools = require('../src/lib/aguila/tools')
 const { composeMorningBriefing } = require('../src/lib/aguila/briefing')
+const { logDecision } = require('../src/lib/intelligence/decision-log')
 
 // ── Args ───────────────────────────────────────────────────────────
 
@@ -122,29 +123,24 @@ async function sendInternalTelegram(html) {
  * used by scripts/cruz-agent.js so downstream analytics + learning-loop
  * queries (Phase 3 #5) can union these rows with the rest.
  */
-async function logDecision(supabase, entry, actionTaken, processingMs) {
-  const row = {
+async function persistBriefingDecision(supabase, briefing, actionTaken, processingMs) {
+  // Route through the Phase 3 #3 logger so the briefing is queryable
+  // alongside every CRUZ AI tool call + future agent runs.
+  await logDecision(supabase, {
     cycle_id: `morning-briefing-${Date.now()}`,
-    trigger_type: entry.trigger_type,
-    trigger_id: entry.trigger_id,
-    company_id: entry.company_id,
-    workflow: entry.workflow,
-    decision: entry.decision,
-    reasoning: entry.reasoning,
-    confidence: entry.confidence,
-    autonomy_level: entry.autonomy_level,
+    trigger_type: briefing.decision_log_entry.trigger_type,
+    trigger_id: briefing.decision_log_entry.trigger_id,
+    company_id: briefing.decision_log_entry.company_id,
+    workflow: briefing.decision_log_entry.workflow,
+    tool_name: 'morning_briefing',
+    tool_output: { text_plain: briefing.text_plain, degraded: briefing.degraded },
+    decision: briefing.decision_log_entry.decision,
+    reasoning: briefing.decision_log_entry.reasoning,
+    confidence: briefing.decision_log_entry.confidence,
+    autonomy_level: briefing.decision_log_entry.autonomy_level,
     action_taken: actionTaken,
     processing_ms: processingMs,
-  }
-  // Swallow insert errors — learning evidence is nice-to-have, not
-  // critical for today's briefing. The runJob heartbeat still fires
-  // a Telegram alert on any harder failure via process.exit(1).
-  await supabase
-    .from('agent_decisions')
-    .insert(row)
-    .then(() => {}, (err) => {
-      console.error('[log] agent_decisions insert failed:', err?.message ?? String(err))
-    })
+  })
 }
 
 // ── Main ───────────────────────────────────────────────────────────
@@ -203,10 +199,10 @@ runJob('morning-briefing', async () => {
     ? 'telegram_sent'
     : `send_failed:${sendResult.reason}`
 
-  // 4. Persist the decision.
-  await logDecision(
+  // 4. Persist the decision via the shared Phase 3 #3 logger.
+  await persistBriefingDecision(
     supabase,
-    briefing.decision_log_entry,
+    briefing,
     actionTaken,
     Date.now() - startedAt,
   )

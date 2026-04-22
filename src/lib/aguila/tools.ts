@@ -10,6 +10,7 @@ import {
 } from '@/lib/intelligence/agent'
 import type { Recommendation } from '@/lib/intelligence/recommend'
 import type { FullCrossingInsight } from '@/lib/intelligence/full-insight'
+import { withDecisionLog } from '@/lib/intelligence/decision-log'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -899,25 +900,74 @@ async function resolveScopedCompanyId(
 
 async function execAnalyzeTrafico(args: AnalyzeTraficoArgs, ctx: AguilaCtx) {
   const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
-  return analyzeTrafico(supabaseAdmin, companyId, String(args.traficoId ?? ''))
+  const traficoId = String(args.traficoId ?? '')
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'analyze_trafico',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      triggerId: traficoId || undefined,
+      toolInput: { traficoId, clientFilter: args.clientFilter ?? null },
+    },
+    () => analyzeTrafico(supabaseAdmin, companyId, traficoId),
+  )
 }
 
 async function execAnalyzePedimento(args: AnalyzePedimentoArgs, ctx: AguilaCtx) {
   const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
-  return analyzePedimento(supabaseAdmin, companyId, String(args.pedimentoNumber ?? ''))
+  const pedimentoNumber = String(args.pedimentoNumber ?? '')
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'analyze_pedimento',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      triggerId: pedimentoNumber || undefined,
+      toolInput: { pedimentoNumber, clientFilter: args.clientFilter ?? null },
+    },
+    () => analyzePedimento(supabaseAdmin, companyId, pedimentoNumber),
+  )
 }
 
 async function execTenantAnomalies(args: TenantAnomaliesArgs, ctx: AguilaCtx) {
   const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
-  return getTenantAnomalies(supabaseAdmin, companyId, {
-    windowDays: args.windowDays,
-  })
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'tenant_anomalies',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      toolInput: { windowDays: args.windowDays ?? null, clientFilter: args.clientFilter ?? null },
+    },
+    () => getTenantAnomalies(supabaseAdmin, companyId, {
+      windowDays: args.windowDays,
+    }),
+  )
 }
 
 async function execIntelligenceScan(args: IntelligenceScanArgs, ctx: AguilaCtx) {
   const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
-  return getFullIntelligence(supabaseAdmin, companyId, args.query, {
-    windowDays: args.windowDays,
-    topFocusCount: args.topFocusCount,
-  })
+  return withDecisionLog(
+    supabaseAdmin,
+    {
+      companyId,
+      toolName: 'intelligence_scan',
+      workflow: 'cruz_ai_chat',
+      triggerType: 'chat',
+      toolInput: {
+        query: args.query ?? null,
+        windowDays: args.windowDays ?? null,
+        topFocusCount: args.topFocusCount ?? null,
+        clientFilter: args.clientFilter ?? null,
+      },
+    },
+    () => getFullIntelligence(supabaseAdmin, companyId, args.query, {
+      windowDays: args.windowDays,
+      topFocusCount: args.topFocusCount,
+    }),
+  )
 }

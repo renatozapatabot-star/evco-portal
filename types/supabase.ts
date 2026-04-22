@@ -1941,6 +1941,8 @@ export type Database = {
           is_baseline: boolean | null
           metric_name: string | null
           metrics: Json | null
+          p10: number | null
+          p90: number | null
           percentile: number | null
           period: string | null
           sample_size: number | null
@@ -1960,6 +1962,8 @@ export type Database = {
           is_baseline?: boolean | null
           metric_name?: string | null
           metrics?: Json | null
+          p10?: number | null
+          p90?: number | null
           percentile?: number | null
           period?: string | null
           sample_size?: number | null
@@ -1979,6 +1983,8 @@ export type Database = {
           is_baseline?: boolean | null
           metric_name?: string | null
           metrics?: Json | null
+          p10?: number | null
+          p90?: number | null
           percentile?: number | null
           period?: string | null
           sample_size?: number | null
@@ -11115,6 +11121,36 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_trade_index_client_position_90d: {
+        Row: {
+          aduana: string | null
+          avg_clearance_days: number | null
+          company_id: string | null
+          computed_at: string | null
+          median_clearance_days: number | null
+          oficina: string | null
+          shipment_count: number | null
+          tmec_rate: number | null
+          total_value_usd: number | null
+        }
+        Relationships: []
+      }
+      mv_trade_index_lane_90d: {
+        Row: {
+          aduana: string | null
+          avg_clearance_days: number | null
+          computed_at: string | null
+          distinct_company_count: number | null
+          median_clearance_days: number | null
+          oficina: string | null
+          p10_clearance_days: number | null
+          p90_clearance_days: number | null
+          shipment_count: number | null
+          tmec_rate: number | null
+          total_value_usd: number | null
+        }
+        Relationships: []
+      }
       pedimentos_assembled: {
         Row: {
           aduana: string | null
@@ -11238,6 +11274,22 @@ export type Database = {
         }
         Relationships: []
       }
+      v_trade_index_public: {
+        Row: {
+          aduana: string | null
+          avg_clearance_days: number | null
+          computed_at: string | null
+          distinct_company_count: number | null
+          median_clearance_days: number | null
+          oficina: string | null
+          p10_clearance_days: number | null
+          p90_clearance_days: number | null
+          shipment_count: number | null
+          tmec_rate: number | null
+          total_value_usd: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       find_classification_patterns: {
@@ -11270,6 +11322,7 @@ export type Database = {
       }
       get_kpi_intelligence: { Args: { p_company_id: string }; Returns: Json }
       normalize_proveedor: { Args: { raw: string }; Returns: string }
+      refresh_trade_index: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

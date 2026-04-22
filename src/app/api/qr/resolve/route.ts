@@ -92,11 +92,23 @@ export async function POST(request: NextRequest) {
 
   // Fetch a lightweight summary so the client can render a confirmation
   // toast ("TRF-001 · EVCO Plastics") before redirecting.
+  // traficos real columns: trafico (ref string) + company_id. No trafico_id,
+  // no cliente scalar. Resolve cliente name via companies.name from company_id.
   const { data: traficoRow } = await supabase
     .from('traficos')
-    .select('trafico_id, cliente, company_id')
-    .eq('trafico_id', outcome.data.traficoId)
-    .maybeSingle<{ trafico_id: string; cliente: string | null; company_id: string | null }>()
+    .select('trafico, company_id')
+    .eq('trafico', outcome.data.traficoId)
+    .maybeSingle<{ trafico: string; company_id: string | null }>()
+
+  let clienteName: string | null = null
+  if (traficoRow?.company_id) {
+    const { data: companyRow } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('company_id', traficoRow.company_id)
+      .maybeSingle<{ name: string | null }>()
+    clienteName = companyRow?.name ?? null
+  }
 
   await logDecision({
     trafico: outcome.data.traficoId,
@@ -116,8 +128,8 @@ export async function POST(request: NextRequest) {
       traficoId: outcome.data.traficoId,
       entradaId: outcome.data.entradaId,
       trafico: {
-        ref: traficoRow?.trafico_id ?? outcome.data.traficoId,
-        cliente: traficoRow?.cliente ?? null,
+        ref: traficoRow?.trafico ?? outcome.data.traficoId,
+        cliente: clienteName,
       },
     },
     error: null,

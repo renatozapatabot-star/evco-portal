@@ -269,16 +269,19 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
   const proveedorMap = new Map<string, ProveedorEnrichment>()
   for (const batch of chunk(cveProveedoresNeeded, 1000)) {
     if (batch.length === 0) continue
+    // globalpc_proveedores real columns: cve_proveedor, nombre, id_fiscal
+    // (NOT rfc — that column is a phantom; M15 sweep). id_fiscal carries
+    // the RFC for MX suppliers + the foreign tax ID for non-MX suppliers.
     const res = await supabase
       .from('globalpc_proveedores')
-      .select('cve_proveedor, nombre, rfc')
+      .select('cve_proveedor, nombre, id_fiscal')
       .eq('company_id', companyId)
       .in('cve_proveedor', batch)
     if (res.error) {
       return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando proveedores: ${res.error.message}` } }
     }
-    for (const p of (res.data ?? []) as Array<{ cve_proveedor: string | null; nombre: string | null; rfc: string | null }>) {
-      if (p.cve_proveedor) proveedorMap.set(p.cve_proveedor, { nombre: p.nombre, rfc: p.rfc })
+    for (const p of (res.data ?? []) as Array<{ cve_proveedor: string | null; nombre: string | null; id_fiscal: string | null }>) {
+      if (p.cve_proveedor) proveedorMap.set(p.cve_proveedor, { nombre: p.nombre, rfc: p.id_fiscal })
     }
   }
 

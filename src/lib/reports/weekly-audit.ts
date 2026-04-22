@@ -22,6 +22,8 @@ export interface WeeklyAuditTrafico {
   estatus: string | null
   descripcion_mercancia: string | null
   fecha_llegada: string | null
+  // tipo_operacion lives on entradas (not traficos); dias_activos is
+  // computed downstream. Both are phantoms on traficos (M15 sweep).
   tipo_operacion: string | null
   dias_activos: number | null
 }
@@ -103,7 +105,10 @@ export async function loadWeeklyAudit(
 
   const [traficosResult, pedimentosResult, ocaResult, usmcaResult, expedientesResult] = await Promise.all([
     sb.from('traficos')
-      .select('trafico, pedimento, estatus, descripcion_mercancia, fecha_llegada, tipo_operacion, dias_activos')
+      // tipo_operacion lives on entradas (not traficos); dias_activos is
+      // computed downstream. Drop both from the select — hydrate as null
+      // so the row shape stays identical for downstream consumers.
+      .select('trafico, pedimento, estatus, descripcion_mercancia, fecha_llegada')
       .eq('company_id', companyId)
       .gte('fecha_llegada', start.toISOString().slice(0, 10))
       .lte('fecha_llegada', end.toISOString().slice(0, 10))
@@ -135,13 +140,21 @@ export async function loadWeeklyAudit(
       .lte('approved_at', periodTo),
 
     sb.from('expediente_documentos')
-      .select('trafico_id', { count: 'exact', head: true })
+      // expediente_documentos.trafico_id is a phantom — the real link
+      // column is pedimento_id (which stores the trafico slug).
+      .select('pedimento_id', { count: 'exact', head: true })
       .eq('company_id', companyId)
       .gte('uploaded_at', periodFrom)
       .lte('uploaded_at', periodTo),
   ])
 
-  const traficosRows = (traficosResult.data ?? []) as WeeklyAuditTrafico[]
+  // Hydrate the computed/joined fields that aren't on traficos so the
+  // WeeklyAuditTrafico shape stays stable for consumers.
+  const traficosRows = ((traficosResult.data ?? []) as Array<Omit<WeeklyAuditTrafico, 'tipo_operacion' | 'dias_activos'>>).map((r) => ({
+    ...r,
+    tipo_operacion: null,
+    dias_activos: null,
+  })) as WeeklyAuditTrafico[]
   const pedimentosRows = (pedimentosResult.data ?? []) as WeeklyAuditPedimento[]
 
   const statusCounts = new Map<string, number>()

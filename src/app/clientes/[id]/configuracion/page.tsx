@@ -55,11 +55,14 @@ export default async function ClienteConfiguracionPage({
 
   const supabase = createServerClient()
 
+  // M16 phantom-sweep: the 12 config sub-path columns (general, direcciones,
+  // contactos, fiscal, ...) were designed as keys inside a companies.config
+  // jsonb column that was never created. Read `*` and extract each key
+  // from the jsonb column when present, else return empty defaults so
+  // the editor loads without PostgREST 400-ing.
   const { data: row, error } = await supabase
     .from('companies')
-    .select(
-      'company_id, name, rfc, general, direcciones, contactos, fiscal, aduanal_defaults, clasificacion_defaults, transportistas_preferidos, documentos_recurrentes, configuracion_facturacion, notificaciones, permisos_especiales, notas_internas',
-    )
+    .select('*')
     .eq('company_id', id)
     .maybeSingle()
 
@@ -68,28 +71,34 @@ export default async function ClienteConfiguracionPage({
   }
   if (!row) notFound()
 
-  const company = row as unknown as CompanyNameRow & Partial<ClientConfigRow>
+  const raw = row as Record<string, unknown>
+  const config = (raw.config && typeof raw.config === 'object') ? raw.config as Record<string, unknown> : {}
+  const company = {
+    company_id: String(raw.company_id ?? id),
+    name: (raw.name as string | null) ?? null,
+    rfc: (raw.rfc as string | null) ?? null,
+  } satisfies CompanyNameRow
 
   const initial: ClientConfigRow = {
     company_id: company.company_id,
-    general: (company.general as ClientConfigRow['general']) ?? {},
-    direcciones: (company.direcciones as ClientConfigRow['direcciones']) ?? [],
-    contactos: (company.contactos as ClientConfigRow['contactos']) ?? [],
-    fiscal: (company.fiscal as ClientConfigRow['fiscal']) ?? {},
-    aduanal_defaults: (company.aduanal_defaults as ClientConfigRow['aduanal_defaults']) ?? {},
+    general: (config.general as ClientConfigRow['general']) ?? {},
+    direcciones: (config.direcciones as ClientConfigRow['direcciones']) ?? [],
+    contactos: (config.contactos as ClientConfigRow['contactos']) ?? [],
+    fiscal: (config.fiscal as ClientConfigRow['fiscal']) ?? {},
+    aduanal_defaults: (config.aduanal_defaults as ClientConfigRow['aduanal_defaults']) ?? {},
     clasificacion_defaults:
-      (company.clasificacion_defaults as ClientConfigRow['clasificacion_defaults']) ?? {},
+      (config.clasificacion_defaults as ClientConfigRow['clasificacion_defaults']) ?? {},
     transportistas_preferidos:
-      (company.transportistas_preferidos as ClientConfigRow['transportistas_preferidos']) ?? [],
+      (config.transportistas_preferidos as ClientConfigRow['transportistas_preferidos']) ?? [],
     documentos_recurrentes:
-      (company.documentos_recurrentes as ClientConfigRow['documentos_recurrentes']) ?? [],
+      (config.documentos_recurrentes as ClientConfigRow['documentos_recurrentes']) ?? [],
     configuracion_facturacion:
-      (company.configuracion_facturacion as ClientConfigRow['configuracion_facturacion']) ?? {},
-    notificaciones: (company.notificaciones as ClientConfigRow['notificaciones']) ?? {},
+      (config.configuracion_facturacion as ClientConfigRow['configuracion_facturacion']) ?? {},
+    notificaciones: (config.notificaciones as ClientConfigRow['notificaciones']) ?? {},
     permisos_especiales:
-      (company.permisos_especiales as ClientConfigRow['permisos_especiales']) ?? [],
+      (config.permisos_especiales as ClientConfigRow['permisos_especiales']) ?? [],
     notas_internas:
-      typeof company.notas_internas === 'string' ? company.notas_internas : null,
+      typeof config.notas_internas === 'string' ? config.notas_internas : null,
   }
 
   const errors = validateClientConfig(initial)

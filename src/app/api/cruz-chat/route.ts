@@ -633,16 +633,43 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         return JSON.stringify({ count: data?.length, results: data })
       }
       case 'query_pedimentos': {
-        let query = supabase.from('globalpc_facturas').select('pedimento, referencia, proveedor, fecha_pago, valor_usd, dta, igi, iva, moneda')
-          .eq('cve_cliente', clientClave)
+        // Pedimento data lives on traficos (not globalpc_facturas). Real
+        // columns: pedimento, referencia_cliente, proveedores (text),
+        // fecha_pago, importe_total (USD), regimen, moneda (NOT on
+        // traficos — lives on facturas, skipped here). tmec filter uses
+        // predicted_tmec (model output). M16 phantom-sweep rewire.
+        let query = supabase.from('traficos').select('trafico, pedimento, referencia_cliente, proveedores, fecha_pago, importe_total, regimen, predicted_tmec, fecha_cruce, semaforo, aduana, patente')
+          .eq('company_id', companyId)
         if (input.pedimento_id) query = query.eq('pedimento', input.pedimento_id)
-        if (input.trafico) query = query.eq('referencia', input.trafico)
-        if (input.tmec_only) query = query.eq('igi', 0)
-        if (input.search) { const s = sanitizeIlike(input.search); query = query.or(`pedimento.ilike.%${s}%,proveedor.ilike.%${s}%`) }
-        query = query.order('fecha_pago', { ascending: false }).limit(input.limit || 10)
+        if (input.trafico) query = query.eq('trafico', input.trafico)
+        if (input.tmec_only) query = query.eq('predicted_tmec', true)
+        if (input.search) { const s = sanitizeIlike(input.search); query = query.or(`pedimento.ilike.%${s}%,referencia_cliente.ilike.%${s}%,trafico.ilike.%${s}%`) }
+        query = query.not('pedimento', 'is', null).order('fecha_pago', { ascending: false, nullsFirst: false }).limit(input.limit || 10)
         const { data, error } = await query
         if (error) return JSON.stringify({ error: error.message })
-        return JSON.stringify({ count: data?.length, results: data })
+        // Shape output for back-compat with downstream consumers — map
+        // proveedores (text) → proveedor, importe_total → valor_usd,
+        // referencia_cliente → referencia.
+        const shaped = (data ?? []).map((r: {
+          trafico: string | null; pedimento: string | null; referencia_cliente: string | null
+          proveedores: string | null; fecha_pago: string | null; importe_total: number | null
+          regimen: string | null; predicted_tmec: boolean | null; fecha_cruce: string | null
+          semaforo: number | null; aduana: string | null; patente: string | null
+        }) => ({
+          trafico: r.trafico,
+          pedimento: r.pedimento,
+          referencia: r.referencia_cliente,
+          proveedor: r.proveedores,
+          fecha_pago: r.fecha_pago,
+          valor_usd: r.importe_total,
+          regimen: r.regimen,
+          tmec: r.predicted_tmec,
+          fecha_cruce: r.fecha_cruce,
+          semaforo: r.semaforo,
+          aduana: r.aduana,
+          patente: r.patente,
+        }))
+        return JSON.stringify({ count: shaped.length, results: shaped })
       }
       case 'query_entradas': {
         let query = supabase.from('entradas').select('cve_entrada, trafico, descripcion_mercancia, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, tiene_faltantes, mercancia_danada, recibido_por')
@@ -774,8 +801,14 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         return JSON.stringify({ predictions: summary, recommendation: `Best bridge: ${summary[0]?.name || 'World Trade Bridge'}` })
       }
       case 'get_savings': {
-        const { data: facturas } = await supabase.from('globalpc_facturas').select('valor_usd, igi').eq('cve_cliente', clientClave).limit(5000)
-        const tmecOps = (facturas || []).filter((f: { valor_usd: number | null; igi: number | null }) => (f.igi || 0) === 0)
+        // T-MEC savings proxy: traficos with predicted_tmec=true get the
+        // 5% tariff savings credit (vs non-T-MEC). Derived from
+        // traficos.importe_total + predicted_tmec (not phantom
+        // facturas.valor_usd + .igi which don't exist on that table).
+        // M16 phantom-sweep rewire.
+        const { data: traficos } = await supabase.from('traficos').select('importe_total, predicted_tmec').eq('company_id', companyId).limit(5000)
+        const facturas = (traficos ?? []).map(t => ({ valor_usd: t.importe_total, igi: t.predicted_tmec ? 0 : 1 }))
+        const tmecOps = facturas.filter((f: { valor_usd: number | null; igi: number | null }) => (f.igi || 0) === 0)
         const tmecSavings = tmecOps.reduce((s: number, f) => s + (Number(f.valor_usd) || 0) * 0.05, 0)
         return JSON.stringify({
           tmec_operations: tmecOps.length, total_operations: facturas?.length || 0,

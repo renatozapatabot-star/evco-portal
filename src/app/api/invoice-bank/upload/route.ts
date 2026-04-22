@@ -19,7 +19,7 @@ import { verifySession } from '@/lib/session'
 import { extractInvoiceFields } from '@/lib/invoice-bank'
 import { parseCFDI, isCFDIFile } from '@/lib/cfdi/parser'
 import { logDecision } from '@/lib/decision-logger'
-import { classifyDocumentWithVision } from '@/lib/vision/classify'
+import { classifyDocumentSmart } from '@/lib/docs/classify'
 import { notifyMensajeria } from '@/lib/mensajeria/notify'
 import {
   findDuplicates,
@@ -270,21 +270,30 @@ export async function POST(request: NextRequest) {
       dataPoints: { invoice_id: row.id, file_name: file.name, classified },
     })
 
-    // F14 — richer Vision extraction (doc_type + line items). Non-
-    // fatal: if it fails or vision is not configured, the upload
-    // still succeeds and the invoice row keeps whatever fields the
-    // image extractor already produced above.
+    // Phase 2 · unified classifier. Heuristic first (filename + MIME
+    // + optional sniff); Vision only when the heuristic is unsure OR
+    // we need field extraction. banco-facturas always wants extraction
+    // (supplier, amount, line items) so alwaysExtract=true.
     let visionExtracted = false
     let visionDocType: string | null = null
     let visionClassificationId: string | null = null
     try {
-      const vision = await classifyDocumentWithVision({
+      // Sniff the first 2KB for CFDI signature — only useful for XML.
+      const sniffHead =
+        file.type === 'application/xml' || file.type === 'text/xml'
+          ? Buffer.from(buffer).toString('utf-8').slice(0, 2048)
+          : null
+      const vision = await classifyDocumentSmart({
         fileUrl,
+        filename: file.name,
+        mimeType: file.type,
         companyId,
         linkToInvoiceBankId: row.id as string,
         actor,
+        sniffHead,
+        alwaysExtract: true,
       })
-      visionClassificationId = vision.id
+      visionClassificationId = vision.classificationId
       if (vision.extraction) {
         visionExtracted = true
         visionDocType = vision.extraction.doc_type

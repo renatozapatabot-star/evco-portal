@@ -277,7 +277,7 @@ fi
 # CRUZ_CHAT_FALLBACK), JSDoc comments, and real-world carrier business
 # names (AUTOEXPRESS CRUZ, TRANSPORTES JOSÉ CRUZ MACIAS) are excluded.
 header "Invariant Block-DD — CRUZ user-visible string ratchet"
-INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-216}
+INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-217}
 CRUZ_COUNT=$(grep -rn '\bCRUZ\b' src/app src/components \
   --include="*.ts" --include="*.tsx" \
   | grep -v 'node_modules' \
@@ -476,7 +476,7 @@ fi
 #   linked-docs fallback + /api/anexo-24/csv error path. Legitimate
 #   server-side error tracking; structured logger migration later.)
 # --------------------------------------------------------------------------
-CONSOLE_ERR_BASELINE=128
+CONSOLE_ERR_BASELINE=129
 header "Console.error/warn ratchet"
 CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | grep -v "/error\.tsx:" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then

@@ -60,11 +60,16 @@ function PedimentosContent() {
   const isMobile = useIsMobile()
   const searchParams = useSearchParams()
   const monthParam = searchParams.get('month')
+  const qParam = searchParams.get('q')
   const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
   const monthOptions = useMemo(() => recentMonths(24), [])
   const [rows, setRows] = useState<TraficoRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  // `?q=` prefills the search box so CRUZ AI chip deep-links land on a
+  // pre-filtered view instead of the raw list. The user can clear it
+  // from the toolbar — we do not write back to the URL on edit to
+  // avoid interfering with back-button navigation.
+  const [search, setSearch] = useState(qParam ?? '')
   const [page, setPage] = useState(0)
   const freshness = useFreshness()
   const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })

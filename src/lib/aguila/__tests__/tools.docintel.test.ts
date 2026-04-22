@@ -90,7 +90,7 @@ describe('Phase 4 tool registration', () => {
     for (const name of ['check_invoice_duplicate', 'classify_document', 'inbox_summary']) {
       const def = TOOL_DEFINITIONS.find((t) => t.name === name)
       expect(def, `missing definition for ${name}`).toBeDefined()
-      expect(def!.description.length).toBeGreaterThan(30)
+      expect((def?.description ?? '').length).toBeGreaterThan(30)
     }
   })
 })

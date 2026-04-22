@@ -17,6 +17,11 @@ import { isActionIntent } from '@/lib/action-intents'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
+import {
+  MI_CUENTA_CRUZ_MODE,
+  SAFE_CLIENT_TOOL_NAMES,
+  buildSafeClientCruzSystemPrompt,
+} from '@/lib/mi-cuenta/cruz-safe'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || ''
 const supabase = createClient(
@@ -1470,7 +1475,26 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ message: 'Solicitud inválida.' }, { status: 400 })
     }
-    const { messages, context, sessionId } = parsed.data
+    const { messages, context, sessionId, mode } = parsed.data
+    const isSafeClientMode = mode === MI_CUENTA_CRUZ_MODE
+
+    // Safe-client mode = the /mi-cuenta/cruz surface. Belt + suspenders
+    // on top of the page-level gate: refuse if the feature flag is off
+    // for a client role, refuse any role that isn't client or internal.
+    // See .claude/rules/client-accounting-ethics.md + cruz-safe.ts.
+    if (isSafeClientMode) {
+      const safeFlagOn = process.env.NEXT_PUBLIC_MI_CUENTA_CRUZ_ENABLED === 'true'
+      const role = session.role
+      const INTERNAL = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
+      const isClientRole = role === 'client'
+      const isInternalRole = INTERNAL.has(role)
+      if (!isClientRole && !isInternalRole) {
+        return NextResponse.json({ message: 'Acceso no disponible.' }, { status: 403 })
+      }
+      if (isClientRole && !safeFlagOn) {
+        return NextResponse.json({ message: 'Asistente no disponible.' }, { status: 403 })
+      }
+    }
 
     // Rate limiting: 20 queries per company per hour (persisted in Supabase)
     const rlKey = `cruz_chat:${companyId || sessionId || 'anonymous'}`
@@ -1505,11 +1529,25 @@ export async function POST(req: NextRequest) {
     const actionDetected = userMsgText ? isActionIntent(userMsgText) : false
     const actionLine = actionDetected ? '\n\nACCIÓN DETECTADA: El usuario parece solicitar una acción. Confirma antes de ejecutar.' : ''
 
-    // Filter tools by role — admin-only tools hidden from clients
+    // Filter tools by role — admin-only tools hidden from clients.
+    // When isSafeClientMode, we further intersect with the
+    // SAFE_CLIENT_TOOL_NAMES allowlist regardless of role — an internal
+    // QA session using the safe surface still only sees safe tools.
     const userRole = session.role
     const isInternal = userRole === 'broker' || userRole === 'admin'
     const ADMIN_TOOLS = new Set(['admin_fleet_summary', 'find_prospects', 'simulate_audit', 'integration_status', 'client_health', 'get_memory', 'check_risk_radar', 'search_knowledge'])
-    const filteredTools = isInternal ? TOOLS : TOOLS.filter(t => !ADMIN_TOOLS.has(t.name))
+    let filteredTools = isInternal ? TOOLS : TOOLS.filter(t => !ADMIN_TOOLS.has(t.name))
+    if (isSafeClientMode) {
+      filteredTools = filteredTools.filter(t => SAFE_CLIENT_TOOL_NAMES.has(t.name))
+    }
+
+    // Safe mode overrides the system prompt with the calm-tone
+    // /mi-cuenta variant and disables voice-mode shortening (the
+    // surface is a web chat, not a voice UX).
+    const effectiveVoiceMode = !isSafeClientMode && !!context?.voice_mode
+    const baseSystem = isSafeClientMode
+      ? buildSafeClientCruzSystemPrompt({ clientName: resolvedName, clientClave, patente, aduana })
+      : buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana })
 
     let response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1520,8 +1558,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: context?.voice_mode ? 512 : 4096,
-        system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine + voiceLine + memoryLine + actionLine,
+        max_tokens: effectiveVoiceMode ? 512 : 4096,
+        system: baseSystem + contextLine + (effectiveVoiceMode ? voiceLine : '') + memoryLine + actionLine,
         tools: filteredTools,
         messages,
       }),
@@ -1543,6 +1581,16 @@ export async function POST(req: NextRequest) {
       const toolUseBlocks = data.content.filter((b: { type: string }) => b.type === 'tool_use')
       const toolResults = await Promise.all(
         toolUseBlocks.map(async (block: { type: string; id: string; name: string; input: Record<string, unknown> }) => {
+          // Belt + suspenders — the filtered-tools list should have
+          // prevented this call, but refuse at the executor gate too
+          // so a tool regression never reaches client data.
+          if (isSafeClientMode && !SAFE_CLIENT_TOOL_NAMES.has(block.name)) {
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: block.id,
+              content: JSON.stringify({ error: `Tool ${block.name} no disponible en /mi-cuenta.` }),
+            }
+          }
           try {
             const content = await executeTool(block.name, block.input, { companyId, clientClave, clientName })
             return { type: 'tool_result' as const, tool_use_id: block.id, content }
@@ -1568,7 +1616,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4096,
-          system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine,
+          system: baseSystem + contextLine,
           tools: filteredTools,
           messages: loopMessages,
         }),
@@ -1625,7 +1673,7 @@ export async function POST(req: NextRequest) {
       input_tokens: inputTokens,
       output_tokens: outputTokens,
       cost_usd: (inputTokens * 0.003 + outputTokens * 0.015) / 1000,
-      action: 'cruz_chat',
+      action: isSafeClientMode ? 'mi_cuenta_cruz' : 'cruz_chat',
       client_code: clientClave || companyId,
       latency_ms: Date.now() - startTime,
     }).then(() => {}, (e) => console.error('[audit-log] cruz-chat cost:', e.message))

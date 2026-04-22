@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, MessageSquare } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Plus } from 'lucide-react'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 import ChatMessageList, { type Message } from '@/components/aguila/ChatMessageList'
 import ChatInputBar from '@/components/aguila/ChatInputBar'
@@ -25,6 +25,18 @@ import { MI_CUENTA_CRUZ_MODE } from '@/lib/mi-cuenta/cruz-safe'
 
 const HISTORY_KEY = 'mi-cuenta-cruz-history'
 const COMPANY_KEY = 'mi-cuenta-cruz-company'
+
+// Starter prompts for /mi-cuenta/cruz — scoped to what a client actually
+// reaches this surface for: their own account + their own operation.
+// Calm, possessive, no "te falta" urgency (client-accounting-ethics.md §tone).
+const MI_CUENTA_STARTER_HEADING = '¿Qué quieres saber de tu cuenta?'
+const MI_CUENTA_STARTER_QUESTIONS = [
+  '¿Cuál es mi saldo pendiente?',
+  '¿Qué facturas tengo abiertas este mes?',
+  '¿Cuándo fue mi último embarque cruzado?',
+  '¿Cuántos pedimentos registramos este mes?',
+] as const
+const MI_CUENTA_INPUT_PLACEHOLDER = 'Pregunta sobre tu cuenta, embarques o facturas...'
 
 export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
   // Session id is only used by the API for rate-limit keys + audit.
@@ -118,14 +130,14 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
           setMessages(prev => prev.map(m => (m.id === aiMsgId ? { ...m, content: current, navigate: navigate || undefined } : m)))
         }
 
-        if (!aiText) aiText = 'Sin respuesta. ¿Quieres que le avisemos a Anabel por Mensajería?'
+        if (!aiText) aiText = 'No obtuve respuesta esta vez. Si lo prefieres, escríbele a Anabel por Mensajería.'
         setMessages(prev => prev.map(m => (m.id === aiMsgId ? { ...m, content: aiText, navigate: navigate || undefined } : m)))
       } catch (err: unknown) {
         if (err instanceof Error && err.name !== 'AbortError') {
           setMessages(prev =>
             prev.map(m =>
               m.id === aiMsgId
-                ? { ...m, content: 'No pudimos procesar tu pregunta. Intenta reformularla o escríbele a Anabel por Mensajería.' }
+                ? { ...m, content: 'No pude procesar tu pregunta. Intenta reformularla — o escríbele a Anabel por Mensajería.' }
                 : m,
             ),
           )
@@ -222,7 +234,15 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
       }}
     >
       {/* Header */}
+      <style>{`
+        @media (max-width: 540px) {
+          [data-mi-cuenta-cruz-header] { padding: 12px 16px !important; gap: 8px !important; }
+          [data-mi-cuenta-cruz-header] [data-mi-cuenta-cruz-subtitle] { display: none; }
+          [data-mi-cuenta-cruz-header] [data-mi-cuenta-cruz-new-label] { display: none; }
+        }
+      `}</style>
       <div
+        data-mi-cuenta-cruz-header
         style={{
           padding: '16px 24px',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -230,6 +250,7 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 12,
           background: 'var(--portal-ink-0)',
         }}
       >
@@ -255,18 +276,21 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
               Asistente — tu cuenta
             </div>
             <div
+              data-mi-cuenta-cruz-subtitle
               style={{
                 fontSize: 'var(--aguila-fs-compact, 11px)',
                 color: 'rgba(255,255,255,0.45)',
               }}
             >
-              {isClient ? 'Respuestas sobre tu operación · Anabel te responde por Mensajería' : 'Vista interna · superficie cliente'}
+              {isClient ? 'Respuestas sobre tu cuenta y tu operación' : 'Vista interna · superficie cliente'}
             </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={clearHistory}
+            title="Nueva conversación"
+            aria-label="Nueva conversación"
             style={{
               fontSize: 'var(--aguila-fs-compact, 11px)',
               color: 'rgba(255,255,255,0.45)',
@@ -275,9 +299,13 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
               cursor: 'pointer',
               padding: 8,
               minHeight: 60,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
             }}
           >
-            Nueva conversación
+            <Plus size={14} aria-hidden />
+            <span data-mi-cuenta-cruz-new-label>Nueva conversación</span>
           </button>
           <Link
             href="/mi-cuenta"
@@ -310,6 +338,8 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
           saveFeedback={saveFeedback}
           speak={speak}
           onAbort={handleAbort}
+          starterHeading={MI_CUENTA_STARTER_HEADING}
+          starterQuestions={MI_CUENTA_STARTER_QUESTIONS}
         />
         <ChatInputBar
           input={input}
@@ -320,6 +350,7 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
           onStartVoice={startVoice}
           onStopVoice={stopVoice}
           onAbort={handleAbort}
+          placeholder={MI_CUENTA_INPUT_PLACEHOLDER}
         />
       </div>
 

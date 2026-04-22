@@ -22,6 +22,11 @@ import {
   SAFE_CLIENT_TOOL_NAMES,
   buildSafeClientCruzSystemPrompt,
 } from '@/lib/mi-cuenta/cruz-safe'
+import {
+  FEATURE_FLAG_OVERRIDE_COOKIE,
+  isFlagEffective,
+  parseOverrideCookie,
+} from '@/lib/admin/feature-flags'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || ''
 const supabase = createClient(
@@ -1483,7 +1488,16 @@ export async function POST(req: NextRequest) {
     // for a client role, refuse any role that isn't client or internal.
     // See .claude/rules/client-accounting-ethics.md + cruz-safe.ts.
     if (isSafeClientMode) {
-      const safeFlagOn = process.env.NEXT_PUBLIC_MI_CUENTA_CRUZ_ENABLED === 'true'
+      // Match the page-layer resolver exactly — env is the baseline,
+      // internal roles can also opt in via /admin/feature-flags (cookie
+      // override). Client role never honors the override, so a client
+      // session still sees env-only gating here.
+      const overrides = parseOverrideCookie(req.cookies.get(FEATURE_FLAG_OVERRIDE_COOKIE)?.value)
+      const safeFlagOn = isFlagEffective({
+        key: 'mi_cuenta_cruz_enabled',
+        overrides,
+        role: session.role,
+      })
       const role = session.role
       const INTERNAL = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
       const isClientRole = role === 'client'

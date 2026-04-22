@@ -243,30 +243,38 @@ function HeroStrip({ ar, isClient }: { ar: AgingResult; isClient: boolean }) {
   ]
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 'var(--aguila-gap-card, 16px)',
-        marginBottom: 'var(--aguila-gap-card, 16px)',
-      }}
-    >
+    <>
+      {/* Previous iteration set the data attribute on a `display:contents`
+          span inside the grid, so the breakpoint never actually re-columned
+          the grid itself. Attribute now lives on the grid container — at
+          ≤1024px it falls to 2×2, at ≤480px it stacks for the 3 AM Driver
+          standard. */}
       <style>{`
+        [data-mi-cuenta-hero] {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: var(--aguila-gap-card, 16px);
+          margin-bottom: var(--aguila-gap-card, 16px);
+        }
         @media (max-width: 1024px) {
-          [data-mi-cuenta-hero] { grid-template-columns: repeat(2, 1fr) !important; }
+          [data-mi-cuenta-hero] { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+          [data-mi-cuenta-hero] { grid-template-columns: 1fr; }
         }
       `}</style>
-      <span data-mi-cuenta-hero style={{ display: 'contents' }} />
-      {heroKPIs.map((k) => (
-        <KPITile
-          key={k.key}
-          label={k.label}
-          value={k.value}
-          sublabel={k.sublabel}
-          tone="silver"
-        />
-      ))}
-    </div>
+      <div data-mi-cuenta-hero>
+        {heroKPIs.map((k) => (
+          <KPITile
+            key={k.key}
+            label={k.label}
+            value={k.value}
+            sublabel={k.sublabel}
+            tone="silver"
+          />
+        ))}
+      </div>
+    </>
   )
 }
 

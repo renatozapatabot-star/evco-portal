@@ -1411,5 +1411,388 @@ ingest are the next operator steps (blocked on Tito sign-off).
 `src/lib/api/response.ts` + `src/lib/auth/session-guards.ts`.
 V2 intelligence layer starts in `src/lib/intelligence/`. White-label
 foundation is `src/lib/tenant/config.ts`. MAFESA activation pattern
-is §26. Build, don't reinvent. When confused, read `CLAUDE.md`.
+is §26. The phantom-column trap (most common bug in this repo) is §28.
+Build, don't reinvent. When confused, read `CLAUDE.md`.
 When still confused, grep for it.*
+
+---
+
+## 28. Phantom-column guide (M15 — READ BEFORE WRITING A SUPABASE QUERY)
+
+This is the single most common class of bug in this codebase. It gets
+its own section.
+
+### 28.1 — What a "phantom column" is
+
+A phantom column is a column name the code references that **does not
+exist in the live Supabase schema**. Example: `globalpc_partidas.cve_trafico`
+— the code reads it, Postgres doesn't have it, PostgREST returns
+400 "column does not exist." The soft-query wrapper in
+`src/lib/cockpit/safe-query.ts` catches the error and returns an empty
+array. The user sees a degraded feature (empty list, zero count,
+missing detail) with no error. Nobody knows anything is broken.
+
+This happened because the codebase was originally written against a
+MySQL/GlobalPC schema and then re-pointed at Supabase without every
+reader being updated. Across 3 marathons (M11 + M12 + M14) we found
+63 such sites. M15 closed 38 of them.
+
+### 28.2 — The canonical real-schema reference
+
+When you query any of these tables, use exactly these columns. The
+phantom name → real name mapping is the sum of the investigation:
+
+**`globalpc_partidas` — line-items on an invoice**
+
+```
+Real: id, folio, numero_item, cve_producto, cve_cliente, cve_proveedor,
+      cantidad, precio_unitario, peso, pais_origen, marca, modelo,
+      serie, company_id, tenant_id, created_at
+
+Phantoms:
+  cve_trafico       →  join via facturas.folio (see §28.3)
+  descripcion       →  join via globalpc_productos.cve_producto
+  fraccion          →  join via globalpc_productos.cve_producto
+  fraccion_arancelaria → same
+  valor_comercial   →  compute cantidad × precio_unitario OR
+                       join via facturas.valor_comercial (folio-level)
+  fecha_llegada     →  join via traficos.fecha_llegada (2-hop)
+  umc / cve_umc     →  join via globalpc_productos.umt
+  tmec              →  traficos.predicted_tmec (derived)
+  seq               →  numero_item
+```
+
+**`globalpc_facturas` — invoice-level record**
+
+```
+Real: folio, cve_trafico, cve_proveedor, cve_cliente, valor_comercial,
+      moneda, fecha_facturacion, numero, cove_vucem, incoterm, flete,
+      seguros, deducibles, embalajes, incrementables, company_id,
+      tenant_id, created_at, updated_at
+
+Phantoms:
+  pedimento, valor_usd, dta, igi, iva, fecha_pago →  on traficos
+  valor             →  valor_comercial
+  cove              →  cove_vucem
+  proveedor         →  cve_proveedor (code, not name — join to globalpc_proveedores)
+  nombre_proveedor  →  join to globalpc_proveedores.nombre
+  iValorComercial, sCveMoneda, sCveProveedor → MySQL-native legacy names
+    that never got mirrored; use the short names above
+  referencia        →  traficos.referencia_cliente
+```
+
+**`globalpc_productos` — SKU master catalog**
+
+```
+Real: id, cve_producto, cve_cliente, cve_proveedor, descripcion,
+      descripcion_ingles, fraccion, fraccion_classified_at,
+      fraccion_source, umt, marca, nico, pais_origen, precio_unitario,
+      globalpc_folio, company_id, tenant_id, created_at
+
+Phantoms:
+  cve_trafico, cantidad, unidad, valor_unitario, valor_total → on partidas
+  nom_numero / nom_expiry / sedue_permit / sedue_expiry /
+    semarnat_cert / semarnat_expiry → certificate tracking not yet
+    materialized; query certificates table when built
+```
+
+**`globalpc_proveedores` — supplier master**
+
+```
+Real: cve_proveedor, nombre, id_fiscal, alias, calle, ciudad, pais,
+      telefono, email_contacto, contacto, company_id, tenant_id, created_at
+
+Phantoms:
+  rfc  →  id_fiscal (same data, different name; holds RFC for MX + foreign tax ID for non-MX)
+```
+
+**`traficos` — crossing / customs record**
+
+```
+Real: id, trafico, pedimento, fecha_cruce, fecha_llegada, fecha_pago,
+      semaforo, estatus, regimen, aduana, patente, tipo_cambio,
+      importe_total, descripcion_mercancia, bultos_recibidos,
+      peso_bruto, peso_bruto_unidad, peso_volumetrico, contenedor,
+      referencia_cliente, proveedores (text, not plural jsonb),
+      facturas (text digest), client_id, company_id, tenant_id,
+      tenant_slug, assigned_to_operator_id, predicted_* (5 cols),
+      prediction_confidence, score_reasons, transportista_extranjero,
+      transportista_mexicano, oficina, embarque, pais_procedencia,
+      created_at, updated_at  (41 columns total)
+
+Phantoms:
+  trafico_number   →  trafico (the ref string)
+  trafico_id       →  trafico (same — use as the slug key, no separate id column)
+  cve_trafico      →  trafico
+  proveedor        →  proveedores (plural, but it's a scalar text field)
+  fraccion_arancelaria → on partidas via facturas.folio (3-hop)
+  moneda           →  on facturas, not traficos
+  mve_folio        →  doesn't exist (MVE lives in mve_alerts)
+  tipo_operacion   →  on entradas, not traficos
+  cruz_score       →  doesn't exist (use prediction_confidence)
+  bultos           →  bultos_recibidos
+  cliente          →  client_id or resolve via company_id → companies.name
+  bridge / lane / fecha_cruce_planeada / fecha_cruce_estimada →
+    prediction/crossing features not yet materialized
+```
+
+**`companies` — tenant registry**
+
+```
+Real: id (uuid), company_id (slug, the tenant key), name, rfc, patente,
+      aduana, clave_cliente, globalpc_clave, active, branding (jsonb),
+      features (jsonb), contact_name, contact_email, contact_phone,
+      immex, language, tmec_eligible, portal_password, portal_url,
+      onboarded_at, first_login_at, first_question_at, last_sync,
+      health_* (4 cols), traficos_count, created_at
+      (30 columns — no updated_at!)
+
+Phantoms:
+  razon_social, nombre_comercial  →  name  (single display name for both)
+  is_active                        →  active
+  updated_at                       →  doesn't exist (use created_at for mtime proxy)
+  general, direcciones, contactos, fiscal, aduanal_defaults,
+    clasificacion_defaults, transportistas_preferidos,
+    documentos_recurrentes, configuracion_facturacion, notificaciones,
+    permisos_especiales, notas_internas  →
+    these look like top-level columns but were designed as keys inside
+    a `config` jsonb column that was never created. If you need to
+    store client config, design the jsonb column FIRST, then the UI.
+```
+
+**`expediente_documentos` — document expediente**
+
+```
+Real: id, doc_type, file_name, file_size, file_url, metadata (jsonb),
+      pedimento_id, uploaded_at, uploaded_by, company_id
+      (10 columns — note what's absent)
+
+Phantoms:
+  document_type            →  doc_type
+  document_type_confidence →  live in metadata jsonb (no dedicated column)
+  trafico_id               →  pedimento_id  (this column actually stores
+                              the TRAFICO slug like "9254-X3435", not a
+                              pedimento number — confusing naming but
+                              that is the canonical link)
+  nombre                   →  file_name
+  created_at               →  uploaded_at
+  custom_doc_name          →  metadata->>custom_doc_name
+  doc_type_code            →  doc_type
+```
+
+**`entradas` — warehouse/yard arrival record**
+
+```
+Real (39 cols): includes tipo_operacion, cve_entrada, cve_embarque,
+      trafico (string link to traficos.trafico), fecha_llegada_mercancia,
+      fecha_ingreso, num_caja_trailer, num_pedido, num_talon, in_bond,
+      flete_pagado, material_peligroso, mercancia_danada, tiene_faltantes,
+      comentarios_*, recibido_por, recibio_facturas, recibio_packing_list,
+      cantidad_bultos, tipo_carga, peso_bruto, peso_neto, embarcador,
+      transportista_americano, transportista_mexicano, prioridad,
+      company_id, cve_cliente, cve_proveedor, tenant_id, tenant_slug,
+      broker_id, created_at, updated_at, fecha_actualizacion
+```
+
+### 28.3 — The canonical 2-hop partidas → trafico join
+
+Use `src/lib/queries/partidas-trafico-link.ts` — do not reinvent.
+
+```ts
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
+
+const partidas = await supabase
+  .from('globalpc_partidas')
+  .select('id, folio, cve_producto, cantidad, precio_unitario, created_at')
+  .eq('company_id', companyId)
+  .limit(500)
+
+const links = await resolvePartidaLinks(
+  supabase,
+  companyId,
+  (partidas.data ?? []).map(p => ({ folio: p.folio })),
+)
+
+// For each partida, links.byFolio.get(p.folio) gives you:
+//   { cve_trafico, pedimento, fecha_cruce, fecha_llegada, semaforo,
+//     fecha_facturacion, valor_comercial }
+// All tenant-scoped, all derived from real columns.
+```
+
+When you need the inverse direction (given a trafico, find its partidas):
+
+```ts
+// Step 1: trafico → folios
+const { data: facturas } = await supabase
+  .from('globalpc_facturas')
+  .select('folio, valor_comercial, cve_proveedor')
+  .eq('cve_trafico', traficoId)
+  .eq('company_id', companyId)
+const folios = (facturas ?? []).map(f => f.folio).filter((x): x is number => x != null)
+
+// Step 2: folios → partidas
+const { data: partidas } = await supabase
+  .from('globalpc_partidas')
+  .select('id, folio, cve_producto, cantidad, precio_unitario, pais_origen')
+  .in('folio', folios)
+  .eq('company_id', companyId)
+
+// Step 3: partidas.cve_producto → productos for fraccion + descripcion
+const cves = Array.from(new Set((partidas ?? []).map(p => p.cve_producto).filter(Boolean)))
+const { data: productos } = await supabase
+  .from('globalpc_productos')
+  .select('cve_producto, fraccion, descripcion, umt')
+  .in('cve_producto', cves)
+  .eq('company_id', companyId)
+```
+
+### 28.4 — How to not introduce a new phantom
+
+Three rules, in order:
+
+1. **Run the scanner before committing**:
+   ```bash
+   node scripts/audit-phantom-columns.mjs
+   ```
+   Exits 0 if clean, 1 if findings. Prints every `.from().select()`
+   site with at least one phantom column name. Already runs in
+   `gsd-verify.sh` with a baseline ratchet — the baseline only goes
+   DOWN. If your change raises it, `npm run ship` blocks.
+
+2. **Probe the schema when in doubt**. Inline:
+   ```ts
+   const { data } = await supabase.from('<table>').select('*').limit(1)
+   console.log(Object.keys(data?.[0] ?? {}))
+   ```
+   The returned keys ARE the real columns. Phantom columns simply
+   don't appear; real columns do.
+
+3. **Never trust a `.select('*')` to protect you**. PostgREST ignores
+   unknown columns in `*`, but the `.eq()` / `.in()` / `.order()`
+   filters still fail if the filter column is a phantom. The scanner
+   catches selects; the ratchet catches filter-only drift via test
+   coverage.
+
+### 28.5 — Why soft-wrappers hid this for so long
+
+`softCount` / `softData` / `softFirst` in `src/lib/cockpit/safe-query.ts`
+catch every Supabase error and return the safe default (0 / [] / null).
+That is correct behavior for cockpit cards — one failed query must
+not crash the page. But it turns every phantom 400 into silent "no
+data." The observable symptom is an empty card, not an error.
+
+**The fix pattern:** the soft-wrapper stays, but every reader now also
+routes through the canonical real-schema helpers (this section, the
+phantom scanner, the ratchet, the real-schema cheat sheet above).
+Real errors still surface via `logQuietFailure` for debugging; phantoms
+fail the ratchet before merge, so they never reach prod.
+
+### 28.6 — The living debt log
+
+`.planning/PHANTOM_COLUMN_DEBT.md` — every remaining open phantom site,
+triaged by demo impact, with a canonical fix recipe per pattern. Update
+as sites are closed. Zero is the goal; 25 is the baseline (post-M15);
+baseline only decreases.
+
+---
+
+## 29. Data-flow invariants (what always joins what)
+
+These invariants are the shape of the customs broker's actual world.
+Violating them means the data model is wrong, not the code.
+
+### 29.1 — The partida is the smallest unit
+
+Everything starts from a `globalpc_partidas` line-item:
+
+```
+globalpc_partidas.cve_producto  →  globalpc_productos (descripcion, fraccion, umt)
+globalpc_partidas.folio         →  globalpc_facturas  (cve_trafico, moneda, valor)
+                                   └→ traficos        (pedimento, fecha_cruce, semaforo)
+globalpc_partidas.cve_proveedor →  globalpc_proveedores (nombre, id_fiscal)
+```
+
+One partida = one row in the pedimento = one line on the SAT filing.
+
+### 29.2 — Tenant isolation is company_id (slug), everywhere
+
+- `companies.company_id` is the canonical slug ("evco", "mafesa", etc.)
+- Every tenant-scoped table carries `company_id` (the slug) as the hard
+  boundary. Not `id` (uuid). Not `client_id`. Not `clave_cliente`.
+- `traficos.company_id`, `globalpc_*.company_id`, `entradas.company_id`,
+  `expediente_documentos.company_id`, `anexo24_partidas.company_id`,
+  `pedimento_drafts.company_id`, `mensajeria_*.company_id`. Every read
+  and every write.
+- The exceptions (contenedores, ordenes_carga, bultos have no company_id)
+  reach tenant scope transitively through their parent table.
+- Admin/broker sessions bypass the filter (`allClients` flag in
+  `resolveClientScope`). That is the ONLY legitimate bypass.
+
+### 29.3 — The three date axes
+
+- `fecha_llegada` — when the trailer arrived at the warehouse (on
+  traficos + entradas; they should agree, but don't always)
+- `fecha_cruce` — when the semáforo was resolved (verde/rojo step 8)
+- `fecha_pago` — when the pedimento + duties cleared (traficos only)
+
+None of these three live on partidas. Phantom on partidas. Always.
+
+### 29.4 — The currency labeling rule
+
+Every monetary field has an explicit currency. Scalar amount + no
+currency = bug. `traficos.importe_total` is **always USD** (SAT canonical
+value). `globalpc_facturas.valor_comercial` carries `moneda` alongside.
+`econta_facturas` carries `currency`. If you're computing a derived
+total, you own the currency label.
+
+### 29.5 — The pedimento number shape
+
+`DD AA PPPP SSSSSSS` — 15 chars including two spaces. Stored with
+spaces. Displayed with spaces. Validated with spaces. Strip spaces
+anywhere in the pipeline = every downstream lookup fails. The helper
+`src/lib/format/pedimento.ts formatPedimento()` is the single source
+of truth; never write your own regex.
+
+### 29.6 — The fracción dot rule
+
+`XXXX.XX.XX` (8 digits + 2 dots = 10 chars). Dots stay. Stripping
+dots breaks tariff lookups at the SAT layer and every joinable table
+downstream. Helper: `src/lib/format/fraccion.ts formatFraccion()`.
+
+---
+
+## 30. Top 10 reusable primitives — the Grok starter pack
+
+If you read nothing else before shipping, read these. Every one has
+tests, every one is proven in production, every one handles the edge
+cases you'd miss writing it yourself.
+
+| # | Primitive | File | Use for |
+|---|---|---|---|
+| 1 | `<PageShell>` | `src/components/aguila/PageShell.tsx` | Every authenticated route's outer wrapper (canvas + freshness + footer) |
+| 2 | `<GlassCard>` | `src/components/aguila/GlassCard.tsx` | The one chrome surface — `tier="hero" \| "secondary" \| "tertiary"` |
+| 3 | `<AguilaDataTable>` | `src/components/aguila/AguilaDataTable.tsx` | Every list view with tenant-scoped rows + sort + filter |
+| 4 | `<AguilaMetric>` | `src/components/aguila/AguilaMetric.tsx` | Single-KPI tile with sparkline + delta |
+| 5 | `<StatusBadge>` | `src/components/ui/StatusBadge.tsx` | Status strings → colored pills (never inline) |
+| 6 | `<SemaforoPill>` | `src/components/ui/SemaforoPill.tsx` | 0/1/2/null → verde/amarillo/rojo/sin revisión |
+| 7 | `<FreshnessBanner>` | `src/components/aguila/FreshnessBanner.tsx` | Sync-contract signal on every trust surface |
+| 8 | `formatPedimento()` / `formatFraccion()` | `src/lib/format/` | Single source of truth for customs formatting |
+| 9 | `resolvePartidaLinks()` | `src/lib/queries/partidas-trafico-link.ts` | The canonical 2-hop partidas → traficos join |
+| 10 | `requireAnySession()` / `requireAdminSession()` | `src/lib/auth/session-guards.ts` | Every API route's auth line |
+
+**Compose primitives, don't copy them.** The instruction compounds:
+a bug fixed in `GlassCard` cascades to every cockpit; a bug in a
+parallel implementation lives forever.
+
+**Query helpers (live in `src/lib/`):**
+
+| # | Helper | File | Use for |
+|---|---|---|---|
+| 1 | `softCount / softData / softFirst` | `src/lib/cockpit/safe-query.ts` | Every SSR query on `/inicio`, `/operador/inicio`, `/admin/eagle` |
+| 2 | `resolvePartidaLinks` | `src/lib/queries/partidas-trafico-link.ts` | 2-hop partidas → trafico (see §28.3) |
+| 3 | `getActiveCveProductos` + `activeCvesArray` | `src/lib/anexo24/active-parts.ts` | Filter products to "actually-used" subset per tenant |
+| 4 | `resolveProveedorName` | `src/lib/proveedor-names.ts` | Never render raw `PRV_####` codes |
+| 5 | `getExchangeRate` + `getDTARates` | `src/lib/rates.ts` | Every financial calc — refuse-to-calculate on expired config |
+| 6 | `readFreshness` + `<FreshnessBanner />` | `src/lib/cockpit/freshness.ts` | Sync freshness signal + stale-data banner |
+| 7 | `logDecision` + `logOperatorAction` | `src/lib/decision-logger.ts`, `src/lib/operator-actions.ts` | Every mutation — audit trail |
+| 8 | `ok / notFound / validationError / ...` | `src/lib/api/response.ts` | Every route handler's return |

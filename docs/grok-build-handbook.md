@@ -5176,3 +5176,216 @@ required since every new column is nullable.
 | Query decision history for analytics | §45.3 `getDecisionHistory` |
 | Phase 3 #5 learning loop | §45.8 preview |
 
+## §47 — Mensajería Draft Composer (Phase 3 #4)
+
+Rule-based Spanish message composer. Takes structured agent signals
+(from Phase 2/3 #1 primitives) and produces draft messages for clients,
+internal operators, and drivers. **Never sends.** Every draft lives in
+`agent_decisions` (via Phase 3 #3 logger) awaiting human approval.
+
+### §47.1 — Files
+
+| File | Role |
+|---|---|
+| `src/lib/aguila/mensajeria/templates.ts` | 5 pure Spanish templates + `personalizeDraft` + `toneGuard` |
+| `src/lib/aguila/mensajeria/draft-composer.ts` | `draftMensajeria` orchestrator + `suggestMessageType` |
+| `src/lib/aguila/mensajeria/__tests__/draft-composer.test.ts` | 36 unit tests |
+| `src/lib/aguila/tools.ts` | `draft_mensajeria` tool registration + exec wrapper + re-exports |
+
+### §47.2 — Five templates
+
+| Type | Audience | Sender line | Triggered when |
+|---|---|---|---|
+| `preventive_alert` | client | "Renato Zapata & Company" | Low verde band OR broken streak |
+| `document_request` | client | "Renato Zapata & Company" | Prediction factor mentions missing docs / factura / certificado |
+| `status_update` | client | "Renato Zapata & Company" | Caller provides `pedimento_number` + `status_es` |
+| `anomaly_escalation` | internal | (no brand line — internal) | Anomaly (new_proveedor, volume_spike, etc.) |
+| `driver_dispatch` | driver | (imperative, name + lane) | Caller provides full dispatch bindings |
+
+Every template is a pure function `(bindings) => RenderedMessage`.
+Deterministic — same inputs always produce the same draft, which makes
+the learning-loop replay (Phase 3 #5) reliable.
+
+### §47.3 — `suggestMessageType` routing
+
+Pure rules, first match wins:
+
+```
+driver_context                 → driver_dispatch / driver
+has_status_transition          → status_update / client
+anomaly_kind                   → anomaly_escalation / internal
+missing_docs                   → document_request / client
+band_es==='baja' | broken      → preventive_alert / client
+rec.kind in {prioritize_rojo_  → preventive_alert / client
+review, validate_new_proveedor}
+(otherwise)                    → null
+```
+
+Callers can override the suggestion by passing `messageType` on a
+`trafico`/`sku` `DraftRequest`.
+
+### §47.4 — `toneGuard` contract (client-facing only)
+
+Runs on `audience === 'client'` drafts:
+
+1. **Denylist:** `urgente`, `urgent`, `vencido`, `overdue`, `past due`,
+   `critical`, `crítico`, `riesgo alto`, `red alert`, `!!`, warning emoji.
+2. **Shouting detector:** two+ consecutive ALL-CAPS words of 4+ letters.
+   Single ALL-CAPS words (SKU codes like `SKU-DIRECT`) slip through —
+   the guard fires only on real shouting like `ATENCIÓN INMEDIATA`.
+3. Internal + driver drafts **bypass the guard** — they can use the full
+   palette, including `⚠️` and `URGENTE` when an operator needs it.
+
+Issues surface as `tone_issues: string[]` on the response. By default,
+a draft with tone issues does NOT write a full `withDecisionLog` row —
+it writes a minimal `logDecision` row with `action_taken='blocked:tone_guard'`
+so the learning loop can see which inputs produced bad copy. Pass
+`{ logToneIssues: true }` to override (useful for tests + admin tooling).
+
+### §47.5 — `draftMensajeria` — the main entry point
+
+```ts
+import { draftMensajeria } from '@/lib/aguila/tools'  // re-exported
+// or directly:
+import { draftMensajeria } from '@/lib/aguila/mensajeria/draft-composer'
+
+// Fetches full insight via buildFullCrossingInsight, picks template,
+// binds, runs tone guard, logs via withDecisionLog.
+const res = await draftMensajeria(supabase, 'evco', {
+  kind: 'trafico',
+  traficoId: 'T-1',
+  productName: 'Granular de polietileno',
+})
+// res.data.draft.body_es = full Spanish message ready for review
+// res.data.message_type = 'preventive_alert'
+// res.data.tone_issues = []  (when clean)
+// res.data.decision_log_id = null when logged via withDecisionLog,
+//                            or the row id when logged minimally.
+```
+
+Six request shapes supported:
+
+```ts
+type DraftRequest =
+  | { kind: 'trafico'; traficoId; messageType?; productName? }
+  | { kind: 'sku'; cveProducto; messageType?; productName? }
+  | { kind: 'anomaly'; anomaly: { kind, subject, detail_es, score, action_es? } }
+  | { kind: 'status'; pedimento_number; status_es; trafico_id?; fecha_programada? }
+  | { kind: 'driver'; dispatch: DriverDispatchBindings }
+  | { kind: 'bindings'; bindings: TemplateBindings }  // escape hatch
+```
+
+### §47.6 — Decision Logger integration
+
+Three distinct log paths, all via Phase 3 #3 primitives:
+
+1. **Happy path** (clean tone, draft composed)
+   → `withDecisionLog` wraps the compose step.
+   Row: `tool_name='draft_mensajeria'`, `workflow='mensajeria_draft'`,
+   `autonomy_level=0`, `action_taken='completed'`.
+
+2. **Tone-issue blocked** (guard fired, draft suppressed)
+   → `logDecision` minimal row.
+   Row: same, but `action_taken='blocked:tone_guard'` and
+   `tool_output = { blocked: true, tone_issues, message_type }`.
+
+3. **Approval** (future, when a review UI ships)
+   → `recordHumanFeedback(id, { sentiment: 'positive', reviewer_id })`
+   attaches the approval to the original draft row.
+
+4. **Send outcome** (future Phase 3 #5)
+   → `recordOutcome(id, 'sent'|'rejected'|'superseded')` closes the loop.
+
+### §47.7 — CRUZ AI tool registration
+
+Registered as `draft_mensajeria` in `TOOL_DEFINITIONS`. Claude (the chat
+router) picks it when the user says things like:
+
+| User says (Spanish) | Args the router passes |
+|---|---|
+| "Prepara un borrador para el tráfico T-1" | `{ traficoId: 'T-1' }` |
+| "Redacta una alerta preventiva para SKU-HOT" | `{ traficoId: '...' , messageType: 'preventive_alert', productName: '...' }` |
+| "Escala la anomalía del proveedor nuevo PRV_NEW" | `{ anomalyKind: 'new_proveedor', anomalySubject: 'PRV_NEW', anomalyDetail: '...' }` |
+| "Avisa al cliente que el pedimento cruzó" | `{ pedimentoNumber: '...', statusEs: 'Cruzado' }` |
+
+Exec wrapper `execDraftMensajeria` resolves scope via
+`resolveScopedCompanyId` (same contract as Phase 3 #1 tools — client
+sessions pinned to their own company, internal roles require
+`clientFilter`, unknown filter → refused).
+
+### §47.8 — Script example — nightly proactive drafts
+
+```js
+// scripts/nightly-preventive-drafts.js
+require('tsx/cjs')
+const { createClient } = require('@supabase/supabase-js')
+const { runJob } = require('./lib/job-runner')
+const { runIntelligenceAgent } = require('../src/lib/intelligence/agent')
+const { draftMensajeria } = require('../src/lib/aguila/mensajeria/draft-composer')
+
+runJob('nightly-preventive-drafts', async () => {
+  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  const scan = await runIntelligenceAgent(sb, 'evco', 'tenant_scan', { windowDays: 14, topFocusCount: 3 })
+  if (scan.mode_label !== 'tenant_scan') return { rowsProcessed: 0 }
+
+  let drafts = 0
+  for (const insight of scan.focus_insights) {
+    if (insight.signals.prediction.band !== 'low') continue
+    const res = await draftMensajeria(sb, 'evco', {
+      kind: 'sku',
+      cveProducto: insight.cve_producto,
+    })
+    if (res.success && res.data) drafts++
+  }
+  return { rowsProcessed: drafts, metadata: { scanned: scan.focus_insights.length } }
+})
+```
+
+All drafts land in `agent_decisions`; the operator review UI (future)
+reads them via `getDecisionHistory({ toolName: 'draft_mensajeria' })`
+and flips each through `recordHumanFeedback` on approval.
+
+### §47.9 — Safety contract — 100% demo-safe
+
+- **No sends.** Nothing in Phase 3 #4 calls Telegram / Mensajería / email
+  / WhatsApp. The composer produces text and logs.
+- **No client-facing UI changes.** The review surface is a future phase;
+  until it ships, drafts are observable only by internal queries on
+  `agent_decisions`.
+- **No new DB tables.** Phase 3 #4 writes through the existing
+  `agent_decisions` table (Phase 3 #3 migration). Zero schema risk.
+- **Tenant isolation.** `companyId` required on every entry point;
+  exec wrapper forces internal roles to pass `clientFilter`.
+- **No LLM calls.** Templates are deterministic Spanish strings with
+  data binding. No hallucination surface.
+- **Tone guard.** Client-facing drafts pass through `toneGuard` before
+  being logged as full drafts; failed guard drafts land as
+  `blocked:tone_guard` rows for the learning loop.
+- **Brand invariant.** Client-facing templates hard-code
+  "Renato Zapata & Company" as sender; internal operator names never
+  leak to client copy (per CLAUDE.md Mensajería rules).
+
+### §47.10 — What Phase 3 #4 does NOT do
+
+Explicit scope cuts — these belong to future phases:
+
+- **Review UI** for approving/rejecting drafts (admin surface work).
+- **Sending** approved drafts over Mensajería / WhatsApp / email
+  (existing Mensajería pipeline or a dedicated sender).
+- **LLM wording polish** via Sonnet (Phase 3 #4c enhancement).
+- **Multi-language variants** (English for US-side drivers, etc.).
+- **Attachment generation** (PDFs, invoices — needs the doc library).
+- **Auto-compose from briefing recs** (Phase 3 #2 briefing could hand
+  high-priority recs to this composer, flagged as Phase 3 #4b).
+
+### §47.11 — Where to read next
+
+| Task | Read |
+|---|---|
+| Build the review UI | §45.3 `getDecisionHistory`, `recordHumanFeedback` + §47.6 |
+| Add a new template | §47.2 + `src/lib/aguila/mensajeria/templates.ts` — follow the 5 existing patterns |
+| Add a new routing rule | `suggestMessageType` in `draft-composer.ts` — keep it pure + add a test |
+| Wire into a nightly cron | §47.8 example + `.claude/rules/operational-resilience.md` |
+| Understand why NO sends in Phase 3 #4 | CLAUDE.md "APPROVAL GATE — NON-NEGOTIABLE" |
+
+

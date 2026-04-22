@@ -36,6 +36,7 @@ export type ToolName =
   | 'analyze_pedimento'
   | 'tenant_anomalies'
   | 'intelligence_scan'
+  | 'draft_mensajeria'
 
 /**
  * Anthropic tool definitions. Kept deliberately small so Haiku picks the
@@ -161,6 +162,25 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
         query: { type: 'string', description: 'Consulta libre del usuario (opcional). Si menciona "anomalías" o "alertas" se restringe al modo anomaly_only.' },
         windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 90.' },
         topFocusCount: { type: 'number', description: 'Número máximo de SKUs foco a expandir. Default 3.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'draft_mensajeria',
+    description:
+      'Genera un borrador de mensaje en español (cliente / interno / conductor) — NO envía. Escenarios: heads-up preventivo de cruce, solicitud de documentos, actualización de estatus de pedimento, escalación de anomalía, despacho de conductor. Úsalo cuando el usuario pida "prepara un borrador", "redacta una alerta", o similar. Todo borrador queda persistido en agent_decisions y espera aprobación humana antes de enviarse.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        traficoId: { type: 'string', description: 'Tráfico destino (enruta a preventive_alert / document_request según señales).' },
+        pedimentoNumber: { type: 'string', description: 'Pedimento destino (útil para status_update tras transición de estatus).' },
+        statusEs: { type: 'string', description: 'Estatus en español para una actualización de pedimento (ej. "En proceso", "Cruzado", "Liberado").' },
+        anomalyKind: { type: 'string', description: 'Cuando se escala una anomalía: tipo (new_proveedor, volume_spike, etc.).' },
+        anomalySubject: { type: 'string', description: 'Sujeto de la anomalía (proveedor, SKU, etc.).' },
+        anomalyDetail: { type: 'string', description: 'Detalle en español de la anomalía.' },
+        messageType: { type: 'string', description: 'Tipo forzado: preventive_alert | document_request | status_update | anomaly_escalation | driver_dispatch.' },
+        productName: { type: 'string', description: 'Nombre amigable del producto (reemplaza el SKU crudo en copy cliente).' },
         clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
       },
     },
@@ -493,6 +513,8 @@ export async function runTool(
         return { tool, result: await execTenantAnomalies(args as TenantAnomaliesArgs, ctx) }
       case 'intelligence_scan':
         return { tool, result: await execIntelligenceScan(args as IntelligenceScanArgs, ctx) }
+      case 'draft_mensajeria':
+        return { tool, result: await execDraftMensajeria(args as DraftMensajeriaArgs, ctx) }
       default:
         return { tool, result: null, error: `unknown_tool:${tool}` }
     }
@@ -971,3 +993,102 @@ async function execIntelligenceScan(args: IntelligenceScanArgs, ctx: AguilaCtx) 
     }),
   )
 }
+// ── Phase 3 #4 — draft_mensajeria exec wrapper + re-export ───────
+
+interface DraftMensajeriaArgs {
+  traficoId?: string
+  pedimentoNumber?: string
+  statusEs?: string
+  anomalyKind?: string
+  anomalySubject?: string
+  anomalyDetail?: string
+  messageType?:
+    | 'preventive_alert'
+    | 'document_request'
+    | 'status_update'
+    | 'anomaly_escalation'
+    | 'driver_dispatch'
+  productName?: string
+  clientFilter?: string
+}
+
+/**
+ * Build a DraftRequest from the flat Anthropic-tool args shape. Priority
+ * ordering (first match wins so the router can pick a lane from natural
+ * language without ambiguous fallbacks):
+ *
+ *   1. anomalyKind present        → anomaly_escalation
+ *   2. pedimentoNumber + statusEs → status_update
+ *   3. traficoId present          → trafico-based composition
+ *   4. nothing above              → error (insufficient context)
+ */
+function buildDraftRequestFromArgs(
+  args: DraftMensajeriaArgs,
+):
+  | import('./mensajeria/draft-composer').DraftRequest
+  | { error: string } {
+  if (args.anomalyKind) {
+    return {
+      kind: 'anomaly',
+      anomaly: {
+        kind: args.anomalyKind,
+        subject: String(args.anomalySubject ?? 'desconocido'),
+        detail_es: String(args.anomalyDetail ?? 'Anomalía reportada'),
+        score: 0.5,
+      },
+    }
+  }
+  if (args.pedimentoNumber && args.statusEs) {
+    return {
+      kind: 'status',
+      pedimento_number: String(args.pedimentoNumber),
+      status_es: String(args.statusEs),
+      trafico_id: args.traficoId ?? null,
+    }
+  }
+  if (args.traficoId) {
+    return {
+      kind: 'trafico',
+      traficoId: String(args.traficoId),
+      messageType: args.messageType,
+      productName: args.productName,
+    }
+  }
+  return { error: 'Contexto insuficiente para componer un borrador.' }
+}
+
+async function execDraftMensajeria(args: DraftMensajeriaArgs, ctx: AguilaCtx) {
+  const companyId = await resolveScopedCompanyId(ctx, args.clientFilter)
+  const request = buildDraftRequestFromArgs(args)
+  if ('error' in request) {
+    return { success: false, data: null, error: request.error }
+  }
+  // Dynamic import to keep the module-load graph shallow — draft-composer
+  // imports tools (for the AgentToolResponse type); this indirection
+  // avoids cycle warnings in some bundlers.
+  const { draftMensajeria } = await import('./mensajeria/draft-composer')
+  return draftMensajeria(supabaseAdmin, companyId, request)
+}
+
+// Re-export the standalone composer + its types so callers outside the
+// aguila tool dispatcher (scripts, API routes, future briefing cron)
+// import from one canonical path.
+export {
+  draftMensajeria,
+  suggestMessageType,
+} from './mensajeria/draft-composer'
+export type {
+  DraftRequest,
+  DraftMensajeriaOptions,
+  DraftMensajeriaResponse,
+  SuggestSignals,
+  MessageTypeSuggestion,
+  AnomalyInput,
+} from './mensajeria/draft-composer'
+export type {
+  MessageType,
+  Audience,
+  RenderedMessage,
+  TemplateBindings,
+} from './mensajeria/templates'
+

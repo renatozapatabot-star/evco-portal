@@ -21,6 +21,12 @@ import { parseCFDI, isCFDIFile } from '@/lib/cfdi/parser'
 import { logDecision } from '@/lib/decision-logger'
 import { classifyDocumentWithVision } from '@/lib/vision/classify'
 import { notifyMensajeria } from '@/lib/mensajeria/notify'
+import {
+  findDuplicates,
+  normalizeInvoiceNumber,
+  sha256Hex,
+  type FindDuplicatesResult,
+} from '@/lib/invoice-dedup'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -53,6 +59,9 @@ interface UploadResult {
   visionExtracted?: boolean
   visionDocType?: string | null
   visionClassificationId?: string | null
+  // V1 soft-warning dedup: surfaced but non-blocking. UI renders a
+  // "posible duplicado" chip and lets the user decide.
+  duplicates?: FindDuplicatesResult
   error?: string
 }
 
@@ -120,6 +129,9 @@ export async function POST(request: NextRequest) {
     const storagePath = `${companyId}/invoice-bank/${Date.now()}_${i}.${ext}`
     const buffer = await file.arrayBuffer()
     const bytes = new Uint8Array(buffer)
+    // Fingerprint the bytes before they leave memory. Identical hash =
+    // identical file = exact-bucket duplicate.
+    const fileHash = sha256Hex(bytes)
 
     const { error: uploadErr } = await supabase.storage
       .from('expedientes')
@@ -144,6 +156,8 @@ export async function POST(request: NextRequest) {
     let supplierName: string | null = null
     let amount: number | null = null
     let currency: string | null = null
+    let supplierRfc: string | null = null
+    let invoiceDate: string | null = null
     let classified = false
 
     if (isCFDIFile(file.name, file.type)) {
@@ -154,6 +168,8 @@ export async function POST(request: NextRequest) {
         supplierName = cfdi.supplier_name
         amount = cfdi.amount
         currency = cfdi.currency
+        supplierRfc = cfdi.rfcEmisor
+        invoiceDate = cfdi.fecha
         classified = true
       } catch {
         classified = false
@@ -184,6 +200,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Dedup check BEFORE insert — so the hash + (rfc,norm) lookups
+    // find only pre-existing rows, never the one we're about to write.
+    const duplicates = await findDuplicates(supabase, {
+      companyId,
+      fileHash,
+      invoiceNumber,
+      supplierName,
+      supplierRfc,
+      amount,
+      currency,
+      invoiceDate,
+    }).catch(
+      (): FindDuplicatesResult => ({ exact: [], near: [], fuzzy: [], total: 0 }),
+    )
+
     const { data: row, error: insErr } = await supabase
       .from('pedimento_facturas')
       .insert({
@@ -196,6 +227,9 @@ export async function POST(request: NextRequest) {
         received_at: new Date().toISOString(),
         company_id: companyId,
         uploaded_by: actor,
+        file_hash: fileHash,
+        normalized_invoice_number: normalizeInvoiceNumber(invoiceNumber) || null,
+        supplier_rfc: supplierRfc ? supplierRfc.toUpperCase() : null,
       })
       .select('id')
       .single()
@@ -203,7 +237,7 @@ export async function POST(request: NextRequest) {
     if (insErr || !row) {
       results.push({
         id: '', fileName: file.name, fileUrl, status: 'unassigned', classified,
-        invoiceNumber, supplierName, amount, currency,
+        invoiceNumber, supplierName, amount, currency, duplicates,
         error: insErr?.message ?? 'Insert falló',
       })
       continue
@@ -294,6 +328,7 @@ export async function POST(request: NextRequest) {
       visionExtracted,
       visionDocType,
       visionClassificationId,
+      duplicates,
     })
   }
 

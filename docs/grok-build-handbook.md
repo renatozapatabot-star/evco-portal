@@ -2152,3 +2152,303 @@ slip through layers 1, 2, and 3 to reach production. That's not going
 to happen on a well-maintained checkout.
 
 ---
+
+## 34. V2 Intelligence Layer — how to read + extend
+
+The V2 intelligence layer is a rule-based signal engine on top of the
+M16-clean data layer. No ML, no magic constants, no hidden state. Every
+signal is a pure function over an enriched crossing stream; every
+signal is testable with a fixture; every signal has a humanized Spanish
+explanation for the operator.
+
+### 34.1 — The three layers
+
+```
+DB layer              lib layer                   UI layer
+(Supabase)   →        (pure aggregators)    →     (admin surface)
+
+traficos                                          /admin/intelligence
+facturas      ──────► crossing-insights.ts  ────► AguilaMetric hero
+partidas                 · computePartStreaks     AguilaInsightCard grid
+productos                · computeProveedorHealth GlassCard fracción tiles
+                         · computeFraccionHealth  Sparkline 7-day trend
+                         · computeVolumeSummary
+                         · predictVerdeProbability
+                         · detectAnomalies
+                                   │
+                         getCrossingInsights(sb, companyId)
+                           └── orchestrates the 3 DB hops
+                               (partidas → facturas → traficos → productos)
+                               and returns InsightsPayload.
+```
+
+**The boundary is strict.** The DB orchestrator does I/O; the
+aggregators are pure; the UI reads a frozen payload. Tests exist
+only for the aggregators — the orchestrator is thin by design so
+its coverage comes from the surrounding pieces.
+
+### 34.2 — Signals available today
+
+| Signal | Pure fn | What it captures |
+|---|---|---|
+| `PartStreak[]` | `computePartStreaks` | Per-SKU: current verde streak, longest streak in window, just-broken flag |
+| `ProveedorHealth[]` | `computeProveedorHealth` | Per-supplier: verde/amarillo/rojo counts + pct_verde |
+| `FraccionHealth[]` | `computeFraccionHealth` | Per 2-digit HTS chapter: same counts + pct_verde |
+| `VolumeSummary` | `computeVolumeSummary` | WoW delta + 7-day daily series for sparklines |
+| `VerdePrediction` | `predictVerdeProbability` | Rule-based next-crossing verde probability for a single SKU |
+| `Anomaly[]` | `detectAnomalies` | 4 rules: proveedor_slip · streak_break · volume_spike · new_proveedor |
+
+### 34.3 — How to add a new anomaly rule
+
+1. **Append the kind to the `Anomaly.kind` union** in
+   `src/lib/intelligence/crossing-insights.ts`.
+2. **Add a rule block inside `detectAnomalies()`** — same structure as
+   the existing four: compute aggregates, apply threshold, push an
+   `Anomaly` with `kind`, `subject`, humanized `detail`, numeric
+   `score` (0..1), `occurred_at`, and any useful `metadata`.
+3. **Document the rule in the top-of-function JSDoc** — operators
+   should read the comment and know what fires. No magic.
+4. **Write at least 3 tests** in `crossing-insights.test.ts`:
+   - Fires correctly on canonical positive fixture
+   - Does NOT fire under the natural guard (sample size, threshold)
+   - Does NOT fire on a negative variant the rule should ignore
+5. **Update `anomalyKindLabel()`** in `/admin/intelligence/page.tsx`
+   to return a humanized Spanish label for the new kind.
+6. **Optionally add a deep-link action** if the anomaly has a
+   drill-down (SKU → /catalogo/partes, proveedor → /proveedores).
+7. **Run the full gate:** `tsc --noEmit` + `vitest run src/lib/intelligence`
+   + `bash scripts/gsd-verify.sh --ratchets-only`.
+
+### 34.4 — How to add a new signal type (not an anomaly)
+
+A signal (like `FraccionHealth` or `VerdePrediction`) is a richer
+structure than a single-fire anomaly. Pattern:
+
+1. **Define the interface** in the Types section.
+2. **Add it to `InsightsPayload`** as an array/object field.
+3. **Write a pure aggregator** (e.g. `computeFraccionHealth`) that
+   takes a crossing stream and returns the signal shape.
+4. **Wire into `getCrossingInsights`** — compute it after the enriched
+   stream is built; include it in the returned payload.
+5. **Extend the empty payload** so error-path callers still compile.
+6. **Render it in `/admin/intelligence/page.tsx`** — new section with
+   `SectionTitle` + either `AguilaInsightCard` grid (for per-item
+   details) or a direct `GlassCard` grid (for summary tiles).
+7. **Tests, same as above.**
+
+### 34.5 — The predictor design philosophy
+
+`predictVerdeProbability` is **explainable** by construction. Every
+factor is:
+
+- **Additive** — contributions sum to a signed pp delta on the
+  baseline. Users can reason about marginal changes.
+- **Bounded** — each factor caps at a sensible magnitude
+  (streak +15, proveedor +10/-10, fraccion -10, break -15). No single
+  factor can dominate.
+- **Transparent** — every factor emits a `detail` string with the
+  actual input and the pp contribution. The UI can render the
+  breakdown without re-computing it.
+
+When adding a new factor:
+
+1. Pick a direction (positive or negative) and a magnitude
+   (small = 3-5 pp, medium = 5-10, large = 10-15).
+2. Apply a sample-size guard — factors that fire on 1 crossing are
+   noise; factors that fire on ≥ 3 are signal.
+3. Compose into the existing `factors.push(…)` calls. Don't mutate
+   the probability directly — let `totalDelta` do the sum.
+4. Document the factor + magnitude in the JSDoc rule list.
+
+**Never add a factor that isn't explainable in one sentence.** If you
+can't describe it, it shouldn't be in a rule-based predictor.
+
+### 34.6 — Tenant safety in the intelligence layer
+
+Every DB query in `getCrossingInsights` enforces `.eq('company_id',
+companyId)`. The aggregators are pure — no tenant logic. This means
+the intelligence layer cannot leak cross-tenant data even under
+adversarial input.
+
+The API route `GET /api/intelligence/insights` gates via
+`requireAdminSession()` + allows admins/brokers to override
+`?company_id=` for oversight. Client sessions ignore the override
+(no escalation path). Mirrors the `/api/catalogo/partes/[cve]`
+contract.
+
+### 34.7 — Performance contract
+
+`getCrossingInsights(sb, companyId, { windowDays: 90 })` runs in
+≈500 ms against 22K EVCO partidas via:
+
+- 1 fetch to `globalpc_partidas` (cap 5000)
+- 1-2 chunked fetches to `globalpc_facturas` (500/page)
+- 1-2 chunked fetches to `traficos` (500/page)
+- 1-2 chunked fetches to `globalpc_productos` (500/page) — added in V2.O
+
+The `/api/intelligence/insights` route sets
+`Cache-Control: private, max-age=60, stale-while-revalidate=300` so
+the dashboard poll doesn't hammer the engine. 60 seconds is short
+enough that Tito sees fresh signals within 2 minutes; 300 seconds
+keeps the stale-while-revalidate path smooth.
+
+**If you add a new DB hop:** keep it chunked (`.in` with slices of
+500) and add a `.limit()` on every query. Never do a raw `.select('*')`
+on a tenant-scoped table without a company_id filter.
+
+---
+
+## 35. Admin intelligence page — primitive composition
+
+`/admin/intelligence/page.tsx` is the canonical V2 surface. This
+section documents every primitive it composes and how they fit
+together.
+
+### 35.1 — Page structure
+
+```
+<PageShell title subtitle maxWidth=1100>
+  ┌─ Hero metrics row (5× AguilaMetric, auto-fit grid)
+  │   Rachas verdes · Rachas rotas · Proveedores top · Anomalías · Volumen 7d
+  │
+  ┌─ Empty-state fallback (GlassCard hero) — only when totalSignals=0
+  │
+  ┌─ 7-day trend (GlassCard hero + Sparkline) — V2.O
+  │   Big mono number + baseline + delta + 7-point Sparkline
+  │
+  ┌─ Cruzó Verde Predictor (AguilaInsightCard grid) — V2.O
+  │   top_predictions (tone=opportunity) + watch_predictions (tone=watch)
+  │
+  ┌─ Fracción chapter health (GlassCard secondary grid) — V2.O
+  │   Per-chapter tiles with pct_verde + V/A/R breakdown
+  │
+  ┌─ Green streak opportunities (AguilaInsightCard grid)
+  │   green_streaks · tone=opportunity
+  │
+  ┌─ Broken streaks (AguilaInsightCard grid + AguilaStreakBar)
+  │   broken_streaks · tone=watch
+  │
+  ┌─ Proveedor health (AguilaInsightCard grid)
+  │   top_proveedores (opportunity) + watch_proveedores (watch)
+  │
+  ┌─ Rule-based anomalies (AguilaInsightCard grid)
+  │   anomalies · tone varies by score (≥0.6 anomaly, else watch)
+  │
+  └─ Window selector footer (30d / 90d / 180d links)
+</PageShell>
+```
+
+### 35.2 — Primitive tone vocabulary
+
+`AguilaInsightCard` supports four tones mapping to the portal's
+semantic palette:
+
+| Tone | When to use | Color |
+|---|---|---|
+| `opportunity` | Top performers, green streaks, top suppliers, high predictions | green |
+| `watch` | At-risk items, broken streaks, watch suppliers, medium predictions | amber |
+| `anomaly` | Severe signals (score ≥ 0.6), hard alerts | red |
+| `neutral` | Info-only, baseline, historical | silver |
+
+Never use raw hex or red/amber inline. Compose through the tone prop
+so future theme changes cascade automatically.
+
+### 35.3 — The empty-state contract
+
+When all 8 signal counts are zero, render the calm empty-state
+GlassCard with copy:
+
+> "Sin señales en este período. El motor necesita al menos 3 cruces
+> verdes por SKU para detectar una racha, y 3 cruces por proveedor
+> por semana para comparar semáforos. Amplía la ventana para ver
+> señales históricas."
+
+Never a red "NO DATA" — the engine has explicit minimum-sample
+thresholds, and the copy educates the operator on why silence means
+"not yet enough" rather than "broken".
+
+### 35.4 — Extending the page with a new section
+
+Template (copy this block and adjust):
+
+```tsx
+{/* New signal — SignalName */}
+{insights.new_signal.length > 0 && (
+  <section style={{ marginBottom: 24 }}>
+    <SectionTitle>Signal · Spanish subtitle</SectionTitle>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: 12,
+      }}
+    >
+      {insights.new_signal.map((s) => (
+        <AguilaInsightCard
+          key={`signal-${s.subject}`}
+          tone="opportunity"
+          eyebrow="short label"
+          headline={s.subject}
+          body={s.detail}
+          meta={fmtDateShort(s.last_date)}
+          action={{ label: 'Ver', href: `/route/${s.subject}` }}
+        />
+      ))}
+    </div>
+  </section>
+)}
+```
+
+Always:
+- **Guard render** behind `length > 0` — no empty sections
+- **Grid pattern** `repeat(auto-fit, minmax(320px, 1fr))` for consistency
+- **`gap: 12`** — matches the rest of the page
+- **`SectionTitle`** local helper — uppercase portal-eyebrow styling
+- **Deep-link action** when the row has a drill-down target
+
+### 35.5 — Sparkline composition pattern
+
+The 7-day trend card uses:
+
+```tsx
+<Sparkline
+  data={insights.volume.daily_series.map((d) => d.count)}
+  tone={delta >= 0 ? 'green' : 'silver'}
+  height={56}
+  showTooltip
+  highlightToday
+  ariaLabel="descriptive label for screen readers"
+/>
+```
+
+**Tones map to semantic direction:** green for positive delta,
+silver for neutral/flat, red reserved for sharp drops. Never use
+`red` for normal-state data — the client surfaces have this rule and
+admin/intelligence respects it too (calm-tone even on operator-only
+surfaces).
+
+### 35.6 — When NOT to add a new section
+
+- **Don't split a section** to fit aesthetic taste. If two signals
+  are semantically similar (green_streaks vs. top_predictions), keep
+  them grouped or make the grouping explicit with eyebrows.
+- **Don't add a section without data.** The empty-state contract
+  already handles "no signal for this tenant" — don't clutter with
+  "Coming soon" sections.
+- **Don't add charts that don't add information.** The 7-day
+  Sparkline shows what the number can't (pattern shape). A bar chart
+  of `top_proveedores` counts adds nothing a table doesn't.
+
+### 35.7 — Wire order matters
+
+The page renders sections top-down. Order signals by **what the
+operator acts on first**:
+
+1. Anomalies that might fire today (7-day trend + predictor watch)
+2. Opportunities (green_streaks + top_predictions)
+3. Health views (fraccion_health + proveedor_health)
+4. Watch lists (broken_streaks + watch_proveedores)
+5. Raw anomaly feed (sorted by score desc)
+
+The V2.O wire above follows this — predictions come right after the
+7-day hero because they're the most actionable forward-looking signal.

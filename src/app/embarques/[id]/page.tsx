@@ -50,7 +50,7 @@ export default async function TraficoDetailPage({
   // collapses traficoRes.data to null, triggering a false 404. We coerce
   // them to null below so the TraficoRow shape stays satisfied.
   const TRAFICO_COLS =
-    'trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, patente, aduana, tipo_cambio, peso_bruto, fecha_cruce, semaforo, assigned_to_operator_id, updated_at, created_at'
+    'trafico, estatus, pedimento, fecha_llegada, importe_total, regimen, company_id, proveedores, descripcion_mercancia, patente, aduana, tipo_cambio, peso_bruto, fecha_cruce, fecha_pago, semaforo, assigned_to_operator_id, updated_at, created_at'
 
   let traficoQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
@@ -63,16 +63,22 @@ export default async function TraficoDetailPage({
       .eq('trigger_id', traficoId)
       .order('created_at', { ascending: false })
       .limit(500),
+    // expediente_documentos real columns: id, doc_type, file_name, uploaded_at.
+    // `pedimento_id` here stores the trafico slug (e.g. "9254-X3435"), not a
+    // pedimento number — confusing naming but that is the canonical link.
+    // Columns `document_type`, `document_type_confidence`, `created_at`,
+    // `trafico_id` do NOT exist (M15 phantom-column sweep).
     supabase
       .from('expediente_documentos')
-      .select('id, document_type, document_type_confidence, doc_type, file_name, created_at')
-      .eq('trafico_id', traficoId)
-      .order('created_at', { ascending: false })
+      .select('id, doc_type, file_name, uploaded_at')
+      .eq('pedimento_id', traficoId)
+      .order('uploaded_at', { ascending: false })
       .limit(200),
-    // Step 1 of the partidas chain: get folios + fecha_pago for this embarque from globalpc_facturas.
+    // Step 1 of the partidas chain: get folios for this embarque from globalpc_facturas.
+    // `fecha_pago` lives on traficos, NOT facturas (M15 phantom fix).
     supabase
       .from('globalpc_facturas')
-      .select('folio, fecha_pago')
+      .select('folio')
       .eq('cve_trafico', traficoId)
       .limit(100),
     supabase
@@ -218,8 +224,15 @@ export default async function TraficoDetailPage({
 
   // Step 2 of partidas chain: facturas → folios → partidas → product enrichment.
   // globalpc_partidas does NOT have cve_trafico; you must hop through facturas.
-  const facturasChainRows =
-    (facturasRes.data as Array<{ folio: number | null; fecha_pago: string | null }> | null) ?? []
+  // `fecha_pago` lives on traficos (single value per embarque) — we project it
+  // onto every factura row so the downstream chain + timeline logic keeps the
+  // existing shape without an additional join.
+  const rawFacturaRows =
+    (facturasRes.data as Array<{ folio: number | null }> | null) ?? []
+  const facturasChainRows = rawFacturaRows.map((f) => ({
+    folio: f.folio,
+    fecha_pago: trafico.fecha_pago ?? null,
+  }))
   const folios = facturasChainRows
     .map(f => f.folio)
     .filter((f): f is number => f != null)

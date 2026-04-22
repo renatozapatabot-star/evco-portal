@@ -14,31 +14,53 @@
  * history to avoid cross-tenant memory bleed.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, MessageSquare, Plus } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Plus, Sparkles } from 'lucide-react'
 import { AguilaMark } from '@/components/brand/AguilaMark'
 import ChatMessageList, { type Message } from '@/components/aguila/ChatMessageList'
 import ChatInputBar from '@/components/aguila/ChatInputBar'
 import { getCompanyIdCookie } from '@/lib/client-config'
 import { MI_CUENTA_CRUZ_MODE } from '@/lib/mi-cuenta/cruz-safe'
+import type { SuggestedQuestion } from '@/lib/mi-cuenta/suggested-questions'
 
 const HISTORY_KEY = 'mi-cuenta-cruz-history'
 const COMPANY_KEY = 'mi-cuenta-cruz-company'
 
-// Starter prompts for /mi-cuenta/cruz — scoped to what a client actually
-// reaches this surface for: their own account + their own operation.
-// Calm, possessive, no "te falta" urgency (client-accounting-ethics.md §tone).
+// Headline + placeholder stay in the component because they're not
+// personalized — the chips BELOW these defaults come from the server
+// via the `suggestions` prop (SuggestedQuestionsContext-built).
 const MI_CUENTA_STARTER_HEADING = '¿Qué quieres saber de tu cuenta?'
-const MI_CUENTA_STARTER_QUESTIONS = [
+const MI_CUENTA_INPUT_PLACEHOLDER = 'Pregunta sobre tu cuenta, embarques o facturas...'
+
+export interface MiCuentaCruzChatProps {
+  isClient: boolean
+  /**
+   * Server-built personalized prompts. Pure objects so the client can
+   * render them without a round-trip; clicking a chip auto-sends the
+   * `text` to /api/cruz-chat (no edit step).
+   */
+  suggestions?: SuggestedQuestion[]
+}
+
+// Static fallback if the server didn't hydrate personalized prompts
+// (e.g. first-render error). These mirror the original static list.
+const FALLBACK_STARTER_QUESTIONS: readonly string[] = [
   '¿Cuál es mi saldo pendiente?',
   '¿Qué facturas tengo abiertas este mes?',
   '¿Cuándo fue mi último embarque cruzado?',
   '¿Cuántos pedimentos registramos este mes?',
-] as const
-const MI_CUENTA_INPUT_PLACEHOLDER = 'Pregunta sobre tu cuenta, embarques o facturas...'
+]
 
-export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
+export default function MiCuentaCruzChat({ isClient, suggestions = [] }: MiCuentaCruzChatProps) {
+  // Derive starter questions for the empty-state from the same
+  // personalized list used in the persistent strip. Falls back to
+  // the static list only when the server hydrated none.
+  const starterQuestions = useMemo<readonly string[]>(() => {
+    if (suggestions.length === 0) return FALLBACK_STARTER_QUESTIONS
+    return suggestions.map(s => s.text)
+  }, [suggestions])
+
   // Session id is only used by the API for rate-limit keys + audit.
   const [sessionId] = useState(() => {
     if (typeof window === 'undefined') return 'ssr'
@@ -339,7 +361,12 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
           speak={speak}
           onAbort={handleAbort}
           starterHeading={MI_CUENTA_STARTER_HEADING}
-          starterQuestions={MI_CUENTA_STARTER_QUESTIONS}
+          starterQuestions={starterQuestions}
+        />
+        <SuggestedQuestionsStrip
+          suggestions={suggestions}
+          onAsk={sendMessage}
+          disabled={loading}
         />
         <ChatInputBar
           input={input}
@@ -398,5 +425,90 @@ export default function MiCuentaCruzChat({ isClient }: { isClient: boolean }) {
         </Link>
       </div>
     </div>
+  )
+}
+
+/**
+ * Compact, always-visible chip row above the input. Click = auto-send.
+ * Horizontally scrollable at narrow widths so the chip text doesn't
+ * wrap and fight the input. Hidden when loading to reduce visual
+ * noise while the user is waiting for an answer.
+ */
+function SuggestedQuestionsStrip({
+  suggestions,
+  onAsk,
+  disabled,
+}: {
+  suggestions: SuggestedQuestion[]
+  onAsk: (text: string) => void
+  disabled: boolean
+}) {
+  if (suggestions.length === 0) return null
+  return (
+    <>
+      <style>{`
+        [data-mi-cuenta-cruz-chips] {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding: 10px 24px;
+          border-top: 1px solid rgba(255,255,255,0.04);
+          background: rgba(255,255,255,0.015);
+          scrollbar-width: none;
+        }
+        [data-mi-cuenta-cruz-chips]::-webkit-scrollbar { display: none; }
+        [data-mi-cuenta-cruz-chip] {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(192,197,206,0.18);
+          background: rgba(192,197,206,0.06);
+          color: var(--aguila-text-primary);
+          font-size: var(--aguila-fs-compact, 11px);
+          cursor: pointer;
+          white-space: nowrap;
+          min-height: 36px;
+          transition: background 120ms ease, border-color 120ms ease;
+        }
+        [data-mi-cuenta-cruz-chip]:hover:not(:disabled) {
+          background: rgba(192,197,206,0.12);
+          border-color: rgba(192,197,206,0.4);
+        }
+        [data-mi-cuenta-cruz-chip]:disabled { opacity: 0.45; cursor: not-allowed; }
+        [data-mi-cuenta-cruz-chip-label] {
+          font-size: var(--aguila-fs-label, 10px);
+          letter-spacing: var(--aguila-ls-label, 0.08em);
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.45);
+          padding: 0 12px;
+          display: inline-flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+      `}</style>
+      <div data-mi-cuenta-cruz-chips role="list" aria-label="Preguntas sugeridas">
+        <span data-mi-cuenta-cruz-chip-label aria-hidden>
+          <Sparkles size={11} style={{ marginRight: 6 }} aria-hidden />
+          Sugeridas
+        </span>
+        {suggestions.map(s => (
+          <button
+            key={s.id}
+            data-mi-cuenta-cruz-chip
+            role="listitem"
+            type="button"
+            disabled={disabled}
+            onClick={() => onAsk(s.text)}
+            aria-label={`Preguntar: ${s.text}`}
+            title={s.reason ? `Sugerido por ${s.reason}` : s.text}
+          >
+            {s.text}
+          </button>
+        ))}
+      </div>
+    </>
   )
 }

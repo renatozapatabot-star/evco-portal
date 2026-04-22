@@ -27,7 +27,9 @@ import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { computeARAging, type AgingResult } from '@/lib/contabilidad/aging'
 import { readFreshness } from '@/lib/cockpit/freshness'
+import { computeQuickInsights } from '@/lib/mi-cuenta/quick-insights'
 import { resolveMiCuentaAccess } from './access'
+import { QuickInsightsCard } from './QuickInsightsCard'
 import {
   PageShell,
   GlassCard,
@@ -95,6 +97,7 @@ export default async function MiCuentaPage() {
     ar: Awaited<ReturnType<typeof computeARAging>>
     freshness: Awaited<ReturnType<typeof readFreshness>>
     name: string
+    insights: Awaited<ReturnType<typeof computeQuickInsights>>
   }
   type FetchFailure = { ok: false; message: string }
   const fetched: FetchSuccess | FetchFailure = await (async () => {
@@ -104,7 +107,11 @@ export default async function MiCuentaPage() {
         readFreshness(supabase, companyId),
         readDisplayName(supabase, companyId),
       ])
-      return { ok: true, ar, freshness, name }
+      // Quick Insights reads aging as context for the proactive copy,
+      // so we sequence it after the parallel fetch. Its own queries
+      // are soft-wrapped — one failing signal never blocks the card.
+      const insights = await computeQuickInsights(supabase, companyId, ar)
+      return { ok: true, ar, freshness, name, insights }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       const digest =
@@ -122,7 +129,7 @@ export default async function MiCuentaPage() {
     return <CockpitErrorCard message={`No se pudo cargar tu cuenta: ${fetched.message}`} />
   }
 
-  const { ar, freshness, name } = fetched
+  const { ar, freshness, name, insights } = fetched
 
   // Fire-and-forget audit log — records WHO viewed, not WHAT they saw.
   // Failures swallowed to avoid blocking the render path. See
@@ -139,6 +146,11 @@ export default async function MiCuentaPage() {
       {/* Hero KPIs — silver chrome, no severity, no urgency colors.
           Aging buckets render in calm silver per ethics contract §tone. */}
       <HeroStrip ar={ar} isClient={isClient} />
+
+      {/* Quick Insights — automation score + shipments this month + one
+          proactive copy line. Client surface shows the chat deep-link;
+          broker-internal view hides it (they use /operador/cruz). */}
+      <QuickInsightsCard insights={insights} showChatCta={isClient} />
 
       {/* Aging breakdown */}
       <AgingSection ar={ar} isClient={isClient} />

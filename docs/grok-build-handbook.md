@@ -4146,3 +4146,104 @@ the config is audit-logged. See the SQL migration pattern in
 `supabase/migrations/*_seed_config*.sql` for precedent.
 
 ---
+
+## 41. Quick Reference by Task
+
+Single-table index. Start here when you know what you want to do but
+not where to look.
+
+### "I want to..."
+
+| Task | Primitive / File | Handbook § |
+|---|---|---|
+| **Formatting** | | |
+| Render a pedimento correctly | `formatPedimento` in `src/lib/format/pedimento.ts` | §37.1 |
+| Render a fracción correctly | `formatFraccion` in `src/lib/format/fraccion.ts` | §37.1 |
+| Clean a company display name | `cleanCompanyDisplayName` | §37.1 |
+| **Querying Supabase** | | |
+| Scope a single-table read to a tenant | `getScopedFrom` | §37.3, §38.6 |
+| Allow admin bypass on a scoped read | `getScopedFrom(..., { mode: 'all-tenants' })` + `assertScopeMode` | §37.3 |
+| Join partidas → trafico (2-hop) | `resolvePartidaLinks` | §37.4, §38.1 |
+| List partidas for a trafico (3-hop) | `partidasByTrafico` | §37.4, §38.2 |
+| Catch phantom columns at compile time | `col` / `cols` from `src/lib/schema-contracts.ts` | §28.4, §37.2 |
+| Soft-wrap a cockpit query | `softData` / `softCount` / `softFirst` | §37.9, §39.3 |
+| **Financial** | | |
+| Compute DTA for a pedimento | `calculateDTA` | §37.5, §38.4 |
+| Compute IGI (with T-MEC handling) | `calculateIGI` | §37.5 |
+| Compute IVA with cascading base | `calculateIVA` (NEVER flat × 0.16) | §37.5, §38.4 |
+| End-to-end pedimento calc | `calculatePedimento` | §37.5, §40.4 |
+| Read rates from system_config | `getDTARates` / `getIVARate` / `getExchangeRate` | §37.6, §39.2 |
+| **V2 Intelligence** | | |
+| Build an enriched crossing stream | `buildCrossingStream` + `projectFor*` | §37.7, §38.8 |
+| Compute SKU verde streaks | `computePartStreaks` | §37.7 |
+| Compute proveedor health | `computeProveedorHealth` | §37.7 |
+| Compute per-chapter fraccion health | `computeFraccionHealth` | §37.7, §34 |
+| Compute volume summary + 7-day series | `computeVolumeSummary` | §37.7 |
+| Predict next-crossing verde probability | `predictVerdeProbability` | §37.7, §34.5 |
+| Detect anomalies from a stream | `detectAnomalies` | §37.7, §34 |
+| Predict verde for a SKU id | `getVerdeProbabilityForSku` | §37.7 |
+| Predict verde for a trafico id | `getVerdeProbabilityForTrafico` | §37.7 |
+| Render a prediction for UI | `explainVerdePrediction` | §37.7, §38.9 |
+| Render a prediction one-line (Telegram) | `explainVerdePredictionOneLine` | §38.9 |
+| Render a prediction plain-text (email) | `explainVerdePredictionPlainText` | §38.9 |
+| Fetch full intelligence payload | `getCrossingInsights` | §34, §37.7 |
+| **API routes** | | |
+| Build a route handler response | `ok` / `notFound` / `validationError` / ... | §37.8 |
+| Parse + validate a JSON body with Zod | `parseRequestBody` | §37.x, §39.10 |
+| Guard auth on a route | `requireAdminSession` / `requireClientSession` / etc. | §37.8, §39.10 |
+| Safely parse a JSON string | `safeJsonParse` | §37.x |
+| Validate a value against a schema | `validateWithSchema` | §37.x |
+| **Audit + logging** | | |
+| Log an automated decision | `logDecision` | §37.10 |
+| Log a human-authorized mutation | `logOperatorAction` | §37.10 |
+| **Workflows** | | |
+| Add a new anomaly rule | — | §34.3, §40.1 |
+| Add a new insight card | — | §35.4, §40.2 |
+| Extend the Verde predictor | — | §34.5, §40.3 |
+| Add a new financial calculation | — | §40.4 |
+| Add a schema column | `docs/MIGRATING_SCHEMA.md` | — |
+| **Understanding the codebase** | | |
+| What columns are on a table? | — | §28.2 |
+| How does entity X join to entity Y? | — | §31 |
+| What are the data-flow invariants? | — | §29 |
+| What anomalies have we seen before? | — | §32 |
+| What guard-rails exist at each layer? | — | §33 |
+| How does the intelligence layer work? | — | §34 |
+| **Troubleshooting** | | |
+| My test is failing | — | §36.8 |
+| I added a phantom column | `node scripts/audit-phantom-columns.mjs` | §28, §40.5 |
+| I committed to the wrong branch | — | §40.5 |
+| A cockpit is crashing | — | §39.3, §40.5 |
+| Pre-commit hook blocking me | — | §36.4, §36.7 |
+| **Sandbox (isolated exploration)** | | |
+| Exercise a primitive with a fixture | `scripts/agent-sandbox/run-*.ts` | sandbox README |
+| Live DB integrity probe | `node --env-file=.env.local scripts/_m16-crosslink-audit.mjs` | — |
+| Demo-critical stress test | `node --env-file=.env.local scripts/_m16-stress-test.mjs` | — |
+| **Auto-generated reference** | | |
+| Browse every primitive's signature | `npm run docs:api` → `docs/api/index.html` | Quick Start §9 |
+
+### "What do I run before…"
+
+| Before | Run |
+|---|---|
+| Any edit | `git status` · `git branch --show-current` · `npx tsc --noEmit` |
+| First commit of a session | Re-read `§36.1` + `§36.4` per-surface guardrails |
+| Committing | `bash scripts/gsd-verify.sh --ratchets-only` |
+| Shipping | `npm run ship` (runs all gates + live smoke + baseline write) |
+| Pushing to a branch | `npx vitest run` + `bash scripts/gsd-verify.sh --ratchets-only` |
+| Merging to main | Re-read handoff + post-demo greenlight from Tito / Renato IV |
+
+### "Where do I read next"
+
+| If you're… | Start with |
+|---|---|
+| A Grok agent new to this repo | `docs/GROK_QUICK_START.md` |
+| About to write an API route | §37.8 + §39.10 + §40 (closest recipe) |
+| About to touch the intelligence layer | §34 + §35 + §40.1–40.3 |
+| About to add a financial calculation | §37.5 + §38.4 + §40.4 |
+| About to change the database schema | `docs/MIGRATING_SCHEMA.md` |
+| Debugging a silent failure | §39 + §32 + the `sync_log` entries |
+| Unsure whether to extract into `src/lib/` | §37.13 + §38.10 |
+| Asked to ship something fast | §36.6 "when you're unsure" |
+
+---

@@ -430,6 +430,36 @@ module.exports = {
       error_file: '/tmp/econta-reconciler-error.log',
       out_file: '/tmp/econta-reconciler-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    // -------------------------------------------------------------------
+    // Trade Index refresh (2026-04-22 · V2 benchmarking foundation).
+    //
+    // RPC-refreshes mv_trade_index_client_position_90d +
+    // mv_trade_index_lane_90d, then computes per-company + fleet-wide
+    // overall clearance / T-MEC metrics and upserts rows into the
+    // legacy `benchmarks` + `client_benchmarks` tables so the existing
+    // ComparativeWidget on /inicio and the new TradeIndexCard on
+    // /mi-cuenta see fresh numbers every morning.
+    //
+    // Slot chosen to sit after globalpc-sync (01:00) and
+    // wsdl-anexo24-pull (02:15), before the morning briefing cron.
+    //
+    // After editing this file on Throne:
+    //   pm2 reload ecosystem.config.js --only refresh-trade-index
+    //   pm2 save
+    // (Per operational-resilience.md rule #2 — pm2 save is non-negotiable
+    //  after every process change.)
+    // -------------------------------------------------------------------
+    {
+      name: 'refresh-trade-index',
+      script: 'scripts/refresh-trade-index.js',
+      cwd,
+      cron_restart: '45 2 * * *',     // 02:45 CST nightly
+      autorestart: false, watch: false, max_memory_restart: '512M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/refresh-trade-index-error.log',
+      out_file: '/tmp/refresh-trade-index-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]
 }

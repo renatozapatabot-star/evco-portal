@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+import { readTenantConfig } from "../config";
 /**
  * Tenant config parser tests — the white-label foundation.
  *
@@ -152,3 +154,21 @@ describe('parseTenantConfig', () => {
     expect(cfg.active).toBe(false)
   })
 })
+
+// Regression test: ensure branding + features are always selected
+it('readTenantConfig selects branding and features columns', async () => {
+  const mockSupabase = {
+    from: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+  } as any;
+
+  await readTenantConfig(mockSupabase, 'test-company');
+
+  expect(mockSupabase.select).toHaveBeenCalledWith(
+    expect.stringContaining('branding')
+  );
+  expect(mockSupabase.select).toHaveBeenCalledWith(
+    expect.stringContaining('features')
+  );
+});

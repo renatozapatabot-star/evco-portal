@@ -134,7 +134,6 @@ interface CompanyRow {
   language: string | null
   active: boolean | null
   created_at: string | null
-  // Future cols — not yet in the migration but parsed when present
   branding?: unknown
   features?: unknown
 }
@@ -220,7 +219,7 @@ export async function readTenantConfig(
     const { data } = await supabase
       .from('companies')
       .select(
-        'company_id, name, clave_cliente, rfc, patente, aduana, language, active, created_at',
+        'company_id, name, clave_cliente, rfc, patente, aduana, language, active, created_at, branding, features',
       )
       .eq('company_id', companyId)
       .maybeSingle<CompanyRow>()

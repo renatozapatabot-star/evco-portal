@@ -4564,3 +4564,226 @@ extension:
 | Use the agent in a cron | Example in §42.5 above |
 | Understand tenant isolation | `.claude/rules/tenant-isolation.md` + §37.1 |
 
+
+## §43 — CRUZ AI Natural-Language Interface (Phase 3 #1)
+
+Phase 3 #1 bridges the Phase 2 agent to natural-language surfaces. Four
+new tools in `src/lib/aguila/tools.ts` wrap `runIntelligenceAgent` and
+emit Spanish-first structured responses consumable by CRUZ AI chat,
+scripts, API routes, or future Mensajería composers.
+
+### §43.1 — The four new tools
+
+Each tool exists in two shapes:
+
+- **Standalone** — called directly from scripts / API routes / cron.
+  Signature: `(supabase, companyId, ...args) → Promise<AgentToolResponse<T>>`.
+- **CRUZ AI tool** — registered in `TOOL_DEFINITIONS`, dispatched by
+  `runTool(name, args, ctx)` with `AguilaCtx` handling tenant scope.
+
+| Standalone function | Tool name | Agent mode | Response shape |
+|---|---|---|---|
+| `analyzeTrafico(sb, companyId, traficoId)` | `analyze_trafico` | `{ type: 'trafico' }` | `FocusResponseEs` |
+| `analyzePedimento(sb, companyId, pedimento)` | `analyze_pedimento` | `{ type: 'trafico' }` (after pedimento→trafico resolution) | `FocusResponseEs` |
+| `getTenantAnomalies(sb, companyId, opts?)` | `tenant_anomalies` | `'anomaly_only'` | `AnomalyOnlyResponseEs` |
+| `getFullIntelligence(sb, companyId, query?, opts?)` | `intelligence_scan` | `'tenant_scan'` or `'anomaly_only'` based on query keywords | `TenantScanResponseEs \| AnomalyOnlyResponseEs` |
+
+Every response is wrapped in the unified envelope:
+
+```ts
+interface AgentToolResponse<T> {
+  success: boolean
+  data: T | null
+  error: string | null
+}
+```
+
+### §43.2 — Spanish response shapes
+
+**FocusResponseEs** — for SKU or tráfico focus:
+```ts
+{
+  type: 'sku_focus' | 'trafico_focus',
+  headline_es: 'Tráfico T-1 · SKU dominante SKU-HOT · 95% probabilidad verde · confianza alta',
+  summary_es: '…',
+  cve_producto: 'SKU-HOT',
+  trafico_id: 'T-1' | null,
+  probability_pct: 95,
+  band_es: 'alta' | 'media' | 'baja',
+  proveedor: 'PRV_1 · 98% verde (12 cruces)' | null,
+  fraccion: '3903.20.01' | null,
+  factors: [
+    { label_es: '5 verdes consecutivos (+15 pp)', impact_pp: 15, tone: 'positive' },
+    …
+  ],
+  recommendations: [
+    { priority_es: 'alta' | 'media' | 'baja', action_es: '…', rationale_es: '…' },
+    …
+  ],
+  next_steps_es: ['1. …', '2. …', '3. …'],   // top 3 recs as imperative bullets
+}
+```
+
+**TenantScanResponseEs** — for panoramic scans:
+```ts
+{
+  type: 'tenant_scan',
+  headline_es: '…',
+  summary_es: '…',
+  company_id: 'evco',
+  baseline_verde_pct: 88,
+  anomaly_count: 3,
+  anomaly_groups_es: [ { label_es: 'Proveedor nuevo', count: 2 }, … ],
+  top_focus_es: [
+    { cve_producto, probability_pct, band_es, summary_es },  // top-N watch SKUs
+    …
+  ],
+  recommendations: [ … ],
+}
+```
+
+**AnomalyOnlyResponseEs** — lighter, anomalies-only:
+```ts
+{
+  type: 'anomaly_only',
+  headline_es: '…',
+  summary_es: '…',
+  company_id: 'evco',
+  anomaly_count: 3,
+  anomaly_groups_es: [
+    { label_es: 'Proveedor nuevo', count: 2, top_subjects: ['PRV_NEW', 'PRV_X'] },
+    …
+  ],
+  recommendations: [ … ],
+}
+```
+
+### §43.3 — Example Spanish queries
+
+Real chat queries a user might send to CRUZ AI, and which tool Claude
+(the router model) is expected to pick:
+
+| User says (Spanish) | Tool selected | Args |
+|---|---|---|
+| "¿Cómo se ve el tráfico T-1?" | `analyze_trafico` | `{ traficoId: 'T-1' }` |
+| "Analiza el pedimento 26 24 3596 6500441" | `analyze_pedimento` | `{ pedimentoNumber: '26 24 3596 6500441' }` |
+| "¿Hay anomalías?" / "¿Qué alertas tengo?" | `tenant_anomalies` | `{}` |
+| "¿Cómo está la operación?" / "Dame un panorama" | `intelligence_scan` | `{ query: '…' }` |
+| "Revisa proveedores nuevos de los últimos 30 días" | `tenant_anomalies` | `{ windowDays: 30 }` |
+
+The `intelligence_scan` tool's `query` field lets the router pass the
+raw message through; the tool's keyword heuristic ("anomalía", "alerta",
+"problema") picks the right agent mode without extra LLM hops.
+
+### §43.4 — Tenant isolation guarantees
+
+All four exec wrappers call `resolveScopedCompanyId` which:
+
+- For client / warehouse roles: pins to `ctx.companyId`, ignores `clientFilter`.
+- For internal roles (admin/broker/contabilidad) with a resolvable
+  `clientFilter`: runs on the resolved tenant.
+- For internal roles **without** `clientFilter`: **refused** with
+  `AguilaForbiddenError('agent:tenant_required')`. Agent scans demand a
+  concrete tenant — an "all clients" scan would leak cross-tenant
+  signals into one report.
+- Unknown `clientFilter` values are **refused** (same
+  `AguilaForbiddenError` as the pre-existing
+  `scope:unknown_client:<slug>` path).
+
+### §43.5 — Example call sites
+
+#### Script — morning briefing
+
+```ts
+// scripts/morning-briefing.js
+import { getFullIntelligence } from '@/lib/aguila/tools'
+import { createClient } from '@supabase/supabase-js'
+
+const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const res = await getFullIntelligence(sb, 'evco', undefined, { windowDays: 14 })
+
+if (!res.success || !res.data) { /* alert + exit */ }
+await sendTelegram(`📊 ${res.data.headline_es}`)
+for (const rec of res.data.recommendations.filter(r => r.priority_es === 'alta')) {
+  await sendTelegram(`🚨 ${rec.action_es}`)
+}
+```
+
+#### API route — `/api/cruz-ai/explain-trafico`
+
+```ts
+// src/app/api/cruz-ai/explain-trafico/route.ts
+import { analyzeTrafico } from '@/lib/aguila/tools'
+import { getSession } from '@/lib/auth/session-guards'
+
+export async function POST(req: Request) {
+  const session = await getSession()
+  const { traficoId } = await req.json()
+  const res = await analyzeTrafico(supabase, session.companyId, traficoId)
+  return Response.json(res)   // same { success, data, error } shape
+}
+```
+
+#### Future (Phase 3 #4) — Mensajería draft composer
+
+```ts
+// scripts/compose-preventive-heads-up.js
+const res = await analyzeTrafico(sb, 'evco', traficoId)
+if (res.data?.band_es === 'baja') {
+  // Insert to operator Mensajería inbox, NOT client-facing.
+  // Tito/Renato IV approves before any client-facing send.
+  await mensajeriaInsertDraft({
+    subject: `Preparación preventiva · ${traficoId}`,
+    body_es: [
+      res.data.summary_es,
+      '',
+      'Próximos pasos:',
+      ...res.data.next_steps_es,
+    ].join('\n'),
+  })
+}
+```
+
+### §43.6 — Demo-safety contract
+
+Phase 3 #1 is 100% demo-safe:
+
+1. **No new DB writes.** Every tool is read-only (the `analyzePedimento`
+   lookup against `traficos` is a SELECT).
+2. **No external side effects.** No Telegram, no Mensajería, no email.
+   Scripts wire notifications separately.
+3. **No UI surface changes.** CRUZ AI chat route code untouched; only
+   the tool library grew.
+4. **Public tool API backward-compatible.** Existing tools (`query_*`,
+   `route_mention`) unchanged. The `ToolName` union gained 4 values;
+   no existing caller breaks.
+5. **Tenant isolation preserved.** Existing `resolveClientScope` is
+   reused; no new tenant-handling code paths.
+6. **21 new tests** — isolation + formatter edges + error envelopes.
+   Full test count: 1427/1427.
+
+### §43.7 — Extending: how to add a new agent-tool
+
+1. Add a new case to the `AgentMode` union in `src/lib/intelligence/agent.ts`
+   (if the mode doesn't exist yet) + its builder.
+2. Add a Spanish response type + formatter in the Phase 3 section of
+   `tools.ts` (`format<Mode>` function).
+3. Export a standalone function `doTheThing(sb, companyId, ...args)`
+   that returns `AgentToolResponse<T>`.
+4. Register a new entry in `TOOL_DEFINITIONS` + extend the `ToolName`
+   union + add a `case` in `runTool`.
+5. Add an `exec<Thing>` wrapper that calls `resolveScopedCompanyId`
+   then the standalone function.
+6. Write tests under `src/lib/aguila/__tests__/tools.<thing>.test.ts`
+   mocking `runIntelligenceAgent`.
+
+### §43.8 — Where to read next
+
+| Task | Read |
+|---|---|
+| Understand the underlying agent | §42 Autonomous Agent Core |
+| Add a new agent mode | `src/lib/intelligence/agent.ts` + §42.4 |
+| Write a Mensajería composer | §43.5 + `.claude/rules/client-accounting-ethics.md` for copy tone |
+| Wire a cron | §43.5 example + `.claude/rules/operational-resilience.md` |
+| Understand tenant isolation enforcement | §43.4 + `.claude/rules/tenant-isolation.md` |
+

@@ -485,7 +485,7 @@ export function PortalCommandPalette({
                           Preguntarle al Agente IA sobre &ldquo;{value.trim()}&rdquo;
                         </div>
                         <div style={{
-                          fontSize: 11,
+                          fontSize: "var(--portal-fs-xs)",
                           color: 'var(--portal-fg-4)',
                           marginTop: 2,
                         }}>
@@ -559,7 +559,7 @@ export function PortalCommandPalette({
                           {r.title}
                         </span>
                         <span style={{
-                          fontSize: 10,
+                          fontSize: "var(--portal-fs-xs)",
                           letterSpacing: '0.08em',
                           textTransform: 'uppercase',
                           color: 'var(--portal-fg-5)',
@@ -569,7 +569,7 @@ export function PortalCommandPalette({
                       </div>
                       {r.sub && (
                         <div style={{
-                          fontSize: 11,
+                          fontSize: "var(--portal-fs-xs)",
                           color: 'var(--portal-fg-4)',
                           marginTop: 2,
                           overflow: 'hidden',
@@ -593,7 +593,7 @@ export function PortalCommandPalette({
             gap: 14,
             padding: '8px 14px 10px',
             borderTop: '1px solid var(--portal-line-1)',
-            fontSize: 10,
+            fontSize: "var(--portal-fs-xs)",
             color: 'var(--portal-fg-5)',
             letterSpacing: '0.06em',
             textTransform: 'uppercase',

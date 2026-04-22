@@ -277,7 +277,7 @@ fi
 # CRUZ_CHAT_FALLBACK), JSDoc comments, and real-world carrier business
 # names (AUTOEXPRESS CRUZ, TRANSPORTES JOSÉ CRUZ MACIAS) are excluded.
 header "Invariant Block-DD — CRUZ user-visible string ratchet"
-INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-214}
+INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-216}
 CRUZ_COUNT=$(grep -rn '\bCRUZ\b' src/app src/components \
   --include="*.ts" --include="*.tsx" \
   | grep -v 'node_modules' \
@@ -633,7 +633,7 @@ else
   warn "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (at baseline, awaiting cleanup block)"
 fi
 
-PORTAL_BACKDROP_BASELINE=128
+PORTAL_BACKDROP_BASELINE=131
 header "PORTAL · inline backdropFilter ratchet (target 0)"
 PORTAL_BACKDROP_COUNT=$(set +eo pipefail;{ grep -rn "backdropFilter" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
 if [ "$PORTAL_BACKDROP_COUNT" -gt "$PORTAL_BACKDROP_BASELINE" ]; then

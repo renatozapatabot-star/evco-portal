@@ -344,7 +344,7 @@ fi
 #   needs it to two-stage verify each column against PostgREST).
 # --------------------------------------------------------------------------
 header "Schema — Broad phantom-column ratchet (M15)"
-PHANTOM_BASELINE=25
+PHANTOM_BASELINE=15
 if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && [ -f .env.local ] && [ -f scripts/audit-phantom-columns.mjs ]; then
   PHANTOM_COUNT=$(node --env-file=.env.local scripts/audit-phantom-columns.mjs 2>/dev/null \
     | grep -E "^Total:" | grep -oE "[0-9]+" | head -1 || echo "")

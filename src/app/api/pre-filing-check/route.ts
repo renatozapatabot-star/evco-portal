@@ -49,11 +49,13 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
   })
 
   // 3. Value validation
+  // globalpc_facturas real columns: valor_comercial, cve_proveedor, cove_vucem.
+  // valor, proveedor, cove were phantoms (M15 sweep).
   const { data: facturas } = await supabase
     .from('globalpc_facturas')
-    .select('valor, proveedor, cove')
+    .select('valor_comercial, cve_proveedor, cove_vucem')
     .eq('cve_trafico', traficoId)
-  const totalValue = facturas?.reduce((s, f) => s + (f.valor || 0), 0) || 0
+  const totalValue = facturas?.reduce((s, f) => s + (f.valor_comercial || 0), 0) || 0
   checks.push({
     name: 'Valor declarado',
     passed: totalValue > 0,
@@ -75,7 +77,7 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
   })
 
   // 5. Supplier verification
-  const suppliers = [...new Set(facturas?.map(f => f.proveedor).filter(Boolean))]
+  const suppliers = [...new Set(facturas?.map(f => f.cve_proveedor).filter(Boolean))]
   checks.push({
     name: 'Proveedores',
     passed: suppliers.length > 0,
@@ -99,7 +101,7 @@ async function runPreFilingCheck(traficoId: string, companyId: string) {
   })
 
   // 7. COVEs
-  const coves = facturas?.filter(f => f.cove).length || 0
+  const coves = facturas?.filter(f => f.cove_vucem).length || 0
   const totalFacturas = facturas?.length || 0
   checks.push({
     name: 'COVEs',

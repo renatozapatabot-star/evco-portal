@@ -393,11 +393,16 @@ export type Database = {
           created_at: string | null
           cycle_id: string
           decision: string
+          human_feedback: Json | null
           id: number
           outcome: string | null
+          outcome_recorded_at: string | null
           payload: Json | null
           processing_ms: number | null
           reasoning: string | null
+          tool_input: Json | null
+          tool_name: string | null
+          tool_output: Json | null
           trigger_id: string | null
           trigger_type: string
           was_correct: boolean | null
@@ -412,11 +417,16 @@ export type Database = {
           created_at?: string | null
           cycle_id: string
           decision: string
+          human_feedback?: Json | null
           id?: number
           outcome?: string | null
+          outcome_recorded_at?: string | null
           payload?: Json | null
           processing_ms?: number | null
           reasoning?: string | null
+          tool_input?: Json | null
+          tool_name?: string | null
+          tool_output?: Json | null
           trigger_id?: string | null
           trigger_type: string
           was_correct?: boolean | null
@@ -431,11 +441,16 @@ export type Database = {
           created_at?: string | null
           cycle_id?: string
           decision?: string
+          human_feedback?: Json | null
           id?: number
           outcome?: string | null
+          outcome_recorded_at?: string | null
           payload?: Json | null
           processing_ms?: number | null
           reasoning?: string | null
+          tool_input?: Json | null
+          tool_name?: string | null
+          tool_output?: Json | null
           trigger_id?: string | null
           trigger_type?: string
           was_correct?: boolean | null

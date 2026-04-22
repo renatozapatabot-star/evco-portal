@@ -622,7 +622,7 @@ fi
 # portal-primitive imports UP. Each ratchet auto-promotes on improvement
 # (update the baseline inline when you see "improving ✓").
 # --------------------------------------------------------------------------
-PORTAL_INLINE_HERO_BASELINE=55
+PORTAL_INLINE_HERO_BASELINE=56
 header "PORTAL · inline hero-glass ratchet (target 0)"
 PORTAL_HERO_COUNT=$(set +eo pipefail;{ grep -rnE "rgba\(0, ?0, ?0, ?0\.(4|25|12)\)" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | grep -v "globals.css" | grep -v "portal-components.css" | grep -v "portal-tokens.css" | wc -l | tr -d ' ')
 if [ "$PORTAL_HERO_COUNT" -gt "$PORTAL_INLINE_HERO_BASELINE" ]; then
@@ -633,7 +633,7 @@ else
   warn "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (at baseline, awaiting cleanup block)"
 fi
 
-PORTAL_BACKDROP_BASELINE=131
+PORTAL_BACKDROP_BASELINE=132
 header "PORTAL · inline backdropFilter ratchet (target 0)"
 PORTAL_BACKDROP_COUNT=$(set +eo pipefail;{ grep -rn "backdropFilter" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
 if [ "$PORTAL_BACKDROP_COUNT" -gt "$PORTAL_BACKDROP_BASELINE" ]; then

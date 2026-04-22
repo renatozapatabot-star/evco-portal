@@ -11,6 +11,8 @@ import {
 import type { Recommendation } from '@/lib/intelligence/recommend'
 import type { FullCrossingInsight } from '@/lib/intelligence/full-insight'
 import { withDecisionLog } from '@/lib/intelligence/decision-log'
+import { findDuplicates } from '@/lib/invoice-dedup'
+import { classifyDocumentSmart } from '@/lib/docs/classify'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,6 +40,9 @@ export type ToolName =
   | 'intelligence_scan'
   | 'draft_mensajeria'
   | 'learning_report'
+  | 'check_invoice_duplicate'
+  | 'classify_document'
+  | 'inbox_summary'
 
 /**
  * Anthropic tool definitions. Kept deliberately small so Haiku picks the
@@ -194,6 +199,49 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
       type: 'object',
       properties: {
         windowDays: { type: 'number', description: 'Ventana de análisis en días. Default 7. Rango 1..90.' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'check_invoice_duplicate',
+    description:
+      'Busca facturas duplicadas o casi-duplicadas en el banco del cliente. Devuelve cubos exact / near / fuzzy con la razón de la coincidencia. Úsalo cuando el usuario pregunte "¿ya subí esta factura?", "¿hay duplicados?", o antes de confirmar una carga.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        invoiceNumber: { type: 'string', description: 'Folio o número de factura.' },
+        supplierName: { type: 'string', description: 'Nombre del proveedor (opcional, útil para "near" match).' },
+        supplierRfc: { type: 'string', description: 'RFC del proveedor (opcional, produce match autoritativo con folio).' },
+        amount: { type: 'number', description: 'Monto total (opcional).' },
+        currency: { type: 'string', description: 'MXN o USD (opcional).' },
+        invoiceDate: { type: 'string', description: 'Fecha de la factura en ISO (opcional, para ventana ±60 días).' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'classify_document',
+    description:
+      'Clasifica un documento aduanal (factura, BL, pedimento, carta porte, certificado de origen, etc.) combinando heurísticas + Claude Vision. Devuelve { smartType, confidence, source }. Úsalo cuando el usuario pregunte "¿qué tipo de documento es este?" o "clasifica este archivo".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        fileUrl: { type: 'string', description: 'URL pública del archivo en el bucket expedientes.' },
+        invoiceBankId: { type: 'string', description: 'ID de la factura en pedimento_facturas (se resuelve el fileUrl).' },
+        filename: { type: 'string', description: 'Nombre original del archivo (mejora heurísticas).' },
+        mimeType: { type: 'string', description: 'MIME type del archivo (mejora heurísticas).' },
+        clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
+      },
+    },
+  },
+  {
+    name: 'inbox_summary',
+    description:
+      'Resumen de la Bandeja de documentos: cuántas facturas pendientes de clasificar/asignar, desglose por tipo sugerido, cuántas tienen posible duplicado. Úsalo cuando el usuario pregunte "¿qué documentos faltan?", "¿cómo va la bandeja?", "¿qué hay pendiente?".',
+    input_schema: {
+      type: 'object',
+      properties: {
         clientFilter: { type: 'string', description: 'Clave de cliente (solo para internos).' },
       },
     },
@@ -488,6 +536,215 @@ async function execRouteMention(args: MentionArgs, ctx: AguilaCtx): Promise<Ment
 }
 
 // ---------------------------------------------------------------------------
+// Phase 4 · V2 Doc Intelligence tools
+// ---------------------------------------------------------------------------
+
+interface CheckDuplicateArgs {
+  invoiceNumber?: string
+  supplierName?: string
+  supplierRfc?: string
+  amount?: number
+  currency?: string
+  invoiceDate?: string
+  clientFilter?: string
+}
+
+async function execCheckInvoiceDuplicate(args: CheckDuplicateArgs, ctx: AguilaCtx) {
+  const scope = await resolveClientScope(ctx, args.clientFilter)
+  // Client role pins to its own companyId; admin/broker with no filter
+  // means "show me duplicates across all clients" which we refuse here
+  // (dedup is inherently per-tenant — there's no sensible cross-tenant
+  // question). Force a specific tenant for this tool.
+  const companyId = scope.companyId ?? ctx.companyId
+  if (!companyId) throw new AguilaForbiddenError('scope:dedup_requires_tenant')
+
+  const res = await findDuplicates(supabaseAdmin, {
+    companyId,
+    invoiceNumber: args.invoiceNumber ?? null,
+    supplierName: args.supplierName ?? null,
+    supplierRfc: args.supplierRfc ?? null,
+    amount: args.amount ?? null,
+    currency: args.currency ?? null,
+    invoiceDate: args.invoiceDate ?? null,
+  })
+
+  // Summarize for the LLM — keep the payload compact.
+  return {
+    scope: companyId,
+    total: res.total,
+    exactCount: res.exact.length,
+    nearCount: res.near.length,
+    fuzzyCount: res.fuzzy.length,
+    topMatches: [...res.exact, ...res.near, ...res.fuzzy].slice(0, 5).map((m) => ({
+      id: m.id,
+      bucket: m.bucket,
+      score: m.score,
+      reasons: m.reasons,
+      invoice_number: m.invoice_number,
+      supplier_name: m.supplier_name,
+      amount: m.amount,
+      currency: m.currency,
+      received_at: m.received_at,
+    })),
+  }
+}
+
+interface ClassifyDocumentArgs {
+  fileUrl?: string
+  invoiceBankId?: string
+  filename?: string
+  mimeType?: string
+  clientFilter?: string
+}
+
+async function execClassifyDocument(args: ClassifyDocumentArgs, ctx: AguilaCtx) {
+  const scope = await resolveClientScope(ctx, args.clientFilter)
+  const companyId = scope.companyId ?? ctx.companyId
+  if (!companyId) throw new AguilaForbiddenError('scope:classify_requires_tenant')
+
+  let fileUrl = args.fileUrl ?? null
+  let filename = args.filename ?? null
+  let mimeType = args.mimeType ?? null
+
+  // Resolve invoiceBankId → fileUrl when the caller passed just an id.
+  if (!fileUrl && args.invoiceBankId) {
+    const { data } = await supabaseAdmin
+      .from('pedimento_facturas')
+      .select('file_url, company_id')
+      .eq('id', args.invoiceBankId)
+      .maybeSingle()
+    if (!data) throw new Error('classify:invoice_not_found')
+    // Tenant guard — refuse to classify another tenant's invoice even
+    // for internal roles that didn't scope themselves explicitly.
+    if (data.company_id && data.company_id !== companyId) {
+      throw new AguilaForbiddenError('scope:invoice_other_tenant')
+    }
+    fileUrl = data.file_url as string | null
+  }
+
+  if (!fileUrl) throw new Error('classify:missing_fileUrl')
+  // Derive filename from the URL's last path segment when not supplied.
+  if (!filename) {
+    try {
+      filename = fileUrl.split('/').pop()?.split('?')[0] ?? 'unknown'
+    } catch {
+      filename = 'unknown'
+    }
+  }
+  if (!mimeType) {
+    const lower = (filename ?? '').toLowerCase()
+    if (lower.endsWith('.pdf')) mimeType = 'application/pdf'
+    else if (lower.endsWith('.xml')) mimeType = 'application/xml'
+    else if (lower.endsWith('.png')) mimeType = 'image/png'
+    else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) mimeType = 'image/jpeg'
+    else mimeType = 'application/octet-stream'
+  }
+
+  const result = await classifyDocumentSmart({
+    fileUrl,
+    filename: filename ?? 'unknown',
+    mimeType,
+    companyId,
+    linkToInvoiceBankId: args.invoiceBankId ?? null,
+    actor: `${ctx.role}:${ctx.operatorId ?? ctx.userId ?? 'aguila'}`,
+  })
+
+  return {
+    scope: companyId,
+    smartType: result.smartType,
+    confidence: result.confidence,
+    source: result.source,
+    reason: result.reason,
+    hasExtraction: !!result.extraction,
+    // Only surface safe, bounded fields from the extraction — no raw
+    // line items (they bloat the LLM transcript).
+    supplier: result.extraction?.supplier ?? null,
+    invoice_number: result.extraction?.invoice_number ?? null,
+    amount: result.extraction?.amount ?? null,
+    currency: result.extraction?.currency ?? null,
+    notConfigured: result.notConfigured,
+    error: result.error,
+  }
+}
+
+interface InboxSummaryArgs { clientFilter?: string }
+
+async function execInboxSummary(args: InboxSummaryArgs, ctx: AguilaCtx) {
+  const scope = await resolveClientScope(ctx, args.clientFilter)
+  const companyId = scope.companyId ?? ctx.companyId
+  if (!companyId) throw new AguilaForbiddenError('scope:inbox_requires_tenant')
+
+  // Pull a representative slice of unassigned invoices + their latest
+  // classification to shape the summary. 200 rows is enough to rank
+  // top types; beyond that the ranking converges.
+  const { data: invoices } = await supabaseAdmin
+    .from('pedimento_facturas')
+    .select('id, file_hash, normalized_invoice_number, supplier_rfc')
+    .eq('company_id', companyId)
+    .eq('status', 'unassigned')
+    .limit(500)
+
+  const rows = (invoices ?? []) as Array<{
+    id: string
+    file_hash: string | null
+    normalized_invoice_number: string | null
+    supplier_rfc: string | null
+  }>
+
+  // Duplicate flag (same grouping logic the /api/inbox uses).
+  const hashCounts = new Map<string, number>()
+  const rfcInvoiceCounts = new Map<string, number>()
+  for (const r of rows) {
+    if (r.file_hash) hashCounts.set(r.file_hash, (hashCounts.get(r.file_hash) ?? 0) + 1)
+    if (r.supplier_rfc && r.normalized_invoice_number) {
+      const k = `${r.supplier_rfc}|${r.normalized_invoice_number}`
+      rfcInvoiceCounts.set(k, (rfcInvoiceCounts.get(k) ?? 0) + 1)
+    }
+  }
+  const duplicatesCount = rows.filter((r) => {
+    if (r.file_hash && (hashCounts.get(r.file_hash) ?? 0) > 1) return true
+    if (r.supplier_rfc && r.normalized_invoice_number) {
+      const k = `${r.supplier_rfc}|${r.normalized_invoice_number}`
+      if ((rfcInvoiceCounts.get(k) ?? 0) > 1) return true
+    }
+    return false
+  }).length
+
+  // Type breakdown — latest classification per invoice_bank_id.
+  const ids = rows.map((r) => r.id)
+  const byType: Record<string, number> = {}
+  let withoutSuggestion = rows.length
+  if (ids.length > 0) {
+    const { data: classes } = await supabaseAdmin
+      .from('document_classifications')
+      .select('invoice_bank_id, doc_type, created_at')
+      .in('invoice_bank_id', ids)
+      .order('created_at', { ascending: false })
+      .limit(ids.length * 3)
+    const seen = new Set<string>()
+    for (const c of (classes ?? []) as Array<{
+      invoice_bank_id: string
+      doc_type: string | null
+    }>) {
+      if (!c.invoice_bank_id || seen.has(c.invoice_bank_id)) continue
+      seen.add(c.invoice_bank_id)
+      const key = c.doc_type ?? 'sin_clasificar'
+      byType[key] = (byType[key] ?? 0) + 1
+    }
+    withoutSuggestion = rows.length - seen.size
+  }
+
+  return {
+    scope: companyId,
+    inboxCount: rows.length,
+    byType,
+    withoutSuggestion,
+    duplicatesCount,
+    link: '/bandeja-documentos',
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Dispatch
 // ---------------------------------------------------------------------------
 
@@ -530,6 +787,12 @@ export async function runTool(
         return { tool, result: await execDraftMensajeria(args as DraftMensajeriaArgs, ctx) }
       case 'learning_report':
         return { tool, result: await execLearningReport(args as LearningReportArgs, ctx) }
+      case 'check_invoice_duplicate':
+        return { tool, result: await execCheckInvoiceDuplicate(args as CheckDuplicateArgs, ctx) }
+      case 'classify_document':
+        return { tool, result: await execClassifyDocument(args as ClassifyDocumentArgs, ctx) }
+      case 'inbox_summary':
+        return { tool, result: await execInboxSummary(args as InboxSummaryArgs, ctx) }
       default:
         return { tool, result: null, error: `unknown_tool:${tool}` }
     }

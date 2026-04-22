@@ -2452,3 +2452,472 @@ operator acts on first**:
 
 The V2.O wire above follows this — predictions come right after the
 7-day hero because they're the most actionable forward-looking signal.
+
+---
+
+## 36. How Grok agents should work with this codebase
+
+This section is for YOU, Grok. Read it first. Every convention below
+exists because a past agent (human or AI) broke it and we paid for it
+in a real incident. Follow them and you ship with us.
+
+### 36.1 — The three questions to answer before any edit
+
+1. **What surface am I touching?** Client (`/inicio`, `/catalogo`,
+   `/mi-cuenta`, `/embarques`, `/anexo-24`, `/mensajeria`, `/cruz`)?
+   Operator (`/operador/*`, `/admin/eagle`, `/bodega/*`)? Admin-only
+   (`/admin/*`)? Public (`/pitch`, `/demo`)? Every surface has
+   different rules. See §36.4 for the per-surface guardrails.
+
+2. **Does a primitive for this already exist?** Grep before writing.
+   §37 lists every canonical primitive. If there's already a
+   `formatPedimento`, use it. If there's already a
+   `resolvePartidaLinks`, don't re-implement the 2-hop. Parallel
+   implementations drift over time and create the exact class of bug
+   that took 16 marathons to clean up (the phantom-column saga).
+
+3. **Am I about to introduce a phantom column?** If the answer is
+   "I don't know" — you need to check §28.2 (real-schema cheat sheet)
+   first. `PHANTOM_BASELINE=0` in `scripts/gsd-verify.sh`. Any new
+   phantom fails ship. The schema-contracts module at
+   `src/lib/schema-contracts.ts` can give you compile-time safety —
+   use `col('traficos', 'trafico')` inside a select() to get a TS
+   error when you typo.
+
+### 36.2 — The session start ritual
+
+Every session (human or AI), before the first edit:
+
+```bash
+cd ~/evco-portal
+git status                  # know what's in-flight
+git branch --show-current   # know where you are
+npx tsc --noEmit            # know the type state
+```
+
+Then read:
+
+1. `.claude/rules/core-invariants.md` — hard invariants (35 of them)
+2. This handbook's §28 (phantom-column guide), §29 (data-flow
+   invariants), §33 (guard-rail inventory), §36 (this section)
+3. `docs/grok-build-handbook.md` for the task-specific recipe
+
+Don't skim. The invariants exist because each one was violated once
+and cost real money or a client's trust.
+
+### 36.3 — Commit discipline
+
+Every commit passes pre-commit hooks automatically. Your responsibility:
+
+- **Atomic**: one commit = one conceptual change. Don't mix a bug fix
+  with a refactor.
+- **Descriptive**: title in the form `<type>(<scope>): <what>`.
+  Types: feat, fix, docs, test, chore, refactor, style. Scope: the
+  module or area (e.g. `intelligence`, `admin/intelligence`, `lib`).
+  Full example: `feat(intelligence): V2.O — Fracción Health + 7-day series`.
+- **Body explains WHY, not WHAT**. Git diff already shows what
+  changed. Commit body answers "why does this need to exist?" and
+  "what breaks if I revert it?".
+- **Never commit to main directly** unless the current session has
+  been working on main throughout (stream consistency matters more
+  than the rule here). Otherwise, create a branch:
+  `git checkout -b <meaningful-name>`. The branch name should describe
+  what ships (e.g. `v2-intelligence-phase-1-overnight`).
+- **Never force-push main**. Never skip pre-commit hooks
+  (`--no-verify`). Never bypass gsd-verify ratchets. Each of these
+  caught a real regression we would otherwise have shipped.
+
+### 36.4 — Per-surface guardrails
+
+| Surface | Rules | Common mistake |
+|---|---|---|
+| Client (`/inicio`, `/catalogo`, `/anexo-24`, `/mi-cuenta`, `/embarques`, `/mensajeria`, `/cruz`) | Calm tone only · no compliance anxiety (MVE countdowns, red deadlines) · certainty not urgency · tenant-scoped by session.companyId · must render without crashing even when empty | Surfacing a SEV-2 alert on a client page "because it's useful info" |
+| Operator (`/operador/*`, `/admin/eagle`) | Internal-tier signals OK (deltas, severity ribbons, amber/red tones) · still tenant-scoped by default · admin can override via `?company_id=` | Forgetting to gate admin bypass behind `role === 'admin'` |
+| Admin-only (`/admin/*`) | Role-gated at the page level (`requireAdminSession` or explicit redirect) · can cross tenants for oversight · never render a client-role user | Leaving the redirect off; client visiting `/admin/intelligence` |
+| API routes | Use `requireAdminSession` / `requireClientSession` / `requireAnySession` guards · return via `ApiResponse<T>` helpers · never trust cookie-read company_id (verify from session) | Reading `company_id` from a cookie without verifying |
+| Shared lib | Pure when possible · tenant-scoped when DB · side-effects ONLY via explicit helpers (logDecision, sendTelegram) · pure functions are the unit-test target | Adding I/O to what should be a pure aggregator |
+| Cron scripts | Telegram alert on failure · log to sync_log · pm2 save after process change · no silent catch | Swallowing the error in a .catch(() => {}) |
+
+### 36.5 — The "grep first" reflex
+
+Before writing code, answer these with a grep:
+
+- Is there already a helper for this? `grep -rn "functionName" src/`
+- Where is this column used? `grep -rn "column_name" src/`
+- Does this table exist in our schema? `grep -n "tableName" src/lib/schema-contracts.ts`
+- What's the canonical pattern for this kind of query? §31 recipes
+
+When the grep returns 0 hits — that's the moment to decide "create a
+new primitive" vs "keep it inline." Generally, if the same shape will
+appear in 2+ places, extract into `src/lib/` now. If it's genuinely
+one-off, keep it inline with a comment explaining why.
+
+### 36.6 — When you're unsure
+
+Three acceptable escape hatches:
+
+1. **Read more context.** `CLAUDE.md`, `.claude/rules/*.md`, and this
+   handbook cover ~95% of cases. The answer is usually documented.
+
+2. **Ask once, specifically.** If after reading you're still unsure
+   about a destructive action (tenant schema migration, rate change,
+   sending to a client), ask. Don't ask 5 questions; ask the 1 that
+   unblocks you.
+
+3. **Do the smallest safe thing.** If the task is ambiguous and you
+   can't reach the owner, ship the smallest version that works and
+   add a `// TODO: [ambiguous] ...` comment describing what would
+   need to change for the larger version.
+
+### 36.7 — Anti-patterns we will revert on sight
+
+These happen often enough to enumerate:
+
+- **Inline custom glass styles.** All glass chemistry comes from
+  `<GlassCard>`. Inline `background: rgba(...)` on a card = revert.
+- **Raw hex colors.** Design-system tokens only. `#C9A84C` = revert.
+  Exception: M12+ legacy code inside `src/components/aguila/` that
+  defines the tokens.
+- **`.select('*')` on tenant-scoped tables without a tenant filter.**
+  Cross-tenant leak in waiting. Revert + reopen with a scoped query.
+- **`any` without a linked issue.** Every `any` needs a
+  `// TS-ANY-ISSUE: #NNN — reason` comment or it goes away.
+- **`console.log` in production code.** Use structured logger or
+  remove. The ratchet already blocks this; don't bypass it in a
+  JSDoc either (we got caught on that once — the grep is greedy).
+- **"Value × 0.16" IVA calculation.** Always use `calculateIVA` from
+  `src/lib/financial/calculations.ts`. The cascading base
+  (valor_aduana + DTA + IGI) is the correct formula. Flat rate
+  under-declares by 5-15% per pedimento.
+- **Strip spaces from pedimento numbers.** Storage stores the
+  7-digit consecutivo; display goes through `formatPedimento()`.
+  Never concatenate raw.
+- **Strip dots from fracciones.** Same rule. Always
+  `formatFraccion()`.
+- **Hardcoding `'9254'` or `'EVCO'`.** Multi-tenant safety. Use
+  `session.companyId` or parameterize.
+
+### 36.8 — When your test fails
+
+Three debugging order:
+
+1. **Read the assertion carefully.** The test names tell you the
+   contract; the assertion tells you the expected value. If your
+   change broke the test, the test is probably right — it's a
+   regression fence, not a preference.
+2. **Check fixture freshness.** If a schema changed, test fixtures
+   might need updates (see the M15 `company-name` + `suggest` test
+   rewrites for precedent).
+3. **Only THEN consider updating the test.** If you're updating a
+   test, write the commit body explaining why the old assertion was
+   wrong. "Test was too strict" is not a reason; "Test was fixed to
+   match the new column shape after the M15 schema rename" is.
+
+### 36.9 — What constitutes "done"
+
+A task is done when ALL are true:
+
+- [ ] Code compiles (`tsc --noEmit` zero errors)
+- [ ] Tests pass (`vitest run` all green)
+- [ ] Ratchets pass (`gsd-verify --ratchets-only` zero failures)
+- [ ] Pre-commit hook passes (automatic in this repo)
+- [ ] Commit message is atomic + descriptive
+- [ ] Scope honored (didn't touch surfaces outside the ask)
+- [ ] New primitives documented in §37 or inline JSDoc
+- [ ] Tests added for any new pure function
+
+If any is false, the task isn't done. Don't report completion until
+it is.
+
+---
+
+## 37. Core Primitives Reference
+
+The primitives below are the `src/lib/` building blocks an agent should
+reach for FIRST. Each has tests; most have a handbook section; all are
+tenant-safe by design. Sorted by domain.
+
+### 37.1 — Format helpers (pure, zero I/O)
+
+**`formatPedimento(raw, fallback?, defaults?)`** — `src/lib/format/pedimento.ts`
+
+Renders a pedimento as canonical `DD AD PPPP SSSSSSS`. Accepts bare
+15-digit, dotted, or 7-digit consecutivo with `defaults = { dd, ad, pppp }`.
+Returns the fallback (default `'—'`) when input is unparseable.
+
+```ts
+import { formatPedimento } from '@/lib/format/pedimento'
+formatPedimento('26243596 6500441')   // → "26 24 3596 6500441"
+formatPedimento('6500441', '—', { dd: '26', ad: '24', pppp: '3596' })
+  // → "26 24 3596 6500441"  (reconstruction path)
+formatPedimento(null)                 // → "—"
+```
+
+Also exports: `parsePedimento`, `formatPedimentoCompact`,
+`isValidPedimento`.
+
+**`formatFraccion(raw)`** — `src/lib/format/fraccion.ts`
+
+Renders a fracción as `XXXX.XX.XX` or `XXXX.XX.XX.XX` (with NICO).
+Accepts dotted or bare-digit input. Returns `null` on unparseable.
+
+```ts
+formatFraccion('3903200199')   // → "3903.20.01.99"
+formatFraccion('3903.20.01')   // → "3903.20.01"  (passthrough)
+formatFraccion('xyz')          // → null
+```
+
+**`cleanCompanyDisplayName(rawName)`** — `src/lib/format/company-name.ts`
+
+Strips legal suffixes ("S.A. DE C.V.", "GRUPO", etc.) for display.
+Preserves MAFESA as-is (specific fixture). Title-cases first letter.
+
+### 37.2 — Schema contracts (compile-time phantom defense)
+
+**`col(table, column)` / `cols(table, list)`** — `src/lib/schema-contracts.ts`
+
+Compile-time guard — passes through the column name but fails `tsc`
+on phantom names. See §28.4 for full story.
+
+```ts
+import { col, cols } from '@/lib/schema-contracts'
+sb.from('traficos').select(col('traficos', 'trafico'))    // OK
+sb.from('traficos').select(col('traficos', 'proveedor'))  // TS ERROR
+sb.from('traficos').select(cols('traficos', 'trafico, pedimento'))
+```
+
+Also exports: `TRAFICOS_COLUMNS`, `GLOBALPC_*_COLUMNS`, etc. (real-schema
+tuples), `SchemaTable`, `SchemaColumnMap`, `realColumns(table)`.
+
+### 37.3 — Tenant-scoped queries
+
+**`getScopedFrom(supabase, table, companyId, opts?)`** — `src/lib/queries/tenant-scoped.ts`
+
+Returns a supabase builder with `company_id` pre-applied. Use for
+single-table reads. Throws if `companyId` is null unless
+`opts.mode === 'all-tenants'` (admin bypass).
+
+```ts
+import { getScopedFrom } from '@/lib/queries/tenant-scoped'
+const { data } = await getScopedFrom(sb, 'traficos', session.companyId)
+  .select('trafico, pedimento, fecha_cruce')
+  .order('fecha_cruce', { ascending: false })
+  .limit(10)
+```
+
+Also exports: `getTenantScopedQuery` (variant with implicit `.select('*')`),
+`assertScopeMode(role, mode)` (gate admin bypass).
+
+### 37.4 — Canonical cross-table joins
+
+**`resolvePartidaLinks(sb, companyId, partidas)`** — `src/lib/queries/partidas-trafico-link.ts`
+
+Given partidas (with `folio`), resolves the 2-hop join to traficos.
+Returns `byFolio: Map<folio, { cve_trafico, pedimento, fecha_cruce,
+fecha_llegada, semaforo, fecha_facturacion, valor_comercial }>`.
+
+```ts
+const links = await resolvePartidaLinks(sb, companyId, partidas)
+for (const p of partidas) {
+  const link = p.folio != null ? links.byFolio.get(p.folio) : null
+  // link.pedimento, link.semaforo, link.fecha_cruce, ...
+}
+```
+
+**`partidasByTrafico(sb, companyId, traficoId, opts?)`** — `src/lib/queries/partidas-by-trafico.ts`
+
+The inverse direction: given a trafico id, return all its partidas
+fully enriched (fraccion + descripcion + umt from productos,
+valor_comercial computed from cantidad × precio_unitario).
+
+```ts
+const partidas = await partidasByTrafico(sb, companyId, '9254-X3435')
+// Each partida has: id, folio, cve_producto, cantidad, precio_unitario,
+// fraccion, descripcion, umt, pais_origen, valor_comercial (computed)
+```
+
+Both helpers are tenant-scoped at every hop. Do not reinvent these.
+
+### 37.5 — Financial calculations
+
+**`calculateDTA(input)` / `calculateIGI(input)` / `calculateIVA(input)` / `calculatePedimento(input)`** — `src/lib/financial/calculations.ts`
+
+The ONLY places customs tax formulas live. Always use these — never
+hand-roll `iva = value × 0.16` or `dta = value × 0.008`. The
+cascading IVA base (`valor_aduana + DTA + IGI`) is enforced here.
+
+```ts
+import { calculatePedimento } from '@/lib/financial/calculations'
+import { getDTARates, getIVARate, getExchangeRate } from '@/lib/rates'
+
+const [rates, ivaRate, fx] = await Promise.all([
+  getDTARates(), getIVARate(), getExchangeRate(),
+])
+const calc = calculatePedimento({
+  valor_usd: 10000,
+  tipo_cambio: fx.rate,
+  regimen: 'A1',
+  igi_rate: 0.05,
+  tmec_eligible: true,
+  rates,
+  iva_rate: ivaRate,
+})
+// calc.total_taxes_mxn, calc.total_landed_mxn, calc.tmec_savings_mxn, ...
+```
+
+All helpers throw on invalid inputs (negative values, rate > 1).
+Step-level helpers are also exported for auditing each calculation.
+
+### 37.6 — Rates config (system_config)
+
+**`getDTARates()`, `getIVARate()`, `getExchangeRate()`** — `src/lib/rates.ts`
+
+Read rates from the `system_config` table. Throws on missing OR expired
+(`valid_to < now`) — the "refuse to calculate" rule. Never hardcode.
+
+```ts
+const { rate: fx } = await getExchangeRate()    // Banxico rate
+const iva = await getIVARate()                   // 0.16
+const rates = await getDTARates()                // { A1, IN, IT, ... }
+```
+
+### 37.7 — V2 Intelligence Layer
+
+**`computePartStreaks(crossings)`, `computeProveedorHealth(crossings)`, `computeFraccionHealth(crossings)`, `computeVolumeSummary(crossings, now?)`, `predictVerdeProbability(input)`, `detectAnomalies(crossings, now?)`** — `src/lib/intelligence/crossing-insights.ts`
+
+Pure aggregators. Caller builds a crossing stream (typically via
+`resolvePartidaLinks`), passes it in, receives structured signals. See
+§34 for the design philosophy + how to extend.
+
+**`getCrossingInsights(sb, companyId, opts?)`** — same file — thin
+orchestrator, handles all DB fetches, returns the full `InsightsPayload`.
+
+**`getVerdeProbabilityForSku(sb, companyId, cveProducto, opts?)`** /
+**`getVerdeProbabilityForTrafico(sb, companyId, traficoId, opts?)`** — `src/lib/intelligence/predict-by-id.ts`
+
+DB-facing wrappers. Take an identifier, return a full `VerdePrediction`
+(probability, band, explainable factors). Returns `null` when the SKU
+has no crossings in window.
+
+### 37.8 — Auth + API response
+
+**`requireAdminSession()`, `requireClientSession()`, `requireAnySession()`, `requireOneOf([...])`** — `src/lib/auth/session-guards.ts`
+
+Auth guards for API routes. Return `{ session, error }` — error is
+a `NextResponse` with the right status if the guard fails.
+
+```ts
+export async function GET(req: NextRequest) {
+  const { session, error } = await requireAdminSession()
+  if (error) return error
+  // ... session.role is 'admin' | 'broker', session.companyId set
+}
+```
+
+Also exports: `unauthorized()`, `forbidden()`.
+
+**`ok(data)`, `notFound(msg?)`, `validationError(msg)`, `internalError(msg)`, `conflict(msg)`, `fail(code, msg, status)`** — `src/lib/api/response.ts`
+
+Canonical `{ data, error }` response helpers. Use for every route
+return. Never hand-roll response shape.
+
+```ts
+return ok(payload)
+return validationError('cve_producto required')
+return notFound()   // default message
+return internalError(err.message)
+```
+
+### 37.9 — Cockpit queries (soft wrappers)
+
+**`softCount`, `softData`, `softFirst`** — `src/lib/cockpit/safe-query.ts`
+
+Wrap a Supabase query in a try/catch + log. Returns 0/[]/null on any
+error. Use for cockpit SSR queries where a single bad query must not
+crash the page. The soft-wrapper silently swallows phantom errors —
+rely on the phantom scanner + schema-contracts for the real defense.
+
+```ts
+const count = await softCount(
+  sb.from('traficos').select('*', { count: 'exact', head: true })
+    .eq('company_id', companyId).eq('estatus', 'En Proceso'),
+  0, // fallback
+)
+```
+
+### 37.10 — Decision + operator audit log
+
+**`logDecision(input)`** — `src/lib/decision-logger.ts`
+
+Append a row to `operational_decisions`. Use for every automated
+judgment (classification pick, risk assessment, AI response) so the
+audit trail has the input data + reasoning.
+
+**`logOperatorAction(input)`** — `src/lib/operator-actions.ts`
+
+Append to `operator_actions`. Use for every human-authorized
+mutation so we know who changed what.
+
+Both are append-only; never deleted.
+
+### 37.11 — Client-facing UI primitives (read-only from agent scope)
+
+You shouldn't touch client surfaces, but if you need to understand
+what's rendered, these are the building blocks:
+
+- `<PageShell>` — every authenticated route's outer wrapper
+- `<GlassCard tier=hero|secondary|tertiary>` — THE glass surface
+- `<AguilaMetric>` — numeric KPI tile with sub-label + tone
+- `<AguilaInsightCard tone=opportunity|watch|anomaly|neutral>` — V2
+- `<AguilaStreakBar values={...}>` — green-streak visual
+- `<Sparkline data={...} tone tone>` — mini-chart
+- `<StatusBadge status={...}>` — status → semantic pill
+- `<SemaforoPill value={0|1|2|null}>` — customs semáforo
+- `<FreshnessBanner>` — sync-contract freshness signal
+
+Client-surface rules: calm tone only, no compliance anxiety, silver
+chrome with at most 1 semantic color per view. See core-invariants #24.
+
+### 37.12 — Canonical grep targets
+
+Quick reference for "where is X defined":
+
+| You want | Look in |
+|---|---|
+| Real-schema columns for a table | `src/lib/schema-contracts.ts` |
+| Tenant-scoped query helper | `src/lib/queries/tenant-scoped.ts` |
+| Partida → trafico join | `src/lib/queries/partidas-trafico-link.ts` |
+| Trafico → partidas join | `src/lib/queries/partidas-by-trafico.ts` |
+| DTA / IGI / IVA formulas | `src/lib/financial/calculations.ts` |
+| Rates (DTA/IVA/FX) | `src/lib/rates.ts` |
+| Pedimento / fracción format | `src/lib/format/{pedimento,fraccion}.ts` |
+| Customs intelligence signals | `src/lib/intelligence/crossing-insights.ts` |
+| Predict-by-id wrappers | `src/lib/intelligence/predict-by-id.ts` |
+| Session guards | `src/lib/auth/session-guards.ts` |
+| API response helpers | `src/lib/api/response.ts` |
+| Cockpit soft-wrappers | `src/lib/cockpit/safe-query.ts` |
+| Decision / operator audit | `src/lib/{decision-logger,operator-actions}.ts` |
+| Glass chemistry tokens | `src/lib/design-system.ts` |
+| Telegram sender | `src/lib/telegram/send.ts` |
+| Auto-logger (leads) | `src/lib/leads/activities.ts` |
+| V1 design primitives | `src/components/aguila/` |
+
+### 37.13 — When to add a new primitive vs inline
+
+Ship a new primitive when:
+- The shape will appear in **2+ call sites**, or will in the next phase
+- The shape has a **non-obvious invariant** (tenant safety, cascading
+  formula, format normalization) worth centralizing
+- The shape is **testable in isolation** — pure function, single
+  concern
+
+Keep it inline when:
+- It's **genuinely one-off** and unlikely to repeat
+- The "abstraction" would hide real locality (e.g. a one-line
+  filter that depends on three local variables)
+- There's no clear test boundary
+
+When in doubt, inline first. A second copy-paste is the signal to
+extract — not a speculative abstraction.
+
+---

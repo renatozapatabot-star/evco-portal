@@ -4247,3 +4247,320 @@ not where to look.
 | Asked to ship something fast | §36.6 "when you're unsure" |
 
 ---
+
+## §42 — Autonomous Agent Core (Phase 2)
+
+Phase 2 turns the Phase 1 primitives into real agentic capability. Four
+new modules compose on top of §37's building blocks:
+
+- `src/lib/intelligence/recommend.ts` — **pure** rule-based recommender
+- `src/lib/intelligence/full-insight.ts` — composer: SKU/trafico → full bundle
+- `src/lib/intelligence/anomaly-report.ts` — structured anomaly scan
+- `src/lib/intelligence/agent.ts` — orchestrator: one call, complete report
+
+Together they answer the question every downstream surface keeps asking:
+
+> "Given these signals, what should the operator DO?"
+
+Phase 2's contract: **proposals only, never execution.** The agent
+recommends; humans authorize every action. This boundary is permanent
+and matches the approval gate in CLAUDE.md.
+
+---
+
+### §42.1 — `recommendNextAction` (pure)
+
+Pure function. Input = structured signals. Output = `Recommendation[]`
+sorted by priority desc, subject asc.
+
+```ts
+import { recommendNextAction } from '@/lib/intelligence/recommend'
+
+const recs = recommendNextAction({
+  prediction,            // VerdePrediction — optional
+  streak,                // PartStreak — optional
+  proveedor,             // ProveedorHealth — optional
+  fraccionHealth,        // FraccionHealth — optional
+  anomalies,             // Anomaly[] — optional
+  volume,                // VolumeSummary — optional
+})
+// [{ kind, priority, subject, action_es, rationale_es, metadata }, ...]
+```
+
+**Rule set** (transparent by design):
+
+| Rule fires when... | Kind | Priority |
+|---|---|---|
+| streak ≥ 6 verdes + band `high` | `celebrate_streak` | low |
+| `just_broke_streak` | `watch_broken_streak` | medium |
+| prediction band `low` + ≥ 3 crossings | `prioritize_rojo_review` | **high** |
+| proveedor pct_verde < 75% + ≥ 5 crossings | `review_supplier_slip` | medium |
+| fracción chapter < 75% + ≥ 10 crossings | `escalate_fraccion_risk` | medium |
+| anomaly `new_proveedor` | `validate_new_proveedor` | medium |
+| anomaly `volume_spike` | `investigate_volume_spike` | medium |
+| volume delta_pct < -40 + prior ≥ 5 | `monitor_volume_drop` | low |
+| (no other rule fires) | `no_action` | low |
+
+**Always returns at least one recommendation** — the `no_action`
+fallback keeps consumers from rendering empty lists.
+
+---
+
+### §42.2 — `buildFullCrossingInsight` (DB-facing composer)
+
+Takes a target (SKU or trafico) and returns the complete insight bundle:
+
+```ts
+import { buildFullCrossingInsight } from '@/lib/intelligence/full-insight'
+
+// SKU target
+const insight = await buildFullCrossingInsight(supabase, 'evco', {
+  type: 'sku',
+  cveProducto: '6600-1108',
+})
+
+// Trafico target — picks the dominant SKU from the trafico's partidas
+const shipment = await buildFullCrossingInsight(supabase, 'evco', {
+  type: 'trafico',
+  traficoId: '9254-X3435',
+})
+```
+
+**Returns `FullCrossingInsight | null`:**
+```ts
+{
+  target,               // the original InsightTarget
+  cve_producto,         // resolved SKU (dominant for trafico targets)
+  generated_at,
+  company_id,
+  signals: {
+    prediction,         // VerdePrediction — the headline number
+    streak,             // PartStreak — the SKU's streak
+    proveedor,          // ProveedorHealth | null — dominant supplier
+    fraccionHealth,     // FraccionHealth | null — chapter-level
+    baselinePct,        // tenant-wide verde rate floor
+    fraccion,           // 'XXXX.XX.XX' — the SKU's fracción
+  },
+  explanation,          // ExplainOutput from explain.ts
+  one_line,             // ≤ 160-char format for Telegram/lists
+  plain_text,           // multi-line for email/Mensajería/PDF
+  recommendations,      // Recommendation[] from §42.1
+  summary_es,           // single-sentence Spanish takeaway
+}
+```
+
+`null` is returned when the target has no signal (SKU never crossed,
+trafico has zero facturas, tenant is empty). Consumers fall through to
+the pre-activation empty state.
+
+---
+
+### §42.3 — `generateAnomalyReport` (DB-facing wrapper)
+
+Wraps `getCrossingInsights`, groups anomalies by kind, attaches
+recommendations, emits a Spanish `summary_es`.
+
+```ts
+import { generateAnomalyReport } from '@/lib/intelligence/anomaly-report'
+
+const report = await generateAnomalyReport(supabase, 'evco', {
+  windowDays: 30,      // default 90
+  now: Date.now(),
+})
+```
+
+**Returns `AnomalyReport`** (always — even on calm):
+```ts
+{
+  generated_at,
+  company_id,
+  window_days,
+  groups: [             // sorted high-priority kinds first
+    { kind, label_es, anomalies: [...], max_score },
+  ],
+  total_count,
+  recommendations,      // from recommendNextAction
+  summary_es,           // "evco: 3 anomalías · Proveedor nuevo (2), Salto de volumen (1)."
+  insights,             // raw InsightsPayload for drill-down
+}
+```
+
+Group ordering uses a priority table:
+```
+semaforo_rate_drop (5) > proveedor_slip (4) > new_proveedor (3)
+                       > volume_spike (2) > streak_break (1)
+```
+
+---
+
+### §42.4 — `runIntelligenceAgent` (orchestrator)
+
+One entry point. Four modes. A single well-formed report per call.
+
+```ts
+import { runIntelligenceAgent } from '@/lib/intelligence/agent'
+
+// Mode 1: full tenant scan — anomalies + watch SKUs + focus bundles
+const scan = await runIntelligenceAgent(supabase, 'evco', 'tenant_scan')
+
+// Mode 2: SKU-focused insight
+const skuReport = await runIntelligenceAgent(supabase, 'evco', {
+  type: 'sku',
+  cveProducto: '6600-1108',
+})
+
+// Mode 3: trafico-focused insight
+const traficoReport = await runIntelligenceAgent(supabase, 'evco', {
+  type: 'trafico',
+  traficoId: '9254-X3435',
+})
+
+// Mode 4: anomalies-only (faster, lighter)
+const alerts = await runIntelligenceAgent(supabase, 'evco', 'anomaly_only')
+```
+
+**Report shape by mode** (discriminated on `mode_label`):
+
+| Mode | mode_label | Unique fields |
+|---|---|---|
+| `tenant_scan` | `'tenant_scan'` | `insights`, `anomaly_report`, `focus_insights[]` |
+| `anomaly_only` | `'anomaly_only'` | `anomaly_report` |
+| `{type:'sku'}` | `'sku_focus'` | `insight: FullCrossingInsight \| null` |
+| `{type:'trafico'}` | `'trafico_focus'` | `insight: FullCrossingInsight \| null` |
+
+Every report shares: `generated_at`, `company_id`, `window_days`,
+`recommendations[]`, `summary_es`.
+
+**Tenant scan focus**: the agent automatically expands the top-N
+lowest-probability `watch_predictions` into full insights (default 3,
+configurable via `opts.topFocusCount`). This is where a Grok agent
+gets the most leverage — one call, complete situational report.
+
+---
+
+### §42.5 — "How would a Grok agent call this?"
+
+Three realistic workflows the new agent unlocks:
+
+#### Morning briefing (cron → Telegram headline)
+
+```ts
+// scripts/morning-briefing.js
+import { runIntelligenceAgent } from '@/lib/intelligence/agent'
+
+const report = await runIntelligenceAgent(sb, 'evco', 'tenant_scan', {
+  windowDays: 14,
+  topFocusCount: 3,
+})
+
+// Telegram headline
+await sendTelegram(`📊 ${report.summary_es}`)
+
+// Detail drill-in
+for (const focus of report.focus_insights) {
+  await sendTelegram(focus.plain_text)
+}
+for (const rec of report.recommendations.filter(r => r.priority === 'high')) {
+  await sendTelegram(`🚨 ${rec.action_es}`)
+}
+```
+
+#### CRUZ AI tool (`/api/cruz-ai/tools/explain-shipment`)
+
+```ts
+// Operator asks CRUZ AI: "¿Cómo se ve el tráfico 9254-X3435?"
+const report = await runIntelligenceAgent(sb, session.companyId, {
+  type: 'trafico',
+  traficoId: 'X3435',
+})
+
+// Safe to return the full bundle — all Spanish, all explained
+return NextResponse.json({
+  summary: report.summary_es,
+  detail: report.insight?.plain_text,
+  actions: report.recommendations,
+})
+```
+
+#### Mensajería draft composer (operator reviews before send)
+
+```ts
+// scripts/compose-shipment-heads-up.js
+const report = await runIntelligenceAgent(sb, 'evco', {
+  type: 'sku',
+  cveProducto: sku,
+})
+
+if (report.insight?.signals.prediction.band === 'low') {
+  // Draft goes to operator Mensajería inbox, NOT sent to client yet.
+  // Tito or Renato IV approves before any client-facing send.
+  await mensajeriaInsertDraft({
+    company_id: 'evco',
+    subject: `Preparación preventiva · ${sku}`,
+    body_es: report.insight.plain_text,
+    priority: 'medium',
+  })
+}
+```
+
+---
+
+### §42.6 — Demo-safety contract
+
+Phase 2 is **100% demo-safe** by construction:
+
+1. No new DB writes. Every module is read-only.
+2. No external side effects (no Telegram, no email, no Mensajería sends).
+   Scripts that *use* the agent's output must wire those separately.
+3. No UI changes. Client surfaces untouched. `/admin/intelligence`
+   still reads the Phase 1 `getCrossingInsights` directly.
+4. Existing public API unchanged. `getVerdeProbabilityForSku` now
+   internally delegates to `computeSkuSignals`, but its return type
+   and behavior are identical.
+5. Every new module has ≥ 6 tests with fixture or mocked inputs.
+   Total intelligence-layer tests: 115 (up from 76 before Phase 2).
+
+**What's safe to ship immediately**: anywhere calling
+`getCrossingInsights`, `getVerdeProbabilityForSku`, or
+`getVerdeProbabilityForTrafico` can be upgraded to
+`runIntelligenceAgent` without surface changes — the prior outputs
+are subsets of the richer report.
+
+---
+
+### §42.7 — Safety invariants
+
+These invariants apply to every Phase 2 primitive and every future
+extension:
+
+- **Tenant isolation first.** Every DB-facing entry point takes
+  `companyId` as a required positional arg. No defaults. No "current
+  tenant" lookups inside this module.
+- **Return null, never throw.** Missing signal → `null`. Empty tenant
+  → structured empty report. Failed fetch → empty defaults. The
+  calling UI must always be able to render *something*.
+- **Pure composers are pure.** `recommendNextAction` takes primitives
+  and returns primitives. No I/O. No `Date.now()` side-effects except
+  through an explicit option.
+- **Spanish copy belongs to the recommender.** `action_es` +
+  `rationale_es` are the source of truth. Consumers do not rewrite;
+  they render.
+- **No ML.** Every rule is a transparent threshold an operator can
+  reason about. When we add ML, it gets its own module with a
+  training pipeline — not mixed in with the rule layer.
+- **No Telegram.** No `sendTelegram` imports in `src/lib/intelligence/`.
+  Callers can wire notifications. The intelligence layer proposes.
+
+---
+
+### §42.8 — Where to read next
+
+| You want to... | Read |
+|---|---|
+| Add a new recommendation rule | `recommend.ts` — fixture-test in `__tests__/recommend.test.ts` |
+| Add a new agent mode | `agent.ts` — discriminated union `AgentMode` + matching builder |
+| Add a new anomaly kind | `crossing-insights.ts` §detectAnomalies + label in `anomaly-report.ts` |
+| Expose agent to CRUZ AI | Wrap `runIntelligenceAgent` in `src/lib/aguila/tools.ts` |
+| Use the agent in a cron | Example in §42.5 above |
+| Understand tenant isolation | `.claude/rules/tenant-isolation.md` + §37.1 |
+

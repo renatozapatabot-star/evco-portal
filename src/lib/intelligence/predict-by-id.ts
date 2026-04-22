@@ -32,6 +32,8 @@ import {
   type VerdePrediction,
   type SemaforoValue,
   type PartStreak,
+  type ProveedorHealth,
+  type FraccionHealth,
 } from './crossing-insights'
 import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
 
@@ -45,6 +47,24 @@ export interface PredictByIdOptions {
   now?: number
 }
 
+/**
+ * Intermediate signals produced while computing a SKU's prediction.
+ * Exposed so Phase 2 composers (`buildFullCrossingInsight`) can feed
+ * downstream rule layers (recommender, explainer) without re-fetching.
+ */
+export interface SkuSignals {
+  prediction: VerdePrediction
+  streak: PartStreak
+  /** The SKU's dominant proveedor in the window, when one exists. */
+  proveedor: ProveedorHealth | null
+  /** Chapter-level health for the SKU's fracción, when known. */
+  fraccionHealth: FraccionHealth | null
+  /** Tenant-wide baseline verde % used as the predictor floor. */
+  baselinePct: number
+  /** The fracción arancelaria string (with dots). Null if unknown. */
+  fraccion: string | null
+}
+
 interface PartidaRaw {
   cve_producto: string | null
   cve_proveedor: string | null
@@ -52,16 +72,18 @@ interface PartidaRaw {
 }
 
 /**
- * Predict the verde probability for a specific SKU on a tenant.
- * Returns null if the SKU has no crossings in the window (nothing to
- * base a prediction on).
+ * Compute all intermediate signals for an SKU prediction. Returns null
+ * when there's nothing to base a prediction on (tenant empty, SKU not
+ * seen in window, no filed crossings). Used directly by the full-insight
+ * composer; wrapped by `getVerdeProbabilityForSku` for the prediction-only
+ * API.
  */
-export async function getVerdeProbabilityForSku(
+export async function computeSkuSignals(
   supabase: SupabaseClient,
   companyId: string,
   cveProducto: string,
   opts: PredictByIdOptions = {},
-): Promise<VerdePrediction | null> {
+): Promise<SkuSignals | null> {
   if (!companyId || !cveProducto) return null
 
   const windowDays = clampWindow(opts.windowDays)
@@ -205,12 +227,40 @@ export async function getVerdeProbabilityForSku(
     fraccionHealth = healths.find((h) => h.chapter === chapter) ?? null
   }
 
-  return predictVerdeProbability({
+  const prediction = predictVerdeProbability({
     streak,
     proveedor,
     fraccionHealth,
     baselinePct,
   })
+
+  return {
+    prediction,
+    streak,
+    proveedor,
+    fraccionHealth,
+    baselinePct,
+    fraccion,
+  }
+}
+
+/**
+ * Predict the verde probability for a specific SKU on a tenant.
+ * Returns null if the SKU has no crossings in the window (nothing to
+ * base a prediction on).
+ *
+ * Thin wrapper around `computeSkuSignals` — the intermediate signals
+ * (streak, proveedor, fraccionHealth) are exposed via that helper for
+ * Phase 2 composers.
+ */
+export async function getVerdeProbabilityForSku(
+  supabase: SupabaseClient,
+  companyId: string,
+  cveProducto: string,
+  opts: PredictByIdOptions = {},
+): Promise<VerdePrediction | null> {
+  const sig = await computeSkuSignals(supabase, companyId, cveProducto, opts)
+  return sig?.prediction ?? null
 }
 
 /**

@@ -75,11 +75,28 @@ export interface Anomaly {
     | 'semaforo_rate_drop'
     | 'proveedor_slip'
     | 'streak_break'
+    /** SKU with ≥ 3× partida volume recent 7d vs prior 7d (min 3 prior). */
+    | 'volume_spike'
+    /** Proveedor appearing in the current window but never before
+     *  (or only once before). First-ever crossing gets a calm flag
+     *  so the broker can validate the supplier before scale. */
+    | 'new_proveedor'
   subject: string // cve_producto or cve_proveedor
   detail: string // humanized Spanish summary
   score: number // 0..1 severity — higher = more attention
   occurred_at: string // ISO
   metadata: Record<string, unknown>
+}
+
+/** Volume summary — total partida count in the last 7d vs prior 7d.
+ *  Surfaced on /admin/intelligence as a volume health signal. */
+export interface VolumeSummary {
+  recent_7d: number
+  prior_7d: number
+  /** recent / prior · null when prior=0 */
+  ratio: number | null
+  /** Signed pp change · null when prior=0 */
+  delta_pct: number | null
 }
 
 export interface InsightsPayload {
@@ -95,6 +112,8 @@ export interface InsightsPayload {
   watch_proveedores: ProveedorHealth[]
   /** Rule-based anomalies in the window. */
   anomalies: Anomaly[]
+  /** Week-over-week partida volume summary. */
+  volume: VolumeSummary
 }
 
 // ── Pure aggregation helpers (unit-testable) ───────────────────────
@@ -237,12 +256,22 @@ export function computeProveedorHealth(
 
 /**
  * Simple rule-based anomaly detector.
- * Rules:
- *   - Proveedor verde rate dropped ≥ 10 pp week-over-week (prior 7d vs
- *     current 7d), and prior rate was ≥ 70%. Only fires with ≥ 3
- *     crossings in each window — avoids noise.
- *   - Streak break on a SKU whose longest_verde_streak ≥ 5.
- * Pure — no DB dependency.
+ * Rules (in order of precision):
+ *   1. `proveedor_slip` — verde rate dropped ≥ 10pp WoW (prior 7d vs
+ *      current 7d), and prior rate was ≥ 70%. Only fires with ≥ 3
+ *      crossings in each window — avoids noise.
+ *   2. `streak_break` — SKU whose longest_verde_streak ≥ 5 had its
+ *      current streak broken in the last 30 days.
+ *   3. `volume_spike` — SKU with ≥ 3× partida volume in the recent 7d
+ *      window vs prior 7d. Fires only when prior had ≥ 3 crossings so
+ *      we don't flag every-rare-SKU's second shipment. Score = min(1,
+ *      ratio/10) so a 10× spike = score 1.0.
+ *   4. `new_proveedor` — proveedor whose first appearance is in the
+ *      recent 14 days and has ≤ 3 crossings total. Calm signal — the
+ *      broker should validate the new supplier before scale. Score
+ *      fixed at 0.4 (informational, not urgent).
+ *
+ * Pure — no DB dependency. Sorted by score desc at return.
  */
 export function detectAnomalies(
   crossings: Array<{
@@ -328,9 +357,107 @@ export function detectAnomalies(
     }
   }
 
+  // ── Volume spike per SKU (recent 7d ≥ 3× prior 7d) ──────────────
+  const byPart = new Map<
+    string,
+    { recent: number; prior: number; lastCrossIso: string | null }
+  >()
+  for (const c of crossings) {
+    if (!c.cve_producto || !c.fecha_cruce) continue
+    const ts = new Date(c.fecha_cruce).getTime()
+    if (!Number.isFinite(ts)) continue
+    if (ts < cutoffPrior) continue
+    const bucket = byPart.get(c.cve_producto) ?? {
+      recent: 0,
+      prior: 0,
+      lastCrossIso: null,
+    }
+    if (ts >= cutoffRecent) bucket.recent += 1
+    else bucket.prior += 1
+    if (!bucket.lastCrossIso || c.fecha_cruce > bucket.lastCrossIso) {
+      bucket.lastCrossIso = c.fecha_cruce
+    }
+    byPart.set(c.cve_producto, bucket)
+  }
+  for (const [cve, b] of byPart) {
+    if (b.prior < 3) continue
+    const ratio = b.recent / b.prior
+    if (ratio < 3) continue
+    anomalies.push({
+      kind: 'volume_spike',
+      subject: cve,
+      detail: `${cve} subió de ${b.prior} a ${b.recent} cruces semanales (${ratio.toFixed(1)}×). Validar que es crecimiento planeado.`,
+      score: Math.min(1, ratio / 10),
+      occurred_at: b.lastCrossIso ?? new Date(now).toISOString(),
+      metadata: { recent_count: b.recent, prior_count: b.prior, ratio: Math.round(ratio * 10) / 10 },
+    })
+  }
+
+  // ── New proveedor (first-seen in last 14d, ≤ 3 total crossings) ─
+  const byProvNew = new Map<
+    string,
+    { total: number; firstSeenIso: string | null; lastCrossIso: string | null }
+  >()
+  for (const c of crossings) {
+    if (!c.cve_proveedor || !c.fecha_cruce) continue
+    const bucket = byProvNew.get(c.cve_proveedor) ?? {
+      total: 0,
+      firstSeenIso: null,
+      lastCrossIso: null,
+    }
+    bucket.total += 1
+    if (!bucket.firstSeenIso || c.fecha_cruce < bucket.firstSeenIso) {
+      bucket.firstSeenIso = c.fecha_cruce
+    }
+    if (!bucket.lastCrossIso || c.fecha_cruce > bucket.lastCrossIso) {
+      bucket.lastCrossIso = c.fecha_cruce
+    }
+    byProvNew.set(c.cve_proveedor, bucket)
+  }
+  const fourteenDaysAgoMs = now - 14 * 86_400_000
+  for (const [clave, b] of byProvNew) {
+    if (b.total > 3) continue
+    if (!b.firstSeenIso) continue
+    const firstMs = new Date(b.firstSeenIso).getTime()
+    if (!Number.isFinite(firstMs) || firstMs < fourteenDaysAgoMs) continue
+    anomalies.push({
+      kind: 'new_proveedor',
+      subject: clave,
+      detail: `Proveedor ${clave} apareció por primera vez el ${b.firstSeenIso.slice(0, 10)} (${b.total} cruce${b.total === 1 ? '' : 's'}). Validar RFC, T-MEC y riesgo antes de escalar.`,
+      score: 0.4,
+      occurred_at: b.firstSeenIso,
+      metadata: { total_crossings: b.total, first_seen: b.firstSeenIso },
+    })
+  }
+
   // Sort by score desc.
   anomalies.sort((a, b) => b.score - a.score)
   return anomalies
+}
+
+/**
+ * Compute the week-over-week volume summary from a crossing stream.
+ * Pure — no DB dependency.
+ */
+export function computeVolumeSummary(
+  crossings: Array<{ fecha_cruce: string | null }>,
+  now: number = Date.now(),
+): VolumeSummary {
+  const SEVEN_D = 7 * 86_400_000
+  const cutoffRecent = now - SEVEN_D
+  const cutoffPrior = now - 2 * SEVEN_D
+  let recent = 0
+  let prior = 0
+  for (const c of crossings) {
+    if (!c.fecha_cruce) continue
+    const ts = new Date(c.fecha_cruce).getTime()
+    if (!Number.isFinite(ts)) continue
+    if (ts >= cutoffRecent) recent += 1
+    else if (ts >= cutoffPrior) prior += 1
+  }
+  const ratio = prior > 0 ? recent / prior : null
+  const delta_pct = prior > 0 ? Math.round(((recent - prior) / prior) * 100) : null
+  return { recent_7d: recent, prior_7d: prior, ratio, delta_pct }
 }
 
 // ── DB-facing entry points ─────────────────────────────────────────
@@ -361,6 +488,7 @@ export async function getCrossingInsights(
     top_proveedores: [],
     watch_proveedores: [],
     anomalies: [],
+    volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null },
   }
   if (!companyId) return empty
 
@@ -433,6 +561,10 @@ export async function getCrossingInsights(
       })),
   )
   const anomalies = detectAnomalies(enriched, now)
+  const volume = computeVolumeSummary(
+    enriched.map((c) => ({ fecha_cruce: c.fecha_cruce })),
+    now,
+  )
 
   const green_streaks = streaks
     .filter((s) => s.current_verde_streak >= 3)
@@ -456,5 +588,6 @@ export async function getCrossingInsights(
     top_proveedores,
     watch_proveedores,
     anomalies,
+    volume,
   }
 }

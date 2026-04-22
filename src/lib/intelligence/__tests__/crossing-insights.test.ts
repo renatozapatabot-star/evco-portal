@@ -11,6 +11,7 @@ import { describe, it, expect } from 'vitest'
 import {
   computePartStreaks,
   computeProveedorHealth,
+  computeVolumeSummary,
   detectAnomalies,
   type SemaforoValue,
 } from '../crossing-insights'
@@ -260,5 +261,175 @@ describe('detectAnomalies', () => {
     const anomalies = detectAnomalies(rows, now)
     const slip = anomalies.find((a) => a.kind === 'proveedor_slip')
     expect(slip?.detail).toMatch(/Proveedor PRV_Z bajó de \d+% a \d+% verde esta semana/)
+  })
+
+  // ── volume_spike rule ─────────────────────────────────────────
+  it('fires volume_spike when a SKU triples week-over-week', () => {
+    const rows = [
+      // prior week: 3 crossings for SPIKE-SKU
+      crossing('SPIKE-SKU', ago(13), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(11), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(9), 0, 'PRV_V'),
+      // recent week: 12 crossings (4× spike)
+      crossing('SPIKE-SKU', ago(6), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(6), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(5), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(5), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(4), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(4), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(3), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(3), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(2), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(2), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(1), 0, 'PRV_V'),
+      crossing('SPIKE-SKU', ago(1), 0, 'PRV_V'),
+    ]
+    const anomalies = detectAnomalies(rows, now)
+    const spike = anomalies.find(
+      (a) => a.kind === 'volume_spike' && a.subject === 'SPIKE-SKU',
+    )
+    expect(spike).toBeDefined()
+    expect(spike!.metadata.recent_count).toBe(12)
+    expect(spike!.metadata.prior_count).toBe(3)
+    expect(Number(spike!.metadata.ratio)).toBeGreaterThanOrEqual(4)
+    expect(spike!.detail).toMatch(/subió de 3 a 12 cruces/)
+  })
+
+  it('does NOT fire volume_spike with insufficient prior sample (< 3)', () => {
+    const rows = [
+      // prior week: only 2 → below threshold
+      crossing('LOW-PRIOR', ago(13), 0, 'PRV_W'),
+      crossing('LOW-PRIOR', ago(11), 0, 'PRV_W'),
+      // recent: 10 crossings (huge ratio, but prior too low to trust)
+      ...Array.from({ length: 10 }, (_, i) =>
+        crossing('LOW-PRIOR', ago(1 + (i % 5)), 0, 'PRV_W'),
+      ),
+    ]
+    const anomalies = detectAnomalies(rows, now)
+    expect(
+      anomalies.find((a) => a.kind === 'volume_spike' && a.subject === 'LOW-PRIOR'),
+    ).toBeUndefined()
+  })
+
+  it('does NOT fire volume_spike when ratio is below 3×', () => {
+    const rows = [
+      // prior: 5 crossings
+      ...Array.from({ length: 5 }, (_, i) =>
+        crossing('STEADY', ago(9 + i), 0, 'PRV_S'),
+      ),
+      // recent: 10 (2× — below threshold of 3×)
+      ...Array.from({ length: 10 }, (_, i) =>
+        crossing('STEADY', ago(1 + (i % 5)), 0, 'PRV_S'),
+      ),
+    ]
+    const anomalies = detectAnomalies(rows, now)
+    expect(
+      anomalies.find((a) => a.kind === 'volume_spike' && a.subject === 'STEADY'),
+    ).toBeUndefined()
+  })
+
+  // ── new_proveedor rule ─────────────────────────────────────────
+  it('fires new_proveedor when a supplier appears for the first time in 14d', () => {
+    const rows = [
+      crossing('X', ago(5), 0, 'BRAND-NEW-SUPPLIER'),
+      crossing('X', ago(3), 0, 'BRAND-NEW-SUPPLIER'),
+    ]
+    const anomalies = detectAnomalies(rows, now)
+    const np = anomalies.find(
+      (a) => a.kind === 'new_proveedor' && a.subject === 'BRAND-NEW-SUPPLIER',
+    )
+    expect(np).toBeDefined()
+    expect(np!.score).toBe(0.4)
+    expect(np!.metadata.total_crossings).toBe(2)
+    expect(np!.detail).toMatch(/apareció por primera vez/)
+    expect(np!.detail).toMatch(/Validar RFC, T-MEC/)
+  })
+
+  it('does NOT fire new_proveedor when supplier has > 3 crossings', () => {
+    const rows = [
+      crossing('X', ago(7), 0, 'ESTABLISHED'),
+      crossing('X', ago(5), 0, 'ESTABLISHED'),
+      crossing('X', ago(3), 0, 'ESTABLISHED'),
+      crossing('X', ago(1), 0, 'ESTABLISHED'),
+      crossing('X', ago(1), 0, 'ESTABLISHED'),
+    ]
+    const anomalies = detectAnomalies(rows, now)
+    expect(
+      anomalies.find((a) => a.kind === 'new_proveedor' && a.subject === 'ESTABLISHED'),
+    ).toBeUndefined()
+  })
+
+  it('does NOT fire new_proveedor when first-seen is older than 14 days', () => {
+    const rows = [
+      crossing('X', ago(20), 0, 'OLD-BUT-RARE'),
+      crossing('X', ago(3), 0, 'OLD-BUT-RARE'),
+    ]
+    const anomalies = detectAnomalies(rows, now)
+    expect(
+      anomalies.find((a) => a.kind === 'new_proveedor' && a.subject === 'OLD-BUT-RARE'),
+    ).toBeUndefined()
+  })
+})
+
+describe('computeVolumeSummary', () => {
+  const now = Date.UTC(2026, 3, 21)
+  function ago(days: number): string {
+    return new Date(now - days * 86_400_000).toISOString()
+  }
+
+  it('returns zeros when no crossings', () => {
+    const v = computeVolumeSummary([], now)
+    expect(v.recent_7d).toBe(0)
+    expect(v.prior_7d).toBe(0)
+    expect(v.ratio).toBeNull()
+    expect(v.delta_pct).toBeNull()
+  })
+
+  it('counts recent vs prior 7d windows correctly', () => {
+    const v = computeVolumeSummary(
+      [
+        { fecha_cruce: ago(1) },   // recent
+        { fecha_cruce: ago(3) },   // recent
+        { fecha_cruce: ago(6) },   // recent
+        { fecha_cruce: ago(8) },   // prior
+        { fecha_cruce: ago(13) },  // prior
+        { fecha_cruce: ago(20) },  // outside window
+      ],
+      now,
+    )
+    expect(v.recent_7d).toBe(3)
+    expect(v.prior_7d).toBe(2)
+    expect(v.ratio).toBeCloseTo(1.5, 1)
+    expect(v.delta_pct).toBe(50)
+  })
+
+  it('returns ratio=null when prior window is empty', () => {
+    const v = computeVolumeSummary(
+      [
+        { fecha_cruce: ago(1) },
+        { fecha_cruce: ago(3) },
+      ],
+      now,
+    )
+    expect(v.recent_7d).toBe(2)
+    expect(v.prior_7d).toBe(0)
+    expect(v.ratio).toBeNull()
+    expect(v.delta_pct).toBeNull()
+  })
+
+  it('signals a drop correctly', () => {
+    const v = computeVolumeSummary(
+      [
+        { fecha_cruce: ago(1) },
+        { fecha_cruce: ago(8) },
+        { fecha_cruce: ago(9) },
+        { fecha_cruce: ago(10) },
+        { fecha_cruce: ago(12) },
+      ],
+      now,
+    )
+    expect(v.recent_7d).toBe(1)
+    expect(v.prior_7d).toBe(4)
+    expect(v.delta_pct).toBe(-75)
   })
 })

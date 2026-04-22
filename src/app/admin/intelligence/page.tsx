@@ -69,6 +69,7 @@ export default async function IntelligencePage({
       top_proveedores: [],
       watch_proveedores: [],
       anomalies: [],
+      volume: { recent_7d: 0, prior_7d: 0, ratio: null, delta_pct: null },
     }
   }
 
@@ -115,7 +116,13 @@ export default async function IntelligencePage({
           label="Anomalías"
           value={String(insights.anomalies.length)}
           tone={insights.anomalies.length > 0 ? 'attention' : 'neutral'}
-          sub="semana vs. semana anterior"
+          sub="4 reglas · semana vs. anterior"
+        />
+        <AguilaMetric
+          label="Volumen 7d"
+          value={String(insights.volume.recent_7d)}
+          tone={volumeTone(insights.volume.delta_pct)}
+          sub={volumeSubtitle(insights.volume)}
         />
       </div>
 
@@ -266,12 +273,12 @@ export default async function IntelligencePage({
               <AguilaInsightCard
                 key={`anomaly-${i}`}
                 tone={a.score >= 0.6 ? 'anomaly' : 'watch'}
-                eyebrow={a.kind.replace(/_/g, ' ')}
+                eyebrow={anomalyKindLabel(a.kind)}
                 headline={a.subject}
                 body={a.detail}
                 meta={`Score · ${(a.score * 100).toFixed(0)}%`}
                 action={
-                  a.kind === 'streak_break'
+                  a.kind === 'streak_break' || a.kind === 'volume_spike'
                     ? {
                         label: 'Ver parte',
                         href: `/catalogo/partes/${encodeURIComponent(a.subject)}`,
@@ -369,4 +376,29 @@ function labelSemaforo(v: number | null): string {
   if (v === 1) return 'amarillo'
   if (v === 2) return 'rojo'
   return 'sin clasificar'
+}
+
+function volumeTone(deltaPct: number | null): 'positive' | 'attention' | 'neutral' {
+  if (deltaPct == null) return 'neutral'
+  if (deltaPct >= 25) return 'positive' // strong growth
+  if (deltaPct <= -25) return 'attention' // sharp drop
+  return 'neutral'
+}
+
+function volumeSubtitle(v: InsightsPayload['volume']): string {
+  if (v.prior_7d === 0 && v.recent_7d === 0) return 'sin cruces recientes'
+  if (v.prior_7d === 0) return `${v.recent_7d} nuevos · sin histórico`
+  const arrow = v.delta_pct! > 0 ? '↑' : v.delta_pct! < 0 ? '↓' : '='
+  return `${arrow} ${Math.abs(v.delta_pct!)}% vs. ${v.prior_7d} prev.`
+}
+
+function anomalyKindLabel(kind: string): string {
+  switch (kind) {
+    case 'proveedor_slip': return 'Proveedor en caída'
+    case 'streak_break': return 'Racha rota'
+    case 'volume_spike': return 'Volumen acelerado'
+    case 'new_proveedor': return 'Proveedor nuevo'
+    case 'semaforo_rate_drop': return 'Semáforo en caída'
+    default: return kind.replace(/_/g, ' ')
+  }
 }

@@ -7,8 +7,8 @@ site in production code. Run the scanner at any time:
 node scripts/audit-phantom-columns.mjs
 ```
 
-Last automated scan: **2026-04-21 (M14)** · **63 confirmed sites** after
-verification probes.
+Last automated scan: **2026-04-21 (M15)** · **15 confirmed sites** after
+verification probes (paid down 48 of 63 this marathon — 76% reduction).
 
 ---
 
@@ -33,8 +33,8 @@ Examples of degraded features in prod today:
 
 | Status | Count | Notes |
 |---|---|---|
-| ✅ Fixed | 5 | M12 + M14 |
-| 🔴 Open | 63 | Debt. Fix in batches — see triage below |
+| ✅ Fixed | 53 | M12 + M14 + M15 (48 sites this marathon alone) |
+| 🔴 Open | 15 | Remaining debt — mostly operator/admin paths. See triage below. |
 
 ---
 
@@ -42,10 +42,57 @@ Examples of degraded features in prod today:
 
 ### Priority A — Ursula's demo path (fix before next EVCO demo)
 
-Currently NONE — the M12 + M14 fixes cleared every phantom on the
+Currently NONE — M12 + M14 + M15 cleared every phantom on the
 surfaces Ursula actually clicks into.
 
+### Open sites after M15 (15 remaining)
+
+Grouped by fix shape. Each cluster is independently paidownable.
+
+**Cluster 1 — partidas → productos 2-hop (4 sites)**
+
+- `src/app/actions/classification.ts` — `globalpc_partidas`: fraccion_arancelaria, fraccion, descripcion, umc, valor_comercial, tmec
+- `src/app/api/classification/[trafico_id]/generate/route.ts` — same
+- `src/app/api/pedimento/[id]/export/route.ts` — fraccion_arancelaria, fraccion, valor_comercial
+- `src/app/api/pedimento/[id]/preview/route.ts` — same
+- `src/app/clientes/[id]/page.tsx` — fraccion, fraccion_arancelaria, descripcion, cve_trafico
+
+Fix recipe: 2-hop via `globalpc_facturas.folio → globalpc_partidas → globalpc_productos (cve_producto)`. See §28.3 of `docs/grok-build-handbook.md`.
+
+**Cluster 2 — cruz-chat facturas (2 sites)**
+
+- `src/app/api/cruz-chat/route.ts` (twice) — phantom `pedimento, referencia, proveedor, fecha_pago, valor_usd, dta, igi, iva` on facturas
+
+Fix recipe: those live on `traficos`, not facturas. Resolve via cve_trafico join. Non-trivial; defer until cruz-chat is rewired.
+
+**Cluster 3 — companies config sub-paths (2 sites)**
+
+- `src/app/api/clientes/[id]/config/validate/route.ts` — queries 12 "top-level" columns that were designed as jsonb sub-paths but never created
+- `src/app/clientes/[id]/configuracion/page.tsx` — same
+
+Fix recipe: design the `companies.config` jsonb column FIRST, then the UI reads via `config->>sub_path`. Requires a migration + ops signal.
+
+**Cluster 4 — productos certificate columns (2 sites)**
+
+- `src/app/api/catalogo/vencimientos-watch/route.ts` — 6 phantom certificate tracking columns
+- `src/lib/catalogo/vencimientos.ts` — same
+
+Fix recipe: design `globalpc_productos_certificates` table or extend productos with these columns. Requires migration.
+
+**Cluster 5 — operator-only misc (5 sites)**
+
+- `src/app/api/clasificar/unclassified/route.ts` — productos queried with partida columns (cve_trafico, cantidad, unidad, ...)
+- `src/app/clientes/[id]/page.tsx` — `globalpc_proveedores.rfc` → use `id_fiscal`
+- `src/app/cruce/page.tsx` — prediction/crossing phantom columns (fecha_cruce_planeada, fecha_cruce_estimada, bridge, lane) — these ML features never shipped
+- `src/app/simulador/page.tsx` — traficos.fraccion_arancelaria
+- Older:
+
 ### Priority B — Operator / admin paths (fix when touched)
+
+**[M15 note:** many of the Priority B sites listed below are already
+closed — see "Open sites after M15" cluster breakdown above for the
+authoritative remaining list. The entries below reflect the pre-M15
+snapshot and remain for historical context only.**]**
 
 These appear on `/admin/*`, broker API routes, or operator tools.
 Invisible to Ursula but degrade the operator experience.

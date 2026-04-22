@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PortalKbd } from './PortalText'
+import Link from 'next/link'
 
 export interface PortalAssistantFabProps {
-  onClick: () => void
+  /** Destination for the Agente IA chat — built by the caller with role + greeting. */
+  href: string
   /** Override the two-line content. Defaults to "EN LÍNEA · CONTEXTO 90D" / "Agente IA". */
   eyebrow?: string
   label?: string
@@ -14,12 +15,15 @@ export interface PortalAssistantFabProps {
  * Fixed bottom-right floating action button. Breathing emerald core +
  * expanding ring (both via requestAnimationFrame phase). Triple-layer
  * shadow: shadow-3 + outer-green-halo + inner-green-rim. Always visible
- * on authenticated surfaces; opens the command palette on click.
+ * on authenticated surfaces; navigates to the real CRUZ AI chat surface.
  *
- * Port of .planning/design-handoff/cruz-portal/project/src/screen-dashboard.jsx:556-599.
+ * The ⌘K kbd hint was removed 2026-04-22: keyboard-shortcut affordance
+ * belongs on the search trigger, not the assistant. Decoupling these
+ * fixes the bug where both the FAB and the top search opened the same
+ * placeholder modal instead of the live agent chat.
  */
 export function PortalAssistantFab({
-  onClick,
+  href,
   eyebrow = 'EN LÍNEA · CONTEXTO 90D',
   label = 'Agente IA',
 }: PortalAssistantFabProps) {
@@ -41,8 +45,8 @@ export function PortalAssistantFab({
   const ringOpacity = 1 - ((phase * 1.2) % 1)
 
   return (
-    <button
-      onClick={onClick}
+    <Link
+      href={href}
       style={{
         position: 'fixed',
         right: 24,
@@ -59,6 +63,7 @@ export function PortalAssistantFab({
         gap: 12,
         color: 'var(--portal-fg-1)',
         fontSize: 'var(--portal-fs-sm)',
+        textDecoration: 'none',
         cursor: 'pointer',
       }}
       aria-label={`${label} — ${eyebrow}`}
@@ -116,7 +121,6 @@ export function PortalAssistantFab({
           {label}
         </span>
       </span>
-      <PortalKbd>⌘K</PortalKbd>
-    </button>
+    </Link>
   )
 }

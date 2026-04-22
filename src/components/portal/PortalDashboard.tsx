@@ -53,6 +53,23 @@ export interface PortalDashboardProps {
 
 const ICON_SIZE = 15
 
+/**
+ * First-message greeting the agent shows when the FAB opens /cruz.
+ * Mirrors `DEFAULT_HELLO` in `src/components/aguila/AsistenteButton.tsx`
+ * so the in-content "pregúntale al agente" link and this FAB land on
+ * the same greeting. Role-keyed.
+ */
+const AGENT_HELLO: Record<PortalDashboardRole, string> = {
+  client: '¿En qué te puedo apoyar hoy?',
+  operator: 'Listo para ayudar con el flujo operativo. ¿Qué necesitas?',
+  owner: 'Vista ejecutiva lista. ¿Qué necesitas revisar?',
+}
+
+function buildAgentHref(role: PortalDashboardRole): string {
+  const params = new URLSearchParams({ ctx: role, hello: AGENT_HELLO[role] })
+  return `/cruz?${params.toString()}`
+}
+
 function attachMonth(href: string, month?: string): string {
   if (!month) return href
   return href.includes('?') ? `${href}&month=${encodeURIComponent(month)}` : `${href}?month=${encodeURIComponent(month)}`
@@ -331,7 +348,7 @@ export function PortalDashboard({
             by page-level wrappers; we don't re-render it here. */}
       </main>
 
-      <PortalAssistantFab onClick={openCmd} />
+      <PortalAssistantFab href={buildAgentHref(role)} />
       <PortalCommandPalette open={cmdOpen} onClose={closeCmd} />
     </div>
   )

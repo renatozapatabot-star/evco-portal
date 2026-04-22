@@ -2969,6 +2969,80 @@ export type Database = {
         }
         Relationships: []
       }
+      cruz_ai_conversations: {
+        Row: {
+          company_id: string
+          id: string
+          last_message_at: string
+          metadata: Json | null
+          operator_id: string | null
+          role: string
+          session_id: string
+          started_at: string
+        }
+        Insert: {
+          company_id: string
+          id?: string
+          last_message_at?: string
+          metadata?: Json | null
+          operator_id?: string | null
+          role: string
+          session_id: string
+          started_at?: string
+        }
+        Update: {
+          company_id?: string
+          id?: string
+          last_message_at?: string
+          metadata?: Json | null
+          operator_id?: string | null
+          role?: string
+          session_id?: string
+          started_at?: string
+        }
+        Relationships: []
+      }
+      cruz_ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          tools_called: string[]
+          turn_index: number
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          tools_called?: string[]
+          turn_index: number
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          tools_called?: string[]
+          turn_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cruz_ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cruz_ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cruz_conversations: {
         Row: {
           company_id: string | null

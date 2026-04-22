@@ -8,6 +8,12 @@ import { TOOL_DEFINITIONS, runTool, type AguilaCtx, type ToolName } from '@/lib/
 import { resolveMentions } from '@/lib/aguila/mentions'
 import { logShadow } from '@/lib/aguila/shadow-log'
 import { buildClientAIContext, formatClientAIContextPreamble } from '@/lib/ai/client-context'
+import {
+  getOrCreateConversation,
+  loadRecentTurns,
+  appendTurn,
+  type ConversationTurn,
+} from '@/lib/aguila/conversation'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -113,6 +119,12 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       )
     }
+    // Phase 3 memory — the UI may echo back a prior conversationId or
+    // sessionId so follow-ups resolve against prior turns. Both are
+    // optional; if absent, we mint a session-id-per-request (no prior
+    // context available, but the envelope still gets created so the
+    // NEXT turn has memory).
+    const bodySessionId = typeof body.sessionId === 'string' ? body.sessionId.slice(0, 128) : null
 
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
@@ -144,6 +156,30 @@ export async function POST(req: NextRequest) {
     const anthropic = new Anthropic({ apiKey, timeout: 30_000 })
 
     // ------------------------------------------------------------
+    // Phase 3 memory — resolve conversation envelope + prior turns
+    // ------------------------------------------------------------
+    // Session-id fallback: if the UI didn't send one, scope it to this
+    // user + company so follow-up requests in the same auth session
+    // can re-land on the same envelope if the UI starts passing it.
+    const sessionId = bodySessionId || `${companyId}:${operatorId ?? 'anon'}:${messageId}`
+    let conversationId: string | null = null
+    let priorTurns: ConversationTurn[] = []
+    try {
+      const conv = await getOrCreateConversation(supabase, {
+        companyId, operatorId, sessionId, role,
+      })
+      conversationId = conv.conversationId
+      if (conversationId && !conv.created) {
+        priorTurns = await loadRecentTurns(supabase, conversationId, companyId, 6)
+      }
+    } catch {
+      // Memory is an enhancement, not a blocker. If the conversation
+      // store is unreachable (new table not yet applied on this env,
+      // Supabase timeout, etc.) the ask degrades to single-shot mode
+      // silently — no answer is worse than no memory.
+    }
+
+    // ------------------------------------------------------------
     // Pre-pass: parse @mentions + topic classification (parallel)
     // ------------------------------------------------------------
     const [mentionResult, topicClass] = await Promise.all([
@@ -156,7 +192,12 @@ export async function POST(req: NextRequest) {
     // ------------------------------------------------------------
     // Haiku tool-calling loop
     // ------------------------------------------------------------
+    // Prior turns are sent as plain role+content — tool-result blocks
+    // from earlier rounds aren't re-sent (they'd bloat input tokens
+    // and Haiku has already produced the polished-synthesis text we
+    // persisted, so the model has what it needs for continuity).
     const messages: Anthropic.MessageParam[] = [
+      ...priorTurns.map<Anthropic.MessageParam>(t => ({ role: t.role, content: t.content })),
       { role: 'user', content: buildUserTurn(question, role, companyId, mentionResult.rejected) },
     ]
 
@@ -298,7 +339,20 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ answer })
+    // Phase 3 memory — persist this turn so the NEXT ask in this session
+    // sees it. Fire-and-forget so a slow write doesn't add latency; the
+    // answer is already shaped and safe to return.
+    if (conversationId) {
+      void appendTurn(supabase, conversationId, companyId, 'user', question, {
+        metadata: { message_id: messageId, topic_class: topicClass },
+      }).then(() => {}, () => {})
+      void appendTurn(supabase, conversationId, companyId, 'assistant', answer, {
+        toolsCalled: toolsCalled.map(String),
+        metadata: { message_id: messageId, topic_class: topicClass, is_fallback: false },
+      }).then(() => {}, () => {})
+    }
+
+    return NextResponse.json({ answer, conversationId, sessionId })
   } catch (err) {
     // Log full error server-side for diagnosis; return a calm 200 so the
     // client UI treats this as a soft fallback (muted card, no error

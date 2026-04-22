@@ -354,9 +354,12 @@ interface ExpedientesArgs { clientFilter?: string }
 
 async function execQueryExpedientes(args: ExpedientesArgs, ctx: AguilaCtx) {
   const scope = await resolveClientScope(ctx, args.clientFilter)
+  // expediente_documentos real columns: doc_type, file_name, file_url,
+  // metadata (jsonb), pedimento_id, uploaded_at, uploaded_by. There is no
+  // doc_type_code or document_type_confidence — legacy phantoms (M15 sweep).
   let q = supabaseAdmin
     .from('expediente_documentos')
-    .select('doc_type, doc_type_code, document_type_confidence')
+    .select('doc_type')
     .limit(2000)
   if (!scope.allClients && scope.companyId) q = q.eq('company_id', scope.companyId)
 
@@ -364,13 +367,13 @@ async function execQueryExpedientes(args: ExpedientesArgs, ctx: AguilaCtx) {
   if (error) throw new Error(`expedientes:${error.message}`)
 
   const total = data?.length ?? 0
-  const classified = (data ?? []).filter(d => d.doc_type_code || d.doc_type).length
+  const classified = (data ?? []).filter(d => d.doc_type).length
   const pending = total - classified
   const completenessPct = total === 0 ? 0 : Math.round((classified / total) * 100)
 
   const missingTypes = new Set<string>()
   for (const d of data ?? []) {
-    if (!d.doc_type_code && !d.doc_type) missingTypes.add('sin_clasificar')
+    if (!d.doc_type) missingTypes.add('sin_clasificar')
   }
 
   return {

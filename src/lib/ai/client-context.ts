@@ -56,7 +56,8 @@ export async function buildClientAIContext(
           .order('fecha_pago', { ascending: false }).limit(5)
       ).then((r: { data: unknown[] | null } | null) => r?.data ?? []).catch(() => []),
       Promise.resolve(
-        supabase.from('expediente_documentos').select('trafico_id, doc_type').eq('company_id', companyId)
+        // expediente_documentos uses pedimento_id (trafico slug) — `trafico_id` is a phantom.
+        supabase.from('expediente_documentos').select('pedimento_id, doc_type').eq('company_id', companyId)
           .is('file_url', null).limit(50)
       ).then((r: { data: unknown[] | null } | null) => r?.data ?? []).catch(() => []),
     ])
@@ -64,7 +65,7 @@ export async function buildClientAIContext(
   const companyRow = company as { name?: string | null; rfc?: string | null; portal_company_name?: string | null } | null
   const active = activeShipments as Array<{ trafico: string; fecha_llegada: string | null; estatus: string | null }>
   const pedimentos = recentPedimentos as Array<{ trafico: string; pedimento: string | null; fecha_pago: string | null }>
-  const expedientes = expedientesStatus as Array<{ trafico_id: string | null }>
+  const expedientes = expedientesStatus as Array<{ pedimento_id: string | null }>
 
   return {
     company_name: companyRow?.portal_company_name || companyRow?.name || 'cliente',

@@ -63,9 +63,11 @@ describe('composeTrace', () => {
           {
             id: 'd1',
             file_name: 'factura.pdf',
-            document_type: 'FACTURA_COMERCIAL',
+            // Real column is `doc_type` (not `document_type`) and
+            // `uploaded_at` (not `created_at`) — post-M15 phantom-column fix.
+            doc_type: 'FACTURA_COMERCIAL',
             uploaded_by: 'eloisa',
-            created_at: iso2,
+            uploaded_at: iso2,
           },
         ],
         classification_sheets: [

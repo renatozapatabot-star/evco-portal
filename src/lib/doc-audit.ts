@@ -39,11 +39,15 @@ export async function runCustomDocAudit(
 ): Promise<RunCustomDocAuditResult> {
   const supabase = createServerClient()
 
+  // expediente_documentos real columns: doc_type, metadata (jsonb),
+  // pedimento_id (holds the trafico slug). `custom_doc_name` lives in the
+  // metadata jsonb (not as a top-level column), and there is no
+  // `doc_type_code` — just `doc_type`. M15 phantom-column sweep.
   const { data, error } = await supabase
     .from('expediente_documentos')
-    .select('custom_doc_name, trafico_id')
-    .not('custom_doc_name', 'is', null)
-    .eq('doc_type_code', 'otro')
+    .select('metadata, pedimento_id')
+    .eq('doc_type', 'otro')
+    .not('metadata', 'is', null)
     .limit(5000)
 
   if (error) {
@@ -55,18 +59,19 @@ export async function runCustomDocAudit(
   }
 
   const rows = (data ?? []) as Array<{
-    custom_doc_name: string | null
-    trafico_id: string | null
+    metadata: Record<string, unknown> | null
+    pedimento_id: string | null
   }>
 
   const grouped = new Map<string, { count: number; traficos: Set<string> }>()
   for (const row of rows) {
-    const name = (row.custom_doc_name ?? '').trim()
+    const rawName = row.metadata?.custom_doc_name
+    const name = typeof rawName === 'string' ? rawName.trim() : ''
     if (!name) continue
     const key = name.toLowerCase()
     const bucket = grouped.get(key) ?? { count: 0, traficos: new Set<string>() }
     bucket.count += 1
-    if (row.trafico_id) bucket.traficos.add(row.trafico_id)
+    if (row.pedimento_id) bucket.traficos.add(row.pedimento_id)
     grouped.set(key, bucket)
   }
 

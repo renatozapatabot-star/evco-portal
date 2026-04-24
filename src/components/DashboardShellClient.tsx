@@ -164,6 +164,15 @@ export default function DashboardShellClient({ children }: Props) {
 
   if (pathname === '/login' || pathname.startsWith('/track') || pathname.startsWith('/upload') || pathname.startsWith('/proveedor') || pathname === '/war-room') return <>{children}</>
 
+  // Pages that render their own PortalTopBar (via PortalDashboard) must
+  // not also render the shell-level TopBar + IntelligenceTicker — otherwise
+  // the user sees two stacked top bars. Keep this list in sync with the
+  // routes that mount <PortalDashboard>.
+  const hasPortalTopBar =
+    pathname === '/inicio' ||
+    pathname === '/operador/inicio' ||
+    pathname === '/admin/eagle'
+
   return (
     <ToastProvider>
       <TelemetryProvider>
@@ -210,11 +219,14 @@ export default function DashboardShellClient({ children }: Props) {
         mobileOpen={mobileOpen}
         onMobileToggle={() => setMobileOpen(v => !v)}
         hideSidebar={true}
+        hideTopBar={hasPortalTopBar}
       >
         <LoadingBar />
-        <Suspense fallback={null}>
-          <IntelligenceTicker />
-        </Suspense>
+        {!hasPortalTopBar && (
+          <Suspense fallback={null}>
+            <IntelligenceTicker />
+          </Suspense>
+        )}
         <div id="main-content" ref={scrollRef}>
           {children}
           {/* Shell-level identity footer — renders on every authenticated

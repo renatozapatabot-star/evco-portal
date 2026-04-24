@@ -15,6 +15,8 @@ interface AguilaLayoutProps {
   onMobileToggle?: () => void;
   /** Hide sidebar entirely (client portal — full-screen cockpit) */
   hideSidebar?: boolean;
+  /** Hide shell TopBar — use when the page owns its own top bar (e.g. PortalDashboard) */
+  hideTopBar?: boolean;
 }
 
 export default function AguilaLayout({
@@ -26,6 +28,7 @@ export default function AguilaLayout({
   mobileOpen = false,
   onMobileToggle,
   hideSidebar = false,
+  hideTopBar = false,
 }: AguilaLayoutProps) {
   return (
     <div className="aduana-layout">
@@ -48,14 +51,16 @@ export default function AguilaLayout({
         </>
       )}
       <main className={`aduana-main aguila-dark ${hideSidebar ? 'aduana-main--full' : ''}`}>
-        <TopBar
-          showNotifications={portalType === 'operator'}
-          onMenuToggle={hideSidebar ? undefined : onMobileToggle}
-          onLogout={onLogout}
-          portalType={portalType}
-          clientName={clientName}
-          clientInitials={clientInitials}
-        />
+        {!hideTopBar && (
+          <TopBar
+            showNotifications={portalType === 'operator'}
+            onMenuToggle={hideSidebar ? undefined : onMobileToggle}
+            onLogout={onLogout}
+            portalType={portalType}
+            clientName={clientName}
+            clientInitials={clientInitials}
+          />
+        )}
         {children}
       </main>
     </div>

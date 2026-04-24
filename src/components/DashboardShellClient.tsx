@@ -222,7 +222,9 @@ export default function DashboardShellClient({ children }: Props) {
         hideTopBar={hasPortalTopBar}
       >
         <LoadingBar />
-        {!hasPortalTopBar && (
+        {/* IntelligenceTicker is operator-only (V1 Clean Visibility · 2026-04-24).
+            Client surface stays quiet; the ticker is internal ops signal. */}
+        {!hasPortalTopBar && portalType === 'operator' && (
           <Suspense fallback={null}>
             <IntelligenceTicker />
           </Suspense>
@@ -241,7 +243,7 @@ export default function DashboardShellClient({ children }: Props) {
       <CommandPaletteProvider />
       {!isMobile && <ShortcutHelp />}
 
-      {/* Bottom nav removed — navigation via topbar logo, search icon, and floating CRUZ chat */}
+      {/* Bottom nav removed — navigation via topbar logo + universal search */}
 
       {/* Offline banner */}
       {isOffline && (
@@ -257,12 +259,12 @@ export default function DashboardShellClient({ children }: Props) {
         </div>
       )}
 
-      {/* Floating Asistente CRUZ chat bubble — mounted on every
-          authenticated page, both desktop and mobile. Desktop taps open
-          an inline panel; mobile taps route to /cruz full-screen. The
-          component owns its own FAB rendering; DashboardShellClient just
-          mounts it inside the authenticated shell. */}
-      <AguilaChatBubble />
+      {/* Asistente chat bubble is operator-only on the V1 Clean
+          Visibility surface (2026-04-24). Client surface does not render
+          any AI-forward affordance until L1 supervisor promotion
+          re-enables it behind an explicit per-feature flag. Operator role
+          keeps the bubble for internal workflow continuity. */}
+      {portalType === 'operator' && <AguilaChatBubble />}
 
       {/* Welcome overlay removed — the launchpad IS the welcome */}
 

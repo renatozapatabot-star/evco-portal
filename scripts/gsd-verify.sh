@@ -277,7 +277,7 @@ fi
 # CRUZ_CHAT_FALLBACK), JSDoc comments, and real-world carrier business
 # names (AUTOEXPRESS CRUZ, TRANSPORTES JOSÉ CRUZ MACIAS) are excluded.
 header "Invariant Block-DD — CRUZ user-visible string ratchet"
-INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-219}
+INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-223}
 CRUZ_COUNT=$(grep -rn '\bCRUZ\b' src/app src/components \
   --include="*.ts" --include="*.tsx" \
   | grep -v 'node_modules' \

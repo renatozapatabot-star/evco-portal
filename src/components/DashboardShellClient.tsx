@@ -19,7 +19,14 @@ const ShortcutHelp = dynamic(() => import('./shortcut-help').then(m => ({ defaul
 const AguilaChatBubble = dynamic(() => import('./aguila-chat-bubble').then(m => ({ default: m.AguilaChatBubble })), { ssr: false })
 const IntelligenceTicker = dynamic(() => import('./intelligence/IntelligenceTicker'), { ssr: false, loading: () => null })
 
-interface Props { children: React.ReactNode }
+interface Props {
+  children: React.ReactNode
+  /** HMAC-verified role from the parent server component (RootLayout).
+   *  When provided, takes precedence over the unsigned user_role cookie
+   *  for capability gates (chat bubble, intelligence ticker). Null for
+   *  unauthenticated visitors — falls back to client (most restrictive). */
+  verifiedRole?: string | null
+}
 
 function LoadingBar() {
   const pathname = usePathname()
@@ -69,7 +76,9 @@ function ViewingAsBanner({ companyName, onExit }: { companyName: string; onExit:
   )
 }
 
-export default function DashboardShellClient({ children }: Props) {
+const OPERATOR_VERIFIED_ROLES = new Set(['operator', 'admin', 'broker', 'owner', 'warehouse', 'contabilidad'])
+
+export default function DashboardShellClient({ children, verifiedRole = null }: Props) {
   const pathname = usePathname()
   const isMobile = useIsMobile()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -80,20 +89,23 @@ export default function DashboardShellClient({ children }: Props) {
   const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const warnTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  // Resolve portal identity from cookies
-  const [portalType, setPortalType] = useState<'operator' | 'client'>('client')
+  // Resolve portal identity. CRITICAL: capability gates (chat bubble,
+  // ticker) must NEVER read role from the unsigned `user_role` cookie —
+  // it is forgeable and the all-week 2026-04-20 push purged this exact
+  // pattern across 13 routes (baseline I20). The HMAC-verified role
+  // arrives from the parent server component via `verifiedRole` prop.
+  const isVerifiedOperator = verifiedRole !== null && OPERATOR_VERIFIED_ROLES.has(verifiedRole)
+  const [portalType, setPortalType] = useState<'operator' | 'client'>(isVerifiedOperator ? 'operator' : 'client')
   const [clientName, setClientName] = useState<string | undefined>(undefined)
   const [clientInitials, setClientInitials] = useState<string | undefined>(undefined)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
-    const role = getCookieValue('user_role')
-    if (role === 'broker' || role === 'admin' || role === 'warehouse' || role === 'contabilidad') {
-      // Internal-team roles all use the operator-style shell (sidebar visible, internal chrome).
-      // Cockpit landing pages (/bodega/inicio, /contabilidad/inicio) arrive in later commits.
-      setPortalType('operator')
-    } else {
-      setPortalType('client')
+    // The verifiedRole prop is the source of truth for portalType. We
+    // still read the company_name cookie here for display purposes
+    // only — that cookie is set server-side at login alongside the
+    // signed session and is not used for capability decisions.
+    if (!isVerifiedOperator) {
       const name = getCookieValue('company_name')
       if (name) {
         setClientName(name)
@@ -101,7 +113,7 @@ export default function DashboardShellClient({ children }: Props) {
         setClientInitials(words.length >= 2 ? `${words[0][0]}${words[1][0]}`.toUpperCase() : name.slice(0, 2).toUpperCase())
       }
     }
-  }, [])
+  }, [isVerifiedOperator])
 
   useKeyboardShortcuts()
   const { pulling, distance } = usePullToRefresh()

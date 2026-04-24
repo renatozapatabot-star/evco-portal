@@ -63,20 +63,38 @@ export default async function PedimentoDetailPage({
     .limit(200)
   if (!isInternal) facturasQ = facturasQ.eq('company_id', session.companyId)
 
-  const [traficoRes, facturasFoliosRes, docsRes, entradasRes] = await Promise.all([
-    traficoQ.maybeSingle(),
+  // Step A: confirm the trafico exists AND belongs to the session's tenant
+  // (RLS + app-layer filter for non-internal). If the row is null, 404.
+  // We DO NOT fetch dependents (expediente, entradas, partidas) until
+  // ownership is confirmed — otherwise a client could probe by traficoId
+  // and receive cross-tenant document URLs (IDOR).
+  const traficoRes = await traficoQ.maybeSingle()
+  if (traficoRes.error || !traficoRes.data) notFound()
+  const ownerCompanyId = (traficoRes.data as { company_id: string | null }).company_id
+
+  // Step B: dependents now anchor company_id to the verified owner of
+  // the trafico, defense-in-depth even for internal roles.
+  const [facturasFoliosRes, docsRes, entradasRes] = await Promise.all([
     facturasQ,
-    supabase
-      .from('expediente_documentos')
-      .select('id, doc_type, file_name, file_url, uploaded_at')
-      .eq('pedimento_id', traficoId)
-      .order('uploaded_at', { ascending: false })
-      .limit(200),
-    supabase
-      .from('entradas')
-      .select('cve_entrada, fecha_llegada_mercancia, cve_proveedor, cantidad_bultos, peso_bruto')
-      .eq('trafico', traficoId)
-      .limit(100),
+    (() => {
+      let q = supabase
+        .from('expediente_documentos')
+        .select('id, doc_type, file_name, file_url, uploaded_at')
+        .eq('pedimento_id', traficoId)
+        .order('uploaded_at', { ascending: false })
+        .limit(200)
+      if (ownerCompanyId) q = q.eq('company_id', ownerCompanyId)
+      return q
+    })(),
+    (() => {
+      let q = supabase
+        .from('entradas')
+        .select('cve_entrada, fecha_llegada_mercancia, cve_proveedor, cantidad_bultos, peso_bruto')
+        .eq('trafico', traficoId)
+        .limit(100)
+      if (ownerCompanyId) q = q.eq('company_id', ownerCompanyId)
+      return q
+    })(),
   ])
 
   const folios = ((facturasFoliosRes.data ?? []) as Array<{ folio: number | null }>)
@@ -121,7 +139,7 @@ export default async function PedimentoDetailPage({
     }
   }
 
-  if (traficoRes.error || !traficoRes.data) notFound()
+  // (ownership already verified above; traficoRes.data is non-null here)
   const trafico = traficoRes.data as {
     trafico: string
     pedimento: string | null
@@ -209,7 +227,7 @@ export default async function PedimentoDetailPage({
           <Cell label="Fecha de pago" value={trafico.fecha_pago ? fmtDate(trafico.fecha_pago) : '—'} mono />
           <Cell label="Importe total" value={trafico.importe_total != null ? fmtUSDFull(trafico.importe_total) : '—'} mono align="right" />
           <Cell label="Peso bruto" value={trafico.peso_bruto != null ? `${fmtKg(trafico.peso_bruto)} kg` : '—'} mono align="right" />
-          <Cell label="Tipo de cambio" value={trafico.tipo_cambio != null ? `${trafico.tipo_cambio.toFixed(4)} MXN/USD` : '—'} mono align="right" />
+          <Cell label="Tipo de cambio (a fecha de llegada)" value={trafico.tipo_cambio != null ? `${trafico.tipo_cambio.toFixed(4)} MXN/USD` : '—'} mono align="right" />
         </DataGrid>
       </Section>
 
@@ -227,7 +245,7 @@ export default async function PedimentoDetailPage({
                   <th style={{ width: 120 }}>Fracción</th>
                   <th style={{ width: 90, textAlign: 'right' }}>Cantidad</th>
                   <th style={{ width: 110, textAlign: 'right' }}>Peso (kg)</th>
-                  <th style={{ width: 130, textAlign: 'right' }}>Valor USD</th>
+                  <th style={{ width: 150, textAlign: 'right' }} title="Valor de factura comercial — el valor en aduana oficial puede diferir">Valor factura</th>
                 </tr>
               </thead>
               <tbody>

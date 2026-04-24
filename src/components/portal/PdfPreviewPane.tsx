@@ -31,6 +31,21 @@ export interface PdfPreviewPaneProps {
   onClose: () => void
 }
 
+/**
+ * Scheme allowlist — http/https only. Blocks `javascript:`, `data:`,
+ * `vbscript:`, etc. that React's iframe `src` does not sanitize.
+ * Relative paths (e.g. `/api/...`) are accepted by parsing against
+ * window.location.origin.
+ */
+function isSafeUrl(u: string): boolean {
+  try {
+    const parsed = new URL(u, typeof window !== 'undefined' ? window.location.origin : 'https://localhost')
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
 export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewPaneProps) {
   const isMobile = useIsMobile()
 
@@ -49,7 +64,7 @@ export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewP
     }
   }, [src, onClose])
 
-  if (!src) return null
+  if (!src || !isSafeUrl(src)) return null
 
   const PANE_WIDTH_DESKTOP = 'min(40vw, 560px)'
 

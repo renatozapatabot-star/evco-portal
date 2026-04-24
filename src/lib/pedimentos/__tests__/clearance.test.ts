@@ -8,9 +8,14 @@ describe('isCleared', () => {
 
   it('returns true for each cleared estatus value', () => {
     expect(isCleared({ estatus: 'Cruzado' })).toBe(true)
+    expect(isCleared({ estatus: 'E1' })).toBe(true)
+    expect(isCleared({ estatus: 'Entregado' })).toBe(true)
     expect(isCleared({ estatus: 'Pedimento Pagado' })).toBe(true)
     expect(isCleared({ estatus: 'Completo' })).toBe(true)
-    expect(isCleared({ estatus: 'Cerrado' })).toBe(true)
+  })
+
+  it('does NOT count "Cerrado" as cleared (ambiguous in GlobalPC — can mean cancelled)', () => {
+    expect(isCleared({ estatus: 'Cerrado' })).toBe(false)
   })
 
   it('trims whitespace on estatus before matching', () => {

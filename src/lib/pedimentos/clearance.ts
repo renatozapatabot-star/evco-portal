@@ -20,11 +20,27 @@
  * would inflate the "Cleared" bucket and lie to the shipper.
  */
 
+/**
+ * Cleared-state status values. Mirrored from src/lib/cockpit/success-rate.ts
+ * SUCCESS_ESTATUSES (the canonical set used everywhere else) so the
+ * pedimento UI agrees with the cockpit success-rate KPI.
+ *
+ * `E1` is GlobalPC's terminal SAT-accepted code (691 rows / ~2% of
+ * traficos in current data). estatus-translator.ts maps E1 → 'Cruzado'.
+ * Omitting it would render 691 cleared shipments as "Not cleared",
+ * collapsing client trust on day one.
+ *
+ * `Cerrado` is intentionally EXCLUDED — in some GlobalPC configurations
+ * it means "administratively closed (cancelled/abandoned)", not
+ * "successfully cleared". Leave out until Tito confirms semantics for
+ * Patente 3596.
+ */
 const CLEARED_STATUSES = new Set([
   'Cruzado',
+  'E1',
+  'Entregado',
   'Pedimento Pagado',
   'Completo',
-  'Cerrado',
 ])
 
 export interface TraficoClearanceInput {

@@ -15,6 +15,7 @@
     "ship": "bash scripts/ship.sh",
     "ship:dry": "bash scripts/ship.sh --skip-deploy",
     "check:sync": "bash scripts/check-safe-writes.sh",
+    "check:integrity": "node scripts/post-sync-integrity.js",
     "telegram-bot": "node scripts/telegram-bot.js",
     "tipo-cambio": "node scripts/tipo-cambio-monitor.js",
     "entradas-anomaly": "node scripts/entradas-anomaly.js",

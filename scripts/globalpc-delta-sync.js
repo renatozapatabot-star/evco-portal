@@ -10,6 +10,7 @@ const { createClient } = require('@supabase/supabase-js')
 const mysql = require('mysql2/promise')
 const { withSyncLog } = require('./lib/sync-log')
 const { safeUpsert } = require('./lib/safe-write')
+const { runPostSyncVerification } = require('./lib/post-sync-verify')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -101,6 +102,10 @@ async function run() {
   companies.forEach(c => { if (c.clave_cliente) claveMap[c.clave_cliente] = c.company_id })
 
   let totalFound = 0, totalNew = 0, totalUpdated = 0, statusChanges = 0
+  // Build 12 — accumulators for post-sync read-back verification.
+  const writtenTraficos = []
+  const writtenEntradas = []
+  const validCompanyIds = new Set(Object.values(claveMap))
 
   try {
     // Delta tráficos
@@ -182,6 +187,7 @@ async function run() {
           ignoreDuplicates: false,
           scriptName: 'globalpc-delta-sync',
         })
+        for (const row of batch) writtenTraficos.push(row.trafico)
       }
 
       totalFound = trafRows.length
@@ -245,6 +251,7 @@ async function run() {
           ignoreDuplicates: false,
           scriptName: 'globalpc-delta-sync',
         })
+        for (const row of batch) writtenEntradas.push(row.cve_entrada)
       }
       totalFound += entRows.length
     }
@@ -273,12 +280,40 @@ async function run() {
   }
 
   await conn.end()
+
+  // Build 12 — Data Integrity Guard. Read back every PK we just wrote and
+  // verify: row exists, company_id is non-null + in the active allowlist,
+  // tenant_id present, pedimento format intact. Any drift fires Telegram
+  // and degrades scrape_runs.status from success → degraded.
+  let integrity = { verdict: 'green', summary: { integrity_pct: 100 } }
+  if (writtenTraficos.length > 0 || writtenEntradas.length > 0) {
+    integrity = await runPostSyncVerification(supabase, {
+      syncType: 'globalpc_delta',
+      batches: [
+        ...(writtenTraficos.length > 0 ? [{
+          table: 'traficos',
+          pkColumn: 'trafico',
+          expectedPks: writtenTraficos,
+        }] : []),
+        ...(writtenEntradas.length > 0 ? [{
+          table: 'entradas',
+          pkColumn: 'cve_entrada',
+          expectedPks: writtenEntradas,
+        }] : []),
+      ],
+      scriptName: 'globalpc-delta-sync',
+      companyIds: validCompanyIds,
+    })
+    console.log(`🔎 Integrity ${integrity.verdict.toUpperCase()} · ${integrity.summary.integrity_pct}% (expected ${integrity.summary.expected}, found ${integrity.summary.found}, missing ${integrity.summary.missing}, violations ${integrity.summary.violation_rows})`)
+  }
+
   await supabase.from('scrape_runs').insert({
     source: 'globalpc_delta', started_at: startedAt,
     completed_at: new Date().toISOString(),
     records_found: totalFound, records_new: totalNew,
-    records_updated: totalUpdated, status: 'success',
-    metadata: { statusChanges }
+    records_updated: totalUpdated,
+    status: integrity.verdict === 'red' ? 'degraded' : 'success',
+    metadata: { statusChanges, integrity_verdict: integrity.verdict, integrity_pct: integrity.summary.integrity_pct }
   })
 }
 

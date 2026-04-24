@@ -422,15 +422,16 @@ export default async function TraficoDetailPage({
       subtitle={clientName ?? undefined}
       maxWidth={1400}
     >
-      {/* Timeline — renders above the detail shell so the cinematic
-          vertical status rail is the primary UX. The legacy hero +
-          below-fold sections remain untouched underneath for deep data
-          (partidas, notas, events log). When document uploads ramp up
-          post-Marathon 3, the timeline absorbs more context without
-          needing layout changes. */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '12px 0 0' }}>
-        <TraficoTimeline input={timelineInput} />
-      </div>
+      {/* V1 Clean Visibility (2026-04-24): timeline removed from the
+          client surface. Operators still see the timeline on
+          /operador/trafico/[id]; for the customer this page now renders
+          pure data (partidas, notas, events log) via TraficoDetail.
+          timelineInput is still computed upstream for operator routes. */}
+      {isInternal && (
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '12px 0 0' }}>
+          <TraficoTimeline input={timelineInput} />
+        </div>
+      )}
 
       <TraficoDetail
         traficoId={traficoId}

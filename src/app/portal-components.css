@@ -334,3 +334,235 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =========================================================================
+   Bundle-parity additions (PORTAL.html resync 2026-04-24)
+   Port of missing primitives from the Claude Design bundle's components.css
+   (cruz-portal/project/styles/components.css — bundle folder name only,
+   no user-visible string). Adapted to --portal-* tokens and .portal-*
+   class names. The card spotlight with emerald hover was
+   intentionally NOT ported — it conflicts with the silver-chrome rule and
+   the emerald-reserved-for-live-only discipline (core-invariant #2).
+   ========================================================================= */
+
+/* Live glow — attach to any "live" element */
+.portal-live-glow { position: relative; }
+.portal-live-glow::after {
+  content: ""; position: absolute; inset: -1px;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--portal-green-2) 22%, transparent),
+    0 0 24px color-mix(in oklch, var(--portal-green-2) 16%, transparent);
+  opacity: 0; pointer-events: none;
+  animation: portalLiveBreathe 4s ease-in-out infinite;
+}
+@keyframes portalLiveBreathe {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1;   }
+}
+
+/* Button loading + success states */
+.portal-btn { position: relative; }
+.portal-btn[data-state="loading"] { pointer-events: none; }
+.portal-btn[data-state="loading"] > * { opacity: 0; transition: opacity 200ms; }
+.portal-btn[data-state="loading"]::before {
+  content: "";
+  position: absolute; top: 50%; left: 50%;
+  width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  animation: portalSpin 720ms linear infinite;
+  opacity: 0.85;
+}
+@keyframes portalSpin { to { transform: rotate(360deg); } }
+
+.portal-btn[data-state="success"] {
+  background: var(--portal-green-2) !important;
+  color: var(--portal-ink-0) !important;
+  box-shadow: 0 0 0 1px var(--portal-green-3), 0 0 32px var(--portal-green-glow);
+  animation: portalSuccessPulse 620ms var(--portal-ease-out);
+}
+.portal-btn[data-state="success"] > * { opacity: 1; }
+@keyframes portalSuccessPulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 color-mix(in oklch, var(--portal-green-2) 70%, transparent); }
+  40%  { transform: scale(1.03); box-shadow: 0 0 0 12px color-mix(in oklch, var(--portal-green-2) 0%, transparent); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 1px var(--portal-green-3), 0 0 32px var(--portal-green-glow); }
+}
+
+/* Shine sweep — apply to any element via class; one-shot */
+.portal-shine { position: relative; overflow: hidden; }
+.portal-shine::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    color-mix(in oklch, var(--portal-green-2) 18%, transparent) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: portalShine 1400ms var(--portal-ease-out) both;
+  pointer-events: none;
+}
+@keyframes portalShine { to { transform: translateX(120%); } }
+
+/* Activity ticker (persistent, above greeting) */
+.portal-activity {
+  position: relative;
+  display: flex; align-items: center; gap: 14px;
+  height: 36px;
+  padding: 0 14px;
+  margin-top: 10px;
+  border: 1px solid var(--portal-line-1);
+  border-radius: var(--portal-r-pill);
+  background: color-mix(in oklch, var(--portal-ink-1) 80%, transparent);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  width: fit-content;
+  max-width: 100%;
+}
+.portal-activity__label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--portal-font-mono);
+  font-size: var(--portal-fs-micro);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--portal-fg-4);
+  padding-right: 14px;
+  border-right: 1px solid var(--portal-line-1);
+  flex-shrink: 0;
+}
+.portal-activity__dot {
+  width: 6px; height: 6px; border-radius: 999px;
+  background: var(--portal-green-2);
+  box-shadow: 0 0 8px var(--portal-green-glow);
+  animation: portalLiveBreathe 2.4s ease-in-out infinite;
+}
+.portal-activity__stream {
+  display: flex; align-items: center; gap: 22px;
+  min-width: 0; flex: 1;
+  font-family: var(--portal-font-mono);
+  font-size: var(--portal-fs-tiny);
+  color: var(--portal-fg-3);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.portal-activity__item {
+  display: inline-flex; align-items: center; gap: 8px;
+  opacity: 0;
+  animation: portalActivityIn 520ms var(--portal-ease-out) both;
+}
+.portal-activity__item .ts {
+  color: var(--portal-fg-5); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.portal-activity__item .sep {
+  width: 3px; height: 3px; border-radius: 999px; background: var(--portal-line-3);
+}
+.portal-activity__item--fresh .what {
+  color: var(--portal-green-2);
+  text-shadow: 0 0 12px var(--portal-green-glow);
+}
+@keyframes portalActivityIn {
+  from { opacity: 0; transform: translateY(-4px); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+/* Luxury tabs (pedimento detail, etc) */
+.portal-tabs-lux {
+  position: relative;
+  display: flex; align-items: stretch; gap: 0;
+  border-bottom: 1px solid var(--portal-line-1);
+}
+.portal-tabs-lux__tab {
+  position: relative;
+  padding: 16px 22px;
+  font-size: var(--portal-fs-sm);
+  letter-spacing: 0.01em;
+  color: var(--portal-fg-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 360ms var(--portal-ease-out);
+}
+.portal-tabs-lux__tab:hover { color: var(--portal-fg-2); }
+.portal-tabs-lux__tab[aria-selected="true"] { color: var(--portal-fg-1); }
+.portal-tabs-lux__tab[aria-selected="true"]::before {
+  content: ""; position: absolute;
+  left: 16px; right: 16px; top: 6px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklch, var(--portal-green-2) 45%, transparent),
+    transparent
+  );
+  opacity: 0.8;
+}
+.portal-tabs-lux__indicator {
+  position: absolute; bottom: -1px; height: 1px;
+  background: var(--portal-green-2);
+  box-shadow: 0 0 14px var(--portal-green-glow), 0 0 2px var(--portal-green-2);
+  transition: left 520ms var(--portal-ease-out), width 520ms var(--portal-ease-out);
+  pointer-events: none;
+}
+.portal-tabs-lux__indicator::after {
+  content: ""; position: absolute;
+  left: 10%; right: 10%; top: -2px; height: 5px;
+  background: radial-gradient(ellipse at center, var(--portal-green-glow), transparent 70%);
+  filter: blur(2px);
+}
+
+/* Drawer polish — softer spring */
+@keyframes portalDrawerIn {
+  from { transform: translateX(36px); opacity: 0; filter: blur(4px); }
+  to   { transform: translateX(0);    opacity: 1; filter: blur(0);    }
+}
+@keyframes portalDrawerBackdrop {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to   { opacity: 1; backdrop-filter: blur(6px); }
+}
+
+/* EN ESTE MOMENTO — sticky pulse bar */
+.portal-momento {
+  position: sticky; top: var(--portal-topbar-h); z-index: 19;
+  display: flex; align-items: center; gap: 16px;
+  height: 42px; padding: 0 clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid color-mix(in oklch, var(--portal-green-2) 18%, var(--portal-line-1));
+  background:
+    linear-gradient(to right,
+      color-mix(in oklch, var(--portal-green-2) 6%, var(--portal-ink-0) 88%) 0%,
+      color-mix(in oklch, var(--portal-ink-0) 86%, transparent) 60%);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+.portal-momento::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(to right, transparent, var(--portal-green-2) 40%, var(--portal-green-2) 60%, transparent);
+  opacity: 0.35;
+  animation: portalMomentoSweep 6s ease-in-out infinite;
+}
+@keyframes portalMomentoSweep {
+  0%, 100% { opacity: 0.18; }
+  50%      { opacity: 0.55; }
+}
+.portal-momento__label {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--portal-font-mono);
+  font-size: var(--portal-fs-micro);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--portal-green-2);
+  flex-shrink: 0;
+}
+.portal-momento__what {
+  font-size: var(--portal-fs-sm);
+  color: var(--portal-fg-1);
+  letter-spacing: -0.005em;
+  min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.portal-momento__meta {
+  font-family: var(--portal-font-mono); font-size: var(--portal-fs-tiny);
+  letter-spacing: 0.14em; color: var(--portal-fg-4); text-transform: uppercase;
+  margin-left: auto; flex-shrink: 0;
+}

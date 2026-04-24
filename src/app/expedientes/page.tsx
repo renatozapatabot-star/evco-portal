@@ -18,6 +18,8 @@ import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import { FreshnessBanner } from '@/components/aguila'
 import { useFreshness } from '@/hooks/use-freshness'
+import { clearanceLabel } from '@/lib/pedimentos/clearance'
+import { PdfPreviewPane } from '@/components/portal/PdfPreviewPane'
 
 const REQUIRED_DOCS = [
   'factura_comercial', 'packing_list', 'pedimento_detallado',
@@ -72,6 +74,9 @@ function ExpedientesContent() {
 
   const [cookiesReady, setCookiesReady] = useState(false)
   const [userRole, setUserRole] = useState('')
+  // V1 Clean Visibility — PDF preview pane state. null = closed.
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
+  const [previewFilename, setPreviewFilename] = useState<string | null>(null)
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -204,7 +209,7 @@ function ExpedientesContent() {
   return (
     <div className="page-shell">
       <div style={{ marginBottom: 12 }}>
-        <h1 className="page-title">Expedientes Digitales</h1>
+        <h1 className="page-title">Expediente Digital</h1>
         <p className="page-subtitle">
           {completeCount} de {withPedimento.length} expedientes completos
         </p>
@@ -248,21 +253,23 @@ function ExpedientesContent() {
               />
             )}
             {paged.map(r => {
-              const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
+              const cleared = clearanceLabel({ estatus: r.estatus }) === 'Cleared'
               return (
                 <div key={r.trafico}>
                   <button className="m-card" onClick={() => router.push(`/embarques/${r.trafico}`)}
                     style={{ width: '100%', textAlign: 'left' }}>
                     <div className="m-card-top">
                       <div className="m-card-id-group">
-                        <span className={`m-card-dot ${isCruzado ? 'm-card-dot--success' : 'm-card-dot--warning'}`} />
+                        <span className="m-card-dot" style={{
+                          background: cleared ? 'var(--accent-silver-bright, #E8EAED)' : 'transparent',
+                          border: '1px solid var(--accent-silver-dim, #7A7E86)',
+                        }} />
                         <span className="m-card-id">{fmtId(r.trafico)}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {isCruzado
-                          ? <DocCompleteness present={REQUIRED_DOCS.length} />
-                          : <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Falta factura</span>
-                        }
+                        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)' }}>
+                          {cleared ? 'Cleared' : 'Not cleared'}
+                        </span>
                       </div>
                     </div>
                     <div className="m-card-bottom">
@@ -325,7 +332,6 @@ function ExpedientesContent() {
                 )}
                 {paged.map((r, idx) => {
                   const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
-                  const isDetenido = (r.estatus || '').toLowerCase().includes('deten')
 
                   return (
                     <tr key={r.trafico}
@@ -333,17 +339,19 @@ function ExpedientesContent() {
                       style={{ cursor: 'pointer' }}
                       onClick={() => router.push(`/embarques/${r.trafico}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
+                        {/* V1 Clean Visibility: monochrome dot (filled = cleared, hollow = not). */}
                         <span style={{
                           width: 7, height: 7, borderRadius: '50%', display: 'inline-block',
-                          background: isCruzado ? 'var(--success-500)' : isDetenido ? 'var(--danger-500)' : 'var(--amber-500)',
+                          background: isCruzado ? 'var(--accent-silver-bright, #E8EAED)' : 'transparent',
+                          border: '1px solid var(--accent-silver-dim, #7A7E86)',
                           opacity: 0.7,
                         }} />
                       </td>
                       <td><span className="trafico-id">{fmtId(r.trafico)}</span></td>
                       <td>{r.pedimento ? <span className="pedimento-num">{formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span> : <span className="pedimento-pending">Sin pedimento</span>}</td>
                       <td>
-                        <span className={`badge ${isDetenido ? 'badge-detenido' : isCruzado ? 'badge-cruzado' : 'badge-proceso'}`}>
-                          <span className="badge-dot" aria-hidden="true" />{isDetenido ? 'Detenido' : isCruzado ? 'Cruzado' : 'En Proceso'}
+                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
+                          {clearanceLabel({ estatus: r.estatus })}
                         </span>
                       </td>
                       <td className="timestamp">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</td>
@@ -372,10 +380,11 @@ function ExpedientesContent() {
                       <td style={{ textAlign: 'center' }}>
                         <button
                           type="button"
-                          aria-label={`Abrir PDF del expediente ${r.trafico}`}
+                          aria-label={`Vista previa PDF del expediente ${r.trafico}`}
                           onClick={(e) => {
                             e.stopPropagation()
-                            window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(r.trafico)}`, '_blank')
+                            setPreviewSrc(`/api/pedimento-pdf?trafico=${encodeURIComponent(r.trafico)}`)
+                            setPreviewFilename(`Pedimento ${r.trafico}.pdf`)
                           }}
                           style={{
                             minHeight: 36,
@@ -415,6 +424,15 @@ function ExpedientesContent() {
         )}
       </div>
 
+      {/* V1 Clean Visibility — inline PDF preview pane */}
+      <PdfPreviewPane
+        src={previewSrc}
+        filename={previewFilename}
+        onClose={() => {
+          setPreviewSrc(null)
+          setPreviewFilename(null)
+        }}
+      />
     </div>
   )
 }

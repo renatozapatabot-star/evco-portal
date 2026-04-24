@@ -88,6 +88,41 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-24 · Renato IV · V1 Clean Visibility reset — strip AI surface from client UI
+  supersedes: .claude/rules/core-invariants.md #29 (six-tile list → five-tile list;
+              Contabilidad removed from client nav),
+              .claude/rules/baseline-2026-04-19.md I15 (Contabilidad tile #2),
+              CRUZ-Project-2026/04-30-DAY-FOCUS.md (three-commit plan:
+              supervisor hardening · 60-sec demo · Activity+Risky widgets)
+  updates:    src/lib/cockpit/nav-tiles.ts (6 tiles → 5),
+              src/components/DashboardShellClient.tsx (chat bubble + ticker
+              gated off for client role),
+              src/app/inicio/page.tsx (strip activity/mensajeria/delta/severity),
+              src/app/entradas/** (clean spreadsheet view, all columns),
+              src/app/pedimentos/** (Cleared/Not cleared text only; NEW detail page),
+              src/app/expedientes/** (inline PDF preview pane),
+              src/app/mi-cuenta/** + src/app/contabilidad/** + 20+ V2 routes
+              (role-gated to notFound() for client role; operator still reaches),
+              new: src/lib/pedimentos/clearance.ts,
+                   src/lib/links/entity-links.ts,
+                   src/lib/auth/require-operator.ts,
+                   src/components/portal/UniversalSearch.tsx,
+                   src/components/portal/PdfPreviewPane.tsx
+  basis:      V1 product direction — pure visibility/transparency for the
+              shipper. The customer sees their own raw data, cleanly, and
+              CRUZ gets out of the way. Supervisor stays running in shadow
+              mode on Throne (PM2 processes untouched); the UI layer
+              removes every AI-forward affordance (chat bubble · CRUZ
+              sugiere · Activity feed · Risky shipments · timelines ·
+              semaforo colors beyond Cleared/Not cleared · A/R dunning
+              tone · Tito's 60-sec demo page). Tenant isolation and every
+              HARD invariant preserved unchanged. Pedimentos and
+              Contabilidad routes stay live on disk for back-compat deep
+              links + operator workflow; only the client-nav composition
+              and the shell chrome change. When L1 supervisor promotion
+              happens later, AI surfaces will be re-added behind an
+              explicit per-feature flag.
+
 2026-04-24 · Renato IV · ship.sh Gate 2 bypassed for bundle-parity CSS deploy
   supersedes: .claude/rules/ship-process.md Gate 2 (data-integrity smoke) +
               CLAUDE.md "Every deploy: use npm run ship"

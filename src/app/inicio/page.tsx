@@ -24,6 +24,7 @@ import { CockpitErrorCard, CockpitSkeleton, FreshnessBanner, type CockpitHeroKPI
 import { readFreshness } from '@/lib/cockpit/freshness'
 import { computeSuccessRate } from '@/lib/cockpit/success-rate'
 import { InicioClientShell } from './InicioClientShell'
+import { DailyWorkflowsWidget } from '@/components/workflows/DailyWorkflowsWidget'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import { buildClientHeroTiles } from '@/lib/cockpit/quiet-season'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
@@ -745,6 +746,11 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
             </div>
           )}
           <FreshnessBanner reading={freshness} />
+          {/* 3 Killer Daily Driver Workflows · shadow mode · EVCO + MAFESA only.
+              Renders null for other tenants; scope enforced in DailyWorkflowsWidget. */}
+          <div style={{ marginTop: 20 }}>
+            <DailyWorkflowsWidget companyId={session.companyId} role={session.role} />
+          </div>
         </>
       }
     />

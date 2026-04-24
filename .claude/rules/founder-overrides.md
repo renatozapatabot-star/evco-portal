@@ -88,6 +88,23 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-24 · Renato IV · ship.sh Gate 2 bypassed for bundle-parity CSS deploy
+  supersedes: .claude/rules/ship-process.md Gate 2 (data-integrity smoke) +
+              CLAUDE.md "Every deploy: use npm run ship"
+  updates:    (runtime bypass — no file change)
+              Deploy dpl_Cpg4nD3aNzc3daRb3dWYRQzDKeEU · commits 08abcd5 + b94f795
+  basis:      Gate 2 failed on a pre-existing SEV-2 that predates this work —
+              sync_log failure rate 18.9% over last 7d (threshold 5%). The
+              shipped change is CSS-only (.portal-live-glow, .portal-shine,
+              .portal-activity, .portal-tabs-lux, .portal-momento primitives
+              + portalDrawer keyframes). Physically impossible for CSS to
+              affect sync reliability. User directive "deploy it all and
+              ill fix it" explicitly accepts the red data-integrity signal
+              on production smoke (all 6 tables green, verdict red driven
+              by sync_log rate). Sync reliability investigation owed as
+              follow-up; NOT deferred silently. Direct vercel --prod --yes
+              from feat/ursula-demo-polish-2026-04-22.
+
 2026-04-19 · Renato IV · Client A/R visible on client surface
   supersedes: learned-rules.md — "Client A/R visibility is a known gap
               (broker-internal by design)"

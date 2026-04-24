@@ -47,21 +47,28 @@ export default async function PedimentoDetailPage({
   const supabase = createServerClient()
 
   const TRAFICO_COLS =
-    'trafico, estatus, pedimento, fecha_llegada, fecha_cruce, fecha_pago, importe_total, regimen, company_id, patente, aduana, tipo_cambio, peso_bruto, descripcion_mercancia, cve_cliente'
+    'trafico, estatus, pedimento, fecha_llegada, fecha_cruce, fecha_pago, importe_total, regimen, company_id, patente, aduana, tipo_cambio, peso_bruto, descripcion_mercancia'
 
   let traficoQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
 
-  const [traficoRes, partidasRes, docsRes, entradasRes] = await Promise.all([
+  // Step 1: get folios for this trafico from globalpc_facturas. Partidas
+  // are joined to a trafico via folio (the canonical chain — partidas
+  // table itself has no cve_trafico column; that column lives on
+  // facturas, NOT partidas, per schema-contracts.ts).
+  let facturasQ = supabase
+    .from('globalpc_facturas')
+    .select('folio')
+    .eq('cve_trafico', traficoId)
+    .limit(200)
+  if (!isInternal) facturasQ = facturasQ.eq('company_id', session.companyId)
+
+  const [traficoRes, facturasFoliosRes, docsRes, entradasRes] = await Promise.all([
     traficoQ.maybeSingle(),
-    supabase
-      .from('globalpc_partidas')
-      .select('cve_producto, descripcion, fraccion, cantidad, peso, valor_mercancia, valor_usd, cve_trafico')
-      .eq('cve_trafico', traficoId)
-      .limit(500),
+    facturasQ,
     supabase
       .from('expediente_documentos')
-      .select('id, doc_type, file_name, uploaded_at')
+      .select('id, doc_type, file_name, file_url, uploaded_at')
       .eq('pedimento_id', traficoId)
       .order('uploaded_at', { ascending: false })
       .limit(200),
@@ -71,6 +78,48 @@ export default async function PedimentoDetailPage({
       .eq('trafico', traficoId)
       .limit(100),
   ])
+
+  const folios = ((facturasFoliosRes.data ?? []) as Array<{ folio: number | null }>)
+    .map((f) => f.folio)
+    .filter((f): f is number => typeof f === 'number')
+
+  // Step 2: get partidas for those folios.
+  let partidasRows: Array<{
+    cve_producto: string | null
+    cve_cliente: string | null
+    cantidad: number | null
+    precio_unitario: number | null
+    peso: number | null
+    pais_origen: string | null
+  }> = []
+  if (folios.length > 0) {
+    let partidasQ = supabase
+      .from('globalpc_partidas')
+      .select('cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
+      .in('folio', folios)
+      .limit(500)
+    if (!isInternal) partidasQ = partidasQ.eq('company_id', session.companyId)
+    const { data } = await partidasQ
+    partidasRows = (data ?? []) as typeof partidasRows
+  }
+
+  // Step 3: enrich partidas with descripcion + fraccion from globalpc_productos.
+  const cveSet = Array.from(new Set(partidasRows.map((p) => p.cve_producto).filter((v): v is string => Boolean(v))))
+  const productosByCve = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+  if (cveSet.length > 0) {
+    let productosQ = supabase
+      .from('globalpc_productos')
+      .select('cve_producto, descripcion, fraccion')
+      .in('cve_producto', cveSet)
+      .limit(1000)
+    if (!isInternal) productosQ = productosQ.eq('company_id', session.companyId)
+    const { data: prodData } = await productosQ
+    for (const p of ((prodData ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null }>)) {
+      if (p.cve_producto && !productosByCve.has(p.cve_producto)) {
+        productosByCve.set(p.cve_producto, { descripcion: p.descripcion, fraccion: p.fraccion })
+      }
+    }
+  }
 
   if (traficoRes.error || !traficoRes.data) notFound()
   const trafico = traficoRes.data as {
@@ -88,22 +137,29 @@ export default async function PedimentoDetailPage({
     tipo_cambio: number | null
     peso_bruto: number | null
     descripcion_mercancia: string | null
-    cve_cliente: string | null
   }
-  const partidas = (partidasRes.data ?? []) as Array<{
-    cve_producto: string | null
-    descripcion: string | null
-    fraccion: string | null
-    cantidad: number | null
-    peso: number | null
-    valor_mercancia: number | null
-    valor_usd: number | null
-    cve_trafico: string | null
-  }>
+  // Compose partidas with the productos enrichment (descripcion + fraccion).
+  const partidas = partidasRows.map((p) => {
+    const prod = p.cve_producto ? productosByCve.get(p.cve_producto) : null
+    const valorTotal =
+      p.cantidad != null && p.precio_unitario != null
+        ? p.cantidad * p.precio_unitario
+        : null
+    return {
+      cve_producto: p.cve_producto,
+      descripcion: prod?.descripcion ?? null,
+      fraccion: prod?.fraccion ?? null,
+      cantidad: p.cantidad,
+      peso: p.peso,
+      precio_unitario: p.precio_unitario,
+      valor_total: valorTotal,
+    }
+  })
   const docs = (docsRes.data ?? []) as Array<{
     id: string
     doc_type: string | null
     file_name: string | null
+    file_url: string | null
     uploaded_at: string | null
   }>
   const entradas = (entradasRes.data ?? []) as Array<{
@@ -207,11 +263,7 @@ export default async function PedimentoDetailPage({
                         {p.peso != null ? fmtKg(p.peso) : '—'}
                       </td>
                       <td style={{ fontFamily: 'var(--font-mono)', textAlign: 'right', fontWeight: 600 }}>
-                        {p.valor_usd != null
-                          ? fmtUSDFull(p.valor_usd)
-                          : p.valor_mercancia != null
-                          ? fmtUSDFull(p.valor_mercancia)
-                          : '—'}
+                        {p.valor_total != null ? fmtUSDFull(p.valor_total) : '—'}
                       </td>
                     </tr>
                   )
@@ -243,22 +295,31 @@ export default async function PedimentoDetailPage({
                     {d.uploaded_at ? ` · ${fmtDate(d.uploaded_at)}` : ''}
                   </div>
                 </div>
-                <Link
-                  href={`/api/expediente-doc?id=${encodeURIComponent(d.id)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: 'var(--aguila-fs-body)',
-                    padding: '8px 14px',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 8,
-                    color: 'var(--text-primary)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  Abrir PDF
-                </Link>
+                {d.file_url ? (
+                  <a
+                    href={d.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: 'var(--aguila-fs-body)',
+                      padding: '8px 14px',
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 8,
+                      color: 'var(--text-primary)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Abrir PDF
+                  </a>
+                ) : (
+                  <span style={{
+                    fontSize: 'var(--aguila-fs-meta)',
+                    color: 'var(--text-muted)',
+                  }}>
+                    Sin URL
+                  </span>
+                )}
               </li>
             ))}
           </ul>

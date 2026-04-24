@@ -282,4 +282,31 @@ async function run() {
   })
 }
 
-withSyncLog(supabase, { sync_type: 'globalpc_delta', company_id: null }, run).catch(console.error)
+async function triggerDailyWorkflows() {
+  // After every delta sync, kick the 3 Killer Daily Driver Workflows
+  // (missing NOM · high-value risk · duplicate shipment). Fire-and-forget:
+  // a failure here should never break the sync. Telegram alert is emitted
+  // from inside the endpoint's own sync-log row.
+  const base = (process.env.PORTAL_BASE_URL || 'https://portal.renatozapata.com').replace(/\/$/, '')
+  const secret = process.env.CRON_SECRET
+  if (!secret) {
+    console.warn('[globalpc-delta-sync] CRON_SECRET missing — skipping daily-workflows trigger')
+    return
+  }
+  try {
+    const res = await fetch(`${base}/api/cron/daily-workflows`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-cron-secret': secret },
+      body: JSON.stringify({}),
+    })
+    if (!res.ok) {
+      console.warn(`[globalpc-delta-sync] daily-workflows returned ${res.status}`)
+    }
+  } catch (e) {
+    console.warn('[globalpc-delta-sync] daily-workflows trigger failed:', e.message)
+  }
+}
+
+withSyncLog(supabase, { sync_type: 'globalpc_delta', company_id: null }, run)
+  .then(() => triggerDailyWorkflows())
+  .catch(console.error)

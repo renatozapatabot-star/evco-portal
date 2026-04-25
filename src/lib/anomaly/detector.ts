@@ -79,12 +79,12 @@ export async function loadAnomalies(
 
   if (opts.claveCliente) q = q.eq('clave_cliente', opts.claveCliente)
 
-  let ivaRate = 0.16
-  try {
-    ivaRate = await getIVARate()
-  } catch {
-    // fall back to standard 16% — detector still useful
-  }
+  // Refuse-to-calculate per HARD invariant #14 / operational-resilience #2.
+  // Never fall back to a hardcoded rate — better to skip the detector run
+  // than emit anomaly scores against a stale or wrong IVA. system_config
+  // expiry watchdog (PM2 cron `system-config-expiry-watch`) provides 7-day
+  // heads-up before any rate row expires.
+  const ivaRate = await getIVARate()
 
   const { data } = await q
   const rows = (data ?? []) as FacturaRow[]

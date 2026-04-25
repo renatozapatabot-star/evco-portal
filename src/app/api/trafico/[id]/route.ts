@@ -13,14 +13,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   // V1 Clean Visibility (2026-04-24): role + companyId from HMAC session,
-  // never from forgeable cookies (baseline I20). The `company_clave` cookie
-  // remains read because it carries the GlobalPC clave (joined later) —
-  // not a tenant-isolation signal on its own.
+  // never from forgeable cookies (baseline I20). `clave_cliente` for the
+  // facturas join is resolved from the verified owner's `companies` row
+  // below, NOT from the forgeable `company_clave` cookie.
   const session = await verifySession(request.cookies.get('portal_session')?.value ?? '')
   if (!session) return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 })
   const isInternal = session.role === 'broker' || session.role === 'admin'
   const companyId = session.companyId
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const { id: traficoId } = await params
 
   // Step 1 — Confirm trafico ownership BEFORE any dependent fetch
@@ -42,13 +41,29 @@ export async function GET(
     return NextResponse.json({ trafico: null, facturas: [], entradas: [], documents: [] })
   }
 
-  // Step 2 — Dependents, all anchored to ownerCompanyId.
+  // Resolve clave_cliente from the companies table using the verified
+  // ownerCompanyId. Replaces the prior forgeable `company_clave` cookie
+  // read (security audit B1 / 2026-04-24 finding F6: any client could
+  // set their cookie to another tenant's clave and read SAT facturas).
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('clave_cliente')
+    .eq('company_id', ownerCompanyId)
+    .maybeSingle<{ clave_cliente: string | null }>()
+  const verifiedClave = companyRow?.clave_cliente ?? null
+
+  // Step 2 — Dependents, all anchored to verified scoping.
+  // aduanet_facturas keys by clave_cliente (GlobalPC clave) per its
+  // schema; company_id is not the join key. We anchor to the
+  // server-verified clave from companies, not a client cookie.
   let factQ = supabase.from('aduanet_facturas').select('*').eq('referencia', traficoId)
-  if (!isInternal) factQ = factQ.eq('clave_cliente', clientClave)
-  // aduanet_facturas tracks SAT-side filings keyed by clave_cliente
-  // (the GlobalPC clave); company_id is not the join key here. Internal
-  // roles see all facturas for this trafico (the trafico itself was
-  // already tenant-scoped above).
+  if (!isInternal) {
+    if (!verifiedClave) {
+      // No clave on file — fail closed instead of fanning out to all tenants.
+      return NextResponse.json({ trafico: trafRes.data, facturas: [], entradas: [], documents: [] })
+    }
+    factQ = factQ.eq('clave_cliente', verifiedClave)
+  }
 
   const entQ = supabase.from('entradas')
     .select('*')

@@ -52,22 +52,11 @@ export default async function PedimentoDetailPage({
   let traficoQ = supabase.from('traficos').select(TRAFICO_COLS).eq('trafico', traficoId)
   if (!isInternal) traficoQ = traficoQ.eq('company_id', session.companyId)
 
-  // Step 1: get folios for this trafico from globalpc_facturas. Partidas
-  // are joined to a trafico via folio (the canonical chain — partidas
-  // table itself has no cve_trafico column; that column lives on
-  // facturas, NOT partidas, per schema-contracts.ts).
-  let facturasQ = supabase
-    .from('globalpc_facturas')
-    .select('folio')
-    .eq('cve_trafico', traficoId)
-    .limit(200)
-  if (!isInternal) facturasQ = facturasQ.eq('company_id', session.companyId)
-
   // Step A: confirm the trafico exists AND belongs to the session's tenant
   // (RLS + app-layer filter for non-internal). If the row is null, 404.
-  // We DO NOT fetch dependents (expediente, entradas, partidas) until
-  // ownership is confirmed — otherwise a client could probe by traficoId
-  // and receive cross-tenant document URLs (IDOR).
+  // We DO NOT fetch dependents (expediente, entradas, partidas, facturas)
+  // until ownership is confirmed — otherwise a client could probe by
+  // traficoId and receive cross-tenant document URLs (IDOR).
   const traficoRes = await traficoQ.maybeSingle()
   if (traficoRes.error || !traficoRes.data) notFound()
   const ownerCompanyId = (traficoRes.data as { company_id: string | null }).company_id
@@ -79,6 +68,16 @@ export default async function PedimentoDetailPage({
 
   // Step B: dependents now anchor company_id to the verified owner of
   // the trafico, defense-in-depth even for internal roles.
+  // Partidas chain (facturas → partidas → productos) joins via folio
+  // not cve_trafico — partidas table has no cve_trafico column per
+  // schema-contracts.ts. Unconditional company_id anchor on every leg.
+  const facturasQ = supabase
+    .from('globalpc_facturas')
+    .select('folio')
+    .eq('cve_trafico', traficoId)
+    .eq('company_id', ownerCompanyId)
+    .limit(200)
+
   const [facturasFoliosRes, docsRes, entradasRes] = await Promise.all([
     facturasQ,
     (() => {
@@ -116,12 +115,16 @@ export default async function PedimentoDetailPage({
     pais_origen: string | null
   }> = []
   if (folios.length > 0) {
-    let partidasQ = supabase
+    // Tenant filter applied UNCONDITIONALLY — even for internal roles.
+    // Anchor to the verified `ownerCompanyId` from Step A so the partidas
+    // chain cannot fan out across tenants when a folio collides
+    // (security audit B1 / 2026-04-24 finding).
+    const partidasQ = supabase
       .from('globalpc_partidas')
       .select('cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen')
       .in('folio', folios)
+      .eq('company_id', ownerCompanyId)
       .limit(500)
-    if (!isInternal) partidasQ = partidasQ.eq('company_id', session.companyId)
     const { data } = await partidasQ
     partidasRows = (data ?? []) as typeof partidasRows
   }
@@ -130,12 +133,16 @@ export default async function PedimentoDetailPage({
   const cveSet = Array.from(new Set(partidasRows.map((p) => p.cve_producto).filter((v): v is string => Boolean(v))))
   const productosByCve = new Map<string, { descripcion: string | null; fraccion: string | null }>()
   if (cveSet.length > 0) {
-    let productosQ = supabase
+    // Same tenant-anchor rule as partidas — unconditional company_id
+    // filter on `ownerCompanyId` even for internal roles. A cve_producto
+    // collision across tenants would otherwise leak descripcion/fraccion
+    // (security audit B1 / 2026-04-24 finding).
+    const productosQ = supabase
       .from('globalpc_productos')
       .select('cve_producto, descripcion, fraccion')
       .in('cve_producto', cveSet)
+      .eq('company_id', ownerCompanyId)
       .limit(1000)
-    if (!isInternal) productosQ = productosQ.eq('company_id', session.companyId)
     const { data: prodData } = await productosQ
     for (const p of ((prodData ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null }>)) {
       if (p.cve_producto && !productosByCve.has(p.cve_producto)) {

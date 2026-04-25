@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 /**
@@ -48,6 +48,11 @@ function isSafeUrl(u: string): boolean {
 
 export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewPaneProps) {
   const isMobile = useIsMobile()
+  // Snapshot the page's original overflow ONCE on mount. Re-deriving it
+  // inside a per-`src` effect captures `'hidden'` from the previous
+  // render, which would leak overflow:hidden permanently when a user
+  // opens a second PDF without closing the first.
+  const originalOverflowRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!src) return
@@ -55,14 +60,24 @@ export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewP
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
-    // lock body scroll while the pane is open
-    const prevOverflow = document.body.style.overflow
+    if (originalOverflowRef.current === null) {
+      originalOverflowRef.current = document.body.style.overflow
+    }
     document.body.style.overflow = 'hidden'
     return () => {
       window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
+      // Restore ONLY when no src is set on the next render — otherwise
+      // a src swap would briefly unlock body scroll between PDFs.
     }
   }, [src, onClose])
+
+  useEffect(() => {
+    if (src) return
+    if (originalOverflowRef.current !== null) {
+      document.body.style.overflow = originalOverflowRef.current
+      originalOverflowRef.current = null
+    }
+  }, [src])
 
   if (!src || !isSafeUrl(src)) return null
 
@@ -106,7 +121,7 @@ export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewP
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '16px 20px', borderBottom: '1px solid var(--border)',
-          minHeight: 64,
+          minHeight: 76,
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
@@ -131,15 +146,18 @@ export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewP
             rel="noopener noreferrer"
             style={{
               fontSize: 'var(--aguila-fs-body)',
-              padding: '8px 12px',
+              padding: '0 16px',
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid var(--border)',
-              borderRadius: 6,
+              borderRadius: 8,
               color: 'var(--text-primary)',
               textDecoration: 'none',
-              minHeight: 36,
+              // 60px minimum touch target — HARD invariant #40
+              minHeight: 60,
+              minWidth: 60,
               display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             Descargar
@@ -149,13 +167,17 @@ export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewP
             onClick={onClose}
             aria-label="Cerrar"
             style={{
-              width: 36, height: 36, minWidth: 36,
+              // 60px minimum touch target — HARD invariant #40
+              width: 60, height: 60, minWidth: 60,
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid var(--border)',
-              borderRadius: 6,
+              borderRadius: 8,
               color: 'var(--text-primary)',
               cursor: 'pointer',
               fontSize: 'var(--aguila-fs-body-lg)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             ✕
@@ -170,7 +192,7 @@ export function PdfPreviewPane({ src, filename, subtitle, onClose }: PdfPreviewP
             flex: 1,
             width: '100%',
             border: 'none',
-            background: '#FFFFFF',
+            background: '#FFFFFF', // design-token: PDF iframe — viewer renders white background by default; explicit ensures parity across browsers.
           }}
         />
       </aside>

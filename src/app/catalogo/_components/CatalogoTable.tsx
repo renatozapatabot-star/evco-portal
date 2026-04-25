@@ -3,74 +3,26 @@
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { GlassCard } from '@/components/aguila/GlassCard'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
-import type { CatalogoRow, CatalogoFraccionGroup, CatalogoSummary } from '@/lib/catalogo/products'
+import type { CatalogoRow } from '@/lib/catalogo/products'
 
 interface Props {
   rows: CatalogoRow[]
-  groups: CatalogoFraccionGroup[]
-  summary: CatalogoSummary
   query: string
-  mode: 'partes' | 'fracciones'
-  /** % of rows whose canonical truth comes from anexo24_parts (Formato 53). */
-  coveragePct?: number
-  /** Rows with fracción or descripción mismatches between GlobalPC + Formato 53. */
-  driftCount?: number
 }
 
-/** Small visual chip per row — audit trust signal. */
-function SourceChip({ row }: { row: CatalogoRow }) {
-  if (row.drift === 'only_in_globalpc') {
-    return (
-      <span title="No aparece en el último Formato 53 · revisar si es SKU activo" style={{
-        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'var(--portal-status-amber-bg)', border: '1px solid var(--portal-status-amber-ring)',
-        color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-      }}>Solo GlobalPC</span>
-    )
-  }
-  if (row.drift === 'fraccion_mismatch') {
-    return (
-      <span title={`Fracción en GlobalPC difiere del Formato 53 · canónica: ${row.fraccion}`} style={{
-        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'var(--portal-status-red-bg)', border: '1px solid var(--portal-status-red-ring)',
-        color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-      }}>Fracción no coincide</span>
-    )
-  }
-  if (row.drift === 'description_mismatch') {
-    return (
-      <span title={`Nombre en GlobalPC difiere del Formato 53 · canónico: ${row.merchandise}`} style={{
-        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'var(--portal-status-amber-bg)', border: '1px solid var(--portal-status-amber-ring)',
-        color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-      }}>Nombre difiere</span>
-    )
-  }
-  return (
-    <span title="Respaldado por el Formato 53 oficial del SAT" style={{
-      display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-      background: 'var(--portal-status-green-bg)', border: '1px solid var(--portal-status-green-ring)',
-      color: 'var(--portal-status-green-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-    }}>Anexo 24 ✓</span>
-  )
+/** Integer with es-MX thousand separators. */
+function fmtInt(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return ''
+  return Math.trunc(Number(n)).toLocaleString('es-MX')
 }
 
-function fmtUsd(n: number | null): string {
-  if (n == null) return '—'
-  return `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+/** USD with thousand separators, no decimals. */
+function fmtUSD(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return ''
+  return `$${Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD`
 }
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return ''
-  try {
-    return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' })
-  } catch { return '' }
-}
-
-export function CatalogoTable({ rows, groups, summary, query, mode, coveragePct, driftCount }: Props) {
+export function CatalogoTable({ rows, query }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(query)
@@ -84,421 +36,182 @@ export function CatalogoTable({ rows, groups, summary, query, mode, coveragePct,
     startTransition(() => router.push(`/catalogo?${params.toString()}`))
   }
 
-  function setMode(nextMode: 'partes' | 'fracciones') {
-    const params = new URLSearchParams(searchParams.toString())
-    if (nextMode === 'partes') params.set('view', 'partes')
-    else params.delete('view')
-    startTransition(() => router.push(`/catalogo?${params.toString()}`))
-  }
-
-  const showing = mode === 'fracciones' ? groups.length : rows.length
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Pre-audit consolidation summary — now includes Formato 53 coverage. */}
-      <GlassCard padding="14px 18px">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
-          <SummaryStat label="Partes activas" value={summary.total_products.toLocaleString('es-MX')} />
-          <SummaryStat label="Fracciones" value={summary.fraccion_count.toLocaleString('es-MX')} />
-          <SummaryStat
-            label="Sin clasificar"
-            value={summary.unclassified_count.toLocaleString('es-MX')}
-            tone={summary.unclassified_count > 0 ? 'amber' : undefined}
-          />
-          {coveragePct != null && (
-            <SummaryStat
-              label="Cobertura Formato 53"
-              value={`${coveragePct}%`}
-              tone={coveragePct < 80 ? 'amber' : undefined}
-              hint={coveragePct >= 95 ? 'respaldadas por SAT' : coveragePct >= 80 ? 'mayormente cubiertas' : 'subir Formato 53 más reciente'}
-            />
-          )}
-          {driftCount != null && driftCount > 0 && (
-            <SummaryStat
-              label="Con drift"
-              value={driftCount.toLocaleString('es-MX')}
-              tone="amber"
-              hint="diferencia GlobalPC vs SAT"
-            />
-          )}
-          <SummaryStat
-            label="A consolidar"
-            value={summary.consolidation_candidates.toLocaleString('es-MX')}
-            tone={summary.consolidation_candidates > 0 ? 'amber' : undefined}
-            hint={summary.consolidation_candidates > 0 ? `${summary.dedup_pool.toLocaleString('es-MX')} variantes duplicadas` : undefined}
-          />
-        </div>
-      </GlassCard>
-
-      <form onSubmit={onSubmit} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+    <div className="cat-shell">
+      <form onSubmit={onSubmit} className="cat-toolbar">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por descripción, fracción o clave..."
+          placeholder="Buscar por descripción, fracción o número de parte…"
           aria-label="Buscar en catálogo"
-          style={{
-            flex: '1 1 280px', minHeight: 60, padding: '0 14px',
-            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 12, color: 'rgba(255,255,255,0.92)', fontSize: 'var(--aguila-fs-section)', outline: 'none',
-          }}
+          className="cat-search"
         />
-        <button
-          type="submit"
-          disabled={pending}
-          style={{
-            minHeight: 60, padding: '0 20px', borderRadius: 12,
-            background: 'rgba(192,197,206,0.12)', color: 'var(--portal-fg-1)',
-            border: '1px solid rgba(192,197,206,0.25)',
-            fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
-            cursor: pending ? 'wait' : 'pointer',
-          }}
-        >
+        <button type="submit" disabled={pending} className="cat-btn">
           {pending ? 'Buscando…' : 'Buscar'}
         </button>
-        <ModeToggle mode={mode} onChange={setMode} pending={pending} />
-        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>
-          {showing.toLocaleString('es-MX')} {mode === 'fracciones' ? (showing === 1 ? 'fracción' : 'fracciones') : (showing === 1 ? 'producto' : 'productos')}
+        <span className="cat-count">
+          {rows.length.toLocaleString('es-MX')} {rows.length === 1 ? 'registro' : 'registros'}
         </span>
       </form>
 
-      {mode === 'fracciones' ? (
-        groups.length === 0 ? (
-          <CalmEmptyState
-            icon="package"
-            title={query ? 'Sin coincidencias' : 'Tu catálogo aparecerá aquí'}
-            message={query
-              ? 'Prueba con otra descripción, fracción o clave.'
-              : 'Una vez clasifiquemos tus productos, podrás ver el historial completo.'}
-          />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {groups.map((g) => <FraccionGroupCard key={g.fraccion} group={g} />)}
-          </div>
-        )
+      {rows.length === 0 ? (
+        <div className="cat-empty">
+          {query
+            ? `Sin coincidencias para "${query}".`
+            : 'Tu catálogo aparecerá aquí cuando se sincronicen partes.'}
+        </div>
       ) : (
-        rows.length === 0 ? (
-          <CalmEmptyState
-            icon="package"
-            title={query ? 'Sin coincidencias' : 'Tu catálogo aparecerá aquí'}
-            message={query
-              ? 'Prueba con otra descripción, fracción o clave.'
-              : 'Los productos aparecerán conforme clasifiquemos tus embarques.'}
-          />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {rows.map((r) => <CatalogoRowCard key={r.id} row={r} />)}
-          </div>
-        )
+        <div className="cat-table-wrap">
+          <table className="cat-table" role="table" aria-label="Catálogo de partes">
+            <thead>
+              <tr>
+                <th style={{ width: 140 }}>Producto</th>
+                <th>Descripción</th>
+                <th style={{ width: 130 }}>Fracción</th>
+                <th style={{ width: 200 }}>Proveedor</th>
+                <th style={{ width: 90 }}>País</th>
+                <th style={{ width: 100, textAlign: 'right' }}>Importado</th>
+                <th style={{ width: 140, textAlign: 'right' }}>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const description = r.merchandise || r.descripcion
+                const partHref = r.cve_producto ? `/catalogo/partes/${encodeURIComponent(r.cve_producto)}` : null
+                return (
+                  <tr key={r.id}>
+                    <td className="cell-mono">
+                      {partHref && r.cve_producto ? (
+                        <Link href={partHref} className="cell-link">{r.cve_producto}</Link>
+                      ) : (
+                        r.cve_producto ?? '—'
+                      )}
+                    </td>
+                    <td className="cell-desc" title={description}>{description || '—'}</td>
+                    <td className="cell-mono">{r.fraccion ?? '—'}</td>
+                    <td className="cell-soft" title={r.proveedor_nombre || undefined}>
+                      {r.proveedor_nombre || '—'}
+                    </td>
+                    <td className="cell-soft">{r.pais_origen || '—'}</td>
+                    <td className="cell-mono cell-right">
+                      {r.veces_importado > 0 ? fmtInt(r.veces_importado) : '—'}
+                    </td>
+                    <td className="cell-mono cell-right">
+                      {r.valor_ytd_usd != null && r.valor_ytd_usd > 0 ? fmtUSD(r.valor_ytd_usd) : '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      {/* Page-scoped polish — shadcn-feel chrome on this surface only. */}
+      <style>{`
+        .cat-shell { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Toolbar */
+        .cat-toolbar {
+          display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+        }
+        .cat-search {
+          flex: 1 1 280px;
+          min-height: 60px;
+          padding: 0 14px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          color: var(--text-primary);
+          font-size: 13px;
+          outline: none;
+          transition: border-color 120ms ease, background 120ms ease;
+        }
+        .cat-search:focus {
+          border-color: rgba(192,197,206,0.4);
+          background: rgba(255,255,255,0.06);
+        }
+        .cat-btn {
+          min-height: 60px; padding: 0 20px;
+          background: rgba(192,197,206,0.10);
+          color: var(--text-primary);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          font-size: 12px; font-weight: 600;
+          letter-spacing: 0.04em; text-transform: uppercase;
+          cursor: pointer;
+          transition: background 120ms ease, border-color 120ms ease;
+        }
+        .cat-btn:hover:not(:disabled) {
+          background: rgba(192,197,206,0.16);
+          border-color: rgba(192,197,206,0.3);
+        }
+        .cat-btn:disabled { cursor: wait; opacity: 0.6; }
+        .cat-count {
+          font-family: var(--font-mono);
+          font-variant-numeric: tabular-nums;
+          font-size: 12px;
+          color: var(--text-muted);
+          margin-left: auto;
+        }
+
+        /* Table */
+        .cat-table-wrap {
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          overflow-x: auto;
+        }
+        .cat-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-variant-numeric: tabular-nums;
+          min-width: 900px;
+        }
+        .cat-table th {
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.04em; text-transform: uppercase;
+          color: var(--text-muted);
+          padding: 10px 12px;
+          text-align: left;
+          background: rgba(255,255,255,0.02);
+          border-bottom: 1px solid var(--border);
+          position: sticky; top: 0; z-index: 1;
+        }
+        .cat-table td {
+          padding: 10px 12px;
+          font-size: 13px;
+          color: var(--text-secondary);
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .cat-table tbody tr { transition: background 120ms ease; }
+        .cat-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.015); }
+        .cat-table tbody tr:hover { background: rgba(192,197,206,0.06); }
+        .cat-table tbody tr:last-child td { border-bottom: 0; }
+
+        .cell-mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+        .cell-right { text-align: right; }
+        .cell-soft  { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+        .cell-desc  {
+          color: var(--text-primary);
+          font-weight: 500;
+          max-width: 360px;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .cell-link  { color: var(--accent-silver-bright, #E8EAED); text-decoration: none; font-weight: 600; }
+        .cell-link:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+        /* Empty */
+        .cat-empty {
+          padding: 32px 16px;
+          background: var(--bg-card);
+          border: 1px dashed var(--border);
+          border-radius: 10px;
+          color: var(--text-muted);
+          font-size: 13px;
+          text-align: center;
+        }
+      `}</style>
     </div>
-  )
-}
-
-function ModeToggle({ mode, onChange, pending }: { mode: 'partes' | 'fracciones'; onChange: (m: 'partes' | 'fracciones') => void; pending: boolean }) {
-  return (
-    <div role="tablist" aria-label="Vista del catálogo" style={{
-      display: 'inline-flex', padding: 4, borderRadius: 12,
-      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(192,197,206,0.15)',
-    }}>
-      <ModeTab label="Por fracción" active={mode === 'fracciones'} onClick={() => onChange('fracciones')} disabled={pending} />
-      <ModeTab label="Partes" active={mode === 'partes'} onClick={() => onChange('partes')} disabled={pending} />
-    </div>
-  )
-}
-
-function ModeTab({ label, active, onClick, disabled }: { label: string; active: boolean; onClick: () => void; disabled: boolean }) {
-  return (
-    <button type="button" role="tab" aria-selected={active} onClick={onClick} disabled={disabled}
-      style={{
-        // 60 px minimum tap target (CLAUDE.md mobile rule). Horizontal
-        // padding kept proportional so the label doesn't feel cramped.
-        minHeight: 60, minWidth: 88, padding: '0 20px', border: 'none', borderRadius: 10,
-        background: active ? 'rgba(192,197,206,0.14)' : 'transparent',
-        color: active ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.5)',
-        fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, letterSpacing: '0.04em',
-        cursor: disabled ? 'wait' : 'pointer', textTransform: 'uppercase',
-      }}
-    >
-      {label}
-    </button>
-  )
-}
-
-function SummaryStat({ label, value, tone, hint }: { label: string; value: string; tone?: 'amber'; hint?: string }) {
-  const color = tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)'
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
-        {label}
-      </span>
-      <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1.2 }}>{value}</span>
-      {hint && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>{hint}</span>}
-    </div>
-  )
-}
-
-function FraccionGroupCard({ group }: { group: CatalogoFraccionGroup }) {
-  const topSuppliers = group.supplier_names.slice(0, 4)
-  const extra = Math.max(0, group.supplier_names.length - topSuppliers.length)
-  return (
-    <GlassCard href={`/catalogo/fraccion/${encodeURIComponent(group.fraccion)}`}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(160px, 1fr)', gap: 16, alignItems: 'start' }}>
-        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div>
-            <p style={{
-              margin: 0, fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
-              color: 'rgba(255,255,255,0.92)', lineHeight: 1.35,
-              overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-            }}>
-              {group.primary_descripcion}
-            </p>
-            <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>
-              {group.variant_count} variante{group.variant_count === 1 ? '' : 's'} · {group.total_imports.toLocaleString('es-MX')} importación{group.total_imports === 1 ? '' : 'es'}
-            </p>
-          </div>
-          {topSuppliers.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {topSuppliers.map((s) => (
-                <span key={s} title={s} style={{
-                  fontSize: 'var(--aguila-fs-meta)', padding: '3px 10px', borderRadius: 999,
-                  background: 'rgba(192,197,206,0.08)', border: '1px solid rgba(192,197,206,0.18)',
-                  color: 'rgba(255,255,255,0.8)', maxWidth: 220,
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>{s}</span>
-              ))}
-              {extra > 0 && <span style={{ fontSize: 'var(--aguila-fs-meta)', padding: '3px 10px', color: 'rgba(255,255,255,0.5)' }}>+{extra} proveedor{extra === 1 ? '' : 'es'}</span>}
-            </div>
-          )}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-          <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>Fracción</p>
-          <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--portal-fg-1)', textAlign: 'right' }}>{group.fraccion}</p>
-          {group.variant_count >= 5 && (
-            <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--portal-status-amber-fg)', textTransform: 'uppercase' }}>Consolidar</span>
-          )}
-        </div>
-      </div>
-    </GlassCard>
-  )
-}
-
-function CatalogoRowCard({ row }: { row: CatalogoRow }) {
-  // Right-edge "Ver ficha →" chip drills into /catalogo/partes/[cve].
-  // We don't wrap the whole card because the card already has nested
-  // Links (embarque chip, "Sin clasificar") that'd create invalid HTML
-  // as anchor-in-anchor. Per the drilldown requirement: a dedicated
-  // 60px tap target on the row.
-  return (
-    <GlassCard>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 2fr) minmax(160px, 1fr)',
-          gap: 16,
-          alignItems: 'start',
-        }}
-      >
-        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 'var(--aguila-fs-section)',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.92)',
-                  lineHeight: 1.35,
-                  overflow: 'hidden',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                {row.merchandise || row.descripcion}
-              </p>
-              <SourceChip row={row} />
-            </div>
-            {row.cve_producto && (
-              <p
-                className="font-mono"
-                style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}
-              >
-                {row.cve_producto}
-              </p>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 'var(--aguila-fs-compact)' }}>
-            {row.proveedor_nombre && (
-              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Proveedor
-                </span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>{row.proveedor_nombre}</span>
-              </div>
-            )}
-            {row.pais_origen && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Origen
-                </span>
-                <span style={{ color: 'rgba(255,255,255,0.85)' }}>{row.pais_origen}</span>
-              </div>
-            )}
-            {row.veces_importado > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Importado
-                </span>
-                <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                  {row.veces_importado}×
-                </span>
-              </div>
-            )}
-            {row.valor_ytd_usd != null && row.valor_ytd_usd > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Valor
-                </span>
-                <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                  {fmtUsd(row.valor_ytd_usd)} USD
-                </span>
-              </div>
-            )}
-          </div>
-
-          {row.ultimo_cve_trafico ? (
-            <Link
-              href={`/embarques/${encodeURIComponent(row.ultimo_cve_trafico)}`}
-              style={{
-                alignSelf: 'flex-start',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                minHeight: 36,
-                padding: '0 12px',
-                background: 'rgba(234,179,8,0.1)',
-                border: '1px solid rgba(234,179,8,0.3)',
-                borderRadius: 999,
-                color: 'var(--portal-status-amber-fg)',
-                fontSize: 'var(--aguila-fs-compact)',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              {/* Semáforo dot — appears only when the cruce has landed.
-                  Row-level trust signal so Ursula sees crossing health at
-                  list level without drilling into the parte detail. */}
-              {row.ultima_fecha_cruce && row.ultimo_semaforo !== null && (
-                <span
-                  aria-label={
-                    row.ultimo_semaforo === 0
-                      ? 'Cruzó en verde'
-                      : row.ultimo_semaforo === 1
-                      ? 'Cruzó en amarillo'
-                      : 'Cruzó en rojo'
-                  }
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    flexShrink: 0,
-                    background:
-                      row.ultimo_semaforo === 0
-                        ? 'var(--portal-status-green-fg)'
-                        : row.ultimo_semaforo === 1
-                        ? 'var(--portal-status-amber-fg)'
-                        : 'var(--portal-status-red-fg)',
-                  }}
-                />
-              )}
-              <span className="font-mono">{row.ultimo_cve_trafico}</span>
-              {(row.ultima_fecha_cruce || row.ultima_fecha_llegada) && (
-                <span style={{ color: 'rgba(250,204,21,0.7)' }}>
-                  · {fmtDate(row.ultima_fecha_cruce ?? row.ultima_fecha_llegada)}
-                </span>
-              )}
-              <span aria-hidden>→</span>
-            </Link>
-          ) : (
-            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Sin embarque reciente</span>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>
-            Fracción
-          </p>
-          {row.fraccion ? (
-            <p
-              className="font-mono"
-              style={{
-                margin: 0,
-                fontSize: 'var(--aguila-fs-headline)',
-                fontWeight: 800,
-                letterSpacing: '-0.01em',
-                color: 'var(--portal-fg-1)',
-                textAlign: 'right',
-              }}
-            >
-              {row.fraccion}
-            </p>
-          ) : (
-            <Link
-              href={`/clasificar?q=${encodeURIComponent(row.descripcion)}`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                minHeight: 44,
-                padding: '0 12px',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px dashed rgba(255,255,255,0.2)',
-                borderRadius: 10,
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 'var(--aguila-fs-compact)',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Sin clasificar · Clasificar →
-            </Link>
-          )}
-          {row.fraccion_source && (
-            <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
-              {row.fraccion_source.replace(/_/g, ' ')}
-            </span>
-          )}
-          {row.cve_producto && (
-            <Link
-              href={`/catalogo/partes/${encodeURIComponent(row.cve_producto)}`}
-              aria-label={`Ver ficha de ${row.descripcion}`}
-              style={{
-                marginTop: 4,
-                minHeight: 60,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                padding: '0 16px',
-                borderRadius: 12,
-                background: 'rgba(192,197,206,0.08)',
-                border: '1px solid rgba(192,197,206,0.22)',
-                color: 'var(--portal-fg-1)',
-                fontSize: 'var(--aguila-fs-compact)',
-                fontWeight: 600,
-                textDecoration: 'none',
-                letterSpacing: '0.02em',
-              }}
-            >
-              Ver ficha <span aria-hidden>→</span>
-            </Link>
-          )}
-        </div>
-      </div>
-    </GlassCard>
   )
 }

@@ -258,7 +258,7 @@ function ExpedientesContent() {
               const cleared = isCleared({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })
               return (
                 <div key={r.trafico}>
-                  <button className="m-card" onClick={() => router.push(`/embarques/${r.trafico}`)}
+                  <button className="m-card" onClick={() => router.push(`/expedientes/${encodeURIComponent(r.trafico)}`)}
                     style={{ width: '100%', textAlign: 'left' }}>
                     <div className="m-card-top">
                       <div className="m-card-id-group">
@@ -342,7 +342,7 @@ function ExpedientesContent() {
                     <tr key={r.trafico}
                       className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}`}
                       style={{ cursor: 'pointer' }}
-                      onClick={() => router.push(`/embarques/${r.trafico}`)}>
+                      onClick={() => router.push(`/expedientes/${encodeURIComponent(r.trafico)}`)}>
                       <td style={{ width: 28, paddingRight: 0 }}>
                         {/* V1 Clean Visibility: monochrome dot (filled = cleared, hollow = not). */}
                         <span style={{

@@ -1,217 +1,195 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { CatalogoRow } from '@/lib/catalogo/products'
+import { DataTable, type DataTableColumn } from '@/components/ui/data-table'
+import { formatNumber, formatCurrencyUSD } from '@/lib/format'
+import styles from './CatalogoTable.module.css'
 
 interface Props {
   rows: CatalogoRow[]
   query: string
 }
 
-/** Integer with es-MX thousand separators. */
-function fmtInt(n: number | null | undefined): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return ''
-  return Math.trunc(Number(n)).toLocaleString('es-MX')
-}
+const PAGE_SIZE = 50
 
-/** USD with thousand separators, no decimals. */
-function fmtUSD(n: number | null | undefined): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return ''
-  return `$${Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD`
+/**
+ * Client-side dedup: group rows by `${cve_producto}|${fraccion ?? ''}`
+ * and keep the first occurrence. If duplicates collide (same key),
+ * sum `veces_importado` and `valor_ytd_usd` so the row reflects all
+ * usages. Pure UI aggregation — no extra queries.
+ */
+function dedupRows(rows: CatalogoRow[]): CatalogoRow[] {
+  const map = new Map<string, CatalogoRow>()
+  for (const r of rows) {
+    const key = `${r.cve_producto ?? ''}|${r.fraccion ?? ''}`
+    const prev = map.get(key)
+    if (!prev) {
+      map.set(key, { ...r })
+    } else {
+      prev.veces_importado = (prev.veces_importado ?? 0) + (r.veces_importado ?? 0)
+      prev.valor_ytd_usd = (prev.valor_ytd_usd ?? 0) + (r.valor_ytd_usd ?? 0)
+    }
+  }
+  return Array.from(map.values())
 }
 
 export function CatalogoTable({ rows, query }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(query)
+  const [page, setPage] = useState(0)
   const [pending, startTransition] = useTransition()
+
+  const deduped = useMemo(() => dedupRows(rows), [rows])
+  const totalPages = Math.max(1, Math.ceil(deduped.length / PAGE_SIZE))
+  const paged = useMemo(
+    () => deduped.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [deduped, page],
+  )
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     const params = new URLSearchParams(searchParams.toString())
     if (search.trim()) params.set('q', search.trim())
     else params.delete('q')
+    setPage(0)
     startTransition(() => router.push(`/catalogo?${params.toString()}`))
   }
 
+  const columns: DataTableColumn<CatalogoRow>[] = [
+    {
+      key: 'producto',
+      header: 'Producto',
+      width: 140,
+      mono: true,
+      render: (r) => r.cve_producto ? (
+        <Link
+          href={`/catalogo/partes/${encodeURIComponent(r.cve_producto)}`}
+          className="font-semibold text-[var(--accent-silver-bright,#E8EAED)] no-underline hover:underline underline-offset-2"
+        >
+          {r.cve_producto}
+        </Link>
+      ) : <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      render: (r) => {
+        const d = r.merchandise || r.descripcion
+        return d ? (
+          <span className="block truncate max-w-[360px] text-[var(--text-primary)] font-medium" title={d}>{d}</span>
+        ) : <span className="text-[var(--text-muted)]">—</span>
+      },
+    },
+    {
+      key: 'fraccion',
+      header: 'Fracción',
+      width: 130,
+      mono: true,
+      render: (r) => r.fraccion ? (
+        <span>{r.fraccion}</span>
+      ) : (
+        <span className={styles.fraccionPending}>Pendiente IA</span>
+      ),
+    },
+    {
+      key: 'proveedor',
+      header: 'Proveedor',
+      width: 200,
+      render: (r) => r.proveedor_nombre ? (
+        <span className="block truncate max-w-[220px]" title={r.proveedor_nombre}>{r.proveedor_nombre}</span>
+      ) : <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'pais',
+      header: 'País',
+      width: 90,
+      render: (r) => r.pais_origen || <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'importado',
+      header: 'Importado',
+      width: 100,
+      numeric: true,
+      render: (r) => r.veces_importado > 0
+        ? formatNumber(r.veces_importado)
+        : <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'valor',
+      header: 'Valor',
+      width: 160,
+      numeric: true,
+      render: (r) => r.valor_ytd_usd != null && r.valor_ytd_usd > 0
+        ? formatCurrencyUSD(r.valor_ytd_usd)
+        : <span className="text-[var(--text-muted)]">—</span>,
+    },
+  ]
+
   return (
-    <div className="cat-shell">
-      <form onSubmit={onSubmit} className="cat-toolbar">
+    <div className={styles.shell}>
+      <form onSubmit={onSubmit} className={styles.toolbar}>
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por descripción, fracción o número de parte…"
           aria-label="Buscar en catálogo"
-          className="cat-search"
+          className={styles.search}
         />
-        <button type="submit" disabled={pending} className="cat-btn">
+        <button type="submit" disabled={pending} className={styles.btn}>
           {pending ? 'Buscando…' : 'Buscar'}
         </button>
-        <span className="cat-count">
-          {rows.length.toLocaleString('es-MX')} {rows.length === 1 ? 'registro' : 'registros'}
+        <span className={styles.count}>
+          {formatNumber(deduped.length)} {deduped.length === 1 ? 'registro' : 'registros'}
         </span>
       </form>
 
-      {rows.length === 0 ? (
-        <div className="cat-empty">
+      {paged.length === 0 ? (
+        <div className={styles.empty}>
           {query
             ? `Sin coincidencias para "${query}".`
             : 'Tu catálogo aparecerá aquí cuando se sincronicen partes.'}
         </div>
       ) : (
-        <div className="cat-table-wrap">
-          <table className="cat-table" role="table" aria-label="Catálogo de partes">
-            <thead>
-              <tr>
-                <th style={{ width: 140 }}>Producto</th>
-                <th>Descripción</th>
-                <th style={{ width: 130 }}>Fracción</th>
-                <th style={{ width: 200 }}>Proveedor</th>
-                <th style={{ width: 90 }}>País</th>
-                <th style={{ width: 100, textAlign: 'right' }}>Importado</th>
-                <th style={{ width: 140, textAlign: 'right' }}>Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const description = r.merchandise || r.descripcion
-                const partHref = r.cve_producto ? `/catalogo/partes/${encodeURIComponent(r.cve_producto)}` : null
-                return (
-                  <tr key={r.id}>
-                    <td className="cell-mono">
-                      {partHref && r.cve_producto ? (
-                        <Link href={partHref} className="cell-link">{r.cve_producto}</Link>
-                      ) : (
-                        r.cve_producto ?? '—'
-                      )}
-                    </td>
-                    <td className="cell-desc" title={description}>{description || '—'}</td>
-                    <td className="cell-mono">{r.fraccion ?? '—'}</td>
-                    <td className="cell-soft" title={r.proveedor_nombre || undefined}>
-                      {r.proveedor_nombre || '—'}
-                    </td>
-                    <td className="cell-soft">{r.pais_origen || '—'}</td>
-                    <td className="cell-mono cell-right">
-                      {r.veces_importado > 0 ? fmtInt(r.veces_importado) : '—'}
-                    </td>
-                    <td className="cell-mono cell-right">
-                      {r.valor_ytd_usd != null && r.valor_ytd_usd > 0 ? fmtUSD(r.valor_ytd_usd) : '—'}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={paged}
+          rowKey={(r) => r.id}
+          ariaLabel="Catálogo de partes"
+          mobileMinWidth={900}
+        />
       )}
 
-      {/* Page-scoped polish — shadcn-feel chrome on this surface only. */}
-      <style>{`
-        .cat-shell { display: flex; flex-direction: column; gap: 16px; }
-
-        /* Toolbar */
-        .cat-toolbar {
-          display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-        }
-        .cat-search {
-          flex: 1 1 280px;
-          min-height: 60px;
-          padding: 0 14px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          color: var(--text-primary);
-          font-size: 13px;
-          outline: none;
-          transition: border-color 120ms ease, background 120ms ease;
-        }
-        .cat-search:focus {
-          border-color: rgba(192,197,206,0.4);
-          background: rgba(255,255,255,0.06);
-        }
-        .cat-btn {
-          min-height: 60px; padding: 0 20px;
-          background: rgba(192,197,206,0.10);
-          color: var(--text-primary);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          font-size: 12px; font-weight: 600;
-          letter-spacing: 0.04em; text-transform: uppercase;
-          cursor: pointer;
-          transition: background 120ms ease, border-color 120ms ease;
-        }
-        .cat-btn:hover:not(:disabled) {
-          background: rgba(192,197,206,0.16);
-          border-color: rgba(192,197,206,0.3);
-        }
-        .cat-btn:disabled { cursor: wait; opacity: 0.6; }
-        .cat-count {
-          font-family: var(--font-mono);
-          font-variant-numeric: tabular-nums;
-          font-size: 12px;
-          color: var(--text-muted);
-          margin-left: auto;
-        }
-
-        /* Table */
-        .cat-table-wrap {
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          overflow-x: auto;
-        }
-        .cat-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-variant-numeric: tabular-nums;
-          min-width: 900px;
-        }
-        .cat-table th {
-          font-size: 11px; font-weight: 600;
-          letter-spacing: 0.04em; text-transform: uppercase;
-          color: var(--text-muted);
-          padding: 10px 12px;
-          text-align: left;
-          background: rgba(255,255,255,0.02);
-          border-bottom: 1px solid var(--border);
-          position: sticky; top: 0; z-index: 1;
-        }
-        .cat-table td {
-          padding: 10px 12px;
-          font-size: 13px;
-          color: var(--text-secondary);
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-        .cat-table tbody tr { transition: background 120ms ease; }
-        .cat-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.015); }
-        .cat-table tbody tr:hover { background: rgba(192,197,206,0.06); }
-        .cat-table tbody tr:last-child td { border-bottom: 0; }
-
-        .cell-mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
-        .cell-right { text-align: right; }
-        .cell-soft  { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
-        .cell-desc  {
-          color: var(--text-primary);
-          font-weight: 500;
-          max-width: 360px;
-          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .cell-link  { color: var(--accent-silver-bright, #E8EAED); text-decoration: none; font-weight: 600; }
-        .cell-link:hover { text-decoration: underline; text-underline-offset: 2px; }
-
-        /* Empty */
-        .cat-empty {
-          padding: 32px 16px;
-          background: var(--bg-card);
-          border: 1px dashed var(--border);
-          border-radius: 10px;
-          color: var(--text-muted);
-          font-size: 13px;
-          text-align: center;
-        }
-      `}</style>
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <span className={styles.paginationInfo}>
+            Página {page + 1} de {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={page === 0}
+            onClick={() => setPage((p) => p - 1)}
+            aria-label="Página anterior"
+            className={styles.paginationBtn}
+          >
+            <ChevronLeft size={16} aria-hidden />
+          </button>
+          <button
+            type="button"
+            disabled={page >= totalPages - 1}
+            onClick={() => setPage((p) => p + 1)}
+            aria-label="Página siguiente"
+            className={styles.paginationBtn}
+          >
+            <ChevronRight size={16} aria-hidden />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

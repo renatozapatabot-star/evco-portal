@@ -3,14 +3,12 @@
 import { useEffect, useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCompanyIdCookie, getCookieValue } from '@/lib/client-config'
-import { fmtDesc, fmtDate } from '@/lib/format-utils'
+import { fmtDesc } from '@/lib/format-utils'
 import { useSort, type SortState } from '@/hooks/use-sort'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
-import { renderNull, renderPending } from '@/lib/ui/cell-renderers'
 import { fmtCarrier } from '@/lib/carrier-names'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSessionCache } from '@/hooks/use-session-cache'
@@ -33,10 +31,64 @@ interface EntradaRow {
   transportista_mexicano?: string | null
   transportista_americano?: string | null
   cve_proveedor?: string | null
+  tiene_faltantes?: boolean | null
+  mercancia_danada?: boolean | null
+  recibio_facturas?: boolean | null
+  recibio_packing_list?: boolean | null
   [key: string]: unknown
 }
 
 const PAGE_SIZE = 50
+
+/** DD/MM/YYYY \u2014 shipper-friendly, locale-agnostic. */
+function fmtDateDMY(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const d = iso.split('T')[0]
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d)
+  if (!m) return ''
+  return `${m[3]}/${m[2]}/${m[1]}`
+}
+
+/** Status derived from entradas flags. Three states ranked by severity. */
+type EstadoEntrada = 'alerta' | 'pendiente' | 'liberado'
+
+function deriveEstado(r: EntradaRow): EstadoEntrada {
+  if (r.tiene_faltantes || r.mercancia_danada) return 'alerta'
+  if (r.recibio_facturas === false || r.recibio_packing_list === false) return 'pendiente'
+  return 'liberado'
+}
+
+const ESTADO_LABEL: Record<EstadoEntrada, string> = {
+  alerta: 'Alerta',
+  pendiente: 'Pendiente',
+  liberado: 'Liberado',
+}
+
+const ESTADO_STYLE: Record<EstadoEntrada, { bg: string; fg: string; dot: string }> = {
+  liberado:  { bg: 'rgba(34,197,94,0.10)',  fg: '#4ade80', dot: '#22c55e' },
+  pendiente: { bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', dot: '#f59e0b' },
+  alerta:    { bg: 'rgba(239,68,68,0.10)',  fg: '#f87171', dot: '#ef4444' },
+}
+
+function EstadoBadge({ estado }: { estado: EstadoEntrada }) {
+  const s = ESTADO_STYLE[estado]
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '3px 10px', borderRadius: 9999,
+      background: s.bg, color: s.fg,
+      fontSize: 11, fontWeight: 600,
+      letterSpacing: '0.02em',
+      whiteSpace: 'nowrap',
+    }}>
+      <span style={{
+        width: 6, height: 6, borderRadius: '50%',
+        background: s.dot, flexShrink: 0,
+      }} />
+      {ESTADO_LABEL[estado]}
+    </span>
+  )
+}
 
 function SortArrow({ col, sort }: { col: string; sort: SortState }) {
   if (sort.column !== col) return null
@@ -197,26 +249,26 @@ function EntradasContent() {
 
   return (
     <div className="page-shell">
-      {/* Header — glass theme */}
-      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 14,
-          background: 'rgba(192,197,206,0.08)',
-          border: '1px solid rgba(192,197,206,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <Package size={20} color="var(--portal-fg-3)" strokeWidth={1.8} />
+      {/* Header — calm, single-row, shadcn-like restraint. */}
+      <div style={{
+        marginBottom: 24,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 16, flexWrap: 'wrap',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+          <h1 style={{
+            fontSize: 22, fontWeight: 600, color: 'var(--portal-fg-1)',
+            letterSpacing: '-0.01em', margin: 0,
+          }}>
+            Entradas
+          </h1>
+          <span style={{
+            fontSize: 12, color: 'var(--text-muted)',
+            fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums',
+          }}>
+            {filtered.length.toLocaleString('es-MX')} registros
+          </span>
         </div>
-        <h1 style={{
-          fontSize: 22, fontWeight: 800, color: 'var(--portal-fg-1)',
-          letterSpacing: '-0.02em', margin: 0,
-        }}>
-          Entradas
-        </h1>
-      </div>
-
-      <div style={{ marginBottom: 16 }}>
         <MonthSelector
           ym={monthWindow.ym}
           label={monthWindow.label}
@@ -281,13 +333,16 @@ function EntradasContent() {
           )
         )}
 
-        {/* Mobile cards */}
+        {/* Mobile cards — same polish language as the desktop table. */}
         {!loading && paged.length > 0 && isMobile && (
-          <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {paged.map(r => {
               const proveedor = getProveedor(r)
               const transporte = getTransporte(r)
               const guia = getGuia(r)
+              const desc = fmtDesc(getDesc(r))
+              const estado = deriveEstado(r)
+              const dateStr = fmtDateDMY(r.fecha_llegada_mercancia)
               return (
                 <div
                   key={r.cve_entrada}
@@ -295,32 +350,31 @@ function EntradasContent() {
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border)',
                     borderRadius: 10,
-                    padding: '14px 16px',
+                    padding: '12px 14px',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
-                    <span style={{ fontSize: 'var(--aguila-fs-compact)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                      {r.fecha_llegada_mercancia ? fmtDate(r.fecha_llegada_mercancia) : '—'}
-                    </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
+                    <EstadoBadge estado={estado} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    <span>{dateStr || '—'}</span>
+                    {r.trafico && (
+                      <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: 'var(--portal-fg-3)', textDecoration: 'none' }}>{r.trafico}</Link>
+                    )}
                   </div>
                   {proveedor && (
-                    <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {proveedor}
                     </div>
                   )}
-                  <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
-                    {fmtDesc(getDesc(r)) || renderNull()}
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 'var(--aguila-fs-meta)', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    {r.trafico ? (
-                      <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: 'var(--portal-fg-3)', textDecoration: 'none' }}>{r.trafico}</Link>
-                    ) : (
-                      renderPending()
-                    )}
-                    {transporte
-                      ? <span>{transporte}</span>
-                      : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>transporte pendiente</span>}
+                  {desc && (
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 8 }}>
+                      {desc}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    {transporte && <span>{transporte}</span>}
                     {(r.cantidad_bultos ?? 0) > 0 && <span>{r.cantidad_bultos} bto{r.cantidad_bultos !== 1 ? 's' : ''}</span>}
                     {(r.peso_bruto ?? 0) > 0 && <span>{Number(r.peso_bruto).toLocaleString('es-MX')} kg</span>}
                     {guia && <span>{guia}</span>}
@@ -331,65 +385,106 @@ function EntradasContent() {
           </div>
         )}
 
-        {/* Desktop table */}
+        {/* Desktop table — shadcn-style: thin dividers, dense rows, tabular nums. */}
         {!loading && paged.length > 0 && !isMobile && (
           <div style={{ maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aguila-table" role="table" aria-label="Lista de entradas" style={{ minWidth: 1100 }}>
+            <table
+              className="aguila-table entradas-table"
+              role="table"
+              aria-label="Lista de entradas"
+              style={{ minWidth: 1100, fontVariantNumeric: 'tabular-nums' }}
+            >
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" sort={sort} /></th>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" sort={sort} /></th>
+                  <th style={{ width: 110 }}>Estatus</th>
                   <th style={{ width: 160 }}>Proveedor</th>
-                  <th style={{ minWidth: 160 }}>Mercancía</th>
-                  <th style={{ width: 130 }}>Tráfico</th>
-                  <th style={{ width: 120 }}>Transporte US</th>
+                  <th style={{ minWidth: 200 }}>Mercancía</th>
+                  <th style={{ width: 120 }}>Tráfico</th>
+                  <th style={{ width: 120 }}>Transporte</th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 70 }} onClick={() => toggleSort('cantidad_bultos')}>Bultos<SortArrow col="cantidad_bultos" sort={sort} /></th>
                   <th style={{ textAlign: 'right', cursor: 'pointer', width: 90 }} onClick={() => toggleSort('peso_bruto')}>Peso (kg)<SortArrow col="peso_bruto" sort={sort} /></th>
-                  <th style={{ width: 120 }}>Guía</th>
+                  <th style={{ width: 110 }}>Guía</th>
                 </tr>
               </thead>
               <tbody>
-                {paged.map((r, i) => (
-                  <tr key={r.cve_entrada} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                      {r.fecha_llegada_mercancia ? <time dateTime={r.fecha_llegada_mercancia.split('T')[0]}>{fmtDate(r.fecha_llegada_mercancia)}</time> : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {r.cve_entrada}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
-                      {getProveedor(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td className="desc-text" style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                      {fmtDesc(getDesc(r)) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td>
-                      {r.trafico ? (
-                        <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', fontWeight: 600, color: 'var(--portal-fg-3)', textDecoration: 'none' }}>
-                          {r.trafico}
-                        </Link>
-                      ) : (
-                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>
-                      )}
-                    </td>
-                    <td style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-secondary)' }}>
-                      {getTransporte(r) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>pendiente</span>}
-                    </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                      {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                      {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)' }}>
-                      {getGuia(r) || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                  </tr>
-                ))}
+                {paged.map((r, i) => {
+                  const dateStr = fmtDateDMY(r.fecha_llegada_mercancia)
+                  const proveedor = getProveedor(r)
+                  const desc = fmtDesc(getDesc(r))
+                  const transporte = getTransporte(r)
+                  const guia = getGuia(r)
+                  const estado = deriveEstado(r)
+                  return (
+                    <tr key={r.cve_entrada} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        {dateStr ? <time dateTime={r.fecha_llegada_mercancia?.split('T')[0]}>{dateStr}</time> : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {r.cve_entrada}
+                        </span>
+                      </td>
+                      <td><EstadoBadge estado={estado} /></td>
+                      <td style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }} title={proveedor || undefined}>
+                        {proveedor || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td className="desc-text" style={{ fontSize: 13, color: 'var(--text-secondary)' }} title={desc || undefined}>
+                        {desc || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td>
+                        {r.trafico ? (
+                          <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--portal-fg-3)', textDecoration: 'none' }}>
+                            {r.trafico}
+                          </Link>
+                        ) : (
+                          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }} title={transporte || undefined}>
+                        {transporte || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        {r.cantidad_bultos ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        {r.peso_bruto ? Number(r.peso_bruto).toLocaleString('es-MX') : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
+                        {guia || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
+
+            {/* Page-scoped polish — tighter rows, calm header, hover lift. */}
+            <style>{`
+              .entradas-table th {
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: var(--text-muted);
+                padding: 10px 12px;
+                background: transparent;
+                border-bottom: 1px solid var(--border);
+                position: sticky; top: 0;
+                backdrop-filter: blur(8px);
+                z-index: 1;
+              }
+              .entradas-table td {
+                padding: 10px 12px;
+                border-bottom: 1px solid rgba(255,255,255,0.04);
+              }
+              .entradas-table tr.row-even { background: transparent; }
+              .entradas-table tr.row-odd  { background: rgba(255,255,255,0.015); }
+              .entradas-table tbody tr { transition: background 120ms ease; }
+              .entradas-table tbody tr:hover { background: rgba(192,197,206,0.06); }
+              .entradas-table tbody tr:last-child td { border-bottom: 0; }
+            `}</style>
           </div>
         )}
       </div>

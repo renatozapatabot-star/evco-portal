@@ -5,8 +5,8 @@ import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
 import { formatPedimento } from '@/lib/format/pedimento'
 import { formatFraccion } from '@/lib/format/fraccion'
-import { fmtDate, fmtUSDFull, fmtKg, fmtDesc } from '@/lib/format-utils'
-import { clearanceLabel } from '@/lib/pedimentos/clearance'
+import { fmtUSDFull, fmtKg, fmtDesc } from '@/lib/format-utils'
+import { clearanceLabel, isCleared } from '@/lib/pedimentos/clearance'
 import {
   linkForEntrada,
   linkForFraccion,
@@ -14,6 +14,21 @@ import {
   linkForProveedor,
   linkForTrafico,
 } from '@/lib/links/entity-links'
+
+/** DD/MM/YYYY — shipper-friendly, locale-agnostic. */
+function fmtDateDMY(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const d = iso.split('T')[0]
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d)
+  if (!m) return ''
+  return `${m[3]}/${m[2]}/${m[1]}`
+}
+
+/** Integer with es-MX thousand separators. */
+function fmtInt(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return ''
+  return Math.trunc(Number(n)).toLocaleString('es-MX')
+}
 
 /**
  * Pedimento detail — V1 Clean Visibility (2026-04-24).
@@ -201,46 +216,67 @@ export default async function PedimentoDetailPage({
   }>
 
   const status = clearanceLabel({ estatus: trafico.estatus, fecha_cruce: trafico.fecha_cruce })
+  const cleared = isCleared({ estatus: trafico.estatus, fecha_cruce: trafico.fecha_cruce })
   const pedimentoDisplay = trafico.pedimento
     ? formatPedimento(trafico.pedimento, trafico.pedimento, { dd: '26', ad: '24', pppp: trafico.patente ?? '3596' })
     : '—'
   const embarqueHref = linkForTrafico(trafico.trafico) ?? '#'
 
+  // Cliente name — single light join on the verified ownerCompanyId.
+  // Pure presentational lookup of existing data; no derivation.
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('name')
+    .eq('company_id', ownerCompanyId)
+    .maybeSingle<{ name: string | null }>()
+  const clienteName = companyRow?.name ?? null
+
   return (
-    <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 20px 48px', color: 'var(--text-primary)' }}>
-      {/* Header */}
-      <header style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 'var(--aguila-fs-label)', letterSpacing: 'var(--aguila-ls-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
-          Pedimento
+    <main className="ped-detail">
+      {/* Header — compact card style: eyebrow, number, status pill, meta row */}
+      <header className="ped-header">
+        <div className="ped-eyebrow">Pedimento</div>
+        <div className="ped-title-row">
+          <h1 className="ped-number">{pedimentoDisplay}</h1>
+          <span className={`ped-status ${cleared ? 'ped-status--cleared' : 'ped-status--pending'}`}>
+            <span className="ped-status-dot" />
+            {status}
+          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
-          <h1 style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-mid)', fontWeight: 700, letterSpacing: '-0.01em', margin: 0 }}>
-            {pedimentoDisplay}
-          </h1>
-          <span style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--text-secondary)' }}>{status}</span>
-        </div>
-        <div style={{ marginTop: 8, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-          Embarque{' '}
-          <Link href={embarqueHref} style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-silver-bright, #E8EAED)', textDecoration: 'underline', textUnderlineOffset: 2 }}>
-            {trafico.trafico}
-          </Link>
+        <div className="ped-meta">
+          {clienteName && (
+            <span className="ped-meta-item"><span className="ped-meta-label">Cliente</span>{clienteName}</span>
+          )}
+          <span className="ped-meta-item">
+            <span className="ped-meta-label">Embarque</span>
+            <Link href={embarqueHref} className="ped-meta-link">{trafico.trafico}</Link>
+          </span>
+          {trafico.regimen && (
+            <span className="ped-meta-item"><span className="ped-meta-label">Régimen</span>{trafico.regimen}</span>
+          )}
+          {trafico.aduana && (
+            <span className="ped-meta-item"><span className="ped-meta-label">Aduana</span>{trafico.aduana}</span>
+          )}
+          {trafico.fecha_pago && (
+            <span className="ped-meta-item"><span className="ped-meta-label">Pago</span>{fmtDateDMY(trafico.fecha_pago)}</span>
+          )}
         </div>
       </header>
 
-      {/* Raw data */}
+      {/* Datos del pedimento */}
       <Section title="Datos del pedimento">
-        <DataGrid>
+        <div className="ped-grid">
           <Cell label="Régimen" value={trafico.regimen ?? '—'} />
           <Cell label="Aduana" value={trafico.aduana ?? '—'} />
           <Cell label="Patente" value={trafico.patente ?? '—'} mono />
-          <Cell label="Estatus (raw)" value={trafico.estatus ?? '—'} />
-          <Cell label="Fecha de llegada" value={trafico.fecha_llegada ? fmtDate(trafico.fecha_llegada) : '—'} mono />
-          <Cell label="Fecha de cruce" value={trafico.fecha_cruce ? fmtDate(trafico.fecha_cruce) : '—'} mono />
-          <Cell label="Fecha de pago" value={trafico.fecha_pago ? fmtDate(trafico.fecha_pago) : '—'} mono />
+          <Cell label="Estatus GlobalPC" value={trafico.estatus ?? '—'} />
+          <Cell label="Fecha de llegada" value={fmtDateDMY(trafico.fecha_llegada) || '—'} mono />
+          <Cell label="Fecha de cruce" value={fmtDateDMY(trafico.fecha_cruce) || '—'} mono />
+          <Cell label="Fecha de pago" value={fmtDateDMY(trafico.fecha_pago) || '—'} mono />
           <Cell label="Importe total" value={trafico.importe_total != null ? fmtUSDFull(trafico.importe_total) : '—'} mono align="right" />
           <Cell label="Peso bruto" value={trafico.peso_bruto != null ? `${fmtKg(trafico.peso_bruto)} kg` : '—'} mono align="right" />
           <Cell label="Tipo de cambio (a fecha de llegada)" value={trafico.tipo_cambio != null ? `${trafico.tipo_cambio.toFixed(4)} MXN/USD` : '—'} mono align="right" />
-        </DataGrid>
+        </div>
       </Section>
 
       {/* Partidas */}
@@ -248,8 +284,8 @@ export default async function PedimentoDetailPage({
         {partidas.length === 0 ? (
           <Empty message="Sin partidas registradas para este pedimento." />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="aguila-table" role="table" aria-label="Partidas del pedimento" style={{ minWidth: 720 }}>
+          <div className="ped-table-wrap">
+            <table className="ped-table" role="table" aria-label="Partidas del pedimento">
               <thead>
                 <tr>
                   <th style={{ width: 140 }}>Producto</th>
@@ -267,34 +303,26 @@ export default async function PedimentoDetailPage({
                   const fraccionDisplay = formatFraccion(p.fraccion) ?? '—'
                   return (
                     <tr key={`${p.cve_producto ?? 'sin'}-${i}`}>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)' }}>
+                      <td className="cell-mono">
                         {productoHref && p.cve_producto ? (
-                          <Link href={productoHref} style={{ color: 'var(--accent-silver-bright, #E8EAED)', textDecoration: 'none' }}>
-                            {p.cve_producto}
-                          </Link>
+                          <Link href={productoHref} className="cell-link">{p.cve_producto}</Link>
                         ) : (
                           p.cve_producto ?? '—'
                         )}
                       </td>
-                      <td style={{ color: 'var(--text-secondary)' }}>{p.descripcion ? fmtDesc(p.descripcion) : '—'}</td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)' }}>
+                      <td className="cell-desc" title={p.descripcion || undefined}>
+                        {p.descripcion ? fmtDesc(p.descripcion) : '—'}
+                      </td>
+                      <td className="cell-mono">
                         {fraccionHref ? (
-                          <Link href={fraccionHref} style={{ color: 'var(--accent-silver-bright, #E8EAED)', textDecoration: 'none' }}>
-                            {fraccionDisplay}
-                          </Link>
+                          <Link href={fraccionHref} className="cell-link">{fraccionDisplay}</Link>
                         ) : (
                           fraccionDisplay
                         )}
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                        {p.cantidad != null ? p.cantidad.toLocaleString('es-MX') : '—'}
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                        {p.peso != null ? fmtKg(p.peso) : '—'}
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', textAlign: 'right', fontWeight: 600 }}>
-                        {p.valor_total != null ? fmtUSDFull(p.valor_total) : '—'}
-                      </td>
+                      <td className="cell-mono cell-right">{fmtInt(p.cantidad) || '—'}</td>
+                      <td className="cell-mono cell-right">{p.peso != null ? fmtKg(p.peso) : '—'}</td>
+                      <td className="cell-mono cell-right cell-strong">{p.valor_total != null ? fmtUSDFull(p.valor_total) : '—'}</td>
                     </tr>
                   )
                 })}
@@ -309,20 +337,14 @@ export default async function PedimentoDetailPage({
         {docs.length === 0 ? (
           <Empty message="Sin documentos cargados para este pedimento." />
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul className="ped-doc-list">
             {docs.map((d) => (
-              <li key={d.id} style={{
-                display: 'flex', alignItems: 'center', gap: 16, padding: '12px 14px',
-                background: 'var(--bg-card)', border: '1px solid var(--border)',
-                borderRadius: 10, minHeight: 60,
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {d.file_name ?? 'Sin nombre'}
-                  </div>
-                  <div style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-muted)', marginTop: 2 }}>
+              <li key={d.id} className="ped-doc-row">
+                <div className="ped-doc-info">
+                  <div className="ped-doc-name" title={d.file_name ?? undefined}>{d.file_name ?? 'Sin nombre'}</div>
+                  <div className="ped-doc-meta">
                     {d.doc_type ?? 'Sin tipo'}
-                    {d.uploaded_at ? ` · ${fmtDate(d.uploaded_at)}` : ''}
+                    {d.uploaded_at ? ` · ${fmtDateDMY(d.uploaded_at)}` : ''}
                   </div>
                 </div>
                 {d.file_url ? (
@@ -330,25 +352,12 @@ export default async function PedimentoDetailPage({
                     href={d.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      fontSize: 'var(--aguila-fs-body)',
-                      padding: '8px 14px',
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 8,
-                      color: 'var(--text-primary)',
-                      textDecoration: 'none',
-                    }}
+                    className="ped-doc-action"
                   >
                     Abrir PDF
                   </a>
                 ) : (
-                  <span style={{
-                    fontSize: 'var(--aguila-fs-meta)',
-                    color: 'var(--text-muted)',
-                  }}>
-                    Sin URL
-                  </span>
+                  <span className="ped-doc-action ped-doc-action--disabled">Sin URL</span>
                 )}
               </li>
             ))}
@@ -359,8 +368,8 @@ export default async function PedimentoDetailPage({
       {/* Related entradas */}
       {entradas.length > 0 && (
         <Section title={`Entradas vinculadas (${entradas.length})`}>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="aguila-table" role="table" aria-label="Entradas vinculadas" style={{ minWidth: 600 }}>
+          <div className="ped-table-wrap">
+            <table className="ped-table" role="table" aria-label="Entradas vinculadas">
               <thead>
                 <tr>
                   <th style={{ width: 140 }}>Entrada</th>
@@ -376,33 +385,23 @@ export default async function PedimentoDetailPage({
                   const proveedorHref = linkForProveedor(e.cve_proveedor)
                   return (
                     <tr key={e.cve_entrada}>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)' }}>
+                      <td className="cell-mono">
                         {entradaHref ? (
-                          <Link href={entradaHref} style={{ color: 'var(--accent-silver-bright, #E8EAED)', textDecoration: 'none' }}>
-                            {e.cve_entrada}
-                          </Link>
+                          <Link href={entradaHref} className="cell-link">{e.cve_entrada}</Link>
                         ) : (
                           e.cve_entrada
                         )}
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                        {e.fecha_llegada_mercancia ? fmtDate(e.fecha_llegada_mercancia) : '—'}
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-body)' }}>
+                      <td className="cell-mono">{fmtDateDMY(e.fecha_llegada_mercancia) || '—'}</td>
+                      <td className="cell-mono">
                         {proveedorHref && e.cve_proveedor ? (
-                          <Link href={proveedorHref} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
-                            {e.cve_proveedor}
-                          </Link>
+                          <Link href={proveedorHref} className="cell-muted-link">{e.cve_proveedor}</Link>
                         ) : (
                           e.cve_proveedor ?? '—'
                         )}
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                        {e.cantidad_bultos ?? '—'}
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                        {e.peso_bruto != null ? fmtKg(e.peso_bruto) : '—'}
-                      </td>
+                      <td className="cell-mono cell-right">{fmtInt(e.cantidad_bultos) || '—'}</td>
+                      <td className="cell-mono cell-right">{e.peso_bruto != null ? fmtKg(e.peso_bruto) : '—'}</td>
                     </tr>
                   )
                 })}
@@ -411,6 +410,235 @@ export default async function PedimentoDetailPage({
           </div>
         </Section>
       )}
+
+      {/* Page-scoped polish — shadcn-feel chrome on this surface only. */}
+      <style>{`
+        .ped-detail {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 24px 20px 64px;
+          color: var(--text-primary);
+        }
+        @media (max-width: 600px) {
+          .ped-detail { padding: 16px 14px 48px; }
+        }
+
+        /* Header */
+        .ped-header { margin-bottom: 28px; }
+        .ped-eyebrow {
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.12em; text-transform: uppercase;
+          color: var(--text-muted);
+          margin-bottom: 8px;
+        }
+        .ped-title-row {
+          display: flex; align-items: center; gap: 14px;
+          flex-wrap: wrap;
+        }
+        .ped-number {
+          font-family: var(--font-mono);
+          font-size: 28px; font-weight: 700;
+          letter-spacing: -0.01em;
+          color: var(--text-primary);
+          margin: 0;
+          font-variant-numeric: tabular-nums;
+        }
+        @media (max-width: 600px) {
+          .ped-number { font-size: 22px; }
+        }
+        .ped-status {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 4px 10px; border-radius: 9999px;
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.02em;
+          white-space: nowrap;
+        }
+        .ped-status-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .ped-status--cleared {
+          background: rgba(34,197,94,0.10);
+          color: #4ade80;
+        }
+        .ped-status--cleared .ped-status-dot { background: #22c55e; }
+        .ped-status--pending {
+          background: rgba(192,197,206,0.10);
+          color: var(--accent-silver, #C0C5CE);
+        }
+        .ped-status--pending .ped-status-dot { background: var(--accent-silver-dim, #7A7E86); }
+
+        .ped-meta {
+          display: flex; flex-wrap: wrap; gap: 8px 18px;
+          margin-top: 14px;
+          padding-top: 14px;
+          border-top: 1px solid var(--border);
+          font-size: 13px;
+          color: var(--text-secondary);
+        }
+        .ped-meta-item {
+          display: inline-flex; align-items: baseline; gap: 6px;
+        }
+        .ped-meta-label {
+          font-size: 10px; font-weight: 600;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          color: var(--text-muted);
+        }
+        .ped-meta-link {
+          font-family: var(--font-mono);
+          color: var(--accent-silver-bright, #E8EAED);
+          text-decoration: none;
+          border-bottom: 1px dashed rgba(192,197,206,0.3);
+        }
+        .ped-meta-link:hover { border-bottom-color: var(--accent-silver-bright, #E8EAED); }
+
+        /* Sections */
+        .ped-section { margin-bottom: 28px; }
+        .ped-section + .ped-section {
+          padding-top: 28px;
+          border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .ped-section-title {
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          color: var(--text-muted);
+          margin: 0 0 14px;
+        }
+
+        /* Data grid (Datos del pedimento) */
+        .ped-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1px;
+          background: var(--border);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .ped-cell {
+          background: var(--bg-card);
+          padding: 12px 14px;
+          min-height: 60px;
+          display: flex; flex-direction: column; gap: 6px;
+        }
+        .ped-cell-label {
+          font-size: 10px; font-weight: 600;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          color: var(--text-muted);
+        }
+        .ped-cell-value {
+          font-size: 13px; font-weight: 500;
+          color: var(--text-primary);
+          font-variant-numeric: tabular-nums;
+        }
+        .ped-cell-value--mono { font-family: var(--font-mono); }
+        .ped-cell-value--right { text-align: right; }
+
+        /* Tables — shadcn parity */
+        .ped-table-wrap {
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          overflow-x: auto;
+        }
+        .ped-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-variant-numeric: tabular-nums;
+          min-width: 720px;
+        }
+        .ped-table th {
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.04em; text-transform: uppercase;
+          color: var(--text-muted);
+          padding: 10px 12px;
+          text-align: left;
+          background: rgba(255,255,255,0.02);
+          border-bottom: 1px solid var(--border);
+          position: sticky; top: 0; z-index: 1;
+        }
+        .ped-table td {
+          padding: 10px 12px;
+          font-size: 13px;
+          color: var(--text-secondary);
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .ped-table tbody tr { transition: background 120ms ease; }
+        .ped-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.015); }
+        .ped-table tbody tr:hover { background: rgba(192,197,206,0.06); }
+        .ped-table tbody tr:last-child td { border-bottom: 0; }
+
+        .cell-mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+        .cell-right { text-align: right; }
+        .cell-strong { color: var(--text-primary); font-weight: 600; }
+        .cell-desc { color: var(--text-secondary); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cell-link { color: var(--accent-silver-bright, #E8EAED); text-decoration: none; }
+        .cell-link:hover { text-decoration: underline; text-underline-offset: 2px; }
+        .cell-muted-link { color: var(--text-secondary); text-decoration: none; }
+        .cell-muted-link:hover { color: var(--text-primary); }
+
+        /* Expediente list */
+        .ped-doc-list {
+          list-style: none; padding: 0; margin: 0;
+          display: flex; flex-direction: column;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .ped-doc-row {
+          display: flex; align-items: center; gap: 16px;
+          padding: 12px 14px;
+          background: var(--bg-card);
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          min-height: 60px;
+        }
+        .ped-doc-row:last-child { border-bottom: 0; }
+        .ped-doc-info { flex: 1; min-width: 0; }
+        .ped-doc-name {
+          font-size: 13px; font-weight: 600;
+          color: var(--text-primary);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .ped-doc-meta {
+          font-size: 11px; color: var(--text-muted);
+          margin-top: 2px;
+          font-variant-numeric: tabular-nums;
+        }
+        .ped-doc-action {
+          font-size: 12px; font-weight: 600;
+          padding: 8px 14px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          color: var(--text-primary);
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 120ms ease, border-color 120ms ease;
+        }
+        .ped-doc-action:hover {
+          background: rgba(192,197,206,0.10);
+          border-color: rgba(192,197,206,0.3);
+        }
+        .ped-doc-action--disabled {
+          color: var(--text-muted);
+          background: transparent;
+          cursor: default;
+        }
+        .ped-doc-action--disabled:hover {
+          background: transparent;
+          border-color: var(--border);
+        }
+
+        /* Empty card */
+        .ped-empty {
+          padding: 28px 16px;
+          background: var(--bg-card);
+          border: 1px dashed var(--border);
+          border-radius: 10px;
+          color: var(--text-muted);
+          font-size: 13px;
+          text-align: center;
+        }
+      `}</style>
     </main>
   )
 }
@@ -419,28 +647,10 @@ export default async function PedimentoDetailPage({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section style={{ marginBottom: 32 }}>
-      <h2 style={{
-        fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
-        letterSpacing: 'var(--aguila-ls-label)', textTransform: 'uppercase',
-        color: 'var(--text-secondary)', marginBottom: 12,
-      }}>
-        {title}
-      </h2>
+    <section className="ped-section">
+      <h2 className="ped-section-title">{title}</h2>
       {children}
     </section>
-  )
-}
-
-function DataGrid({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-      gap: 12,
-    }}>
-      {children}
-    </div>
   )
 }
 
@@ -455,47 +665,16 @@ function Cell({
   mono?: boolean
   align?: 'left' | 'right'
 }) {
+  const valueClass = ['ped-cell-value', mono ? 'ped-cell-value--mono' : null, align === 'right' ? 'ped-cell-value--right' : null]
+    .filter(Boolean).join(' ')
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: 10,
-      padding: '12px 14px',
-      minHeight: 60,
-    }}>
-      <div style={{
-        fontSize: 'var(--aguila-fs-label)',
-        letterSpacing: 'var(--aguila-ls-label)',
-        textTransform: 'uppercase',
-        color: 'var(--text-muted)',
-        marginBottom: 6,
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontFamily: mono ? 'var(--font-mono)' : 'inherit',
-        fontSize: 'var(--aguila-fs-body)',
-        fontWeight: 500,
-        textAlign: align ?? 'left',
-      }}>
-        {value}
-      </div>
+    <div className="ped-cell">
+      <div className="ped-cell-label">{label}</div>
+      <div className={valueClass}>{value}</div>
     </div>
   )
 }
 
 function Empty({ message }: { message: string }) {
-  return (
-    <div style={{
-      padding: '24px 16px',
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: 10,
-      color: 'var(--text-muted)',
-      fontSize: 'var(--aguila-fs-body)',
-      textAlign: 'center',
-    }}>
-      {message}
-    </div>
-  )
+  return <div className="ped-empty">{message}</div>
 }

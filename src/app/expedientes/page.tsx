@@ -18,7 +18,7 @@ import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import { FreshnessBanner } from '@/components/aguila'
 import { useFreshness } from '@/hooks/use-freshness'
-import { clearanceLabel } from '@/lib/pedimentos/clearance'
+import { clearanceLabel, isCleared } from '@/lib/pedimentos/clearance'
 import { PdfPreviewPane } from '@/components/portal/PdfPreviewPane'
 
 const REQUIRED_DOCS = [
@@ -30,6 +30,7 @@ interface TraficoRow {
   trafico: string
   estatus: string
   fecha_llegada: string | null
+  fecha_cruce: string | null
   pedimento: string | null
   importe_total: number | null
   descripcion_mercancia: string | null
@@ -101,7 +102,7 @@ function ExpedientesContent() {
       safeFetch(`/api/data?table=traficos&limit=5000&order_by=fecha_llegada&order_dir=desc${cf}${monthQ}`),
       safeFetch(`/api/data?table=expediente_documentos&limit=5000${cf}`),
       safeFetch(`/api/data?table=entradas&limit=5000${cf}`),
-      safeFetch('/api/data?table=globalpc_partidas&limit=10000').catch(() => ({ data: [] })),
+      safeFetch(`/api/data?table=globalpc_partidas&limit=10000${cf}`).catch(() => ({ data: [] })),
     ]).then(([traficoData, docData, entradaData, partidaData]) => {
       const traficos = (traficoData.data ?? []) as Array<Record<string, unknown>>
       const allDocs = (docData.data ?? []) as Array<Record<string, unknown>>
@@ -152,6 +153,7 @@ function ExpedientesContent() {
           trafico,
           estatus: String(t.estatus ?? 'En Proceso'),
           fecha_llegada: t.fecha_llegada as string | null,
+          fecha_cruce: t.fecha_cruce as string | null,
           pedimento: t.pedimento as string | null,
           importe_total: t.importe_total as number | null,
           descripcion_mercancia: (t.descripcion_mercancia as string | null) || partidaDescMap.get(trafico) || null,
@@ -253,7 +255,7 @@ function ExpedientesContent() {
               />
             )}
             {paged.map(r => {
-              const cleared = clearanceLabel({ estatus: r.estatus }) === 'Cleared'
+              const cleared = isCleared({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })
               return (
                 <div key={r.trafico}>
                   <button className="m-card" onClick={() => router.push(`/embarques/${r.trafico}`)}
@@ -331,7 +333,10 @@ function ExpedientesContent() {
                   </td></tr>
                 )}
                 {paged.map((r, idx) => {
-                  const isCruzado = (r.estatus || '').toLowerCase().includes('cruz')
+                  // Canonical clearance signal — passes BOTH estatus and
+                  // fecha_cruce so a row that has crossed but not yet had
+                  // its estatus flipped renders as cleared during sync lag.
+                  const cleared = isCleared({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })
 
                   return (
                     <tr key={r.trafico}
@@ -342,7 +347,7 @@ function ExpedientesContent() {
                         {/* V1 Clean Visibility: monochrome dot (filled = cleared, hollow = not). */}
                         <span style={{
                           width: 7, height: 7, borderRadius: '50%', display: 'inline-block',
-                          background: isCruzado ? 'var(--accent-silver-bright, #E8EAED)' : 'transparent',
+                          background: cleared ? 'var(--accent-silver-bright, #E8EAED)' : 'transparent',
                           border: '1px solid var(--accent-silver-dim, #7A7E86)',
                           opacity: 0.7,
                         }} />
@@ -351,12 +356,12 @@ function ExpedientesContent() {
                       <td>{r.pedimento ? <span className="pedimento-num">{formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span> : <span className="pedimento-pending">Sin pedimento</span>}</td>
                       <td>
                         <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                          {clearanceLabel({ estatus: r.estatus })}
+                          {clearanceLabel({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })}
                         </span>
                       </td>
                       <td className="timestamp">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</td>
                       <td>
-                        {isCruzado
+                        {cleared
                           ? <DocCompleteness present={REQUIRED_DOCS.length} />
                           : <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
                         }

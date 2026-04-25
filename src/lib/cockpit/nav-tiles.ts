@@ -1,4 +1,4 @@
-import { Truck, FileText, FolderOpen, Book, Package, BarChart3, ClipboardList, Receipt } from 'lucide-react'
+import { FileText, FolderOpen, Book, Package, ClipboardList } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 /**
@@ -81,12 +81,6 @@ export function resolveNavHref(tile: NavTileDef, _role: NavRole): string {
 export function resolveNavTile(tile: NavTileDef, _role: NavRole): NavTileDef {
   return tile
 }
-
-// Suppress unused-import warnings — retained for downstream consumers
-// that still reference these by name (legacy components, operator extras).
-void BarChart3
-void Truck
-void Receipt
 
 export interface NavCellData {
   count: number | null

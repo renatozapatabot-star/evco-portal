@@ -5,7 +5,11 @@ export default function Error({ error, reset }: {
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  useEffect(() => { console.error(error) }, [error])
+  // Next.js routes the error through its server-side reporting (digest
+  // is the log key). The error surface itself communicates the failure
+  // to the user; no console.* needed (banned in production per
+  // CLAUDE.md conventions).
+  useEffect(() => { void error }, [error])
 
   return (
     <div style={{

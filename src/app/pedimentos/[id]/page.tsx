@@ -222,15 +222,6 @@ export default async function PedimentoDetailPage({
     : '—'
   const embarqueHref = linkForTrafico(trafico.trafico) ?? '#'
 
-  // Cliente name — single light join on the verified ownerCompanyId.
-  // Pure presentational lookup of existing data; no derivation.
-  const { data: companyRow } = await supabase
-    .from('companies')
-    .select('name')
-    .eq('company_id', ownerCompanyId)
-    .maybeSingle<{ name: string | null }>()
-  const clienteName = companyRow?.name ?? null
-
   return (
     <main className="ped-detail">
       {/* Header — compact card style: eyebrow, number, status pill, meta row */}
@@ -244,9 +235,6 @@ export default async function PedimentoDetailPage({
           </span>
         </div>
         <div className="ped-meta">
-          {clienteName && (
-            <span className="ped-meta-item"><span className="ped-meta-label">Cliente</span>{clienteName}</span>
-          )}
           <span className="ped-meta-item">
             <span className="ped-meta-label">Embarque</span>
             <Link href={embarqueHref} className="ped-meta-link">{trafico.trafico}</Link>
@@ -269,7 +257,7 @@ export default async function PedimentoDetailPage({
           <Cell label="Régimen" value={trafico.regimen ?? '—'} />
           <Cell label="Aduana" value={trafico.aduana ?? '—'} />
           <Cell label="Patente" value={trafico.patente ?? '—'} mono />
-          <Cell label="Estatus GlobalPC" value={trafico.estatus ?? '—'} />
+          <Cell label="Estatus (raw)" value={trafico.estatus ?? '—'} />
           <Cell label="Fecha de llegada" value={fmtDateDMY(trafico.fecha_llegada) || '—'} mono />
           <Cell label="Fecha de cruce" value={fmtDateDMY(trafico.fecha_cruce) || '—'} mono />
           <Cell label="Fecha de pago" value={fmtDateDMY(trafico.fecha_pago) || '—'} mono />

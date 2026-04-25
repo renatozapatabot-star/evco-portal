@@ -31,10 +31,6 @@ interface EntradaRow {
   transportista_mexicano?: string | null
   transportista_americano?: string | null
   cve_proveedor?: string | null
-  tiene_faltantes?: boolean | null
-  mercancia_danada?: boolean | null
-  recibio_facturas?: boolean | null
-  recibio_packing_list?: boolean | null
   [key: string]: unknown
 }
 
@@ -47,47 +43,6 @@ function fmtDateDMY(iso: string | null | undefined): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d)
   if (!m) return ''
   return `${m[3]}/${m[2]}/${m[1]}`
-}
-
-/** Status derived from entradas flags. Three states ranked by severity. */
-type EstadoEntrada = 'alerta' | 'pendiente' | 'liberado'
-
-function deriveEstado(r: EntradaRow): EstadoEntrada {
-  if (r.tiene_faltantes || r.mercancia_danada) return 'alerta'
-  if (r.recibio_facturas === false || r.recibio_packing_list === false) return 'pendiente'
-  return 'liberado'
-}
-
-const ESTADO_LABEL: Record<EstadoEntrada, string> = {
-  alerta: 'Alerta',
-  pendiente: 'Pendiente',
-  liberado: 'Liberado',
-}
-
-const ESTADO_STYLE: Record<EstadoEntrada, { bg: string; fg: string; dot: string }> = {
-  liberado:  { bg: 'rgba(34,197,94,0.10)',  fg: '#4ade80', dot: '#22c55e' },
-  pendiente: { bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', dot: '#f59e0b' },
-  alerta:    { bg: 'rgba(239,68,68,0.10)',  fg: '#f87171', dot: '#ef4444' },
-}
-
-function EstadoBadge({ estado }: { estado: EstadoEntrada }) {
-  const s = ESTADO_STYLE[estado]
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '3px 10px', borderRadius: 9999,
-      background: s.bg, color: s.fg,
-      fontSize: 11, fontWeight: 600,
-      letterSpacing: '0.02em',
-      whiteSpace: 'nowrap',
-    }}>
-      <span style={{
-        width: 6, height: 6, borderRadius: '50%',
-        background: s.dot, flexShrink: 0,
-      }} />
-      {ESTADO_LABEL[estado]}
-    </span>
-  )
 }
 
 function SortArrow({ col, sort }: { col: string; sort: SortState }) {
@@ -341,7 +296,6 @@ function EntradasContent() {
               const transporte = getTransporte(r)
               const guia = getGuia(r)
               const desc = fmtDesc(getDesc(r))
-              const estado = deriveEstado(r)
               const dateStr = fmtDateDMY(r.fecha_llegada_mercancia)
               return (
                 <div
@@ -355,14 +309,13 @@ function EntradasContent() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{r.cve_entrada}</span>
-                    <EstadoBadge estado={estado} />
+                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>{dateStr || '—'}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                    <span>{dateStr || '—'}</span>
-                    {r.trafico && (
+                  {r.trafico && (
+                    <div style={{ marginBottom: 6, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
                       <Link href={`/embarques/${encodeURIComponent(r.trafico)}`} style={{ color: 'var(--portal-fg-3)', textDecoration: 'none' }}>{r.trafico}</Link>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   {proveedor && (
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {proveedor}
@@ -398,7 +351,6 @@ function EntradasContent() {
                 <tr>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('fecha_llegada_mercancia')}>Fecha<SortArrow col="fecha_llegada_mercancia" sort={sort} /></th>
                   <th style={{ cursor: 'pointer', width: 110 }} onClick={() => toggleSort('cve_entrada')}>Entrada<SortArrow col="cve_entrada" sort={sort} /></th>
-                  <th style={{ width: 110 }}>Estatus</th>
                   <th style={{ width: 160 }}>Proveedor</th>
                   <th style={{ minWidth: 200 }}>Mercancía</th>
                   <th style={{ width: 120 }}>Tráfico</th>
@@ -415,7 +367,6 @@ function EntradasContent() {
                   const desc = fmtDesc(getDesc(r))
                   const transporte = getTransporte(r)
                   const guia = getGuia(r)
-                  const estado = deriveEstado(r)
                   return (
                     <tr key={r.cve_entrada} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-secondary)' }}>
@@ -426,7 +377,6 @@ function EntradasContent() {
                           {r.cve_entrada}
                         </span>
                       </td>
-                      <td><EstadoBadge estado={estado} /></td>
                       <td style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }} title={proveedor || undefined}>
                         {proveedor || <span style={{ color: 'var(--text-muted)' }}>—</span>}
                       </td>

@@ -1,9 +1,8 @@
-// CRUZ · /anexo-24 — Formato 53 report surface (V1 polish, 2026-04-24).
+// CRUZ · /anexo-24 — Formato 53 report surface (audit lock-in 2026-04-25).
 //
 // Single-purpose screen. Header + download CTA + 12-column partidas table.
-// No KPIs, no recent-downloads section, no audit chips. The 12 columns
-// match the official Formato 53 PDF layout (the 41-column XLSX export is
-// preserved via the existing Anexo24DownloadCta button).
+// Existing data only; canonical 5-step join via traficos → facturas →
+// partidas → productos → proveedores. Shared formatters everywhere.
 
 import { cookies } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
@@ -13,30 +12,12 @@ import { createServerClient } from '@/lib/supabase-server'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { CockpitSkeleton, CockpitErrorCard } from '@/components/aguila'
 import { Anexo24DownloadCta } from './Anexo24DownloadCta'
+import { EmptyState } from '@/components/ui/empty-state'
+import { formatDateDMY, formatNumber, formatCurrencyUSD } from '@/lib/format'
+import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
-
-/** DD/MM/YYYY — shipper-friendly, locale-agnostic. */
-function fmtDateDMY(iso: string | null | undefined): string {
-  if (!iso) return ''
-  const d = iso.split('T')[0]
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d)
-  if (!m) return ''
-  return `${m[3]}/${m[2]}/${m[1]}`
-}
-
-/** Integer with es-MX thousand separators. */
-function fmtInt(n: number | null | undefined): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return ''
-  return Math.trunc(Number(n)).toLocaleString('es-MX')
-}
-
-/** USD with $ + thousand separators + 2 decimals. */
-function fmtUSD(n: number | null | undefined): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return ''
-  return `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 interface Anexo24Row {
   aduana: string
@@ -102,39 +83,37 @@ async function Anexo24Content({
       ['Cliente', clientName],
       ['Patente', '3596'],
       ['Aduana', '240'],
-      ['Periodo', `${fmtDateDMY(dateFrom)} a ${fmtDateDMY(dateTo)}`],
-      ['Partidas', rows.length.toLocaleString('es-MX')],
+      ['Periodo', `${formatDateDMY(dateFrom)} a ${formatDateDMY(dateTo)}`],
+      ['Partidas', formatNumber(rows.length)],
     ]
 
     return (
-      <main className="anx-page">
-        {/* Header */}
-        <header className="anx-header">
-          <div className="anx-eyebrow">Inteligencia aduanal · Patente 3596</div>
-          <h1 className="anx-title">ANEXO 24 · FORMATO 53</h1>
-          <div className="anx-meta">
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <div className={styles.eyebrow}>Inteligencia aduanal · Patente 3596</div>
+          <h1 className={styles.title}>ANEXO 24 · FORMATO 53</h1>
+          <div className={styles.meta}>
             {meta.map(([label, value]) => (
-              <span key={label} className="anx-meta-item">
-                <span className="anx-meta-label">{label}</span>
-                <span className="anx-meta-value">{value}</span>
+              <span key={label} className={styles.metaItem}>
+                <span className={styles.metaLabel}>{label}</span>
+                <span className={styles.metaValue}>{value}</span>
               </span>
             ))}
           </div>
         </header>
 
-        {/* Download CTA — full 41-column XLSX export */}
-        <section className="anx-cta">
+        <section className={styles.cta}>
           <Anexo24DownloadCta companyId={ownerCompanyId} isInternal={isInternal} />
         </section>
 
-        {/* Partidas table — 12 columns, exactly */}
         {rows.length === 0 ? (
-          <div className="anx-empty">
-            No hay partidas registradas en este periodo. Sube el Formato 53 más reciente o ajusta el rango.
-          </div>
+          <EmptyState
+            title="Sin partidas en este periodo"
+            description="Sube el Formato 53 más reciente o ajusta el rango."
+          />
         ) : (
-          <div className="anx-table-wrap">
-            <table className="anx-table" role="table" aria-label="Partidas Formato 53">
+          <div className={styles.tableWrap}>
+            <table className={styles.table} role="table" aria-label="Partidas Formato 53">
               <thead>
                 <tr>
                   <th>Aduana</th>
@@ -154,137 +133,24 @@ async function Anexo24Content({
               <tbody>
                 {rows.map((r, i) => (
                   <tr key={`${r.cveProducto}-${r.factura}-${i}`}>
-                    <td className="cell-mono">{r.aduana || '—'}</td>
-                    <td className="cell-mono">{r.clave || '—'}</td>
-                    <td className="cell-mono">{fmtDateDMY(r.fechaPago) || '—'}</td>
-                    <td className="cell-soft" title={r.proveedor || undefined}>{r.proveedor || '—'}</td>
-                    <td className="cell-mono">{r.factura || '—'}</td>
-                    <td className="cell-mono">{r.fraccion || '—'}</td>
-                    <td className="cell-mono">{r.cveProducto || '—'}</td>
-                    <td className="cell-mono cell-right">{fmtInt(r.cantidad) || '—'}</td>
-                    <td className="cell-mono">{r.umt || '—'}</td>
-                    <td className="cell-mono">{r.pedimento || '—'}</td>
-                    <td className="cell-mono cell-right cell-strong">{r.valorUSD != null ? fmtUSD(r.valorUSD) : '—'}</td>
-                    <td className="cell-mono">{r.paisOrigen || '—'}</td>
+                    <td className={styles.cellMono}>{r.aduana || '—'}</td>
+                    <td className={styles.cellMono}>{r.clave || '—'}</td>
+                    <td className={styles.cellMono}>{formatDateDMY(r.fechaPago) || '—'}</td>
+                    <td className={styles.cellSoft} title={r.proveedor || undefined}>{r.proveedor || '—'}</td>
+                    <td className={styles.cellMono}>{r.factura || '—'}</td>
+                    <td className={styles.cellMono}>{r.fraccion || '—'}</td>
+                    <td className={styles.cellMono}>{r.cveProducto || '—'}</td>
+                    <td className={`${styles.cellMono} ${styles.cellRight}`}>{formatNumber(r.cantidad) || '—'}</td>
+                    <td className={styles.cellMono}>{r.umt || '—'}</td>
+                    <td className={styles.cellMono}>{r.pedimento || '—'}</td>
+                    <td className={`${styles.cellMono} ${styles.cellRight} ${styles.cellStrong}`}>{r.valorUSD != null ? formatCurrencyUSD(r.valorUSD) : '—'}</td>
+                    <td className={styles.cellMono}>{r.paisOrigen || '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-
-        {/* Page-scoped polish — shadcn-feel chrome on this surface only. */}
-        <style>{`
-          .anx-page {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 24px 20px 64px;
-            color: var(--text-primary);
-          }
-          @media (max-width: 600px) {
-            .anx-page { padding: 16px 14px 48px; }
-          }
-
-          /* Header */
-          .anx-header { margin-bottom: 24px; }
-          .anx-eyebrow {
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 0.12em; text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-          }
-          .anx-title {
-            font-size: 28px; font-weight: 700;
-            letter-spacing: 0.04em;
-            color: var(--text-primary);
-            margin: 0 0 16px;
-          }
-          @media (max-width: 600px) {
-            .anx-title { font-size: 22px; }
-          }
-          .anx-meta {
-            display: flex; flex-wrap: wrap;
-            gap: 8px 18px;
-            padding: 12px 14px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 13px;
-            color: var(--text-secondary);
-          }
-          .anx-meta-item {
-            display: inline-flex; align-items: baseline; gap: 6px;
-          }
-          .anx-meta-label {
-            font-size: 10px; font-weight: 600;
-            letter-spacing: 0.08em; text-transform: uppercase;
-            color: var(--text-muted);
-          }
-          .anx-meta-value {
-            font-family: var(--font-mono);
-            font-variant-numeric: tabular-nums;
-            color: var(--text-primary);
-          }
-
-          /* CTA */
-          .anx-cta { margin: 24px 0; }
-
-          /* Table */
-          .anx-table-wrap {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow-x: auto;
-          }
-          .anx-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-variant-numeric: tabular-nums;
-            min-width: 1280px;
-          }
-          .anx-table th {
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 0.04em; text-transform: uppercase;
-            color: var(--text-muted);
-            padding: 10px 12px;
-            text-align: left;
-            background: rgba(255,255,255,0.02);
-            border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 1;
-            white-space: nowrap;
-          }
-          .anx-table td {
-            padding: 10px 12px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            white-space: nowrap;
-          }
-          .anx-table tbody tr { transition: background 120ms ease; }
-          .anx-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.015); }
-          .anx-table tbody tr:hover { background: rgba(192,197,206,0.06); }
-          .anx-table tbody tr:last-child td { border-bottom: 0; }
-
-          .cell-mono { font-family: var(--font-mono); }
-          .cell-right { text-align: right; }
-          .cell-strong { color: var(--text-primary); font-weight: 600; }
-          .cell-soft  {
-            color: var(--text-secondary);
-            max-width: 200px;
-            overflow: hidden; text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-
-          /* Empty */
-          .anx-empty {
-            padding: 32px 16px;
-            background: var(--bg-card);
-            border: 1px dashed var(--border);
-            border-radius: 10px;
-            color: var(--text-muted);
-            font-size: 13px;
-            text-align: center;
-          }
-        `}</style>
       </main>
     )
   } catch (err) {
@@ -305,8 +171,6 @@ async function fetchAnexo24Rows(
   dateFrom: string,
   dateTo: string,
 ): Promise<Anexo24Row[]> {
-  // 1. Traficos in window — gives aduana, regimen (clave), fecha_pago,
-  //    pedimento, and the cve_trafico keys we'll join facturas on.
   const { data: tData } = await supabase
     .from('traficos')
     .select('trafico, aduana, regimen, fecha_pago, pedimento')
@@ -330,7 +194,6 @@ async function fetchAnexo24Rows(
   const traficoIds = traficos.map((t) => t.trafico)
   const traficoMap = new Map(traficos.map((t) => [t.trafico, t]))
 
-  // 2. Facturas for those traficos — gives folio + numero (factura).
   const { data: fData } = await supabase
     .from('globalpc_facturas')
     .select('folio, numero, cve_trafico')
@@ -354,8 +217,6 @@ async function fetchAnexo24Rows(
 
   if (folios.length === 0) return []
 
-  // 3. Partidas for those folios — gives cve_producto, cve_proveedor,
-  //    cantidad, precio_unitario, pais_origen.
   const { data: pData } = await supabase
     .from('globalpc_partidas')
     .select('folio, cve_producto, cve_proveedor, cantidad, precio_unitario, pais_origen')
@@ -374,7 +235,6 @@ async function fetchAnexo24Rows(
 
   if (partidas.length === 0) return []
 
-  // 4. Productos enrichment — fraccion + umt by cve_producto.
   const cveSet = Array.from(new Set(partidas.map((p) => p.cve_producto).filter((v): v is string => Boolean(v))))
   const productosByCve = new Map<string, { fraccion: string | null; umt: string | null }>()
   if (cveSet.length > 0) {
@@ -391,7 +251,6 @@ async function fetchAnexo24Rows(
     }
   }
 
-  // 5. Proveedores enrichment — name by cve_proveedor.
   const proveedorSet = Array.from(new Set(partidas.map((p) => p.cve_proveedor).filter((v): v is string => Boolean(v))))
   const proveedoresByCve = new Map<string, string>()
   if (proveedorSet.length > 0) {
@@ -408,7 +267,6 @@ async function fetchAnexo24Rows(
     }
   }
 
-  // 6. Compose the 12-column shape.
   const rows: Anexo24Row[] = []
   for (const p of partidas) {
     if (p.folio == null) continue

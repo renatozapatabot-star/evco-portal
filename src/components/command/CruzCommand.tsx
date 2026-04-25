@@ -61,25 +61,8 @@ interface SearchResult {
   href?: string
 }
 
-const CYCLE_PLACEHOLDERS = [
-  'Busca un pedimento…',
-  'Busca un embarque…',
-  'Busca un SKU del Anexo 24…',
-  'Busca una fracción arancelaria…',
-  'Busca un proveedor…',
-  'Pregúntale a PORTAL cualquier cosa…',
-]
-
-/** V1 Clean Visibility placeholder set — no AI-forward line. Used when
- *  the caller passes `hideAI`. Same rotation, no assistant prompt. */
-const CYCLE_PLACEHOLDERS_NO_AI = [
-  'Busca un pedimento…',
-  'Busca un embarque…',
-  'Busca un SKU del Anexo 24…',
-  'Busca una fracción arancelaria…',
-  'Busca un proveedor…',
-  'Busca una entrada…',
-]
+/** Single canonical placeholder — no rotation (audit lock-in 2026-04-25). */
+const CANONICAL_PLACEHOLDER = 'Buscar pedimento, embarque, expediente, SKU…'
 
 const ICONS: Record<string, (p: { size: number }) => React.ReactElement> = {
   trafico: ({ size }) => <Truck size={size} strokeWidth={1.8} />,
@@ -140,22 +123,11 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false, 
   const [focused, setFocused] = useState(false)
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
-  const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const [activeIdx, setActiveIdx] = useState(0)
 
-  const placeholderPool = hideAI ? CYCLE_PLACEHOLDERS_NO_AI : CYCLE_PLACEHOLDERS
-  const cyclePlaceholder = placeholder ?? placeholderPool[placeholderIdx % placeholderPool.length]
+  const cyclePlaceholder = placeholder ?? CANONICAL_PLACEHOLDER
   const askIntent = detectAskIntent(value)
   const showDropdown = focused && (value.trim().length > 0 || askIntent)
-
-  // Cycle placeholder when idle (only when unfocused + empty).
-  useEffect(() => {
-    if (focused || value.length > 0) return
-    const id = setInterval(() => {
-      setPlaceholderIdx((i) => (i + 1) % CYCLE_PLACEHOLDERS.length)
-    }, 3200)
-    return () => clearInterval(id)
-  }, [focused, value])
 
   // Keyboard shortcut — plain ⌘K / Ctrl+K focuses this input and wins
   // over the legacy CommandPalette modal. Capture phase so we intercept

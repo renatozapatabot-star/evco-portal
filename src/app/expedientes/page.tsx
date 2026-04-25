@@ -1,30 +1,26 @@
 'use client'
 
 import { useEffect, useState, useMemo, Suspense } from 'react'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getCookieValue } from '@/lib/client-config'
-import { fmtId, fmtDesc, fmtDateShort, fmtPedimentoShort } from '@/lib/format-utils'
+import { fmtId, fmtDesc } from '@/lib/format-utils'
 import { formatPedimento } from '@/lib/format/pedimento'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { useSort, type SortState } from '@/hooks/use-sort'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { useSort } from '@/hooks/use-sort'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
-import { DocCompleteness } from '@/components/expedientes/DocCompleteness'
 import type { DocFile } from '@/components/expedientes/DocChecklist'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
-import { FreshnessBanner } from '@/components/aguila'
 import { useFreshness } from '@/hooks/use-freshness'
-import { clearanceLabel, isCleared } from '@/lib/pedimentos/clearance'
-import { PdfPreviewPane } from '@/components/portal/PdfPreviewPane'
+import { DataTable, type DataTableColumn } from '@/components/ui/data-table'
+import { SyncChip } from '@/components/ui/sync-chip'
+import { formatDateDMY, formatNumber } from '@/lib/format'
 
 const REQUIRED_DOCS = [
   'factura_comercial', 'packing_list', 'pedimento_detallado',
   'cove', 'acuse_cove', 'doda',
-]
+] as const
 
 interface TraficoRow {
   trafico: string
@@ -44,11 +40,6 @@ interface TraficoRow {
 
 const PAGE_SIZE = 50
 
-function SortArrow({ col, sort }: { col: string; sort: SortState }) {
-  if (sort.column !== col) return null
-  return <span style={{ marginLeft: 4, fontSize: 'var(--aguila-fs-label)' }}>{sort.direction === 'asc' ? '↑' : '↓'}</span>
-}
-
 export default function ExpedientesPage() {
   return (
     <Suspense fallback={<div className="page-shell" style={{ padding: 20 }}><div className="skel" style={{ width: 200, height: 24 }} /></div>}>
@@ -59,7 +50,6 @@ export default function ExpedientesPage() {
 
 function ExpedientesContent() {
   const router = useRouter()
-  const isMobile = useIsMobile()
   const searchParams = useSearchParams()
   const monthParam = searchParams.get('month')
   const monthWindow = useMemo(() => parseMonthParam(monthParam), [monthParam])
@@ -71,13 +61,10 @@ function ExpedientesContent() {
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(0)
   const freshness = useFreshness()
-  const { sort, toggleSort } = useSort('expedientes', { column: 'fecha_llegada', direction: 'desc' })
+  const { sort } = useSort('expedientes', { column: 'fecha_llegada', direction: 'desc' })
 
   const [cookiesReady, setCookiesReady] = useState(false)
   const [userRole, setUserRole] = useState('')
-  // V1 Clean Visibility — PDF preview pane state. null = closed.
-  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
-  const [previewFilename, setPreviewFilename] = useState<string | null>(null)
 
   useEffect(() => {
     setUserRole(getCookieValue('user_role') ?? '')
@@ -108,7 +95,6 @@ function ExpedientesContent() {
       const allDocs = (docData.data ?? []) as Array<Record<string, unknown>>
       const entradas = (entradaData.data ?? []) as Array<Record<string, unknown>>
 
-      // Build doc map: pedimento_id (= trafico) → docs
       const docMap = new Map<string, DocFile[]>()
       allDocs.forEach(d => {
         const key = String(d.pedimento_id ?? '')
@@ -123,7 +109,6 @@ function ExpedientesContent() {
         })
       })
 
-      // Build partida description map: cve_trafico → descripcion
       const partidaDescMap = new Map<string, string>()
       const allPartidas = (partidaData.data ?? []) as Array<Record<string, unknown>>
       allPartidas.forEach(p => {
@@ -133,14 +118,12 @@ function ExpedientesContent() {
         }
       })
 
-      // Build entrada map: trafico → cve_entrada
       const entradaMap = new Map<string, string>()
       entradas.forEach(e => {
         const t = String(e.trafico ?? '')
         if (t) entradaMap.set(t, String(e.cve_entrada ?? ''))
       })
 
-      // Build enriched rows
       const enriched: TraficoRow[] = traficos.map(t => {
         const trafico = String(t.trafico ?? '')
         const docs = docMap.get(trafico) ?? []
@@ -173,7 +156,6 @@ function ExpedientesContent() {
     }).finally(() => setLoading(false))
   }, [cookiesReady, userRole, monthWindow.monthStart, monthWindow.monthEnd])
 
-  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => { setSearch(searchInput); setPage(0) }, 300)
     return () => clearTimeout(timer)
@@ -181,7 +163,6 @@ function ExpedientesContent() {
 
   const filtered = useMemo(() => {
     let out = rows
-
     if (search.trim()) {
       const q = search.toLowerCase()
       out = out.filter(r =>
@@ -190,7 +171,6 @@ function ExpedientesContent() {
         (r.descripcion_mercancia ?? '').toLowerCase().includes(q)
       )
     }
-
     return [...out].sort((a, b) => {
       const col = sort.column as keyof TraficoRow
       const aVal = a[col]
@@ -208,16 +188,76 @@ function ExpedientesContent() {
   const withPedimento = useMemo(() => rows.filter(r => r.pedimento), [rows])
   const completeCount = useMemo(() => withPedimento.filter(r => r.pct === 100).length, [withPedimento])
 
+  const REQUIRED_TOTAL = REQUIRED_DOCS.length
+
+  const columns: DataTableColumn<TraficoRow>[] = [
+    {
+      key: 'embarque',
+      header: 'Embarque',
+      width: 140,
+      mono: true,
+      render: (r) => (
+        <span className="font-semibold text-[var(--text-primary)]">{fmtId(r.trafico)}</span>
+      ),
+    },
+    {
+      key: 'pedimento',
+      header: 'Pedimento',
+      width: 130,
+      mono: true,
+      render: (r) => r.pedimento ? (
+        <span className="text-[var(--text-secondary)]">
+          {formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2, 4) ?? '26', ad: '24', pppp: '3596' })}
+        </span>
+      ) : (
+        <span className="text-[var(--text-muted)] italic">Sin pedimento</span>
+      ),
+    },
+    {
+      key: 'fecha',
+      header: 'Fecha',
+      width: 110,
+      mono: true,
+      render: (r) => formatDateDMY(r.fecha_llegada) || (
+        <span className="text-[var(--text-muted)]">—</span>
+      ),
+    },
+    {
+      key: 'documentos',
+      header: 'Documentos',
+      width: 130,
+      mono: true,
+      render: (r) => (
+        <span className="text-[var(--text-secondary)] [font-variant-numeric:tabular-nums]">
+          {formatNumber(r.docCount)} / {formatNumber(REQUIRED_TOTAL)}
+        </span>
+      ),
+    },
+    {
+      key: 'mercancia',
+      header: 'Mercancía',
+      render: (r) => {
+        const d = fmtDesc(r.descripcion_mercancia)
+        return d ? (
+          <span className="block truncate max-w-[400px]" title={d}>{d}</span>
+        ) : <span className="text-[var(--text-muted)]">—</span>
+      },
+    },
+  ]
+
   return (
     <div className="page-shell">
-      <div style={{ marginBottom: 12 }}>
-        <h1 className="page-title">Expediente Digital</h1>
-        <p className="page-subtitle">
-          {completeCount} de {withPedimento.length} expedientes completos
-        </p>
-      </div>
-
-      <div style={{ marginBottom: 16 }}>
+      {/* Header — single row: title + completeness summary + SyncChip + MonthSelector */}
+      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h1 className="text-[22px] font-semibold tracking-tight text-[var(--text-primary)] m-0">
+            Expediente Digital
+          </h1>
+          <span className="text-[12px] text-[var(--text-muted)] font-mono [font-variant-numeric:tabular-nums]">
+            {formatNumber(completeCount)} de {formatNumber(withPedimento.length)} expedientes completos
+          </span>
+          <SyncChip lastSyncIso={freshness?.lastSyncedAt ?? null} />
+        </div>
         <MonthSelector
           ym={monthWindow.ym}
           label={monthWindow.label}
@@ -227,217 +267,73 @@ function ExpedientesContent() {
         />
       </div>
 
-      {freshness && <div style={{ marginBottom: 12 }}><FreshnessBanner reading={freshness} /></div>}
-
-      {fetchError && <div style={{ marginBottom: 16 }}><ErrorCard message={fetchError} onRetry={() => window.location.reload()} /></div>}
-
-      <div className="table-shell">
-        <div className="table-toolbar" style={{ justifyContent: 'flex-end' }}>
-          <div className="toolbar-search" style={{ minHeight: 60 }}>
-            <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
-            <input placeholder="Embarque, pedimento..." value={searchInput}
-              onChange={e => setSearchInput(e.target.value)} aria-label="Buscar expedientes" />
+      <div className="flex flex-col gap-3">
+        {/* Search */}
+        <div className="flex justify-end">
+          <div
+            className="flex items-center gap-2 px-3 rounded-[10px] border border-[var(--border)] bg-[rgba(255,255,255,0.04)]"
+            style={{ minHeight: 60, minWidth: 280 }}
+          >
+            <Search size={14} className="text-[var(--text-muted)] flex-shrink-0" />
+            <input
+              placeholder="Embarque, pedimento, mercancía…"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              aria-label="Buscar expedientes"
+              className="flex-1 bg-transparent outline-none text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+              style={{ minHeight: 60 }}
+            />
           </div>
         </div>
 
-        {/* Mobile cards */}
-        {isMobile && (
-          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {loading && Array.from({ length: 4 }).map((_, i) => (
-              <div key={`skel-${i}`} style={{ height: 80, borderRadius: 10, background: 'var(--bg-elevated)', animation: 'cruzShimmer 1.5s linear infinite' }} />
-            ))}
-            {!loading && paged.length === 0 && (
-              <CalmEmptyState
-                icon="document"
-                title="No hay documentos"
-                message="Los documentos aparecerán aquí cuando iniciemos nuevas operaciones."
-                action={{ label: 'Ver embarques', href: '/embarques' }}
-              />
-            )}
-            {paged.map(r => {
-              const cleared = isCleared({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })
-              return (
-                <div key={r.trafico}>
-                  <button className="m-card" onClick={() => router.push(`/expedientes/${encodeURIComponent(r.trafico)}`)}
-                    style={{ width: '100%', textAlign: 'left' }}>
-                    <div className="m-card-top">
-                      <div className="m-card-id-group">
-                        <span className="m-card-dot" style={{
-                          background: cleared ? 'var(--accent-silver-bright, #E8EAED)' : 'transparent',
-                          border: '1px solid var(--accent-silver-dim, #7A7E86)',
-                        }} />
-                        <span className="m-card-id">{fmtId(r.trafico)}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--text-secondary)' }}>
-                          {cleared ? 'Cleared' : 'Not cleared'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="m-card-bottom">
-                      {r.pedimento && <span className="ped-pill" style={{ fontSize: 'var(--aguila-fs-meta)', padding: '2px 7px' }}>{formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span>}
-                      <span className="m-card-meta" style={{ fontFamily: 'var(--font-jetbrains-mono, var(--font-mono))' }}>{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</span>
-                    </div>
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+        {fetchError && <ErrorCard message={fetchError} onRetry={() => window.location.reload()} />}
+
+        {!loading && paged.length === 0 ? (
+          <CalmEmptyState
+            icon="document"
+            title="No hay documentos"
+            message="Los documentos aparecerán aquí cuando iniciemos nuevas operaciones."
+            action={{ label: 'Ver embarques', href: '/embarques' }}
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={paged}
+            rowKey={(r) => r.trafico}
+            ariaLabel="Lista de expedientes"
+            mobileMinWidth={1000}
+            onRowClick={(r) => router.push(`/expedientes/${encodeURIComponent(r.trafico)}`)}
+          />
         )}
 
-        {/* Desktop table */}
-        {!isMobile && (
-          <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', overflowX: 'auto' }}>
-            <table className="aguila-table" aria-label="Expedientes digitales" style={{ minWidth: 700 }}>
-              <thead>
-                <tr>
-                  <th scope="col" style={{ width: 28 }}></th>
-                  <th scope="col" style={{ width: 160, cursor: 'pointer' }} onClick={() => toggleSort('trafico')}>Embarque<SortArrow col="trafico" sort={sort} /></th>
-                  <th scope="col" style={{ width: 120 }}>Pedimento</th>
-                  <th scope="col" style={{ width: 110 }}>Estado</th>
-                  <th scope="col" style={{ width: 100, cursor: 'pointer' }} onClick={() => toggleSort('fecha_llegada')}>Fecha<SortArrow col="fecha_llegada" sort={sort} /></th>
-                  <th scope="col" style={{ width: 120, cursor: 'pointer' }} onClick={() => toggleSort('pct')}>Documentos<SortArrow col="pct" sort={sort} /></th>
-                  <th scope="col">Mercancía</th>
-                  <th scope="col" style={{ width: 80, textAlign: 'center' }}>PDF</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={`s-${i}`}>
-                    <td><div className="skeleton-shimmer" style={{ width: 7, height: 7, borderRadius: '50%' }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 96, height: 13 }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 90, height: 13 }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 70, height: 13 }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 60, height: 13 }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 80, height: 13 }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 140, height: 13 }} /></td>
-                    <td><div className="skeleton-shimmer" style={{ width: 40, height: 24, borderRadius: 8, margin: '0 auto' }} /></td>
-                  </tr>
-                ))}
-                {!loading && paged.length === 0 && (
-                  <tr><td colSpan={8}>
-                    {search.trim() ? (
-                      <div className="empty-state">
-                        <div className="empty-state-icon">🔍</div>
-                        <div style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 600, color: 'var(--slate-600)' }}>Sin resultados para &ldquo;{search}&rdquo;</div>
-                        <button className="btn btn-outline btn-sm" style={{ marginTop: 12 }} onClick={() => { setSearchInput(''); setSearch('') }}>Limpiar búsqueda</button>
-                      </div>
-                    ) : (
-                      <CalmEmptyState
-                        icon="document"
-                        title="No hay documentos"
-                        message="Los expedientes aparecerán aquí cuando iniciemos nuevas operaciones."
-                        action={{ label: 'Ver embarques', href: '/embarques' }}
-                      />
-                    )}
-                  </td></tr>
-                )}
-                {paged.map((r, idx) => {
-                  // Canonical clearance signal — passes BOTH estatus and
-                  // fecha_cruce so a row that has crossed but not yet had
-                  // its estatus flipped renders as cleared during sync lag.
-                  const cleared = isCleared({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })
-
-                  return (
-                    <tr key={r.trafico}
-                      className={`clickable-row ${idx % 2 === 0 ? 'row-even' : 'row-odd'}`}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => router.push(`/expedientes/${encodeURIComponent(r.trafico)}`)}>
-                      <td style={{ width: 28, paddingRight: 0 }}>
-                        {/* V1 Clean Visibility: monochrome dot (filled = cleared, hollow = not). */}
-                        <span style={{
-                          width: 7, height: 7, borderRadius: '50%', display: 'inline-block',
-                          background: cleared ? 'var(--accent-silver-bright, #E8EAED)' : 'transparent',
-                          border: '1px solid var(--accent-silver-dim, #7A7E86)',
-                          opacity: 0.7,
-                        }} />
-                      </td>
-                      <td><span className="trafico-id">{fmtId(r.trafico)}</span></td>
-                      <td>{r.pedimento ? <span className="pedimento-num">{formatPedimento(r.pedimento, r.pedimento, { dd: r.fecha_llegada?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span> : <span className="pedimento-pending">Sin pedimento</span>}</td>
-                      <td>
-                        <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
-                          {clearanceLabel({ estatus: r.estatus, fecha_cruce: r.fecha_cruce })}
-                        </span>
-                      </td>
-                      <td className="timestamp">{r.fecha_llegada ? fmtDateShort(r.fecha_llegada) : '—'}</td>
-                      <td>
-                        {cleared
-                          ? <DocCompleteness present={REQUIRED_DOCS.length} />
-                          : <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--text-muted)', fontStyle: 'italic' }}>Pendiente</span>
-                        }
-                      </td>
-                      <td className="desc-text">
-                        {(() => {
-                          const d = fmtDesc(r.descripcion_mercancia)
-                          if (!d) return '—'
-                          return (
-                            <Link
-                              href={`/catalogo?q=${encodeURIComponent(d)}`}
-                              onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                              style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed rgba(192,197,206,0.25)' }}
-                              title="Ver en catálogo / fracción"
-                            >
-                              {d}
-                            </Link>
-                          )
-                        })()}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <button
-                          type="button"
-                          aria-label={`Vista previa PDF del expediente ${r.trafico}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setPreviewSrc(`/api/pedimento-pdf?trafico=${encodeURIComponent(r.trafico)}`)
-                            setPreviewFilename(`Pedimento ${r.trafico}.pdf`)
-                          }}
-                          style={{
-                            minHeight: 36,
-                            padding: '4px 10px',
-                            borderRadius: 8,
-                            background: 'rgba(192,197,206,0.08)',
-                            border: '1px solid rgba(192,197,206,0.2)',
-                            color: 'var(--portal-fg-1)',
-                            fontSize: 'var(--aguila-fs-meta)',
-                            fontWeight: 700,
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Ver
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="pagination">
-            <span className="pagination-info">Página {page + 1} de {totalPages}</span>
-            <div className="pagination-btns">
-              <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={14} /></button>
-              <button className="pagination-btn current">{page + 1}</button>
-              <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={14} /></button>
+          <div className="flex items-center justify-end gap-3 mt-2">
+            <span className="text-[12px] text-[var(--text-muted)] font-mono">
+              Página {page + 1} de {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page === 0}
+                onClick={() => setPage(p => p - 1)}
+                aria-label="Página anterior"
+                className="inline-flex items-center justify-center rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] hover:bg-[rgba(192,197,206,0.10)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-[120ms]"
+                style={{ minWidth: 60, minHeight: 60 }}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage(p => p + 1)}
+                aria-label="Página siguiente"
+                className="inline-flex items-center justify-center rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] hover:bg-[rgba(192,197,206,0.10)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-[120ms]"
+                style={{ minWidth: 60, minHeight: 60 }}
+              >
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
         )}
       </div>
-
-      {/* V1 Clean Visibility — inline PDF preview pane */}
-      <PdfPreviewPane
-        src={previewSrc}
-        filename={previewFilename}
-        onClose={() => {
-          setPreviewSrc(null)
-          setPreviewFilename(null)
-        }}
-      />
     </div>
   )
 }

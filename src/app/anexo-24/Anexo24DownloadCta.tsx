@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import { Download, Loader2, Calendar } from 'lucide-react'
+import { formatDateDMY, formatNumber } from '@/lib/format'
+import styles from './Anexo24DownloadCta.module.css'
 
 interface Props {
   companyId: string
@@ -10,16 +12,16 @@ interface Props {
 
 /**
  * Primary CTA — "Descargar Formato 53". Streams the PDF + XLSX directly
- * from `/api/reports/anexo-24/generate` (no storage round-trip). The
- * user picks a window before downloading:
+ * from `/api/reports/anexo-24/generate` (no storage round-trip). User
+ * picks a window via the toggle group (audit lock-in 2026-04-25):
  *
  *   · Año actual (default — YTD)
  *   · Este mes / Mes anterior / Trimestre / 90 días
- *   · Rango personalizado (DD/MM/YYYY → DD/MM/YYYY)
+ *   · Rango personalizado
  *
+ * Three explicit download buttons: PDF · Excel · CSV (outline).
  * The window flows into `date_from` / `date_to` query params which the
- * endpoint filters against `traficos.fecha_pago` — matches the SAT
- * auditor's mental model ("show me what was paid in March").
+ * endpoint filters against `traficos.fecha_pago`.
  */
 
 type Preset = 'ytd' | 'mes' | 'mes_anterior' | 'trimestre' | 'ultimos_90' | 'custom'
@@ -55,13 +57,22 @@ function computeRange(preset: Preset, custom: { from: string; to: string }): { f
       return { from: iso(from), to: today, label: 'Últimos 90 días' }
     }
     case 'custom':
-      return { from: custom.from, to: custom.to, label: `${custom.from} → ${custom.to}` }
+      return { from: custom.from, to: custom.to, label: `${formatDateDMY(custom.from)} → ${formatDateDMY(custom.to)}` }
   }
 }
 
+const PRESETS: Array<[Preset, string]> = [
+  ['mes', 'Este mes'],
+  ['mes_anterior', 'Mes anterior'],
+  ['trimestre', 'Este trimestre'],
+  ['ultimos_90', '90 días'],
+  ['ytd', 'Año actual'],
+  ['custom', 'Personalizado'],
+]
+
 export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
-  const [generating, setGenerating] = useState(false)
-  const [result, setResult] = useState<{ row_count: number; label: string } | null>(null)
+  const [generating, setGenerating] = useState<null | 'pdf' | 'xlsx'>(null)
+  const [result, setResult] = useState<{ row_count: number; label: string; format: 'PDF' | 'Excel' } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preset, setPreset] = useState<Preset>('ytd')
   const [custom, setCustom] = useState(() => {
@@ -78,6 +89,8 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
     return `/api/reports/anexo-24/generate?${params.toString()}`
   }
 
+  const csvHref = `/api/anexo-24/csv${isInternal && companyId ? `?company_id=${encodeURIComponent(companyId)}` : ''}`
+
   const downloadBlob = async (url: string, filename: string): Promise<Response> => {
     const res = await fetch(url, { credentials: 'include' })
     if (!res.ok) return res
@@ -93,238 +106,145 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
     return res
   }
 
-  const handleGenerate = async () => {
-    setGenerating(true)
+  const handleDownload = async (format: 'pdf' | 'xlsx') => {
+    setGenerating(format)
     setError(null)
     setResult(null)
     try {
-      const pdfRes = await downloadBlob(
-        buildUrl('pdf'),
-        `anexo24_${companyId || 'evco'}_${range.from}_${range.to}.pdf`,
+      const ext = format === 'pdf' ? 'pdf' : 'xlsx'
+      const res = await downloadBlob(
+        buildUrl(format),
+        `anexo24_${companyId || 'evco'}_${range.from}_${range.to}.${ext}`,
       )
-      if (!pdfRes.ok) {
-        const diag = await pdfRes.json().catch(() => null) as { error?: { message?: string } } | null
-        setError(diag?.error?.message ?? `Error al generar PDF (HTTP ${pdfRes.status})`)
+      if (!res.ok) {
+        const diag = await res.json().catch(() => null) as { error?: { message?: string } } | null
+        setError(diag?.error?.message ?? `Error al generar ${format.toUpperCase()} (HTTP ${res.status})`)
         return
       }
-      const rowCount = Number.parseInt(pdfRes.headers.get('X-Anexo24-Rows') ?? '0', 10) || 0
-
-      const xlsxRes = await downloadBlob(
-        buildUrl('xlsx'),
-        `anexo24_${companyId || 'evco'}_${range.from}_${range.to}.xlsx`,
-      )
-      if (!xlsxRes.ok) {
-        const diag = await xlsxRes.json().catch(() => null) as { error?: { message?: string } } | null
-        setError(diag?.error?.message ?? `Excel no disponible (HTTP ${xlsxRes.status}). PDF se descargó correctamente.`)
-      }
-
-      setResult({ row_count: rowCount, label: range.label })
+      const rowCount = Number.parseInt(res.headers.get('X-Anexo24-Rows') ?? '0', 10) || 0
+      setResult({ row_count: rowCount, label: range.label, format: format === 'pdf' ? 'PDF' : 'Excel' })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error de conexión')
     } finally {
-      setGenerating(false)
+      setGenerating(null)
     }
   }
 
   return (
-    <div>
-      {/* Period selector */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 8,
-          marginBottom: 14,
-          alignItems: 'center',
-        }}
-      >
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            fontSize: 'var(--aguila-fs-meta, 11px)',
-            color: 'rgba(192,197,206,0.7)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            fontWeight: 600,
-            marginRight: 8,
-          }}
-        >
-          <Calendar size={12} strokeWidth={1.8} aria-hidden />
-          Periodo
-        </span>
-        {([
-          ['mes', 'Este mes'],
-          ['mes_anterior', 'Mes anterior'],
-          ['trimestre', 'Este trimestre'],
-          ['ultimos_90', '90 días'],
-          ['ytd', 'Año actual'],
-          ['custom', 'Personalizado'],
-        ] as Array<[Preset, string]>).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setPreset(key)}
-            aria-pressed={preset === key}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 8,
-              fontSize: 12, // WHY: button label between --aguila-fs-meta (11) and --aguila-fs-body (13) — distinct from body on the same row.
-              fontWeight: preset === key ? 700 : 500,
-              background: preset === key ? 'rgba(201,167,74,0.14)' : 'rgba(192,197,206,0.06)',
-              border: `1px solid ${preset === key ? 'rgba(201,167,74,0.45)' : 'rgba(192,197,206,0.18)'}`,
-              color: preset === key ? 'var(--portal-gold-400)' : 'rgba(230,237,243,0.82)',
-              cursor: 'pointer',
-              transition: 'all var(--dur-fast, 150ms) ease',
-            }}
-          >
-            {label}
-          </button>
-        ))}
+    <div className={styles.wrapper}>
+      {/* Period header label */}
+      <div className={styles.periodHeader}>
+        <Calendar size={12} strokeWidth={1.8} aria-hidden />
+        Periodo
+      </div>
+
+      {/* ToggleGroup — horizontal scroll on mobile, wrap on desktop */}
+      <div role="radiogroup" aria-label="Periodo del Formato 53" className={styles.toggleGroup}>
+        {PRESETS.map(([key, label]) => {
+          const active = preset === key
+          return (
+            <button
+              key={key}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setPreset(key)}
+              className={`${styles.toggle} ${active ? styles.toggleActive : ''}`}
+            >
+              {label}
+            </button>
+          )
+        })}
       </div>
 
       {preset === 'custom' && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-          <label style={{ display: 'inline-flex', flexDirection: 'column', gap: 4, fontSize: 'var(--aguila-fs-meta, 11px)', color: 'rgba(192,197,206,0.7)' }}>
+        <div className={styles.customRow}>
+          <label className={styles.customLabel}>
             Desde
             <input
               type="date"
               value={custom.from}
               onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))}
-              style={{
-                padding: '8px 10px',
-                borderRadius: 8,
-                background: 'rgba(0,0,0,0.25)',
-                border: '1px solid rgba(192,197,206,0.18)',
-                color: 'var(--portal-fg-1)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12, // WHY: date input label — mid-tier, matches button set above.
-                minHeight: 40,
-              }}
+              className={styles.customInput}
             />
           </label>
-          <label style={{ display: 'inline-flex', flexDirection: 'column', gap: 4, fontSize: 'var(--aguila-fs-meta, 11px)', color: 'rgba(192,197,206,0.7)' }}>
+          <label className={styles.customLabel}>
             Hasta
             <input
               type="date"
               value={custom.to}
               onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))}
-              style={{
-                padding: '8px 10px',
-                borderRadius: 8,
-                background: 'rgba(0,0,0,0.25)',
-                border: '1px solid rgba(192,197,206,0.18)',
-                color: 'var(--portal-fg-1)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12, // WHY: date input label — mid-tier, matches button set above.
-                minHeight: 40,
-              }}
+              className={styles.customInput}
             />
           </label>
         </div>
       )}
 
-      <div style={{ fontSize: 11, // WHY: metadata range label sits below --aguila-fs-meta
-        color: "rgba(192,197,206,0.6)", marginBottom: 10, fontFamily: 'var(--font-mono)' }}>
-        {range.from} → {range.to}
+      <div className={styles.rangeChip}>
+        {formatDateDMY(range.from)} → {formatDateDMY(range.to)}
       </div>
 
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={generating}
-        aria-label="Descargar Formato 53"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 10,
-          minHeight: 60,
-          padding: '0 28px',
-          borderRadius: 14,
-          border: 'none',
-          background: generating
-            ? 'rgba(201,167,74,0.28)'
-            : 'linear-gradient(135deg, #F4D47A 0%, #C9A74A 50%, #8F7628 100%)', // design-token — canonical silver/gold CTA gradient
-          color: generating ? 'rgba(230,237,243,0.55)' : 'var(--portal-ink-0)',
-          fontSize: 'var(--aguila-fs-section, 15px)',
-          fontWeight: 700,
-          letterSpacing: '0.02em',
-          cursor: generating ? 'wait' : 'pointer',
-          boxShadow: generating
-            ? 'none'
-            : '0 10px 30px rgba(201,167,74,0.25), 0 0 20px rgba(201,167,74,0.12), inset 0 1px 0 rgba(255,255,255,0.22)',
-          transition: 'all var(--dur-fast, 150ms) var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1))',
-        }}
-      >
-        {generating ? (
-          <>
-            <Loader2 size={18} className="cruz-spin" strokeWidth={2} />
-            Generando Formato 53…
-          </>
-        ) : (
-          <>
-            <Download size={18} strokeWidth={2} />
-            Descargar Formato 53 (PDF + Excel)
-          </>
-        )}
-      </button>
-
-      <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 14 }}>
-        <a
-          href={`/api/anexo-24/csv${isInternal ? `?company_id=${encodeURIComponent(companyId)}` : ''}`}
-          style={{
-            fontSize: 'var(--aguila-fs-meta, 11px)',
-            color: 'rgba(192,197,206,0.7)',
-            textDecoration: 'none',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            borderBottom: '1px solid rgba(192,197,206,0.18)',
-            paddingBottom: 1,
-            transition: 'color var(--dur-fast, 150ms) ease, border-color var(--dur-fast, 150ms) ease',
-          }}
+      {/* Three download buttons */}
+      <div className={styles.actions}>
+        <button
+          type="button"
+          onClick={() => handleDownload('pdf')}
+          disabled={generating !== null}
+          aria-label="Descargar PDF"
+          className={styles.btnPrimary}
         >
-          Descargar CSV para contabilidad
+          {generating === 'pdf' ? (
+            <>
+              <Loader2 size={16} className={styles.spin} strokeWidth={2} />
+              Generando PDF…
+            </>
+          ) : (
+            <>
+              <Download size={16} strokeWidth={2} />
+              Descargar PDF
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleDownload('xlsx')}
+          disabled={generating !== null}
+          aria-label="Descargar Excel"
+          className={styles.btnPrimary}
+        >
+          {generating === 'xlsx' ? (
+            <>
+              <Loader2 size={16} className={styles.spin} strokeWidth={2} />
+              Generando Excel…
+            </>
+          ) : (
+            <>
+              <Download size={16} strokeWidth={2} />
+              Descargar Excel
+            </>
+          )}
+        </button>
+
+        <a
+          href={csvHref}
+          aria-label="Descargar CSV"
+          className={styles.btnOutline}
+        >
+          <Download size={16} strokeWidth={2} />
+          Descargar CSV
         </a>
       </div>
 
       {error && (
-        <p
-          role="alert"
-          style={{
-            marginTop: 12,
-            fontSize: 'var(--aguila-fs-body, 13px)',
-            color: 'var(--portal-status-red-fg)',
-          }}
-        >
-          {error}
-        </p>
+        <p role="alert" className={styles.error}>{error}</p>
       )}
 
       {result && !generating && (
-        <div
-          role="status"
-          style={{
-            marginTop: 14,
-            padding: '10px 14px',
-            borderRadius: 10,
-            background: 'var(--portal-status-green-bg)',
-            border: '1px solid rgba(34,197,94,0.18)',
-            fontSize: 'var(--aguila-fs-body, 13px)',
-            color: 'rgba(230,237,243,0.88)',
-          }}
-        >
-          Formato 53 descargado · {result.label} · {result.row_count.toLocaleString('es-MX')} partidas · PDF + Excel
+        <div role="status" className={styles.success}>
+          {result.format} descargado · {result.label} · {formatNumber(result.row_count)} partidas
         </div>
       )}
-
-      <style jsx>{`
-        .cruz-spin { animation: cruz-rotate 900ms linear infinite; }
-        @keyframes cruz-rotate { to { transform: rotate(360deg); } }
-        @media (prefers-reduced-motion: reduce) {
-          .cruz-spin { animation: none; }
-        }
-      `}</style>
     </div>
   )
 }

@@ -490,8 +490,39 @@ function LoginContent() {
                 textTransform: 'uppercase',
               }}
             >
-              <span>TLS 1.3 · 2FA</span>
-              <span>Est. 1941</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <svg
+                  aria-hidden
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                TLS 1.3 · 2FA
+              </span>
+              <a
+                href="mailto:contacto@renatozapata.com?subject=Recuperar%20acceso%20PORTAL"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--portal-font-mono)',
+                  fontSize: 10,
+                  letterSpacing: '0.22em',
+                  color: 'var(--portal-fg-4)',
+                  textTransform: 'uppercase',
+                  textDecoration: 'none',
+                }}
+              >
+                ¿Olvidó su código?
+              </a>
             </div>
           </form>
         </div>

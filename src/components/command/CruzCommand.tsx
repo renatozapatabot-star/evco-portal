@@ -45,6 +45,10 @@ interface Props {
   mode?: CruzCommandMode
   placeholder?: string
   autoFocus?: boolean
+  /** V1 Clean Visibility (2026-04-24): when true, hides the "Preguntarle
+   *  a PORTAL" AI ask row and disables the Enter-to-/cruz fallback. The
+   *  search portion remains fully functional. */
+  hideAI?: boolean
 }
 
 interface SearchResult {
@@ -64,6 +68,17 @@ const CYCLE_PLACEHOLDERS = [
   'Busca una fracción arancelaria…',
   'Busca un proveedor…',
   'Pregúntale a PORTAL cualquier cosa…',
+]
+
+/** V1 Clean Visibility placeholder set — no AI-forward line. Used when
+ *  the caller passes `hideAI`. Same rotation, no assistant prompt. */
+const CYCLE_PLACEHOLDERS_NO_AI = [
+  'Busca un pedimento…',
+  'Busca un embarque…',
+  'Busca un SKU del Anexo 24…',
+  'Busca una fracción arancelaria…',
+  'Busca un proveedor…',
+  'Busca una entrada…',
 ]
 
 const ICONS: Record<string, (p: { size: number }) => React.ReactElement> = {
@@ -117,7 +132,7 @@ function detectAskIntent(q: string): boolean {
   return words.length >= 4
 }
 
-export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }: Props) {
+export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false, hideAI = false }: Props) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
@@ -128,7 +143,8 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const [activeIdx, setActiveIdx] = useState(0)
 
-  const cyclePlaceholder = placeholder ?? CYCLE_PLACEHOLDERS[placeholderIdx]
+  const placeholderPool = hideAI ? CYCLE_PLACEHOLDERS_NO_AI : CYCLE_PLACEHOLDERS
+  const cyclePlaceholder = placeholder ?? placeholderPool[placeholderIdx % placeholderPool.length]
   const askIntent = detectAskIntent(value)
   const showDropdown = focused && (value.trim().length > 0 || askIntent)
 
@@ -212,10 +228,11 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
 
   const rows: Array<{ kind: 'ask' | 'result'; result?: SearchResult }> = useMemo(() => {
     const list: Array<{ kind: 'ask' | 'result'; result?: SearchResult }> = []
-    if (askIntent) list.push({ kind: 'ask' })
+    // V1 Clean Visibility: hideAI drops the ask row entirely.
+    if (askIntent && !hideAI) list.push({ kind: 'ask' })
     for (const r of results) list.push({ kind: 'result', result: r })
     return list
-  }, [askIntent, results])
+  }, [askIntent, results, hideAI])
 
   const handleKey = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
@@ -228,17 +245,22 @@ export function CruzCommand({ mode = 'compact', placeholder, autoFocus = false }
       e.preventDefault()
       const row = rows[activeIdx]
       if (!row) {
-        // No row — if there's an ask intent or any text, treat as "ask PORTAL".
-        if (value.trim().length > 0) router.push(`/cruz?q=${encodeURIComponent(value.trim())}`)
+        // No row — route Enter to the first search result if one exists;
+        // otherwise (and only when AI is enabled) fall through to /cruz.
+        if (results[0]) {
+          router.push(hrefFor(results[0]))
+        } else if (!hideAI && value.trim().length > 0) {
+          router.push(`/cruz?q=${encodeURIComponent(value.trim())}`)
+        }
         return
       }
-      if (row.kind === 'ask') {
+      if (row.kind === 'ask' && !hideAI) {
         router.push(`/cruz?q=${encodeURIComponent(value.trim())}`)
       } else if (row.result) {
         router.push(hrefFor(row.result))
       }
     }
-  }, [rows, activeIdx, router, value])
+  }, [rows, activeIdx, router, value, hideAI, results])
 
   const isHero = mode === 'hero'
   const wrapMaxWidth = isHero ? 720 : 560

@@ -11,6 +11,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 import { ROUTABLE_EVENT_KINDS } from '@/lib/telegram/formatters'
+import { verifySession } from '@/lib/session'
 
 export const runtime = 'nodejs'
 
@@ -31,11 +32,17 @@ function svc() {
 }
 
 async function getSessionContext() {
+  // HMAC-verified session per baseline I20. user_id stays a separate
+  // cookie (set server-side) since session.companyId is the tenant
+  // anchor, not the user record id.
   const c = await cookies()
-  const role = c.get('user_role')?.value ?? ''
+  const session = await verifySession(c.get('portal_session')?.value ?? '')
   const userId = c.get('user_id')?.value ?? ''
-  const companyId = c.get('company_id')?.value ?? ''
-  return { role, userId, companyId }
+  return {
+    role: session?.role ?? '',
+    userId,
+    companyId: session?.companyId ?? '',
+  }
 }
 
 export async function GET() {

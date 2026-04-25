@@ -15,6 +15,8 @@ import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import { FreshnessBanner } from '@/components/aguila'
 import { useFreshness } from '@/hooks/use-freshness'
+import { clearanceLabel } from '@/lib/pedimentos/clearance'
+import { linkForPedimento } from '@/lib/links/entity-links'
 import Link from 'next/link'
 
 interface TraficoRow {
@@ -22,6 +24,7 @@ interface TraficoRow {
   pedimento: string | null
   fecha_pago: string | null
   fecha_llegada: string | null
+  fecha_cruce: string | null
   importe_total: number | null
   estatus: string | null
   regimen: string | null
@@ -39,6 +42,10 @@ interface PedGroup {
   regimen: string
   tmec: boolean
   descripcion: string
+  /** Raw estatus from traficos, passed through clearanceLabel() for the UI. */
+  estatus: string | null
+  /** fecha_cruce — if non-null, forces "Cleared" regardless of estatus. */
+  fechaCruce: string | null
 }
 
 const PAGE_SIZE = 50
@@ -123,6 +130,7 @@ function PedimentosContent() {
             pedimento: p.pedimento_number,
             fecha_pago: null,
             fecha_llegada: p.created_at,
+            fecha_cruce: null,
             importe_total: null,
             estatus: p.status ?? null,
             regimen: null,
@@ -200,6 +208,8 @@ function PedimentosContent() {
         regimen: first.regimen ?? '',
         tmec,
         descripcion: first.descripcion_mercancia ?? '',
+        estatus: first.estatus ?? null,
+        fechaCruce: first.fecha_cruce ?? null,
       }
     })
 
@@ -308,12 +318,15 @@ function PedimentosContent() {
               <button
                 key={g.pedimento}
                 type="button"
-                onClick={() => window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')}
+                onClick={() => {
+                  const href = linkForPedimento(g.trafico)
+                  if (href) window.location.assign(href)
+                }}
                 style={{
                   textAlign: 'left', cursor: 'pointer', font: 'inherit',
                   textDecoration: 'none', color: 'inherit',
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderLeft: `3px solid ${g.tmec ? 'var(--success)' : 'var(--gold, #E8EAED)'}`,
+                  borderLeft: `3px solid var(--border)`,
                   borderRadius: 10, padding: '14px 16px', display: 'block', minHeight: 60,
                   width: '100%',
                 }}
@@ -352,6 +365,7 @@ function PedimentosContent() {
                   {hasUSDValues && (
                     <th style={{ textAlign: 'right', cursor: 'pointer', width: 130 }} onClick={() => toggleSort('importe')}>Valor USD<SortArrow col="importe" sort={sort} /></th>
                   )}
+                  <th style={{ width: 120 }}>Estatus</th>
                   <th style={{ width: 50, textAlign: 'center' }}>PDF</th>
                 </tr>
               </thead>
@@ -360,7 +374,10 @@ function PedimentosContent() {
                   <tr
                     key={g.pedimento}
                     className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
-                    onClick={() => window.open(`/api/pedimento-pdf?trafico=${encodeURIComponent(g.trafico)}`, '_blank')}
+                    onClick={() => {
+                      const href = linkForPedimento(g.trafico)
+                      if (href) window.location.assign(href)
+                    }}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>
@@ -405,6 +422,9 @@ function PedimentosContent() {
                         {g.importe > 0 ? `${fmtUSD(g.importe)}` : ''}
                       </td>
                     )}
+                    <td style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)' }}>
+                      {clearanceLabel({ estatus: g.estatus, fecha_cruce: g.fechaCruce })}
+                    </td>
                     <td style={{ textAlign: 'center' }}>
                       <button
                         onClick={(e) => {

@@ -163,8 +163,17 @@ caused a real regression, a compliance risk, or a silent failure in production.
     blocking same-origin embeds — never set those again.
     verify: `grep -n "X-Frame-Options\|frame-ancestors" next.config.ts` → must show SAMEORIGIN + 'self'
 
-29. **Six cockpit nav cards across `/inicio`, `/operador/inicio`,
-    `/admin/eagle`.** The six are **Embarques, Contabilidad, Expedientes,
+29. **[SUPERSEDED 2026-04-24 by founder-overrides.md — V1 Clean
+    Visibility reset]** Five-tile client nav: **Entradas, Pedimentos,
+    Expediente, Catálogo, Anexo 24**. Operator/owner cockpits still
+    compose from `UNIFIED_NAV_TILES` but the Contabilidad tile is no
+    longer in the shared array; `/contabilidad/inicio` is reachable
+    from `/operador/inicio` directly. This rule is SOFT; change was made
+    per founder-override dated 2026-04-24.
+
+    Original (for history — do NOT follow as-is):
+    ~~**Six cockpit nav cards across `/inicio`, `/operador/inicio`,
+    `/admin/eagle`.**~~ The six are **Embarques, Contabilidad, Expedientes,
     Catálogo, Entradas, Anexo 24**. Tile #2 promoted from "Pedimentos"
     to "Contabilidad" on 2026-04-19 per the founder-override log
     (`.claude/rules/founder-overrides.md`) — client role routes to

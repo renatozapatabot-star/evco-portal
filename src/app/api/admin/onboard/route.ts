@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifySession } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,8 +8,10 @@ const supabase = createClient(
 )
 
 export async function POST(request: NextRequest) {
-  const role = request.cookies.get('user_role')?.value
-  if (role !== 'admin') {
+  // Authorize from HMAC session, never the unsigned user_role cookie
+  // (baseline I20 — no forgeable-cookie capability gates).
+  const session = await verifySession(request.cookies.get('portal_session')?.value ?? '')
+  if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 

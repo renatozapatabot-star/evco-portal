@@ -199,7 +199,7 @@ export function VencimientosClient({ rows }: Props) {
         href="https://trafico1web.globalpc.net/catalogos/productos"
         label="Catálogo"
         isIncomplete={rows.length === 0}
-        message="Sin permisos capturados en CRUZ — consulta el catálogo de GlobalPC."
+        message="Sin permisos capturados en el portal — consulta el catálogo de GlobalPC."
       />
     </div>
   )

@@ -71,6 +71,11 @@ export default async function PedimentoDetailPage({
   const traficoRes = await traficoQ.maybeSingle()
   if (traficoRes.error || !traficoRes.data) notFound()
   const ownerCompanyId = (traficoRes.data as { company_id: string | null }).company_id
+  // Hard stop: a trafico with NULL company_id should never be reachable by
+  // any role on the V1 client surface. Even internal roles cannot use this
+  // detail page to query dependents without a tenant anchor — that path
+  // would silently disable the company_id filter on the dependent queries.
+  if (!ownerCompanyId) notFound()
 
   // Step B: dependents now anchor company_id to the verified owner of
   // the trafico, defense-in-depth even for internal roles.
@@ -83,7 +88,7 @@ export default async function PedimentoDetailPage({
         .eq('pedimento_id', traficoId)
         .order('uploaded_at', { ascending: false })
         .limit(200)
-      if (ownerCompanyId) q = q.eq('company_id', ownerCompanyId)
+      q = q.eq('company_id', ownerCompanyId)
       return q
     })(),
     (() => {
@@ -92,7 +97,7 @@ export default async function PedimentoDetailPage({
         .select('cve_entrada, fecha_llegada_mercancia, cve_proveedor, cantidad_bultos, peso_bruto')
         .eq('trafico', traficoId)
         .limit(100)
-      if (ownerCompanyId) q = q.eq('company_id', ownerCompanyId)
+      q = q.eq('company_id', ownerCompanyId)
       return q
     })(),
   ])

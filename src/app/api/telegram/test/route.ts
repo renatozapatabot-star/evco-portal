@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 import { ROUTABLE_EVENT_KINDS, formatForEvent } from '@/lib/telegram/formatters'
+import { verifySession } from '@/lib/session'
 
 export const runtime = 'nodejs'
 
@@ -58,9 +59,10 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, unknown>> = {
 }
 
 export async function POST(req: NextRequest) {
+  // Auth from HMAC session, not the unsigned user_role cookie (baseline I20).
   const c = await cookies()
-  const role = c.get('user_role')?.value ?? ''
-  if (!role) {
+  const session = await verifySession(c.get('portal_session')?.value ?? '')
+  if (!session) {
     return NextResponse.json(
       { data: null, error: { code: 'UNAUTHORIZED', message: 'No autenticado' } },
       { status: 401 },

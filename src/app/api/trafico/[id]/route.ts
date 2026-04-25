@@ -12,9 +12,14 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieRole = request.cookies.get('user_role')?.value
-  const isInternal = cookieRole === 'broker' || cookieRole === 'admin'
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  // V1 Clean Visibility (2026-04-24): role + companyId from HMAC session,
+  // never from forgeable cookies (baseline I20). The `company_clave` cookie
+  // remains read because it carries the GlobalPC clave (joined later) —
+  // not a tenant-isolation signal on its own.
+  const session = await verifySession(request.cookies.get('portal_session')?.value ?? '')
+  if (!session) return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 })
+  const isInternal = session.role === 'broker' || session.role === 'admin'
+  const companyId = session.companyId
   const clientClave = request.cookies.get('company_clave')?.value ?? ''
   const { id: traficoId } = await params
 

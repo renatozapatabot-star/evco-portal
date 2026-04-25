@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isCleared, clearanceLabel } from '../clearance'
+import { isCleared, clearanceLabel, clearanceLabelES } from '../clearance'
 
 describe('isCleared', () => {
   it('returns true when fecha_cruce is set', () => {
@@ -45,5 +45,20 @@ describe('clearanceLabel', () => {
   it('returns "Not cleared" for everything else', () => {
     expect(clearanceLabel({ estatus: 'En Proceso' })).toBe('Not cleared')
     expect(clearanceLabel({})).toBe('Not cleared')
+  })
+})
+
+describe('clearanceLabelES', () => {
+  it('returns "Liberado" for a cleared trafico', () => {
+    expect(clearanceLabelES({ fecha_cruce: '2026-04-20T14:30:00Z' })).toBe('Liberado')
+    expect(clearanceLabelES({ estatus: 'Cruzado' })).toBe('Liberado')
+    expect(clearanceLabelES({ estatus: 'E1' })).toBe('Liberado')
+    expect(clearanceLabelES({ estatus: 'Pedimento Pagado' })).toBe('Liberado')
+  })
+
+  it('returns "No liberado" for everything else', () => {
+    expect(clearanceLabelES({ estatus: 'En Proceso' })).toBe('No liberado')
+    expect(clearanceLabelES({})).toBe('No liberado')
+    expect(clearanceLabelES({ estatus: 'Cerrado' })).toBe('No liberado')
   })
 })

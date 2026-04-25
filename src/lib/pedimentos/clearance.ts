@@ -72,3 +72,12 @@ export function isCleared(t: TraficoClearanceInput): boolean {
 export function clearanceLabel(t: TraficoClearanceInput): 'Cleared' | 'Not cleared' {
   return isCleared(t) ? 'Cleared' : 'Not cleared'
 }
+
+/**
+ * Spanish render label — used on the six V1 client surfaces per the
+ * audit lock-in (2026-04-25). The English `clearanceLabel()` stays for
+ * back-compat with older operator-internal surfaces that still consume it.
+ */
+export function clearanceLabelES(t: TraficoClearanceInput): 'Liberado' | 'No liberado' {
+  return isCleared(t) ? 'Liberado' : 'No liberado'
+}

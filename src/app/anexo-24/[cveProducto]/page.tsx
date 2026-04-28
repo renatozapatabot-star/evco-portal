@@ -233,7 +233,7 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
         <ClipboardList size={16} color="rgba(201,167,74,0.9)" strokeWidth={1.8} aria-hidden />
         <span>
           <strong style={{ color: 'var(--portal-fg-1)' }}>Parte del Anexo 24</strong> —
-          tu Formato 53 de GlobalPC.net lista este SKU con estos mismos datos.
+          tu Formato 53 lista este SKU con estos mismos datos.
           {linkedDocs.length > 0 && (
             <span style={{ color: 'rgba(148,163,184,0.9)' }}>
               {' '}{linkedDocs.length} documento{linkedDocs.length === 1 ? '' : 's'} vinculado{linkedDocs.length === 1 ? '' : 's'}.

@@ -82,9 +82,21 @@ export async function POST(request: NextRequest) {
 
   const isInternal = session.role === 'broker' || session.role === 'admin'
   const companyId = isInternal ? '' : session.companyId
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
 
   const sb = createServerClient()
+
+  // P0-A7: rebuild clave_cliente from the verified session.companyId,
+  // never from raw company_clave cookie. Internal cross-tenant aggregate
+  // path doesn't need the clave (the !isInternal branch below skips it).
+  let clientClave = ''
+  if (!isInternal && session.companyId) {
+    const { data: companyRow } = await sb
+      .from('companies')
+      .select('clave_cliente')
+      .eq('company_id', session.companyId)
+      .maybeSingle()
+    clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  }
   let q = sb.from('traficos')
     .select('trafico, estatus, descripcion_mercancia, fecha_llegada, pedimento, company_id')
     .limit(ADVANCED_LIMIT)

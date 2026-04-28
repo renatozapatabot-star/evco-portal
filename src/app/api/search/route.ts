@@ -20,7 +20,20 @@ export async function GET(request: NextRequest) {
   }
   const isInternal = session.role === 'broker' || session.role === 'admin'
   const companyId = isInternal ? '' : session.companyId
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
+
+  // P0-A7: rebuild clave_cliente from the verified companyId — never
+  // from raw company_clave cookie. Internal cross-tenant aggregate
+  // path skips the clave lookup (uses empty string, then runs unfiltered
+  // queries via the isInternal branch downstream).
+  let clientClave = ''
+  if (!isInternal && session.companyId) {
+    const { data: companyRow } = await supabase
+      .from('companies')
+      .select('clave_cliente')
+      .eq('company_id', session.companyId)
+      .maybeSingle()
+    clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  }
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) {
     return NextResponse.json({ results: [] })

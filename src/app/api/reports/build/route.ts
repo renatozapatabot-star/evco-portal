@@ -2,9 +2,17 @@
  * Block 3 · Dynamic Report Builder — full build endpoint (cap 5000).
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { runReportQuery } from '@/lib/report-engine'
 import { parseReportConfig } from '@/lib/report-config-validator'
+
+// P0-A7: resolve clave_cliente server-side from the verified companyId,
+// never from the forgeable company_clave cookie.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/reports/build')
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, SERVICE_ROLE)
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -36,9 +44,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const claveCliente = request.cookies.get('company_clave')?.value ?? null
+  const companyId = resolveTenantScope(session, request)
+  const { data: companyRow } = companyId
+    ? await supabase.from('companies').select('clave_cliente').eq('company_id', companyId).maybeSingle()
+    : { data: null }
+  const claveCliente = (companyRow?.clave_cliente as string | undefined) ?? null
   const result = await runReportQuery(parsed.config, {
-    companyId: session.companyId,
+    companyId: companyId || session.companyId,
     role: session.role,
     claveCliente,
   })

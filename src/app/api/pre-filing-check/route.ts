@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -130,11 +131,15 @@ export async function POST(request: NextRequest) {
   const session = await verifySession(request.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
-  const { trafico_id, company_id } = await request.json()
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
+  const { trafico_id } = await request.json()
   if (!trafico_id) {
     return NextResponse.json({ error: 'trafico_id required' }, { status: 400 })
   }
-  const result = await runPreFilingCheck(trafico_id, company_id || companyId)
+  // P0-A7: ignore body.company_id — caller cannot widen the tenant
+  // scope by injecting a different company_id. Tenant comes from
+  // the signed session via resolveTenantScope.
+  const result = await runPreFilingCheck(trafico_id, companyId)
   return NextResponse.json(result)
 }

@@ -7,7 +7,9 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { runReportQuery } from '@/lib/report-engine'
 import { getReportEntity } from '@/lib/report-registry'
 import { parseReportConfig } from '@/lib/report-config-validator'
@@ -16,6 +18,11 @@ import { buildCsv } from '@/lib/report-exports/csv'
 import { buildXlsx } from '@/lib/report-exports/excel'
 import { buildPdf } from '@/lib/report-exports/pdf'
 import { fmtDateTime } from '@/lib/format-utils'
+
+// P0-A7: resolve clave_cliente from the verified companyId, never the cookie.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/reports/export')
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, SERVICE_ROLE)
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -78,9 +85,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const claveCliente = request.cookies.get('company_clave')?.value ?? null
+  const tenantId = resolveTenantScope(session, request)
+  const { data: companyRow } = tenantId
+    ? await supabase.from('companies').select('clave_cliente').eq('company_id', tenantId).maybeSingle()
+    : { data: null }
+  const claveCliente = (companyRow?.clave_cliente as string | undefined) ?? null
   const result = await runReportQuery(cfgParse.config, {
-    companyId: session.companyId,
+    companyId: tenantId || session.companyId,
     role: session.role,
     claveCliente,
   })

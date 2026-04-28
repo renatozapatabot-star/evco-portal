@@ -54,21 +54,17 @@ export async function GET(request: NextRequest) {
   let clientName: string
   let clientClave: string
   let clientRFC: string
-  if (isInternal && overrideCompanyId) {
-    const { data: target } = await supabase
-      .from('companies')
-      .select('name, clave_cliente, rfc')
-      .eq('company_id', overrideCompanyId)
-      .maybeSingle()
-    clientName = target?.name ?? overrideCompanyId.toUpperCase()
-    clientClave = target?.clave_cliente ?? ''
-    clientRFC = target?.rfc ?? ''
-  } else {
-    const rawName = request.cookies.get('company_name')?.value
-    clientName = rawName ? decodeURIComponent(rawName) : companyId.toUpperCase()
-    clientClave = request.cookies.get('company_clave')?.value ?? ''
-    clientRFC = request.cookies.get('company_rfc')?.value ?? ''
-  }
+  // Resolve client metadata from the verified companyId — never from
+  // raw company_name / company_clave / company_rfc cookies. The
+  // companies table is the single source of truth. P0-A7.
+  const { data: target } = await supabase
+    .from('companies')
+    .select('name, clave_cliente, rfc')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  clientName = (target?.name as string | undefined) ?? companyId.toUpperCase()
+  clientClave = (target?.clave_cliente as string | undefined) ?? ''
+  clientRFC = (target?.rfc as string | undefined) ?? ''
 
   const from = request.nextUrl.searchParams.get('from')
   const to = request.nextUrl.searchParams.get('to')

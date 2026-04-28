@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// P0-A4: explicit service-role requirement. Carrier-status webhook —
+// authenticates via app-layer signature, not Supabase Auth, so it MUST
+// run as service role. Silent fallback to anon would (post anon-revoke)
+// drop every write silently.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/carrier-update')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 const VALID_STATUSES = ['recogido', 'en_ruta', 'en_puente', 'cruzando', 'cruzado', 'entregado'] as const

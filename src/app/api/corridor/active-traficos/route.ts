@@ -13,9 +13,17 @@ import type {
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+// P0-A4: explicit service-role requirement. Corridor pulse aggregates
+// across tenants — service-role only, app code applies tenant filter
+// via session.companyId for non-internal callers.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/corridor/active-traficos')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 const ACTIVE_WINDOW_HOURS = 72

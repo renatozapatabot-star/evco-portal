@@ -6,9 +6,17 @@ import type { Landmark, LandmarkId, LandmarkType } from '@/types/corridor'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+// P0-A4: explicit service-role requirement. corridor_landmarks is
+// reference data (no tenant column) but anon writes are revoked by
+// the P0-A1 migration — service role is the only path.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/corridor/landmarks')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 interface LandmarkRow {

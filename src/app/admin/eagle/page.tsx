@@ -11,7 +11,6 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
-import { computeARAging, computeAPAging } from '@/lib/contabilidad/aging'
 import { fmtUSDCompact } from '@/lib/format-utils'
 import { bucketDailySeries, sumRange, daysAgo } from '@/lib/cockpit/fetch'
 import { softCount, softData, softFirst } from '@/lib/cockpit/safe-query'
@@ -25,7 +24,6 @@ import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import { AuditoriaShortcut } from '@/components/admin/AuditoriaShortcut'
 import { TraficosDelDiaTile } from '@/components/eagle/TraficosDelDiaTile'
-import { ArApTile } from '@/components/eagle/ArApTile'
 import { ClientesDormidosTile } from '@/components/eagle/ClientesDormidosTile'
 import { TopAtencionesTile } from '@/components/eagle/TopAtencionesTile'
 import { CorredorTile } from '@/components/eagle/CorredorTile'
@@ -141,8 +139,6 @@ async function renderEagle(opName: string, rawMonth: string | null) {
 
   const [
     traficosRows,
-    ar,
-    ap,
     recentForDormantRows,
     companiesRows,
     traficosActivosSeriesRows,
@@ -171,8 +167,6 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     softData<{ estatus: string | null }>(
       sb.from('traficos').select('estatus').is('fecha_cruce', null).limit(5000)
     ),
-    withHardTimeout(computeARAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'MXN' as const }),
-    withHardTimeout(computeAPAging(sb, null), 3500, { total: 0, count: 0, byBucket: [], topDebtors: [], currency: 'USD' as const, sourceMissing: true }),
     // Active-client scope = the selected month's window (not a rolling 14d).
     softData<{ company_id: string | null; created_at: string }>(
       sb.from('traficos').select('company_id, created_at').gte('created_at', month.monthStart).lt('created_at', month.monthEnd).limit(5000)
@@ -331,41 +325,27 @@ async function renderEagle(opName: string, rawMonth: string | null) {
   const entradasSeries        = bucketDailySeries(entradasSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada_mercancia', 14, now)
   const clasificacionesSeries = bucketDailySeries(clasificacionesSeriesRows as Array<Record<string, unknown>>, 'fraccion_classified_at', 14, now)
 
-  const arTotal = ar.total ?? 0
   const monthShort = month.label
 
   const heroKPIs: CockpitHeroKPI[] = [
     { key: 'traficos', label: 'Embarques en proceso', value: activeTraficosTotal, series: traficosActivosSeries, current: sumRange(traficosActivosSeries, 7, 14), previous: sumRange(traficosActivosSeries, 0, 7), href: '/embarques?estatus=En+Proceso', tone: 'silver' },
     { key: 'clientes', label: 'Clientes activos', value: activeClients, tone: 'silver' },
     { key: 'dormidos', label: 'Clientes dormidos', value: dormant.length, tone: 'silver', inverted: true },
-    // Swapped 2026-04-15 per Tito audit: CxC vencido moved to ArApTile in
-    // estado grid; hero now shows actionable cruces este mes.
     { key: 'cruces', label: 'Cruces este mes', value: cruzadosMesCount, series: pedimentosPendSeries, current: cruzadosMesCount, previous: pedimentosPriorMesCount, href: '/embarques?cruzadoEn=mes', tone: 'silver' },
   ]
-  void arTotal
 
   const daysSinceLastCruce = lastPedimento?.fecha_cruce
     ? Math.floor((Date.now() - new Date(lastPedimento.fecha_cruce).getTime()) / 86400000)
     : null
 
-  // Phase 5 — all-client aggregate CxC count for the Eagle View.
-  const cxcAbiertasCountEagle = await softCount(
-    sb.from('econta_cartera').select('id', { count: 'exact', head: true }).gt('saldo', 0),
-  )
+  // 2026-04-28 founder-override: Contabilidad tile + AR/AP aging removed
+  // from owner landing. Anabel's cockpit reachable via direct URL.
 
   const navCounts: NavCounts = {
     traficos: {
       count: activeTraficosTotal,
       series: traficosActivosSeries,
       microStatus: `${cruzadosMesCount} cruzaron en ${monthShort}`,
-    },
-    // 2026-04-19 override: Contabilidad tile #2. All-client aggregate CxC.
-    contabilidad: {
-      count: cxcAbiertasCountEagle,
-      series: [],
-      microStatus: cxcAbiertasCountEagle > 0
-        ? `${cxcAbiertasCountEagle.toLocaleString('es-MX')} saldos abiertos · patente completa`
-        : 'Sin saldos abiertos',
     },
     pedimentos: {
       // Show actionable count (pedimentos awaiting cruce) — that's what

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Truck, FileText, FolderOpen, Book, Package, ClipboardList, Receipt } from 'lucide-react'
+import { Truck, FileText, FolderOpen, Book, Package, ClipboardList } from 'lucide-react'
 import { PortalTopBar } from './PortalTopBar'
 import { PortalGreeting } from './PortalGreeting'
 import { PortalModuleCard } from './PortalModuleCard'
@@ -124,7 +124,7 @@ export function PortalDashboard({
   useCmdK(openCmd, closeCmd)
 
   // onOpenTheater retained in the prop signature for back-compat callers
-  // but no longer wired — tile 2 is now a direct-nav Contabilidad card.
+  // but no longer wired — tile 2 is a direct-nav Pedimentos card.
   void onOpenTheater
 
   // Prefer the role-aware description but keep the 6 cards identical in
@@ -210,60 +210,33 @@ export function PortalDashboard({
             ariaLabel="Ir a Embarques"
           />
 
-          {/* 2. Contabilidad (2026-04-19 founder-override — was Pedimentos).
-               Client → /mi-cuenta (own A/R, ethical contract in
-               .claude/rules/client-accounting-ethics.md). Broker/operator →
-               /contabilidad/inicio (Anabel's cockpit). For clients, gated
-               by NEXT_PUBLIC_MI_CUENTA_ENABLED — when OFF, tile renders
-               AS the old Pedimentos card so Ursula's experience is
-               preserved until Tito flips the flag post-walkthrough. */}
-          {(() => {
-            const miCuentaEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
-            const clientFallback = isClient && !miCuentaEnabled
-            return clientFallback ? (
-              <PortalModuleCard
-                icon={<FileText size={ICON_SIZE} />}
-                title="Pedimentos"
-                desc={
-                  navCounts.pedimentos?.microStatus ??
+          {/* 2. Pedimentos (2026-04-28 founder-override — Contabilidad
+               removed from every landing screen: client /inicio, operator
+               /operador/inicio, owner /admin/eagle. Anabel's cockpit at
+               /contabilidad/inicio is unchanged; reachable via the
+               accountant top-nav and direct URL. */}
+          <PortalModuleCard
+            icon={<FileText size={ICON_SIZE} />}
+            title="Pedimentos"
+            desc={
+              isClient
+                ? navCounts.pedimentos?.microStatus ??
                   'Declaraciones aduanales firmadas este mes.'
-                }
-                badge={
-                  navCounts.pedimentos?.count
-                    ? { tone: 'info', label: `${navCounts.pedimentos.count} MES` }
-                    : undefined
-                }
-                viz={<VizPedimentoLedger />}
-                metric={fmt(navCounts.pedimentos?.count ?? null, '0')}
-                metricLabel="ESTE MES"
-                href={navHref('pedimentos', '/pedimentos')}
-                accent
-                ariaLabel="Ir a Pedimentos"
-              />
-            ) : (
-              <PortalModuleCard
-                icon={<Receipt size={ICON_SIZE} />}
-                title="Contabilidad"
-                desc={
-                  isClient
-                    ? navCounts.contabilidad?.microStatus ??
-                      'Tu saldo, facturas del mes, próximos vencimientos.'
-                    : 'CxC · CxP · cierre del mes.'
-                }
-                badge={
-                  navCounts.contabilidad?.count
-                    ? { tone: 'info', label: `${navCounts.contabilidad.count} ABIERTA${navCounts.contabilidad.count === 1 ? '' : 'S'}` }
-                    : undefined
-                }
-                viz={<VizPedimentoLedger />}
-                metric={fmt(navCounts.contabilidad?.count ?? null, '0')}
-                metricLabel={isClient ? 'ABIERTAS' : 'CxC ABIERTAS'}
-                href={navHref('contabilidad', isClient ? '/mi-cuenta' : '/contabilidad/inicio')}
-                accent
-                ariaLabel={isClient ? 'Ir a Mi cuenta' : 'Ir a Contabilidad'}
-              />
-            )
-          })()}
+                : 'Pedimentos · firmados este mes.'
+            }
+            badge={
+              navCounts.pedimentos?.count
+                ? { tone: 'info', label: `${navCounts.pedimentos.count} MES` }
+                : undefined
+            }
+            viz={<VizPedimentoLedger />}
+            metric={fmt(navCounts.pedimentos?.count ?? null, '0')}
+            metricLabel="ESTE MES"
+            href={navHref('pedimentos', '/pedimentos')}
+            accent
+            ariaLabel="Ir a Pedimentos"
+          />
+
 
           {/* 3. Expedientes */}
           <PortalModuleCard

@@ -9,7 +9,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!auth) return unauthorized()
 
   const { trafico } = await params
-  const { data } = await supabase.from('crossing_predictions').select('*').eq('trafico_id', trafico).single()
+  // P0-A3: tenant fence — without the company_id filter, any partner
+  // API key could read another tenant's crossing prediction by
+  // guessing trafico_id. 404 (not 403) on cross-tenant per
+  // tenant-isolation.md catalog rule.
+  const { data } = await supabase
+    .from('crossing_predictions')
+    .select('*')
+    .eq('trafico_id', trafico)
+    .eq('company_id', auth.company_id)
+    .maybeSingle()
   if (!data) return NextResponse.json({ error: 'No prediction found' }, { status: 404 })
   return NextResponse.json(data)
 }

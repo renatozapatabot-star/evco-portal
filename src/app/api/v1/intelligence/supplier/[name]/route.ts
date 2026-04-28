@@ -9,7 +9,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!auth) return unauthorized()
 
   const { name } = await params
-  const { data } = await supabase.from('supplier_network')
-    .select('*').ilike('supplier_name_normalized', `%${decodeURIComponent(name).toUpperCase()}%`).limit(5)
+  // P0-A3: tenant fence — pre-fix the ilike search ran across every
+  // tenant's supplier_network rows. A partner API key could enumerate
+  // another tenant's vendor list by querying any supplier name.
+  // Network-intelligence aggregation (cross-tenant supplier reputation)
+  // belongs in a dedicated, role-gated endpoint — not here.
+  const { data } = await supabase
+    .from('supplier_network')
+    .select('*')
+    .eq('company_id', auth.company_id)
+    .ilike('supplier_name_normalized', `%${decodeURIComponent(name).toUpperCase()}%`)
+    .limit(5)
   return NextResponse.json({ suppliers: data || [] })
 }

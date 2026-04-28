@@ -40,12 +40,12 @@ function computeRange(preset: Preset, custom: { from: string; to: string }): { f
       return { from: `${y}-01-01`, to: today, label: `Año ${y} (acumulado)` }
     case 'mes': {
       const from = new Date(Date.UTC(y, m, 1))
-      return { from: iso(from), to: today, label: from.toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: 'UTC' }) }
+      return { from: iso(from), to: today, label: `${formatDateDMY(iso(from))} → ${formatDateDMY(today)}` }
     }
     case 'mes_anterior': {
       const from = new Date(Date.UTC(y, m - 1, 1))
       const to = new Date(Date.UTC(y, m, 0))
-      return { from: iso(from), to: iso(to), label: from.toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: 'UTC' }) }
+      return { from: iso(from), to: iso(to), label: `${formatDateDMY(iso(from))} → ${formatDateDMY(iso(to))}` }
     }
     case 'trimestre': {
       const q = Math.floor(m / 3)

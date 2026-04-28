@@ -44,12 +44,51 @@ const INTERNAL_UNREAD_WINDOW_MS = 24 * 60 * 60 * 1000
 const MAX_PER_RUN = 200
 const MAX_PER_RECIPIENT_PER_HOUR = 5
 
+// Schema probe — `mensajeria_messages` was created in
+// 20260415083503_mve_mensajeria_tables.sql but that migration is in
+// supabase/migrations_broken_20260420_1500/ and was never applied to
+// the live Supabase project (production schema reorg, see
+// supabase/MIGRATION_QUEUE.md). The portal has a runtime probe
+// (src/lib/cockpit/table-availability.ts) that branches on this; this
+// cron mirrors it. If the table is absent, exit cleanly so PM2 logs a
+// success heartbeat instead of crashing every 5 min.
+function isMissingTable(err) {
+  // PGRST205 = "Could not find the table 'public.X' in the schema cache"
+  return (
+    err?.code === 'PGRST205' ||
+    /Could not find the table/i.test(err?.message || '') ||
+    /Could not find the table/i.test(String(err))
+  )
+}
+
+async function tableExists(supabase, table) {
+  // Use a real .select(..).limit(1) — the `head: true` variant does NOT
+  // surface PGRST205 for missing tables (the HEAD path skips that check).
+  try {
+    const { error } = await supabase.from(table).select('id').limit(1)
+    if (!error) return true
+    if (isMissingTable(error)) return false
+    throw error
+  } catch (err) {
+    if (isMissingTable(err)) return false
+    throw err
+  }
+}
+
 async function main() {
   if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Missing Supabase env vars')
   if (!RESEND_KEY) throw new Error('Missing RESEND_API_KEY')
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
   const resend = new Resend(RESEND_KEY)
+
+  if (!(await tableExists(supabase, 'mensajeria_messages'))) {
+    console.log(
+      `[mensajeria-email-fallback] mensajeria_messages absent — feature not yet provisioned in this Supabase project. ` +
+      `Skipping run (${new Date().toISOString()}).`,
+    )
+    return
+  }
 
   const clientCutoff = new Date(Date.now() - CLIENT_UNREAD_WINDOW_MS).toISOString()
   const internalCutoff = new Date(Date.now() - INTERNAL_UNREAD_WINDOW_MS).toISOString()

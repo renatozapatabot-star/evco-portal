@@ -70,6 +70,22 @@ const GRACE_MINUTES = 10
 const REAP_TELEGRAM_THRESHOLD = 20
 const CANCEL_REASON_ES = 'Ventana de confirmación expirada — acción abandonada.'
 
+// Supabase v2 query builders are thenable but not real Promises — they
+// expose .then() but NOT .catch(). The previous `.insert(...).catch()`
+// pattern crashed at runtime. Await + try/catch is the v2-safe path.
+async function writeHeartbeat(details) {
+  try {
+    const { error } = await supabase.from('heartbeat_log').insert({
+      script: SCRIPT_NAME,
+      status: 'success',
+      details,
+    })
+    if (error) console.warn(`[heartbeat skip] ${error.message}`)
+  } catch (e) {
+    console.warn(`[heartbeat skip] ${e?.message || e}`)
+  }
+}
+
 async function main() {
   const startedAt = new Date()
   const cutoffIso = new Date(startedAt.getTime() - GRACE_MINUTES * 60_000).toISOString()
@@ -114,12 +130,10 @@ async function main() {
 
   if (rows.length === 0) {
     if (!DRY_RUN) {
-      await supabase.from('heartbeat_log').insert({
-        script: SCRIPT_NAME,
-        status: 'success',
-        details: { reaped: 0, cutoff_iso: cutoffIso, grace_minutes: GRACE_MINUTES },
-      }).catch((e) => {
-        console.warn(`[heartbeat skip] ${e?.message || e}`)
+      await writeHeartbeat({
+        reaped: 0,
+        cutoff_iso: cutoffIso,
+        grace_minutes: GRACE_MINUTES,
       })
     }
     console.log('✅ nothing to reap.')
@@ -159,19 +173,13 @@ async function main() {
   console.log(`   by kind:    ${JSON.stringify(byKind)}`)
   console.log(`   by company: ${JSON.stringify(byCompany)}`)
 
-  await supabase.from('heartbeat_log').insert({
-    script: SCRIPT_NAME,
-    status: 'success',
-    details: {
-      reaped: reapedCount,
-      candidates: rows.length,
-      cutoff_iso: cutoffIso,
-      grace_minutes: GRACE_MINUTES,
-      by_kind: byKind,
-      by_company: byCompany,
-    },
-  }).catch((e) => {
-    console.warn(`[heartbeat skip] ${e?.message || e}`)
+  await writeHeartbeat({
+    reaped: reapedCount,
+    candidates: rows.length,
+    cutoff_iso: cutoffIso,
+    grace_minutes: GRACE_MINUTES,
+    by_kind: byKind,
+    by_company: byCompany,
   })
 
   // Quiet on normal sweeps. Loud when the backlog spikes — signals

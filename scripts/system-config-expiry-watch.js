@@ -47,6 +47,21 @@ function daysBetween(from, to) {
   return Math.floor((to.getTime() - from.getTime()) / DAY_MS)
 }
 
+// Supabase v2 query builders are thenable but not real Promises — they
+// expose .then() but NOT .catch(). Await + try/catch is the v2-safe path.
+async function writeHeartbeat(status, details) {
+  try {
+    const { error } = await supabase.from('heartbeat_log').insert({
+      script: SCRIPT_NAME,
+      status,
+      details,
+    })
+    if (error) console.warn(`[heartbeat skip] ${error.message}`)
+  } catch (e) {
+    console.warn(`[heartbeat skip] ${e?.message || e}`)
+  }
+}
+
 async function main() {
   const startedAt = new Date()
   console.log(`🔔 ${SCRIPT_NAME} — ${DRY_RUN ? 'DRY RUN' : 'LIVE'} @ ${startedAt.toISOString()}`)
@@ -120,12 +135,9 @@ async function main() {
   if (totalAlerts === 0) {
     console.log('✅ All system_config rows with valid_to are fresh (> 7 days).')
     if (!DRY_RUN) {
-      await supabase.from('heartbeat_log').insert({
-        script: SCRIPT_NAME,
-        status: 'success',
-        details: { rows_checked: (data || []).length, alerts: 0 },
-      }).catch((e) => {
-        console.warn(`[heartbeat skip] ${e?.message || e}`)
+      await writeHeartbeat('success', {
+        rows_checked: (data || []).length,
+        alerts: 0,
       })
     }
     return
@@ -170,20 +182,14 @@ async function main() {
 
   if (!DRY_RUN) {
     await sendTelegram(telegramMsg)
-    await supabase.from('heartbeat_log').insert({
-      script: SCRIPT_NAME,
-      status: expired.length > 0 ? 'alerted' : 'success',
-      details: {
-        rows_checked: (data || []).length,
-        expired: expired.length,
-        urgent: urgent.length,
-        heads_up: heads_up.length,
-        unguarded: unguarded.length,
-        expired_keys: expired.map(e => e.key),
-        unguarded_keys: unguarded.map(u => u.key),
-      },
-    }).catch((e) => {
-      console.warn(`[heartbeat skip] ${e?.message || e}`)
+    await writeHeartbeat(expired.length > 0 ? 'alerted' : 'success', {
+      rows_checked: (data || []).length,
+      expired: expired.length,
+      urgent: urgent.length,
+      heads_up: heads_up.length,
+      unguarded: unguarded.length,
+      expired_keys: expired.map(e => e.key),
+      unguarded_keys: unguarded.map(u => u.key),
     })
   }
 

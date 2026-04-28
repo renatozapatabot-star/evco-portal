@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { z } from 'zod'
 import { lookupKnowledge, TMEC_RULES, TIGIE_CHAPTERS } from '@/lib/cruz-knowledge'
 
@@ -23,14 +24,15 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: 'Descripción del producto requerida' }, { status: 400 })
   const { product, material, uso, pais_origen } = parsed.data
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
   const { data: company } = await supabase
     .from('companies')
     .select('name, rfc')
     .eq('company_id', companyId)
-    .single()
-  const clientName = company?.name ?? ''
-  const clientRfc = company?.rfc ?? ''
+    .maybeSingle()
+  const clientName = (company?.name as string | undefined) ?? ''
+  const clientRfc = (company?.rfc as string | undefined) ?? ''
 
   // Lookup knowledge base for context
   const knowledgeContext = lookupKnowledge(product)

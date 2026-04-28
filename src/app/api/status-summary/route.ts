@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
@@ -13,7 +14,8 @@ export async function GET(request: NextRequest) {
   const session = await verifySession(sessionToken)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
   // traficos.cruz_score is a phantom — use prediction_confidence (0..1,
   // higher = less risk) as the urgency signal. M15 sweep.
   const { data } = await supabase

@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
       //   / (role=client) → /inicio (next.config 308) → / → ...
       // ClientHome was deprecated; CockpitInicio at /inicio is the destination.
       { source: '/suppliers', destination: '/proveedores', permanent: true },
+      // /anexo24 (non-hyphenated) → /anexo-24 — covers cached bookmarks,
+      // external links, and any internal href drift that slips past lint.
+      // The admin sub-tree at /admin/anexo24/upload stays unaffected because
+      // Next.js redirect matchers are exact paths, not prefix matches by
+      // default. Audit 2026-04-28 saw a client click landing on a 404
+      // (cache origin unknown — internal grep is clean today, but a 308
+      // is cheaper than re-debugging next time).
+      { source: '/anexo24', destination: '/anexo-24', permanent: true },
     ]
   },
   async headers() {

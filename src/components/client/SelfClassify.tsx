@@ -5,6 +5,7 @@ import {
   Search, Package, Globe, Layers, Target, DollarSign,
   CheckCircle, AlertTriangle, XCircle, Loader2, Send,
 } from 'lucide-react'
+import { csrfFetch } from '@/lib/client-config'
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ export function SelfClassify() {
     setErrorMsg('')
 
     try {
-      const res = await fetch('/api/clasificar', {
+      const res = await csrfFetch('/api/clasificar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

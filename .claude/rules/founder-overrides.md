@@ -88,6 +88,43 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-28 · Renato IV · /cruz, /kpis re-opened for client role; /clasificar-producto CSRF fix
+  supersedes: src/components/nav/nav-config.ts ADMIN_ONLY_ROUTES (V1 reset entries
+              for /cruz + /kpis from 2026-04-24),
+              src/components/nav/nav-config.ts CLIENT_ROUTES (re-add /cruz + /kpis
+              + /clasificar-producto removed 2026-04-24)
+  updates:    src/components/nav/nav-config.ts (move /cruz + /kpis from
+              ADMIN_ONLY_ROUTES to CLIENT_ROUTES; re-add /clasificar-producto
+              to CLIENT_ROUTES),
+              src/components/client/SelfClassify.tsx (use csrfFetch instead of
+              plain fetch — POST was hitting middleware CSRF gate with no
+              X-CSRF-Token header and returning 403)
+  basis:      Three live blockers for client role on portal.renatozapata.com:
+              (1) /kpis → middleware redirected to /?unavailable=1 (in
+                  ADMIN_ONLY_ROUTES). KPI surface is read-only aggregation
+                  of the client's own traficos + facturas — already scoped
+                  by company_id in the API route. Client should see their
+                  own indicators.
+              (2) /cruz → same redirect. Read-only AI query surface. The
+                  /api/cruz-chat endpoint already enforces tenant scope
+                  via session.companyId. The footer "Asistente PORTAL" chip
+                  and the Cmd+K ask-intent handoff (PortalCommandPalette)
+                  both push to /cruz?q=... — both were dead-ending for
+                  client role on every keystroke. AguilaChatBubble stays
+                  operator-only (DashboardShellClient.tsx:279); the full
+                  /cruz page is the client's surface.
+              (3) /clasificar-producto → page loaded fine (route was never
+                  in ADMIN_ONLY_ROUTES — only /clasificar is, and the
+                  startsWith check requires a trailing slash). The form
+                  posted to /api/clasificar via plain fetch, missing the
+                  X-CSRF-Token header, so middleware's validateCsrf returned
+                  403 "Token CSRF inválido" on every submit. Fix is the
+                  one-import csrfFetch swap that every other authenticated
+                  POST in the codebase uses.
+              All three preserve tenant isolation (RLS + session.companyId
+              filters in the underlying API routes). No HARD invariant
+              touched.
+
 2026-04-28 · Renato IV · ship.sh Gate 2 bypassed for demo polish deploy
   supersedes: .claude/rules/ship-process.md Gate 2 (data-integrity smoke)
   updates:    (runtime bypass — direct `vercel --prod --yes`)

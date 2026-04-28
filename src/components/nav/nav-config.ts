@@ -286,7 +286,6 @@ export const ADMIN_ONLY_ROUTES = [
   '/resultados',
   '/garantia',
   // V1 Clean Visibility additions (2026-04-24) — client never sees these
-  '/cruz',
   '/asistente',
   '/anomalias',
   '/analytics',
@@ -295,13 +294,13 @@ export const ADMIN_ONLY_ROUTES = [
   '/contabilidad',
   '/mi-cuenta',
   '/reportes',
-  '/kpis',
+  // /cruz and /kpis re-opened to client role 2026-04-28 (founder-overrides.md).
 ] as const
 
 /** Routes accessible by client role — V1 Clean Visibility (2026-04-24).
  *  Five core surfaces + shipment parent (cross-link reachable) +
- *  support/auth routes. Removed: /reportes, /kpis, /ahorro, /solicitar,
- *  /clasificar-producto (now operator-only per the reset). */
+ *  support/auth routes. /cruz, /kpis, /clasificar-producto re-opened
+ *  2026-04-28 (founder-overrides.md). */
 export const CLIENT_ROUTES = [
   '/',
   '/inicio',
@@ -311,6 +310,9 @@ export const CLIENT_ROUTES = [
   '/catalogo',
   '/anexo-24',
   '/expedientes',
+  '/cruz',
+  '/kpis',
+  '/clasificar-producto',
   '/login',
   '/aduana',
   '/cambiar-contrasena',

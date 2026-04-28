@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +14,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'No autorizado' } }, { status: 401 })
   }
 
-  const companyId = request.cookies.get('company_id')?.value || session.companyId
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) {
+    return NextResponse.json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'Tenant scope required' } }, { status: 400 })
+  }
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return NextResponse.json({ data: { insight: null }, error: null })

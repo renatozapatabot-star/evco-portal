@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getErrorMessage } from '@/lib/errors'
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { detectIntent, getContextData } from '@/lib/chat-context'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -10,14 +11,21 @@ export async function POST(request: NextRequest) {
   const session = await verifySession(request.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
-  const rawName = request.cookies.get('company_name')?.value
-  const clientName = rawName ? decodeURIComponent(rawName) : ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
 
-  // Resolve RFC from companies table
-  const { data: companyRow } = await supabase.from('companies').select('rfc').eq('company_id', companyId).single()
-  const clientRfc = companyRow?.rfc ?? ''
+  // Rebuild client metadata from the verified companyId — never from raw
+  // cookies. company_clave / company_name cookies are unsigned and were
+  // a cookie-forgery vector pre-fix (the LLM ground responses in the
+  // forged tenant's data on cookie tampering).
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('clave_cliente, name, rfc')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  const clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  const clientName = (companyRow?.name as string | undefined) ?? ''
+  const clientRfc = (companyRow?.rfc as string | undefined) ?? ''
 
   const { messages } = await request.json()
   const lastMsg = messages[messages.length - 1]?.content || ''

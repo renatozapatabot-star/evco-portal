@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { getDTARates, getExchangeRate } from '@/lib/rates'
 import { resolveProveedorName } from '@/lib/proveedor-names'
 import { PedimentoPDF } from './pdf-document'
@@ -102,9 +103,19 @@ export async function GET(request: NextRequest) {
   const session = await verifySession(sessionToken)
   if (!session) return unauthorizedResponse(request)
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
-  const clientName = decodeURIComponent(request.cookies.get('company_name')?.value ?? 'Cliente')
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'tenant_scope_required' }, { status: 400 })
+
+  // Rebuild client identity from the verified companyId — never from
+  // raw cookies. Pre-fix, the rendered PDF could attribute another
+  // tenant's pedimento to the cookie-supplied name/clave.
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('clave_cliente, name')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  const clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  const clientName = (companyRow?.name as string | undefined) ?? 'Cliente'
 
   const traficoId = request.nextUrl.searchParams.get('trafico')
   if (!traficoId) return syncDelayResponse(request, 404)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { computeStatusSentence } from '@/lib/compute-status-sentence'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,9 +10,11 @@ export async function GET(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   try {
-    const clientClave = request.cookies.get('company_clave')?.value ?? ''
-    const companyId = request.cookies.get('company_id')?.value ?? ''
-    const result = await computeStatusSentence(clientClave, companyId)
+    const companyId = resolveTenantScope(session, request)
+    if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
+    // clientClave parameter is legacy / unused inside computeStatusSentence;
+    // pass empty string. Tenant gate is companyId.
+    const result = await computeStatusSentence('', companyId)
     return NextResponse.json(result)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to compute status'

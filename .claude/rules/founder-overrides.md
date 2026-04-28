@@ -88,6 +88,41 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-28 · Renato IV · Vercel cron for sync-watchdog only
+  supersedes: architecture.md "Vercel cron explicitly rejected for sync work"
+  updates:    src/app/api/cron/sync-watchdog/route.ts (new),
+              src/app/api/cron/sync-watchdog/__tests__/route.test.ts (new),
+              vercel.json (cron entry every 5 min)
+  basis:      Co-located Throne watchdog (scripts/watchdog.js) has zero
+              independent failure domain. The 2026-04-24 silent stop proved
+              this — when Throne dies, every Throne process dies with it,
+              including the watchdog itself. globalpc_delta sync was silent
+              for 93 hours; no Telegram fired because withSyncLog only
+              alerts on logged failures, not silent stops.
+              Vercel cron at /api/cron/sync-watchdog runs every 5 min, reads
+              sync_log only (200ms read + conditional alert), fires Telegram
+              on staleness > 30 min. Independent failure domain: when Throne
+              dies, Vercel still alerts. Long-running sync work stays on
+              Throne; this Vercel cron is scoped to staleness alerting only.
+
+2026-04-28 · Renato IV · Contabilidad tile removed from PortalDashboard frontpage
+  supersedes: src/components/portal/PortalDashboard.tsx lines 213-266
+              (Contabilidad/Pedimentos-fallback IIFE; tile #2 inline card)
+  updates:    src/components/portal/PortalDashboard.tsx (Pedimentos card replaces
+              the IIFE; Receipt icon import dropped; comment at line 127 updated),
+              src/app/inicio/page.tsx (drop contabilidadAbiertasCount + econta
+              query + contabilidad nav-counts entry)
+  basis:      User reported the tile bouncing for non-accountant users — the
+              role gate at /contabilidad/inicio:56 redirects client/operator
+              roles to /inicio, so a user who clicked the frontpage tile
+              landed back where they started. UNIFIED_NAV_TILES already
+              excluded Contabilidad post-V1 reset (2026-04-24); this entry
+              completes the cleanup that was missed in PortalDashboard.tsx.
+              Anabel's cockpit at /contabilidad/inicio is unchanged; reachable
+              via CONTABILIDAD_NAV top-bar (contabilidad role only),
+              /admin/eagle ArApTile (admin/broker), and direct URL.
+              Saves one econta_cartera query per client SSR.
+
 2026-04-24 · Renato IV · V1 Clean Visibility reset — strip AI surface from client UI
   supersedes: .claude/rules/core-invariants.md #29 (six-tile list → five-tile list;
               Contabilidad removed from client nav),

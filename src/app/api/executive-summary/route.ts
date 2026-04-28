@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,10 +35,18 @@ export async function GET(request: NextRequest) {
   const session = await verifySession(request.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
-  const rawName = request.cookies.get('company_name')?.value
-  const clientName = rawName ? decodeURIComponent(rawName) : ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
+
+  // Rebuild client metadata from the verified companyId — never from
+  // raw cookies. P0-A7.
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('clave_cliente, name')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  const clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  const clientName = (companyRow?.name as string | undefined) ?? ''
 
   try {
     const prefix = `${clientClave}-%`

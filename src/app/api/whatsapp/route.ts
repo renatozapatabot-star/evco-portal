@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getErrorMessage } from '@/lib/errors'
+import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// POST: Send WhatsApp message requesting docs
+// POST: Send WhatsApp message requesting docs.
+// P0-A7: pre-fix this route had NO session verification AND read tenant
+// from a forgeable cookie. Adding both fences. Internal/operator roles
+// can use the helper's view-as path; client role is forced to its own
+// session.companyId.
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value ?? ''
+    const session = await verifySession(request.cookies.get('portal_session')?.value || '')
+    if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+    const companyId = resolveTenantScope(session, request)
+    if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
+
     const { trafico_id, supplier_phone, missing_docs, message } = await request.json()
 
     if (!trafico_id || !supplier_phone) {

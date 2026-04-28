@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { isValidHsCode, nextCertificateNumber } from '@/lib/usmca/certificate-number'
 import type { UsmcaCertRow } from '@/lib/usmca/types'
 
@@ -60,7 +61,10 @@ export async function POST(request: NextRequest) {
     return err('VALIDATION_ERROR', parsed.error.issues.map(i => i.message).join('; '), 400)
   }
 
-  const companyId = request.cookies.get('company_id')?.value ?? null
+  // P0-A7: internal-only route. resolveTenantScope respects admin
+  // "view-as" cookie for internal roles, falls back to session.companyId.
+  // Client role can't reach this branch (FORBIDDEN above).
+  const companyId = resolveTenantScope(session, request) || null
   const certificateNumber = await nextCertificateNumber(supabase)
 
   const { data: inserted, error: insErr } = await supabase

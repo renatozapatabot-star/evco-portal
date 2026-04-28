@@ -15,7 +15,7 @@ import {
   linkForProveedor,
   linkForTrafico,
 } from '@/lib/links/entity-links'
-import { formatDateDMY, formatNumber, formatCurrencyUSD } from '@/lib/format'
+import { formatDateDMY, formatNumber, formatCurrencyUSD, formatCurrencyMXN } from '@/lib/format'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SyncChip } from '@/components/ui/sync-chip'
 import { readFreshness } from '@/lib/cockpit/freshness'
@@ -82,7 +82,23 @@ export default async function PedimentoDetailPage({
     .eq('company_id', ownerCompanyId)
     .limit(200)
 
-  const [facturasFoliosRes, docsRes, entradasRes] = await Promise.all([
+  // Tax breakdown lookup — aduanet_facturas stores SAT-stamped DTA/IGI/IVA
+  // values per pedimento. Pedimento-keyed (not trafico-keyed) so this query
+  // requires the resolved pedimento number from the trafico row. We fire it
+  // in parallel with the other reads to avoid serializing the SSR critical
+  // path. If trafico.pedimento is null (pre-clearance), we skip the fetch
+  // and the tax sub-line renders nothing.
+  const traficoPedimento = (traficoRes.data as { pedimento: string | null }).pedimento
+  const taxesQ = traficoPedimento
+    ? supabase
+        .from('aduanet_facturas')
+        .select('dta, igi, iva')
+        .eq('pedimento', traficoPedimento)
+        .eq('company_id', ownerCompanyId)
+        .limit(20)
+    : Promise.resolve({ data: [] as Array<{ dta: number | null; igi: number | null; iva: number | null }>, error: null })
+
+  const [facturasFoliosRes, docsRes, entradasRes, taxesRes] = await Promise.all([
     facturasQ,
     supabase
       .from('expediente_documentos')
@@ -97,7 +113,31 @@ export default async function PedimentoDetailPage({
       .eq('trafico', traficoId)
       .eq('company_id', ownerCompanyId)
       .limit(100),
+    taxesQ,
   ])
+
+  // Sum DTA/IGI/IVA across all aduanet_facturas rows for this pedimento.
+  // Multi-row pedimentos (rare; large consolidations) sum to a single
+  // breakdown line. NULLs treated as zero. If the entire query returns
+  // zero rows or all values are null, we don't render the breakdown.
+  const taxRows = (taxesRes.data ?? []) as Array<{ dta: number | null; igi: number | null; iva: number | null }>
+  const sumOrNull = (key: 'dta' | 'igi' | 'iva'): number | null => {
+    let total = 0
+    let any = false
+    for (const r of taxRows) {
+      if (r[key] != null && Number.isFinite(Number(r[key]))) {
+        total += Number(r[key])
+        any = true
+      }
+    }
+    return any ? total : null
+  }
+  const taxBreakdown = {
+    dta: sumOrNull('dta'),
+    igi: sumOrNull('igi'),
+    iva: sumOrNull('iva'),
+  }
+  const hasAnyTax = taxBreakdown.dta != null || taxBreakdown.igi != null || taxBreakdown.iva != null
 
   const folios = ((facturasFoliosRes.data ?? []) as Array<{ folio: number | null }>)
     .map((f) => f.folio)
@@ -242,6 +282,38 @@ export default async function PedimentoDetailPage({
           <Cell label="Peso bruto" value={trafico.peso_bruto != null ? `${formatNumber(trafico.peso_bruto, { decimals: 2 })} kg` : '—'} mono align="right" />
           <Cell label="Tipo de cambio (a fecha de llegada)" value={trafico.tipo_cambio != null ? `${formatNumber(trafico.tipo_cambio, { decimals: 4 })} MXN/USD` : '—'} mono align="right" />
         </div>
+        {hasAnyTax && (
+          <div
+            style={{
+              marginTop: 12,
+              paddingTop: 12,
+              borderTop: '1px solid var(--portal-line-1)',
+              fontFamily: 'var(--portal-font-mono)',
+              fontSize: 13,
+              color: 'var(--portal-fg-3)',
+              letterSpacing: '0.02em',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0 16px',
+            }}
+            aria-label="Desglose de impuestos"
+          >
+            <span>
+              <span style={{ color: 'var(--portal-fg-5)', marginRight: 4 }}>DTA</span>
+              {taxBreakdown.dta != null ? formatCurrencyMXN(taxBreakdown.dta) : '—'}
+            </span>
+            <span style={{ color: 'var(--portal-fg-5)' }}>·</span>
+            <span>
+              <span style={{ color: 'var(--portal-fg-5)', marginRight: 4 }}>IGI</span>
+              {taxBreakdown.igi != null ? formatCurrencyMXN(taxBreakdown.igi) : '—'}
+            </span>
+            <span style={{ color: 'var(--portal-fg-5)' }}>·</span>
+            <span>
+              <span style={{ color: 'var(--portal-fg-5)', marginRight: 4 }}>IVA</span>
+              {taxBreakdown.iva != null ? formatCurrencyMXN(taxBreakdown.iva) : '—'}
+            </span>
+          </div>
+        )}
       </Section>
 
       <Section title={`Partidas (${formatNumber(partidas.length)})`}>

@@ -69,3 +69,16 @@ export function formatCurrencyUSD(n: number | null | undefined): string {
   if (!Number.isFinite(num)) return ''
   return `$${EN_US_USD.format(num)} USD`
 }
+
+/**
+ * `$X,XXX.XX MXN` — single-line inline. Always 2 decimals, es-MX comma
+ * thousand separators, dollar-sign prefix, ' MXN' suffix. Per CLAUDE.md
+ * red line: every monetary field has explicit MXN or USD label.
+ * Returns '' for null/undefined/NaN.
+ */
+export function formatCurrencyMXN(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return ''
+  const num = Number(n)
+  if (!Number.isFinite(num)) return ''
+  return `$${esMxNumberWith(2).format(num)} MXN`
+}

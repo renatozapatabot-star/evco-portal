@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDateDMY, formatNumber, formatCurrencyUSD } from '../format'
+import { formatDateDMY, formatNumber, formatCurrencyUSD, formatCurrencyMXN } from '../format'
 
 describe('formatDateDMY', () => {
   it('formats ISO date as DD/MM/YYYY', () => {
@@ -72,5 +72,36 @@ describe('formatCurrencyUSD', () => {
 
   it('handles large numbers with comma grouping', () => {
     expect(formatCurrencyUSD(1234567.89)).toBe('$1,234,567.89 USD')
+  })
+})
+
+describe('formatCurrencyMXN', () => {
+  it('formats as $X,XXX.XX MXN with es-MX separators', () => {
+    expect(formatCurrencyMXN(1234.5)).toBe('$1,234.50 MXN')
+    expect(formatCurrencyMXN(276603.31)).toBe('$276,603.31 MXN')
+  })
+
+  it('always uses 2 decimals', () => {
+    expect(formatCurrencyMXN(1000)).toBe('$1,000.00 MXN')
+  })
+
+  it('returns empty string for null / undefined / NaN', () => {
+    expect(formatCurrencyMXN(null)).toBe('')
+    expect(formatCurrencyMXN(undefined)).toBe('')
+    expect(formatCurrencyMXN(NaN)).toBe('')
+  })
+
+  it('handles zero (must still render explicit MXN label)', () => {
+    expect(formatCurrencyMXN(0)).toBe('$0.00 MXN')
+  })
+
+  it('handles large numbers with comma grouping', () => {
+    expect(formatCurrencyMXN(1234567.89)).toBe('$1,234,567.89 MXN')
+  })
+
+  it('NEVER omits the MXN suffix (CLAUDE.md red line)', () => {
+    // Every MXN figure must carry the explicit currency label.
+    // Defense against a future "compact" variant slipping through.
+    expect(formatCurrencyMXN(42)).toMatch(/MXN$/)
   })
 })

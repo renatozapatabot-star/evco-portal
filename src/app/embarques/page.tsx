@@ -513,6 +513,10 @@ function TraficosContent() {
                 icon="package"
                 title="Tu operación está en calma"
                 message="No hay embarques activos en este período."
+                action={monthWindow.prev ? {
+                  label: 'Ver mes anterior',
+                  href: `/embarques?month=${encodeURIComponent(monthWindow.prev)}`,
+                } : undefined}
               />
             )}
           </div>

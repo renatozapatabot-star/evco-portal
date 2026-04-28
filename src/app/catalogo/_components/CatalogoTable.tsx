@@ -172,9 +172,24 @@ export function CatalogoTable({ rows, query }: Props) {
 
       {paged.length === 0 ? (
         <div className={styles.empty}>
-          {query
-            ? `Sin coincidencias para "${query}".`
-            : 'Tu catálogo aparecerá aquí cuando se sincronicen partes.'}
+          {query ? (
+            <>
+              <div>{`Sin coincidencias para "${query}".`}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  pushSearch('')
+                }}
+                className={styles.btn}
+                style={{ marginTop: 12, minHeight: 60 }}
+              >
+                Limpiar filtros
+              </button>
+            </>
+          ) : (
+            'Tu catálogo aparecerá aquí cuando se sincronicen partes.'
+          )}
         </div>
       ) : (
         <DataTable

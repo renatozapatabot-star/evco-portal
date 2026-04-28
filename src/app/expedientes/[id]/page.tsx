@@ -190,8 +190,12 @@ export default async function ExpedienteDetailPage({
         {docs.length === 0 ? (
           <EmptyState
             title="No hay documentos sincronizados aún"
-            description="Estos documentos se sincronizarán automáticamente desde GlobalPC cuando estén disponibles."
+            description="Estos documentos se sincronizarán automáticamente desde nuestro sistema cuando estén disponibles."
             ghosted={ghostedRequired}
+            action={{
+              label: 'Solicitar documento',
+              href: '/mensajeria?asunto=' + encodeURIComponent('Solicitud de documento'),
+            }}
           />
         ) : (
           <div className={styles.tableWrap}>

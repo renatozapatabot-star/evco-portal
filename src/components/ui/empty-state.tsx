@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 
 /**
  * EmptyState — canonical V1 audit empty-state primitive (2026-04-25).
@@ -12,6 +13,12 @@ export interface EmptyStateGhosted {
   sub?: string
 }
 
+export interface EmptyStateAction {
+  label: string
+  /** Absolute or relative URL. Renders a styled <Link>. */
+  href: string
+}
+
 export interface EmptyStateProps {
   /** Headline — short, matter-of-fact. */
   title: string
@@ -21,6 +28,8 @@ export interface EmptyStateProps {
   hint?: string
   /** When provided, renders ghosted "Pendiente" chips for the labels. */
   ghosted?: ReadonlyArray<EmptyStateGhosted>
+  /** Optional CTA — renders a 60px button-link below the content. */
+  action?: EmptyStateAction
 }
 
 export function EmptyState({
@@ -28,6 +37,7 @@ export function EmptyState({
   description,
   hint,
   ghosted,
+  action,
 }: EmptyStateProps) {
   return (
     <div
@@ -80,6 +90,21 @@ export function EmptyState({
         <div className="text-[11px] text-[var(--text-muted)] mt-2">
           {hint}
         </div>
+      )}
+      {action && (
+        <Link
+          href={action.href}
+          className={
+            'mt-2 inline-flex items-center justify-center px-5 ' +
+            'rounded-[10px] border border-[var(--border)] ' +
+            'bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(192,197,206,0.10)] ' +
+            'text-[var(--text-primary)] text-[13px] font-semibold ' +
+            'no-underline transition-colors duration-[120ms]'
+          }
+          style={{ minHeight: 60 }}
+        >
+          {action.label}
+        </Link>
       )}
     </div>
   )

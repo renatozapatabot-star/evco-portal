@@ -477,7 +477,7 @@ function TheaterAct05({ t }: { t: number }) {
         </div>
         <div style={{ fontFamily: 'var(--portal-font-sans)', fontSize: 15, color: 'var(--portal-fg-4)', maxWidth: 560, margin: '0 auto', lineHeight: 1.5 }}>
           El pedimento{' '}
-          <span style={{ color: 'var(--portal-fg-2)', fontFamily: 'var(--portal-font-mono)' }}>240-2601-6002104</span>{' '}
+          <span style={{ color: 'var(--portal-fg-2)', fontFamily: 'var(--portal-font-mono)' }}>26 24 3596 6002104</span>{' '}
           ha sido liberado. El transportista está autorizado para cruzar a territorio de los Estados Unidos.
         </div>
       </div>

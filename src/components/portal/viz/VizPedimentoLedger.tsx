@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPedimento } from '@/lib/format/pedimento'
+
 export interface PedimentoLedgerRow {
   id: string
   type: 'A1' | 'A3' | 'IN' | string
@@ -59,7 +61,7 @@ export function VizPedimentoLedger({ rows = DEFAULT_ROWS }: VizPedimentoLedgerPr
                 }}
               />
               <span style={{ color: 'var(--portal-fg-2)', letterSpacing: '0.04em' }}>
-                240-2601-{r.id}
+                {formatPedimento(r.id, r.id, { dd: '26', ad: '24', pppp: '3596' })}
               </span>
               <span
                 style={{

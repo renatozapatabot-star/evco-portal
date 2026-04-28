@@ -36,4 +36,12 @@ describe('VizPedimentoLedger', () => {
     const html = renderToStaticMarkup(<VizPedimentoLedger rows={[]} />)
     expect(html).toBeDefined()
   })
+
+  it('renders pedimentos in canonical SAT format (DD AD PPPP SSSSSSS), never legacy', () => {
+    const html = renderToStaticMarkup(<VizPedimentoLedger />)
+    // Canonical: "26 24 3596 6002104" (with spaces — invariant #7)
+    expect(html).toContain('26 24 3596 6002104')
+    // Legacy hyphenated form should never ship
+    expect(html).not.toContain('240-2601-')
+  })
 })

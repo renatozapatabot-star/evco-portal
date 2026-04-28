@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
@@ -10,6 +9,7 @@ import {
   type CatalogoFraccionGroup,
 } from '@/lib/catalogo/products'
 import { GlassCard } from '@/components/aguila/GlassCard'
+import { DetailPageShell } from '@/components/aguila'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -48,38 +48,37 @@ export default async function FraccionDetailPage({ params }: Props) {
 
   if (!group) {
     return (
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px' }}>
-        <Link href="/catalogo" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 'var(--aguila-fs-body)' }}>
-          ← Catálogo
-        </Link>
-        <h1 style={{ margin: '16px 0 0', fontSize: 'var(--aguila-fs-title)', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
-          {fraccion}
-        </h1>
-        <p style={{ margin: '8px 0 0', fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.6)' }}>
-          No hay productos clasificados bajo esta fracción en tu catálogo.
-        </p>
-      </div>
+      <DetailPageShell
+        breadcrumb={[
+          { label: 'Catálogo', href: '/catalogo' },
+          { label: fraccion },
+        ]}
+        title={fraccion}
+        titleKind="fraccion"
+        subtitle="No hay productos clasificados bajo esta fracción en tu catálogo."
+        maxWidth={1100}
+      >
+        {null}
+      </DetailPageShell>
     )
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px' }}>
-      <Link href="/catalogo" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 'var(--aguila-fs-body)' }}>
-        ← Catálogo
-      </Link>
-
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
-        <h1 className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-kpi-compact)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--portal-fg-1)' }}>
-          {group.fraccion}
-        </h1>
+    <DetailPageShell
+      breadcrumb={[
+        { label: 'Catálogo', href: '/catalogo' },
+        { label: group.fraccion },
+      ]}
+      title={group.fraccion}
+      titleKind="fraccion"
+      subtitle={group.primary_descripcion}
+      badges={
         <span style={{ fontSize: 'var(--aguila-fs-compact)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>
           {group.variant_count} variante{group.variant_count === 1 ? '' : 's'} · {group.total_imports.toLocaleString('es-MX')} importación{group.total_imports === 1 ? '' : 'es'}
         </span>
-      </div>
-      <p style={{ margin: '10px 0 24px', fontSize: 'var(--aguila-fs-body)', color: 'rgba(255,255,255,0.8)', maxWidth: 720, lineHeight: 1.5 }}>
-        {group.primary_descripcion}
-      </p>
-
+      }
+      maxWidth={1100}
+    >
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 24 }}>
         <Stat label="Proveedores" value={group.supplier_names.length.toLocaleString('es-MX')} />
         <Stat label="Valor histórico" value={`${fmtUsd(group.valor_ytd_usd)} USD`} />
@@ -119,7 +118,7 @@ export default async function FraccionDetailPage({ params }: Props) {
           {group.variants.map((v) => <VariantRow key={v.id} row={v} />)}
         </div>
       </section>
-    </div>
+    </DetailPageShell>
   )
 }
 

@@ -57,9 +57,10 @@ export async function getClienteActiveTraficos(
   if (!companyId) return []
 
   // "Active" = not closed. NULL estatus is treated as active (Postgres `NOT ILIKE` drops nulls silently).
+  // traficos real column is `proveedores` (plural; text like "PRV_526" per trafico).
   const { data: traficos } = await supabase
     .from('traficos')
-    .select('trafico, estatus, fecha_llegada, pedimento, proveedor')
+    .select('trafico, estatus, fecha_llegada, pedimento, proveedores')
     .eq('company_id', companyId)
     .or('estatus.is.null,estatus.not.ilike.%cerrado%')
     .order('fecha_llegada', { ascending: false, nullsFirst: false })
@@ -75,7 +76,7 @@ export async function getClienteActiveTraficos(
     const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString()
     const { data: recent } = await supabase
       .from('traficos')
-      .select('trafico, estatus, fecha_llegada, pedimento, proveedor')
+      .select('trafico, estatus, fecha_llegada, pedimento, proveedores')
       .eq('company_id', companyId)
       .gte('fecha_llegada', ninetyDaysAgo)
       .order('fecha_llegada', { ascending: false, nullsFirst: false })
@@ -115,7 +116,8 @@ export async function getClienteActiveTraficos(
       estatus: (r.estatus as string) ?? null,
       fecha_llegada: (r.fecha_llegada as string) ?? null,
       pedimento: (r.pedimento as string) ?? null,
-      proveedor: (r.proveedor as string) ?? null,
+      // DB column is `proveedores` (plural, text); output field stays `proveedor` for UI back-compat.
+      proveedor: (r.proveedores as string) ?? null,
       last_event_type: last?.event_type ?? null,
       last_event_at: last?.created_at ?? null,
     }
@@ -147,20 +149,24 @@ export async function getClienteDocuments(
     .filter(Boolean)
   if (refs.length === 0) return []
 
+  // expediente_documentos real columns: id, doc_type, file_name, file_url,
+  // uploaded_at, pedimento_id (the trafico slug — confusing naming but the
+  // actual link column). The ClienteDocumento output field names stay stable
+  // for UI back-compat (trafico_id / nombre / created_at).
   const { data: docs } = await supabase
     .from('expediente_documentos')
-    .select('id, trafico_id, nombre, doc_type, file_url, created_at')
-    .in('trafico_id', refs)
-    .order('created_at', { ascending: false, nullsFirst: false })
+    .select('id, pedimento_id, file_name, doc_type, file_url, uploaded_at')
+    .in('pedimento_id', refs)
+    .order('uploaded_at', { ascending: false, nullsFirst: false })
     .limit(DOCS_LIMIT)
 
   return ((docs ?? []) as Array<Record<string, unknown>>).map(d => ({
     id: String(d.id),
-    trafico_id: (d.trafico_id as string) ?? null,
-    nombre: (d.nombre as string) ?? null,
+    trafico_id: (d.pedimento_id as string) ?? null,
+    nombre: (d.file_name as string) ?? null,
     doc_type: (d.doc_type as string) ?? null,
     file_url: (d.file_url as string) ?? null,
-    created_at: (d.created_at as string) ?? null,
+    created_at: (d.uploaded_at as string) ?? null,
   }))
 }
 

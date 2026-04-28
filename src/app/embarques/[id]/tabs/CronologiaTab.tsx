@@ -11,6 +11,7 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/lib/design-system'
+import { GlassCard } from '@/components/aguila'
 import { fmtDateTime } from '@/lib/format-utils'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import {
@@ -92,19 +93,15 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
   if (events.length === 0) {
     const nextExpected = deriveNextExpected(events)
     return (
-      <div
+      <GlassCard
+        tier="secondary"
+        padding="40px 16px"
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: 10,
-          padding: '40px 16px',
           color: TEXT_MUTED,
-          background: BG_CARD,
-          backdropFilter: `blur(${GLASS_BLUR})`,
-          WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
         }}
       >
         <Activity size={28} />
@@ -114,7 +111,7 @@ export function CronologiaTab({ traficoId, events, currentUserId }: CronologiaTa
         <div style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, marginTop: 4 }}>
           Último evento esperado: <strong style={{ color: TEXT_SECONDARY }}>{nextExpected}</strong>
         </div>
-      </div>
+      </GlassCard>
     )
   }
 

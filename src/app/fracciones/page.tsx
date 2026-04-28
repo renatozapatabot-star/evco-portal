@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Search, Tag, Loader2 } from 'lucide-react'
+import { GlassCard } from '@/components/aguila'
 
 interface Suggestion {
   fraccion: string
@@ -95,27 +96,22 @@ export default function FraccionesPage() {
       )}
 
       {!loading && searched && results.length === 0 && (
-        <div style={{
-          padding: 40, textAlign: 'center', borderRadius: 20,
-          background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(192,197,206,0.1)',
-          backdropFilter: 'blur(20px)',
-        }}>
+        <GlassCard tier="hero" padding={40} style={{ textAlign: 'center' }}>
           <Tag size={32} style={{ color: 'var(--portal-fg-5)', margin: '0 auto 12px' }} />
           <div style={{ fontSize: 'var(--aguila-fs-section)', color: 'var(--portal-fg-4)', marginBottom: 4 }}>Sin sugerencias</div>
           <div style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-5)' }}>Intenta con una descripción más detallada del producto.</div>
-        </div>
+        </GlassCard>
       )}
 
       {!loading && results.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {results.map((r, i) => (
-            <div key={i} style={{
-              padding: 20, borderRadius: 20,
-              background: 'rgba(255,255,255,0.045)',
-              border: '1px solid rgba(192,197,206,0.1)',
-              backdropFilter: 'blur(20px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
+            <GlassCard
+              key={i}
+              tier="hero"
+              padding={20}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
               <div>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, color: 'var(--portal-fg-1)' }}>
                   {r.fraccion}
@@ -130,7 +126,7 @@ export default function FraccionesPage() {
               }}>
                 {Math.round(r.confidence * 100)}%
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       )}

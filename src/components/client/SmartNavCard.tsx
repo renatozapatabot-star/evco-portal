@@ -47,7 +47,7 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           padding: '16px 20px',
           cursor: 'pointer',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           gap: 12,
           width: '100%',
           minHeight: 60,
@@ -82,10 +82,36 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="nav-card-label" style={{
-            fontSize: 15, fontWeight: 700, color: 'var(--portal-fg-1)', lineHeight: 1.3,
+          {/* 48px header row: title + right-aligned metric chip. Icon column
+              (40px) is the sibling; row aligns top so stacked sub-copy below
+              does not push the header off-center on tall cards. */}
+          <div className="nav-card-header" style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            minHeight: 48,
           }}>
-            {label}
+            <div className="nav-card-label" style={{
+              fontSize: 18, fontWeight: 500, color: 'var(--portal-fg-1)',
+              lineHeight: 1.3, letterSpacing: '-0.01em',
+              flex: 1, minWidth: 0,
+            }}>
+              {label}
+            </div>
+            {count !== null && (
+              <div className="nav-card-count" style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 14, fontWeight: 600,
+                fontVariantNumeric: 'tabular-nums',
+                color: count > 0 ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
+                background: 'rgba(192,197,206,0.08)',
+                border: '1px solid rgba(192,197,206,0.15)',
+                borderRadius: 8,
+                padding: '4px 10px',
+                flexShrink: 0,
+                lineHeight: 1.2,
+              }}>
+                {count}{countSuffix ? <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--portal-fg-4)', marginLeft: 2 }}>{countSuffix}</span> : null}
+              </div>
+            )}
           </div>
           <div className="nav-card-desc" style={{
             fontSize: 'var(--aguila-fs-compact)', color: 'var(--portal-fg-4)', marginTop: 2, lineHeight: 1.4,
@@ -122,16 +148,6 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
             </div>
           )}
         </div>
-        {count !== null && (
-          <div className="nav-card-count" style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 'var(--aguila-fs-title)', fontWeight: 800,
-            color: count > 0 ? 'var(--portal-fg-1)' : 'var(--portal-fg-5)',
-            flexShrink: 0,
-          }}>
-            {count}{countSuffix ? <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, color: 'var(--portal-fg-4)', marginLeft: 2 }}>{countSuffix}</span> : null}
-          </div>
-        )}
       </motion.div>
 
       <style>{`
@@ -161,8 +177,11 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
             width: 14px !important;
             height: 14px !important;
           }
+          .nav-card-header {
+            min-height: 40px !important;
+          }
           .nav-card-label {
-            font-size: 13px !important;
+            font-size: 15px !important;
           }
           .nav-card-desc {
             display: none !important;
@@ -174,7 +193,8 @@ export function SmartNavCard({ href, label, icon: Icon, description, count, coun
             display: none !important;
           }
           .nav-card-count {
-            font-size: 18px !important;
+            font-size: 13px !important;
+            padding: 3px 8px !important;
           }
         }
       `}</style>

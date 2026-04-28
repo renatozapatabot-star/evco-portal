@@ -26,7 +26,9 @@ const supabase = createClient(
 )
 
 interface TraficoOwnership {
-  trafico_id: string
+  // traficos real column is `trafico` (no trafico_id). The incoming form
+  // field trafico_id matches against traficos.trafico. M15 phantom sweep.
+  trafico: string
   company_id: string | null
 }
 
@@ -110,8 +112,8 @@ export async function POST(request: NextRequest) {
   // Tenant check — trafico must exist; only session company (unless internal).
   const { data: trafico, error: trErr } = await supabase
     .from('traficos')
-    .select('trafico_id, company_id')
-    .eq('trafico_id', trafico_id)
+    .select('trafico, company_id')
+    .eq('trafico', trafico_id)
     .maybeSingle<TraficoOwnership>()
 
   if (trErr || !trafico) {

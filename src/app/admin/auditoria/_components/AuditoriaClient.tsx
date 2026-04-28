@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { diffBeforeAfter, type AuditLogRow } from '@/lib/audit/query'
+import { AguilaInput, AguilaSelect } from '@/components/aguila'
 
 const MONO: React.CSSProperties = {
   fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace',
@@ -127,63 +128,42 @@ export function AuditoriaClient() {
             gap: 12,
           }}
         >
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Tabla
-            <select
-              value={table}
-              onChange={(e) => setTable(e.target.value)}
-              style={inputStyle}
-            >
-              {TABLES.map((t) => (
-                <option key={t.value} value={t.value} style={{ background: 'var(--portal-ink-0)' }}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            ID de registro
-            <input
-              type="text"
-              value={recordId}
-              onChange={(e) => setRecordId(e.target.value)}
-              placeholder="TR-2284"
-              style={{ ...inputStyle, ...MONO }}
-            />
-          </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Usuario
-            <select
-              value={changedBy}
-              onChange={(e) => setChangedBy(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="" style={{ background: 'var(--portal-ink-0)' }}>Todos</option>
-              {users.map((u) => (
-                <option key={u} value={u} style={{ background: 'var(--portal-ink-0)' }}>
-                  {u.slice(0, 8)}…
-                </option>
-              ))}
-            </select>
-          </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Desde
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
-          <label style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Hasta
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
+          <AguilaSelect
+            label="Tabla"
+            value={table}
+            onChange={(e) => setTable(e.target.value)}
+            options={TABLES.map((t) => ({ value: t.value, label: t.label }))}
+          />
+          <AguilaInput
+            label="ID de registro"
+            mono
+            placeholder="TR-2284"
+            value={recordId}
+            onChange={(e) => setRecordId(e.target.value)}
+          />
+          <AguilaSelect
+            label="Usuario"
+            value={changedBy}
+            onChange={(e) => setChangedBy(e.target.value)}
+            options={[
+              { value: '', label: 'Todos' },
+              ...users.map((u) => ({ value: u, label: `${u.slice(0, 8)}…` })),
+            ]}
+          />
+          <AguilaInput
+            label="Desde"
+            type="date"
+            mono
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+          <AguilaInput
+            label="Hasta"
+            type="date"
+            mono
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
           <button

@@ -19,13 +19,12 @@
 
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ClipboardList, FileText, ExternalLink, ArrowLeft, Package } from 'lucide-react'
+import { ClipboardList, FileText, ExternalLink, Package } from 'lucide-react'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { ParteDetailClient, type DetailPayload } from '@/app/catalogo/partes/[cveProducto]/ParteDetailClient'
-import { GlassCard, PageShell } from '@/components/aguila'
+import { GlassCard, DetailPageShell } from '@/components/aguila'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -68,36 +67,52 @@ async function fetchLinkedDocs(cveProducto: string, companyId: string): Promise<
   const supabase = createServerClient()
   const docs: LinkedDoc[] = []
 
-  // Recent pedimentos that carry a line item for this part (joined via
-  // globalpc_partidas.cve_producto → cve_trafico → traficos.pedimento).
+  // Recent pedimentos that carry a line item for this part.
+  // M14 fix: partidas has NO cve_trafico column. Real 2-hop join goes
+  // through facturas. Use resolvePartidaLinks (M12) to do it safely.
   try {
     const { data: partidaRows } = await supabase
       .from('globalpc_partidas')
-      .select('cve_trafico, created_at, cantidad, precio_unitario')
+      .select('folio, created_at, cantidad, precio_unitario')
       .eq('cve_producto', cveProducto)
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
       .limit(8)
-    const traficos = Array.from(new Set((partidaRows ?? []).map((r) => r.cve_trafico).filter(Boolean)))
-    if (traficos.length > 0) {
-      const { data: traficoRows } = await supabase
-        .from('traficos')
-        .select('trafico, pedimento, fecha_pago, fecha_cruce')
-        .in('trafico', traficos as string[])
-        .eq('company_id', companyId)
-      for (const t of (traficoRows ?? [])) {
+
+    if ((partidaRows ?? []).length > 0) {
+      const { resolvePartidaLinks } = await import(
+        '@/lib/queries/partidas-trafico-link'
+      )
+      const links = await resolvePartidaLinks(
+        supabase,
+        companyId,
+        (partidaRows ?? []).map((r) => ({ folio: r.folio })),
+      )
+      // One doc per unique trafico reached through the partidas.
+      const seenTraficos = new Set<string>()
+      for (const p of partidaRows ?? []) {
+        const link = p.folio != null ? links.byFolio.get(p.folio) : null
+        if (!link?.cve_trafico || seenTraficos.has(link.cve_trafico)) continue
+        seenTraficos.add(link.cve_trafico)
         docs.push({
-          id: `pedimento-${t.trafico}`,
+          id: `pedimento-${link.cve_trafico}`,
           kind: 'pedimento',
-          label: t.pedimento ? `Pedimento ${t.pedimento}` : `Embarque ${t.trafico}`,
-          sub: t.fecha_cruce ? `Cruzado ${formatDate(t.fecha_cruce)}` : 'En proceso',
-          href: `/api/pedimento-pdf?trafico=${encodeURIComponent(t.trafico as string)}`,
-          timestamp_iso: t.fecha_cruce ?? t.fecha_pago,
+          label: link.pedimento
+            ? `Pedimento ${link.pedimento}`
+            : `Embarque ${link.cve_trafico}`,
+          sub: link.fecha_cruce
+            ? `Cruzado ${formatDate(link.fecha_cruce)}`
+            : 'En proceso',
+          href: `/api/pedimento-pdf?trafico=${encodeURIComponent(link.cve_trafico)}`,
+          timestamp_iso: link.fecha_cruce ?? link.fecha_facturacion ?? null,
         })
       }
     }
   } catch (err) {
-    console.error('[anexo-24/detail] linked pedimentos failed:', err instanceof Error ? err.message : err)
+    console.error(
+      '[anexo-24/detail] linked pedimentos failed:',
+      err instanceof Error ? err.message : err,
+    )
   }
 
   // OCA opinions for this cve_producto (if the oca_opinions table exists
@@ -191,34 +206,15 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
   const clientName = decodeURIComponent(cookieStore.get('company_name')?.value ?? 'Cliente')
 
   return (
-    <PageShell
+    <DetailPageShell
+      breadcrumb={[
+        { label: 'Anexo 24', href: '/anexo-24' },
+        { label: data.parte.cve_producto || 'SKU' },
+      ]}
       title={data.parte.descripcion || data.parte.cve_producto || 'SKU'}
       subtitle={`Anexo 24 · ${clientName} · Patente 3596`}
       maxWidth={1100}
     >
-      {/* Breadcrumb — click-back to main Anexo 24 surface */}
-      <nav
-        aria-label="Breadcrumb"
-        style={{ marginBottom: 20 }}
-      >
-        <Link
-          href="/anexo-24"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            minHeight: 44,
-            fontSize: 'var(--aguila-fs-body, 13px)',
-            color: 'rgba(192,197,206,0.75)',
-            textDecoration: 'none',
-            letterSpacing: '0.04em',
-          }}
-        >
-          <ArrowLeft size={14} strokeWidth={1.8} />
-          Volver a Anexo 24
-        </Link>
-      </nav>
-
       {/* Context strip — reframes the SKU as "part of the official Anexo 24" */}
       <div
         style={{
@@ -408,7 +404,7 @@ export default async function Anexo24DetailPage({ params }: PageProps) {
 
       {/* 4-tab detail — reuses the Sunday-build client component */}
       <ParteDetailClient data={data} role={role} formattedFraccion={formattedFraccion} />
-    </PageShell>
+    </DetailPageShell>
   )
 }
 

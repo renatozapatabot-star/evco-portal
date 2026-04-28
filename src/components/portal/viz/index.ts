@@ -16,6 +16,9 @@ export type { VizWarehouseDockProps } from './VizWarehouseDock'
 export { VizRing } from './VizRing'
 export type { VizRingProps } from './VizRing'
 
+export { VizDonut } from './VizDonut'
+export type { VizDonutProps } from './VizDonut'
+
 export { VizBars } from './VizBars'
 export type { VizBarsProps } from './VizBars'
 

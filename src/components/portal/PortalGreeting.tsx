@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { GlassCard } from '@/components/aguila'
 
 export interface PortalGreetingProps {
-  /** First name rendered in emerald. */
+  /** Identity name (first name or company). Rendered in silver, never green —
+   *  green (--portal-green-*) is reserved for cruzado/healthy status. */
   name: string
   /** One-line summary below the greeting. Mix numbers (portal-num) + prose. */
   summary?: ReactNode
@@ -31,11 +33,11 @@ function computeFecha(): string {
 }
 
 /**
- * Warm greeting section above the modules grid. Display serif, hairline
- * weight, first-name in emerald, date on the right in mono meta, one-line
- * summary below mixing numbers (tabular) with fg-3 copy.
- *
- * Port of .planning/design-handoff/cruz-portal/project/src/screen-dashboard.jsx:83-116.
+ * V1 hero greeting — weight 600 Geist display, name highlighted in
+ * --portal-fg-1 (silver-bright), date meta on the right, one-line
+ * summary below. Wrapped in <GlassCard tier="hero"> per V1 design
+ * system. Green is reserved for status (cruzado/healthy); identity
+ * highlight uses luminance (fg-1 vs fg-2) not hue.
  */
 export function PortalGreeting({
   name,
@@ -55,48 +57,52 @@ export function PortalGreeting({
 
   return (
     <section style={{ paddingTop: 'var(--portal-s-8)', paddingBottom: 'var(--portal-s-6)' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 16,
-          flexWrap: 'wrap',
-        }}
-      >
-        <h1
+      <GlassCard tier="hero" padding="clamp(24px, 4vw, 40px)">
+        <div
           style={{
-            margin: 0,
-            fontFamily: 'var(--portal-font-display)',
-            fontWeight: 300,
-            fontSize: 'clamp(32px, 4.2vw, 52px)',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.05,
-            color: 'var(--portal-fg-1)',
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 16,
+            flexWrap: 'wrap',
           }}
         >
-          {saludo}, <span style={{ color: 'var(--portal-green-2)' }}>{name}</span>.
-        </h1>
-        {fecha && (
-          <span
-            className="portal-meta"
-            style={{ color: 'var(--portal-fg-4)', textTransform: 'capitalize' }}
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: 'var(--portal-font-display)',
+              fontWeight: 600,
+              fontSize: 'clamp(32px, 5.5vw, 56px)',
+              letterSpacing: 'var(--aguila-ls-tight)',
+              lineHeight: 1.05,
+              color: 'var(--portal-fg-2)',
+            }}
           >
-            {fecha}
-          </span>
+            {saludo}, <span style={{ color: 'var(--portal-fg-1)' }}>{name}</span>.
+          </h1>
+          {fecha && (
+            <span
+              className="portal-meta"
+              style={{ color: 'var(--portal-fg-4)', textTransform: 'capitalize' }}
+            >
+              {fecha}
+            </span>
+          )}
+        </div>
+        {summary && (
+          <p
+            style={{
+              margin: '12px 0 0',
+              fontFamily: 'var(--portal-font-sans)',
+              fontSize: 'var(--portal-fs-sm)',
+              lineHeight: 1.5,
+              color: 'var(--portal-fg-4)',
+              maxWidth: 620,
+            }}
+          >
+            {summary}
+          </p>
         )}
-      </div>
-      {summary && (
-        <p
-          style={{
-            margin: '10px 0 0',
-            fontSize: 'var(--portal-fs-md)',
-            color: 'var(--portal-fg-3)',
-            maxWidth: 620,
-          }}
-        >
-          {summary}
-        </p>
-      )}
+      </GlassCard>
     </section>
   )
 }

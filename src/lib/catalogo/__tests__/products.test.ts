@@ -101,4 +101,21 @@ describe('mergeCatalogoRows', () => {
     expect(rows[0].merchandise).toBe('TORNILLOS DE ACERO DE 19.05 MM')
     expect(rows[0].descripcion).toBe('POLYPROPYLENE TORNILLOS 3MM')  // raw stays
   })
+
+  it('leaves crossings enrichment fields null (filled by getCatalogo, not the pure merger)', () => {
+    // M8 contract: mergeCatalogoRows stays pure + test-trivial. The
+    // crossings enrichment (ultimo_semaforo, ultima_fecha_cruce,
+    // ultimo_pedimento) is filled by getCatalogo's post-merge traficos
+    // join — never here, because the pure merger never queries a DB.
+    const rows = mergeCatalogoRows(
+      [{ id: 1, cve_producto: 'P-4', descripcion: 'Cualquier parte', fraccion: '3901.20.01', fraccion_source: null, fraccion_classified_at: null, cve_proveedor: null, pais_origen: null }],
+      new Map(),
+      new Map([['CUALQUIER PARTE', { count: 5, valor: 1500, lastTrafico: 'T-99', lastFecha: '2026-04-18' }]]),
+    )
+    expect(rows[0].ultimo_cve_trafico).toBe('T-99')
+    expect(rows[0].ultima_fecha_llegada).toBe('2026-04-18')
+    expect(rows[0].ultimo_semaforo).toBeNull()
+    expect(rows[0].ultima_fecha_cruce).toBeNull()
+    expect(rows[0].ultimo_pedimento).toBeNull()
+  })
 })

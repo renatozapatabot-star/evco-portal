@@ -47,13 +47,15 @@ export default async function OperadorSubirPage() {
   )
   const companyNameById = new Map<string, string>()
   if (companyIds.length > 0) {
+    // companies real columns: company_id (slug), name. No razon_social,
+    // no nombre_comercial. traficos.company_id is the slug join key.
     const { data: companies } = await sb
       .from('companies')
-      .select('id, razon_social, nombre_comercial')
-      .in('id', companyIds)
+      .select('company_id, name')
+      .in('company_id', companyIds)
     for (const c of companies ?? []) {
-      const id = c.id as string
-      const display = (c.nombre_comercial as string | null) || (c.razon_social as string | null) || id
+      const id = c.company_id as string
+      const display = (c.name as string | null) || id
       companyNameById.set(id, display)
     }
   }

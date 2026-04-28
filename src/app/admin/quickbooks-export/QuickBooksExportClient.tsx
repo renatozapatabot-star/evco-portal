@@ -21,6 +21,7 @@ import {
   TEXT_SECONDARY,
 } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
+import { AguilaInput, AguilaSelect, GlassCard } from '@/components/aguila'
 
 interface ExportRow {
   id: string
@@ -166,14 +167,11 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         </p>
       </header>
 
-      <div
-        role="note"
+      <GlassCard
+        tier="hero"
+        padding="12px 16px"
+        ariaLabel="Nota informativa"
         style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 12,
-          padding: '12px 16px',
           marginBottom: 20,
           color: TEXT_SECONDARY,
           fontSize: 'var(--aguila-fs-body)',
@@ -183,76 +181,55 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         }}
       >
         Fase 1: importación manual. API directa pendiente certificación Intuit.
-      </div>
+      </GlassCard>
 
       {/* Form card */}
-      <section
-        style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 24,
-          marginBottom: 24,
-          boxShadow: GLASS_SHADOW,
-        }}
-      >
+      <GlassCard tier="hero" padding={24} style={{ marginBottom: 24 }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: 16,
           marginBottom: 20,
         }}>
-          <div>
-            <label htmlFor="entity" style={labelStyle}>Entidad</label>
-            <select
-              id="entity"
-              value={entity}
-              onChange={e => setEntity(e.target.value)}
-              style={fieldStyle}
-            >
-              <option value="invoices">Facturas</option>
-              <option value="bills">Cuentas por pagar</option>
-              <option value="customers">Clientes</option>
-              <option value="vendors">Proveedores</option>
-              <option value="all">Todo</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="format" style={labelStyle}>Formato</label>
-            <select
-              id="format"
-              value={format}
-              onChange={e => setFormat(e.target.value)}
-              style={fieldStyle}
-            >
-              <option value="IIF">IIF (QuickBooks Desktop)</option>
-              <option value="CSV">CSV</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="dateFrom" style={labelStyle}>Desde</label>
-            <input
-              id="dateFrom"
-              type="date"
-              value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              style={{ ...fieldStyle, fontFamily: 'var(--font-jetbrains-mono)' }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="dateTo" style={labelStyle}>Hasta</label>
-            <input
-              id="dateTo"
-              type="date"
-              value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              style={{ ...fieldStyle, fontFamily: 'var(--font-jetbrains-mono)' }}
-            />
-          </div>
+          <AguilaSelect
+            id="entity"
+            label="Entidad"
+            value={entity}
+            onChange={(e) => setEntity(e.target.value)}
+            options={[
+              { value: 'invoices', label: 'Facturas' },
+              { value: 'bills', label: 'Cuentas por pagar' },
+              { value: 'customers', label: 'Clientes' },
+              { value: 'vendors', label: 'Proveedores' },
+              { value: 'all', label: 'Todo' },
+            ]}
+          />
+          <AguilaSelect
+            id="format"
+            label="Formato"
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
+            options={[
+              { value: 'IIF', label: 'IIF (QuickBooks Desktop)' },
+              { value: 'CSV', label: 'CSV' },
+            ]}
+          />
+          <AguilaInput
+            id="dateFrom"
+            label="Desde"
+            type="date"
+            mono
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+          <AguilaInput
+            id="dateTo"
+            label="Hasta"
+            type="date"
+            mono
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
         </div>
 
         <button
@@ -280,19 +257,10 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
         {message && (
           <p style={{ marginTop: 16, fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY }}>{message}</p>
         )}
-      </section>
+      </GlassCard>
 
       {/* Recent exports */}
-      <section
-        style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 24,
-          boxShadow: GLASS_SHADOW,
-        }}
-      >
+      <GlassCard tier="hero" padding={24}>
         <h2 style={{
           fontSize: 'var(--aguila-fs-body-lg)',
           fontWeight: 700,
@@ -377,7 +345,7 @@ export function QuickBooksExportClient({ recent }: { recent: ExportRow[] }) {
             </table>
           </div>
         )}
-      </section>
+      </GlassCard>
     </div>
   )
 }

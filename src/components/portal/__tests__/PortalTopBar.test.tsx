@@ -12,7 +12,9 @@ describe('PortalTopBar', () => {
 
   it('renders the centered command palette trigger with ⌘K kbd chips', () => {
     const html = renderToStaticMarkup(<PortalTopBar onOpenCmd={vi.fn()} />)
-    expect(html).toMatch(/Busca un SKU/)
+    // Default placeholder — updated 2026-04-22 to read search-first,
+    // not chat-first. The assistant entry point is the FAB.
+    expect(html).toMatch(/Buscar pedimento/)
     expect(html).toMatch(/class="portal-kbd"/)
     expect(html).toMatch(/⌘/)
     expect(html).toMatch(/>K</)

@@ -48,33 +48,50 @@ export interface TraficoSuggestion {
 
 interface CompanyRow {
   company_id: string
-  razon_social: string | null
   name: string | null
   clave_cliente: string | null
   rfc: string | null
-  updated_at: string | null
+  created_at: string | null
 }
 
 interface TraficoRow {
+  // traficos real columns: id + trafico (the ref string), created_at,
+  // assigned_to_operator_id. `cve_trafico` was a phantom.
   id: string | null
-  cve_trafico: string | null
+  trafico: string | null
   created_at: string | null
   assigned_to_operator_id: string | null
 }
 
 interface FacturaRow {
+  // globalpc_facturas real columns: folio, cve_trafico, cve_proveedor,
+  // valor_comercial, moneda. The legacy iValorComercial/sCveMoneda/
+  // sCveProveedor/nombre_proveedor names were MySQL source fields that
+  // never got mirrored to Supabase under those names.
+  folio: number | null
   cve_trafico: string | null
-  iValorComercial: number | null
-  sCveMoneda: string | null
-  sCveProveedor: string | null
-  nombre_proveedor: string | null
+  cve_proveedor: string | null
+  valor_comercial: number | null
+  moneda: string | null
 }
 
 interface PartidaRow {
-  cve_trafico: string | null
-  fraccion_arancelaria: string | null
-  cve_umc: string | null
-  umc: string | null
+  // globalpc_partidas has NO cve_trafico, fraccion_arancelaria, cve_umc,
+  // or umc. Real join: folio (→ facturas) + cve_producto (→ productos for
+  // the fraccion + umt enrichment).
+  folio: number | null
+  cve_producto: string | null
+}
+
+interface ProductoRow {
+  cve_producto: string | null
+  fraccion: string | null
+  umt: string | null
+}
+
+interface ProveedorRow {
+  cve_proveedor: string | null
+  nombre: string | null
 }
 
 interface OperatorRow {
@@ -167,13 +184,13 @@ export async function suggestClientePatterns(
   // 1) Match candidate clientes by prefix. Cliente-scoped portals pin
   //    to their own company; broker/admin portals scope by auth but
   //    still surface only active companies.
+  // companies real columns: name (not razon_social), created_at (no
+  // updated_at on this table).
   let companyQ = supabase
     .from('companies')
-    .select('company_id, razon_social, name, clave_cliente, rfc, updated_at')
-    .or(
-      `razon_social.ilike.${safe}%,name.ilike.${safe}%,clave_cliente.ilike.${safe}%`,
-    )
-    .order('updated_at', { ascending: false, nullsFirst: false })
+    .select('company_id, name, clave_cliente, rfc, created_at')
+    .or(`name.ilike.${safe}%,clave_cliente.ilike.${safe}%`)
+    .order('created_at', { ascending: false, nullsFirst: false })
     .limit(20)
 
   if (companyIdOrNull) companyQ = companyQ.eq('company_id', companyIdOrNull)
@@ -186,13 +203,13 @@ export async function suggestClientePatterns(
   // 2) For each candidate, aggregate patterns in parallel.
   const results = await Promise.all(
     top.map(async (c): Promise<TraficoSuggestion> => {
-      const nombre = c.razon_social ?? c.name ?? c.clave_cliente ?? c.company_id
+      const nombre = c.name ?? c.clave_cliente ?? c.company_id
 
       // Last 10 traficos for this cliente — ordered by recency.
       const traficos = await safeSelect<TraficoRow>(() =>
         supabase
           .from('traficos')
-          .select('id, cve_trafico, created_at, assigned_to_operator_id')
+          .select('id, trafico, created_at, assigned_to_operator_id')
           .eq('company_id', c.company_id)
           .order('created_at', { ascending: false, nullsFirst: false })
           .limit(10),
@@ -216,51 +233,99 @@ export async function suggestClientePatterns(
       }
 
       const lastTraficoAt = traficos[0]?.created_at ?? null
-      const cveTraficos = traficos
-        .map((t) => t.cve_trafico)
+      const traficoIds = traficos
+        .map((t) => t.trafico)
         .filter((x): x is string => !!x)
 
-      // Factura aggregation (value + currency + supplier).
+      // Factura aggregation (value + currency + supplier code).
       const facturas =
-        cveTraficos.length > 0
+        traficoIds.length > 0
           ? await safeSelect<FacturaRow>(() =>
               supabase
                 .from('globalpc_facturas')
-                .select(
-                  'cve_trafico, iValorComercial, sCveMoneda, sCveProveedor, nombre_proveedor',
-                )
-                .in('cve_trafico', cveTraficos)
+                .select('folio, cve_trafico, cve_proveedor, valor_comercial, moneda')
+                .eq('company_id', c.company_id)
+                .in('cve_trafico', traficoIds)
                 .limit(200),
             )
           : []
 
       const values = facturas
-        .map((f) => (f.iValorComercial != null ? Number(f.iValorComercial) : null))
+        .map((f) => (f.valor_comercial != null ? Number(f.valor_comercial) : null))
         .filter((v): v is number => v != null && Number.isFinite(v))
       const avgValue =
         values.length > 0
           ? Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 100) / 100
           : null
-      const currency = safeCurrency(mode(facturas.map((f) => f.sCveMoneda)))
-      const typicalSupplier =
-        mode(facturas.map((f) => f.nombre_proveedor)) ??
-        mode(facturas.map((f) => f.sCveProveedor))
+      const currency = safeCurrency(mode(facturas.map((f) => f.moneda)))
 
-      // Partidas aggregation (fracción + UMC).
+      // Resolve supplier name via globalpc_proveedores (facturas only
+      // carries the code). Fall back to the code if no row.
+      const proveedorCodes = Array.from(
+        new Set(facturas.map((f) => f.cve_proveedor).filter((x): x is string => !!x)),
+      )
+      const proveedores =
+        proveedorCodes.length > 0
+          ? await safeSelect<ProveedorRow>(() =>
+              supabase
+                .from('globalpc_proveedores')
+                .select('cve_proveedor, nombre')
+                .eq('company_id', c.company_id)
+                .in('cve_proveedor', proveedorCodes)
+                .limit(100),
+            )
+          : []
+      const proveedorNombreByCode = new Map<string, string>()
+      for (const p of proveedores) {
+        if (p.cve_proveedor && p.nombre) proveedorNombreByCode.set(p.cve_proveedor, p.nombre)
+      }
+      const topProveedorCode = mode(facturas.map((f) => f.cve_proveedor))
+      const typicalSupplier = topProveedorCode
+        ? proveedorNombreByCode.get(topProveedorCode) ?? topProveedorCode
+        : null
+
+      // Partidas aggregation (fracción + UMC). 3-hop join:
+      // traficoIds → facturas.folio → partidas → productos(fraccion + umt).
+      const folios = Array.from(
+        new Set(facturas.map((f) => f.folio).filter((f): f is number => f != null)),
+      )
       const partidas =
-        cveTraficos.length > 0
+        folios.length > 0
           ? await safeSelect<PartidaRow>(() =>
               supabase
                 .from('globalpc_partidas')
-                .select('cve_trafico, fraccion_arancelaria, cve_umc, umc')
-                .in('cve_trafico', cveTraficos)
+                .select('folio, cve_producto')
+                .eq('company_id', c.company_id)
+                .in('folio', folios)
                 .limit(500),
             )
           : []
 
-      const typicalFraccion = mode(partidas.map((p) => p.fraccion_arancelaria))
-      const typicalUmc =
-        mode(partidas.map((p) => p.umc)) ?? mode(partidas.map((p) => p.cve_umc))
+      const cves = Array.from(
+        new Set(partidas.map((p) => p.cve_producto).filter((c): c is string => !!c)),
+      )
+      const productos =
+        cves.length > 0
+          ? await safeSelect<ProductoRow>(() =>
+              supabase
+                .from('globalpc_productos')
+                .select('cve_producto, fraccion, umt')
+                .eq('company_id', c.company_id)
+                .in('cve_producto', cves)
+                .limit(500),
+            )
+          : []
+      const productoByCve = new Map<string, ProductoRow>()
+      for (const p of productos) {
+        if (p.cve_producto) productoByCve.set(p.cve_producto, p)
+      }
+
+      const fracciones = partidas
+        .map((p) => (p.cve_producto ? productoByCve.get(p.cve_producto)?.fraccion ?? null : null))
+      const umts = partidas
+        .map((p) => (p.cve_producto ? productoByCve.get(p.cve_producto)?.umt ?? null : null))
+      const typicalFraccion = mode(fracciones)
+      const typicalUmc = mode(umts)
 
       // Operator aggregation — prefer assigned_to_operator_id on the embarque
       // itself; workflow_events fallback not reliable without actor column.

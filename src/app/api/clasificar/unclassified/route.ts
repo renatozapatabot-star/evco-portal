@@ -35,9 +35,16 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Math.max(Number.parseInt(sp.get('limit') ?? '50', 10) || 50, 1), 100)
   const q = (sp.get('q') ?? '').trim()
 
+  // globalpc_productos real columns: id, cve_producto, cve_cliente,
+  // cve_proveedor, descripcion, descripcion_ingles, fraccion, umt, marca,
+  // nico, pais_origen, precio_unitario, globalpc_folio, created_at,
+  // company_id. There is NO cve_trafico, cantidad, unidad, valor_unitario,
+  // or valor_total — those are partida-level and live on globalpc_partidas
+  // (cantidad + precio_unitario are the real partida shape; valor_total
+  // is computed as cantidad × precio_unitario). M16 phantom-sweep rewire.
   let query = supabase
     .from('globalpc_productos')
-    .select('id, cve_producto, cve_proveedor, cve_trafico, descripcion, descripcion_ingles, cantidad, unidad, valor_unitario, valor_total, pais_origen, company_id, created_at')
+    .select('id, cve_producto, cve_proveedor, cve_cliente, descripcion, descripcion_ingles, pais_origen, umt, company_id, created_at')
     .or('fraccion.is.null,fraccion.eq.')
     .order('created_at', { ascending: false })
     .limit(limit)

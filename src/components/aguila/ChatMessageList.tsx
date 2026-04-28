@@ -39,7 +39,18 @@ interface ChatMessageListProps {
   saveFeedback: (msgId: string, helpful: boolean) => void
   speak: (text: string) => void
   onAbort: () => void
+  /** Override the empty-state heading (e.g. for /mi-cuenta/cruz). */
+  starterHeading?: string
+  /** Override the empty-state suggestion prompts. */
+  starterQuestions?: readonly string[]
 }
+
+const DEFAULT_STARTER_QUESTIONS = [
+  '¿Cuál es el estatus de mi último embarque?',
+  '¿Cuántos pedimentos tengo este mes?',
+  '¿Qué documentos me faltan?',
+  '¿Cuánto pagué en aranceles este mes?',
+] as const
 
 export default function ChatMessageList({
   messages,
@@ -48,6 +59,8 @@ export default function ChatMessageList({
   saveFeedback,
   speak,
   onAbort,
+  starterHeading = '¿En qué te puedo ayudar?',
+  starterQuestions = DEFAULT_STARTER_QUESTIONS,
 }: ChatMessageListProps) {
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -75,17 +88,11 @@ export default function ChatMessageList({
       {/* Starter questions when empty */}
       {messages.length === 0 && (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '40px 20px' }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
-          <p style={{ fontSize: 15, fontWeight: 600, color: D.text, textAlign: 'center' }}>
-            ¿En qué te puedo ayudar?
+          <p style={{ fontSize: 15, fontWeight: 600, color: D.text, textAlign: 'center', margin: 0 }}>
+            {starterHeading}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 400 }}>
-            {[
-              '¿Cuál es el estatus de mi último embarque?',
-              '¿Cuántos pedimentos tengo este mes?',
-              '¿Qué documentos me faltan?',
-              '¿Cuánto pagué en aranceles este mes?',
-            ].map(q => (
+            {starterQuestions.map(q => (
               <button key={q} onClick={() => sendMessage(q)} style={{
                 padding: '12px 16px', borderRadius: 10, fontSize: 13, fontWeight: 500,
                 background: D.userBubble, border: `1px solid ${D.userBorder}`,

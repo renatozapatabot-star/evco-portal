@@ -1,0 +1,229 @@
+/* /pedimentos/[id] page-scoped chrome — extracted from inline <style>
+   per audit lock-in (2026-04-25). Class names hashed by Next.js. */
+
+.detail {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  color: var(--text-primary);
+}
+@media (max-width: 600px) {
+  .detail { padding: 16px 14px 48px; }
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 12px;
+  min-height: 32px;
+  transition: color 120ms ease;
+}
+.crumb:hover { color: var(--text-primary); }
+
+.header { margin-bottom: 28px; }
+.eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.titleRow {
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap;
+}
+.number {
+  font-family: var(--font-mono);
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 600px) {
+  .number { font-size: 22px; }
+}
+.status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 9999px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.statusDot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.statusCleared {
+  background: rgba(34,197,94,0.10);
+  color: #4ade80;
+}
+.statusCleared .statusDot { background: #22c55e; }
+.statusPending {
+  background: rgba(192,197,206,0.10);
+  color: var(--accent-silver, #C0C5CE);
+}
+.statusPending .statusDot { background: var(--accent-silver-dim, #7A7E86); }
+
+.meta {
+  display: flex; flex-wrap: wrap; gap: 8px 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.metaItem {
+  display: inline-flex; align-items: baseline; gap: 6px;
+}
+.metaLabel {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.metaLink {
+  font-family: var(--font-mono);
+  color: var(--accent-silver-bright, #E8EAED);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(192,197,206,0.3);
+}
+.metaLink:hover { border-bottom-color: var(--accent-silver-bright, #E8EAED); }
+
+.section { margin-bottom: 28px; }
+.section + .section {
+  padding-top: 28px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.sectionTitle {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cell {
+  background: var(--bg-card);
+  padding: 12px 14px;
+  min-height: 60px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.cellLabel {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cellValue {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.cellValueMono { font-family: var(--font-mono); }
+.cellValueRight { text-align: right; }
+
+.tableWrap {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  min-width: 720px;
+}
+.table th {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  text-align: left;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 1;
+}
+.table td {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.table tbody tr { transition: background 120ms ease; }
+.table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.015); }
+.table tbody tr:hover { background: rgba(192,197,206,0.06); }
+.table tbody tr:last-child td { border-bottom: 0; }
+
+.cellMono { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+.cellRight { text-align: right; }
+.cellStrong { color: var(--text-primary); font-weight: 600; }
+.cellDesc { color: var(--text-secondary); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cellLink { color: var(--accent-silver-bright, #E8EAED); text-decoration: none; }
+.cellLink:hover { text-decoration: underline; text-underline-offset: 2px; }
+.cellMutedLink { color: var(--text-secondary); text-decoration: none; }
+.cellMutedLink:hover { color: var(--text-primary); }
+
+.docList {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.docRow {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  min-height: 60px;
+}
+.docRow:last-child { border-bottom: 0; }
+.docInfo { flex: 1; min-width: 0; }
+.docName {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.docMeta {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.docAction {
+  font-size: 12px; font-weight: 600;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  min-height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.docAction:hover {
+  background: rgba(192,197,206,0.10);
+  border-color: rgba(192,197,206,0.3);
+}
+.docActionDisabled {
+  color: var(--text-muted);
+  background: transparent;
+  cursor: default;
+}
+.docActionDisabled:hover {
+  background: transparent;
+  border-color: var(--border);
+}

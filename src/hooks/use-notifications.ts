@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getCookieValue } from '@/lib/client-config'
 
 interface NotificationCount {
   unread: number
@@ -13,12 +12,26 @@ interface NotificationCount {
  * v2 Notification hook — subscribes to Supabase Realtime with rate limiting.
  * Buffers notifications for 5s before updating the badge.
  * Quiet hours (11 PM – 5 AM): accumulates silently.
+ *
+ * Tenant scope resolved from the signed HMAC session via
+ * `/api/session/scope`, not a forgeable cookie (I20 contract).
  */
 export function useNotificationBadge() {
   const [count, setCount] = useState(0)
+  const [companyId, setCompanyId] = useState('')
   const bufferRef = useRef<number>(0)
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const companyId = typeof document !== 'undefined' ? getCookieValue('company_id') : ''
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/session/scope', { cache: 'no-store', credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(body => {
+        if (!cancelled && body?.companyId) setCompanyId(String(body.companyId))
+      })
+      .catch(() => { /* keep companyId empty — hooks below gate on it */ })
+    return () => { cancelled = true }
+  }, [])
 
   // Flush buffered notifications to state
   const flush = useCallback(() => {
@@ -34,17 +47,30 @@ export function useNotificationBadge() {
     return h >= 23 || h < 5
   }
 
-  // Fetch initial count
+  // Fetch initial count — with retry so a single transient failure
+  // (network blip, cold function, 5xx) doesn't leave the badge stuck.
   useEffect(() => {
     if (!companyId) return
-    fetch('/api/notifications')
-      .then(r => r.json())
-      .then(d => {
-        const notifs = d.notifications ?? []
-        const unread = notifs.filter((n: { read: boolean }) => !n.read).length
-        setCount(unread)
-      })
-      .catch((err) => console.error('[use-notifications] fetch failed:', err.message))
+    let cancelled = false
+    let attempt = 0
+    const load = (): void => {
+      fetch('/api/notifications')
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(String(r.status))))
+        .then(d => {
+          if (cancelled) return
+          const notifs = d.notifications ?? []
+          const unread = notifs.filter((n: { read: boolean }) => !n.read).length
+          setCount(unread)
+        })
+        .catch(() => {
+          attempt += 1
+          if (!cancelled && attempt < 5) {
+            setTimeout(load, Math.min(30_000, 1000 * 2 ** attempt))
+          }
+        })
+    }
+    load()
+    return () => { cancelled = true }
   }, [companyId])
 
   // Realtime subscription
@@ -96,7 +122,15 @@ export function useNotificationBadge() {
           }
         }
       )
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'notifications-badge', reason: status, error: err?.message },
+            }))
+          }
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)

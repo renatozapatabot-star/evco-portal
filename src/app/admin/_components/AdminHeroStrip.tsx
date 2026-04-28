@@ -2,7 +2,8 @@
 
 import { Check } from 'lucide-react'
 import CountingNumber from '@/components/ui/CountingNumber'
-import { BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW, RED, AMBER, GREEN, GOLD, TEXT_MUTED } from '@/lib/design-system'
+import { RED, AMBER, GREEN, GOLD, TEXT_MUTED } from '@/lib/design-system'
+import { GlassCard } from '@/components/aguila'
 
 interface AdminHeroStripProps {
   criticos: number
@@ -39,17 +40,12 @@ export function AdminHeroStrip({ criticos, urgentes, normales, decisionesHoy }: 
         const isCalmZero = (kpi.key === 'criticos' || kpi.key === 'urgentes') && allClear
 
         return (
-          <div
+          <GlassCard
             key={kpi.key}
+            tier="hero"
+            padding="24px 20px"
             className="admin-hero-grid"
             style={{
-              background: BG_CARD,
-              backdropFilter: `blur(${GLASS_BLUR})`,
-              WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              padding: '24px 20px',
-              boxShadow: GLASS_SHADOW,
               textAlign: 'center',
               minHeight: 120,
               display: 'flex',
@@ -99,7 +95,7 @@ export function AdminHeroStrip({ criticos, urgentes, normales, decisionesHoy }: 
                 {kpi.sublabel}
               </div>
             )}
-          </div>
+          </GlassCard>
         )
       })}
     </div>

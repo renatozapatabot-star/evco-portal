@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { GlassCard, SectionHeader } from '@/components/aguila'
+import { GlassCard, SectionHeader, AguilaInput, AguilaSelect } from '@/components/aguila'
 import { TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, ACCENT_SILVER, ACCENT_SILVER_BRIGHT, SILVER_GRADIENT } from '@/lib/design-system'
 
 interface Quote {
@@ -25,35 +25,6 @@ interface Quote {
 
 const INCOTERMS = ['EXW', 'FOB', 'FCA', 'CPT', 'CIP', 'DAP', 'DDP', 'CFR', 'CIF'] as const
 const REGIMENES = ['A1', 'IN', 'ITE', 'ITR', 'IMD'] as const
-
-const inputStyle = {
-  width: '100%',
-  minHeight: 48,
-  padding: '12px 14px',
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 10,
-  color: TEXT_PRIMARY,
-  fontSize: 'var(--aguila-fs-section)',
-  fontFamily: 'inherit',
-  outline: 'none',
-} as const
-
-const monoInputStyle = {
-  ...inputStyle,
-  fontFamily: 'var(--font-jetbrains-mono), monospace',
-  fontVariantNumeric: 'tabular-nums',
-} as const
-
-const labelStyle = {
-  display: 'block',
-  fontSize: 'var(--aguila-fs-label)',
-  fontWeight: 700,
-  color: TEXT_MUTED,
-  textTransform: 'uppercase' as const,
-  letterSpacing: 0.8,
-  marginBottom: 6,
-}
 
 function fmtMXN(n: number): string {
   return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -151,48 +122,84 @@ export function QuoteForm() {
           <SectionHeader title="Operación" />
           <div style={{ display: 'grid', gap: 14 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
-              <div>
-                <label htmlFor="valor_usd" style={labelStyle}>Valor factura (USD) *</label>
-                <input id="valor_usd" name="valor_usd" type="number" step="0.01" min="0" required defaultValue="50000" style={monoInputStyle} />
-              </div>
-              <div>
-                <label htmlFor="fraccion" style={labelStyle}>Fracción</label>
-                <input id="fraccion" name="fraccion" placeholder="3901.20.01" pattern="\d{4}\.\d{2}\.\d{2}" style={monoInputStyle} />
-              </div>
+              <AguilaInput
+                id="valor_usd"
+                name="valor_usd"
+                label="Valor factura (USD)"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                mono
+                defaultValue="50000"
+              />
+              <AguilaInput
+                id="fraccion"
+                name="fraccion"
+                label="Fracción"
+                placeholder="3901.20.01"
+                pattern="\d{4}\.\d{2}\.\d{2}"
+                mono
+              />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
-              <div>
-                <label htmlFor="pais_origen" style={labelStyle}>Origen</label>
-                <input id="pais_origen" name="pais_origen" defaultValue="US" maxLength={3} style={monoInputStyle} />
-              </div>
-              <div>
-                <label htmlFor="incoterm" style={labelStyle}>Incoterm</label>
-                <select id="incoterm" name="incoterm" defaultValue="EXW" style={inputStyle}>
-                  {INCOTERMS.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="regimen" style={labelStyle}>Régimen</label>
-                <select id="regimen" name="regimen" defaultValue="A1" style={inputStyle}>
-                  {REGIMENES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
+              <AguilaInput
+                id="pais_origen"
+                name="pais_origen"
+                label="Origen"
+                defaultValue="US"
+                maxLength={3}
+                mono
+              />
+              <AguilaSelect
+                id="incoterm"
+                name="incoterm"
+                label="Incoterm"
+                defaultValue="EXW"
+                options={INCOTERMS.map((i) => ({ value: i, label: i }))}
+              />
+              <AguilaSelect
+                id="regimen"
+                name="regimen"
+                label="Régimen"
+                defaultValue="A1"
+                options={REGIMENES.map((r) => ({ value: r, label: r }))}
+              />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
-              <div>
-                <label htmlFor="flete_usd" style={labelStyle}>Flete (USD)</label>
-                <input id="flete_usd" name="flete_usd" type="number" step="0.01" min="0" defaultValue="0" style={monoInputStyle} />
-              </div>
-              <div>
-                <label htmlFor="seguro_usd" style={labelStyle}>Seguro (USD)</label>
-                <input id="seguro_usd" name="seguro_usd" type="number" step="0.01" min="0" defaultValue="0" style={monoInputStyle} />
-              </div>
-              <div>
-                <label htmlFor="igi_rate_pct" style={labelStyle}>IGI (%)</label>
-                <input id="igi_rate_pct" name="igi_rate_pct" type="number" step="0.01" min="0" max="100" defaultValue="5" style={monoInputStyle} />
-              </div>
+              <AguilaInput
+                id="flete_usd"
+                name="flete_usd"
+                label="Flete (USD)"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue="0"
+                mono
+              />
+              <AguilaInput
+                id="seguro_usd"
+                name="seguro_usd"
+                label="Seguro (USD)"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue="0"
+                mono
+              />
+              <AguilaInput
+                id="igi_rate_pct"
+                name="igi_rate_pct"
+                label="IGI (%)"
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                defaultValue="5"
+                mono
+              />
             </div>
 
             <label style={{

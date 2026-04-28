@@ -8,6 +8,7 @@ import { TelemetryProvider } from "@/components/TelemetryProvider"
 import { I18nProvider } from "@/lib/i18n/provider"
 import { parsePortalTheme, PORTAL_THEME_COOKIE } from "@/lib/portal/theme"
 import { PortalPedimentoTheater } from "@/components/portal"
+import { verifySession } from "@/lib/session"
 import "./globals.css"
 
 // PORTAL canonical typefaces (Block DD · 2026-04-17).
@@ -68,6 +69,13 @@ export default async function RootLayout({
   const cookieStore = await cookies()
   const theme = parsePortalTheme(cookieStore.get(PORTAL_THEME_COOKIE)?.value)
 
+  // Verify role from the HMAC `portal_session` cookie. Never trust the
+  // unsigned `user_role` cookie for capability gates (baseline I20).
+  // Returns null for unauthenticated visitors — the shell defaults to
+  // client mode (most-restrictive surface).
+  const verifiedSession = await verifySession(cookieStore.get('portal_session')?.value ?? '').catch(() => null)
+  const verifiedRole = verifiedSession?.role ?? null
+
   const fontClasses = [
     geist.variable,
     geistMono.variable,
@@ -112,7 +120,7 @@ export default async function RootLayout({
       <body className="aguila-dark portal-grain" style={{ margin: 0 }}>
         <QueryProvider>
           <I18nProvider>
-            <DashboardShellClient>
+            <DashboardShellClient verifiedRole={verifiedRole}>
               <TelemetryProvider>{children}</TelemetryProvider>
             </DashboardShellClient>
           </I18nProvider>

@@ -38,11 +38,64 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ## Currently pending
 
-*(none — drained 2026-04-20 · see "Applied this session" below)*
+### `20260422190000_invoice_dedup.sql`
+
+**Rationale:** Phase 1 of V2 Doc Intelligence — duplicate-invoice
+detection. Adds three nullable columns to `pedimento_facturas`
+(`file_hash`, `normalized_invoice_number`, `supplier_rfc`) plus three
+partial indexes for O(log n) dedup lookups.
+
+**Expected effect:** Upload route starts writing the new columns on
+every insert. Legacy rows stay valid (columns are nullable). Three new
+indexes appear in the `pedimento_facturas` pg_stat view. No RLS change.
+
+**Verification post-apply:**
+```sql
+-- Expect 3 new columns, all nullable:
+SELECT column_name, is_nullable FROM information_schema.columns
+  WHERE table_name = 'pedimento_facturas'
+    AND column_name IN ('file_hash','normalized_invoice_number','supplier_rfc');
+
+-- Expect 3 new indexes:
+SELECT indexname FROM pg_indexes WHERE tablename = 'pedimento_facturas'
+  AND indexname LIKE 'idx_pedimento_facturas_%';
+```
+
+**Rollback:** `DROP INDEX IF EXISTS` the three indexes, then `ALTER
+TABLE pedimento_facturas DROP COLUMN IF EXISTS file_hash,
+normalized_invoice_number, supplier_rfc`. Data loss is limited to the
+new columns — nothing else depends on them yet.
 
 ---
 
-## Applied this session (2026-04-20)
+## Applied this session (2026-04-21)
+
+`20260421150251_leads_table.sql` applied via `npx supabase db push`
+(CLI path, not Path B). Required one `supabase migration repair
+--status reverted 20260420` first to clear the orphan ghost row in
+the remote `schema_migrations` table (documented tech debt from the
+2026-04-20 session). The repair is metadata-only — no schema object
+dropped, just history-table cleanup.
+
+Applied via Supabase CLI · verified post-apply via `npx supabase
+migration list --linked`:
+
+```
+✓ leads table (25 columns, UUID PK, audit timestamps)
+✓ 5 indexes (stage, source, next_action_at, owner, created_at DESC)
+✓ leads_touch_updated_at() trigger function
+✓ leads_touch_updated_at_trg BEFORE UPDATE trigger
+✓ RLS enabled + leads_deny_all policy (service-role bypass only)
+✓ types/supabase.ts regenerated — `leads` type exports at line 6429
+```
+
+**Tech debt status:** the 20260420 orphan is now cleared. Remote
+`schema_migrations` and local `supabase/migrations/` are fully in
+sync. Future `supabase db push` calls will not require repair.
+
+---
+
+## Applied earlier (2026-04-20)
 
 All 3 migrations were applied directly via `npx supabase db query
 --linked` (not `supabase db push` — local/remote migration history

@@ -1,4 +1,28 @@
 /**
+ * Session module — HMAC-signed portal session tokens.
+ *
+ * Why HMAC instead of Supabase Auth / NextAuth:
+ *   The portal predates Supabase Auth roll-out at this shop. More
+ *   importantly, the MySQL GlobalPC system is the source of truth for
+ *   user provisioning — we can't migrate identity without breaking
+ *   the broker workflow. HMAC sessions let us validate against a
+ *   simple SESSION_SECRET + carry `companyId`/`role` in the cookie
+ *   without a DB lookup on every request (Edge-compatible, fast).
+ *
+ * Consequences (READ THIS before touching any tenant-scoped code):
+ *   - `session.companyId` is the tenant key. RLS policies do NOT
+ *     understand our session (they're deny-all; service role
+ *     bypasses). ALL tenant filtering happens app-side via
+ *     `.eq('company_id', session.companyId)`.
+ *   - Admin/broker sessions encode `companyId='admin'` or `'internal'`
+ *     — deliberately non-matching so admin code can bypass the
+ *     filter (see core-invariants #31).
+ *   - No per-user identity. `session.role` is all we have for
+ *     actor attribution. Lead activity timeline uses this.
+ *
+ * The signing key is in Vercel env as SESSION_SECRET. NEVER log it,
+ * NEVER include it in client bundles (`NEXT_PUBLIC_*` forbidden).
+ *
  * PortalRole — narrow union of every role the signed session can carry.
  * `signSession` still accepts any string (legacy callers), but `verifySession`
  * rejects any decoded role not in this union.

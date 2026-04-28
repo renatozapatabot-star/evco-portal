@@ -1,0 +1,107 @@
+/* /catalogo client-table page-scoped chrome — extracted from inline
+   <style> per audit lock-in (2026-04-25). */
+
+.shell { display: flex; flex-direction: column; gap: 16px; }
+
+.toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.search {
+  flex: 1 1 280px;
+  min-height: 60px;
+  padding: 0 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.search:focus {
+  border-color: rgba(192,197,206,0.4);
+  background: rgba(255,255,255,0.06);
+}
+.btn {
+  min-height: 60px;
+  min-width: 60px;
+  padding: 0 20px;
+  background: rgba(192,197,206,0.10);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.btn:hover:not(:disabled) {
+  background: rgba(192,197,206,0.16);
+  border-color: rgba(192,197,206,0.3);
+}
+.btn:disabled { cursor: wait; opacity: 0.6; }
+.count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.empty {
+  padding: 32px 16px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.pagination {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 12px; margin-top: 8px;
+}
+.paginationInfo {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.paginationBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  min-height: 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.paginationBtn:hover:not(:disabled) {
+  background: rgba(192,197,206,0.10);
+  border-color: rgba(192,197,206,0.3);
+}
+.paginationBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fraccionPending {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: transparent;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}

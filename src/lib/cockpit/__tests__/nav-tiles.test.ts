@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   UNIFIED_NAV_TILES,
   EMPTY_NAV_COUNTS,
@@ -7,27 +7,51 @@ import {
   type NavTileKey,
 } from '../../cockpit/nav-tiles'
 
-describe('UNIFIED_NAV_TILES (post-founder-override 2026-04-19)', () => {
-  it('renders exactly six tiles', () => {
-    expect(UNIFIED_NAV_TILES.length).toBe(6)
+describe('UNIFIED_NAV_TILES (V1 Clean Visibility · 2026-04-24)', () => {
+  it('renders exactly five tiles', () => {
+    expect(UNIFIED_NAV_TILES.length).toBe(5)
   })
 
-  it('tile #2 is Contabilidad (was Pedimentos through 2026-04-19)', () => {
+  it('tile #1 is Entradas (shipper asks "did it arrive?" first)', () => {
+    const tile = UNIFIED_NAV_TILES[0]
+    expect(tile.key).toBe('entradas')
+    expect(tile.label).toBe('Entradas')
+    expect(tile.href).toBe('/entradas')
+  })
+
+  it('tile #2 is Pedimentos', () => {
     const tile = UNIFIED_NAV_TILES[1]
-    expect(tile.key).toBe('contabilidad')
-    expect(tile.label).toBe('Contabilidad')
+    expect(tile.key).toBe('pedimentos')
+    expect(tile.label).toBe('Pedimentos')
+    expect(tile.href).toBe('/pedimentos')
   })
 
-  it('tile keys match the canonical post-override list', () => {
+  it('tile #3 is Expediente Digital', () => {
+    const tile = UNIFIED_NAV_TILES[2]
+    expect(tile.key).toBe('expedientes')
+    expect(tile.label).toBe('Expediente Digital')
+    expect(tile.href).toBe('/expedientes')
+  })
+
+  it('tile keys match the canonical V1 list', () => {
     const keys = UNIFIED_NAV_TILES.map((t) => t.key as NavTileKey)
     expect(keys).toEqual([
-      'traficos',
-      'contabilidad',
+      'entradas',
+      'pedimentos',
       'expedientes',
       'catalogo',
-      'entradas',
       'anexo24',
     ])
+  })
+
+  it('Contabilidad is NOT in the rendered client nav (V1 reset)', () => {
+    const keys = UNIFIED_NAV_TILES.map((t) => t.key)
+    expect(keys).not.toContain('contabilidad')
+  })
+
+  it('Tráficos/Embarques is NOT in the rendered client nav (reachable by cross-link)', () => {
+    const keys = UNIFIED_NAV_TILES.map((t) => t.key)
+    expect(keys).not.toContain('traficos')
   })
 
   it('every tile carries non-empty label + description + icon', () => {
@@ -40,91 +64,44 @@ describe('UNIFIED_NAV_TILES (post-founder-override 2026-04-19)', () => {
 })
 
 describe('EMPTY_NAV_COUNTS', () => {
-  it('carries the contabilidad key with null count', () => {
+  it('carries the pedimentos key with null count', () => {
+    expect(EMPTY_NAV_COUNTS.pedimentos).toBeDefined()
+    expect(EMPTY_NAV_COUNTS.pedimentos?.count).toBeNull()
+  })
+
+  it('keeps contabilidad key for back-compat (legacy consumers)', () => {
     expect(EMPTY_NAV_COUNTS.contabilidad).toBeDefined()
     expect(EMPTY_NAV_COUNTS.contabilidad?.count).toBeNull()
   })
 
-  it('keeps pedimentos key for back-compat (legacy consumers)', () => {
-    expect(EMPTY_NAV_COUNTS.pedimentos).toBeDefined()
-    expect(EMPTY_NAV_COUNTS.pedimentos?.count).toBeNull()
+  it('keeps traficos key for back-compat', () => {
+    expect(EMPTY_NAV_COUNTS.traficos).toBeDefined()
   })
 })
 
-describe('resolveNavHref', () => {
-  const contabilidadTile = UNIFIED_NAV_TILES.find((t) => t.key === 'contabilidad')!
-  const traficosTile = UNIFIED_NAV_TILES.find((t) => t.key === 'traficos')!
-  let originalFlag: string | undefined
+describe('resolveNavHref (V1: signature preserved, role ignored)', () => {
+  const pedimentosTile = UNIFIED_NAV_TILES.find((t) => t.key === 'pedimentos')!
+  const entradasTile = UNIFIED_NAV_TILES.find((t) => t.key === 'entradas')!
 
-  beforeEach(() => {
-    originalFlag = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-  })
-  afterEach(() => {
-    if (originalFlag === undefined) delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-    else process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = originalFlag
+  it('returns tile.href regardless of role', () => {
+    expect(resolveNavHref(pedimentosTile, 'client')).toBe('/pedimentos')
+    expect(resolveNavHref(pedimentosTile, 'operator')).toBe('/pedimentos')
+    expect(resolveNavHref(pedimentosTile, 'admin')).toBe('/pedimentos')
+    expect(resolveNavHref(entradasTile, 'client')).toBe('/entradas')
   })
 
-  it('client role + flag ON routes Contabilidad to /mi-cuenta', () => {
-    process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = 'true'
-    expect(resolveNavHref(contabilidadTile, 'client')).toBe('/mi-cuenta')
-  })
-
-  it('client role + flag OFF routes Contabilidad to /pedimentos (pre-flag UX preserved)', () => {
-    delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-    expect(resolveNavHref(contabilidadTile, 'client')).toBe('/pedimentos')
-  })
-
-  it('operator role routes Contabilidad to /contabilidad/inicio (Anabel cockpit)', () => {
-    expect(resolveNavHref(contabilidadTile, 'operator')).toBe('/contabilidad/inicio')
-  })
-
-  it('admin / broker / owner route Contabilidad to /contabilidad/inicio', () => {
-    expect(resolveNavHref(contabilidadTile, 'admin')).toBe('/contabilidad/inicio')
-    expect(resolveNavHref(contabilidadTile, 'broker')).toBe('/contabilidad/inicio')
-    expect(resolveNavHref(contabilidadTile, 'owner')).toBe('/contabilidad/inicio')
-  })
-
-  it('non-contabilidad tiles are unaffected by role (returns tile.href as-is)', () => {
-    expect(resolveNavHref(traficosTile, 'client')).toBe(traficosTile.href)
-    expect(resolveNavHref(traficosTile, 'operator')).toBe(traficosTile.href)
-    expect(resolveNavHref(traficosTile, 'admin')).toBe(traficosTile.href)
-  })
-
-  it('unknown role falls back to default href (safe default)', () => {
-    expect(resolveNavHref(contabilidadTile, 'bogus-role')).toBe('/contabilidad/inicio')
+  it('unknown role falls back to tile.href (safe default)', () => {
+    expect(resolveNavHref(pedimentosTile, 'bogus-role')).toBe('/pedimentos')
   })
 })
 
-describe('resolveNavTile (client flag-gate)', () => {
-  const contabilidadTile = UNIFIED_NAV_TILES.find((t) => t.key === 'contabilidad')!
-  let originalFlag: string | undefined
+describe('resolveNavTile (V1: returns tile unchanged)', () => {
+  const pedimentosTile = UNIFIED_NAV_TILES.find((t) => t.key === 'pedimentos')!
 
-  beforeEach(() => {
-    originalFlag = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-  })
-  afterEach(() => {
-    if (originalFlag === undefined) delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-    else process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = originalFlag
-  })
-
-  it('client + flag OFF → renders as Pedimentos (pre-flag UX preserved)', () => {
-    delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-    const t = resolveNavTile(contabilidadTile, 'client')
-    expect(t.label).toBe('Pedimentos')
-    expect(t.href).toBe('/pedimentos')
-  })
-
-  it('client + flag ON → renders as Contabilidad', () => {
-    process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED = 'true'
-    const t = resolveNavTile(contabilidadTile, 'client')
-    expect(t.label).toBe('Contabilidad')
-  })
-
-  it('non-client role → always renders as Contabilidad (never gated)', () => {
-    delete process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED
-    expect(resolveNavTile(contabilidadTile, 'operator').label).toBe('Contabilidad')
-    expect(resolveNavTile(contabilidadTile, 'admin').label).toBe('Contabilidad')
-    expect(resolveNavTile(contabilidadTile, 'broker').label).toBe('Contabilidad')
-    expect(resolveNavTile(contabilidadTile, 'owner').label).toBe('Contabilidad')
+  it('returns the tile as-declared for every role', () => {
+    expect(resolveNavTile(pedimentosTile, 'client').label).toBe('Pedimentos')
+    expect(resolveNavTile(pedimentosTile, 'operator').label).toBe('Pedimentos')
+    expect(resolveNavTile(pedimentosTile, 'admin').label).toBe('Pedimentos')
+    expect(resolveNavTile(pedimentosTile, 'broker').label).toBe('Pedimentos')
   })
 })

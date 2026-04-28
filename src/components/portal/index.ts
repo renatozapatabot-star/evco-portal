@@ -71,7 +71,7 @@ export type { PortalGreetingProps } from './PortalGreeting'
 export { PortalAssistantFab } from './PortalAssistantFab'
 export type { PortalAssistantFabProps } from './PortalAssistantFab'
 export { PortalCommandPalette } from './PortalCommandPalette'
-export type { PortalCommandPaletteProps, PaletteSuggestion } from './PortalCommandPalette'
+export type { PortalCommandPaletteProps, PaletteSearchResult, PaletteResultType } from './PortalCommandPalette'
 
 // Phase 3 — Module card + bespoke vizzes
 export { PortalModuleCard } from './PortalModuleCard'

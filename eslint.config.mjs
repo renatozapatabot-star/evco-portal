@@ -19,6 +19,10 @@ const eslintConfig = defineConfig([
     // JSX files that rely on globals (Icon, Badge, Sparkline, React) —
     // not production code. Excluding avoids 54 spurious react/jsx-no-undef.
     ".planning/**",
+    // TypeDoc-generated API docs (minified bundle, not source).
+    // Shipped by `npm run docs:api`; regenerated from src/. Linting a
+    // minified main.js yields bogus no-this-alias errors (3:2273, 3:2290).
+    "docs/api/**",
   ]),
   // React Compiler rules downgraded to warnings: they flag optimization
   // opportunities (memoization skipped, setState-in-effect, impure render),

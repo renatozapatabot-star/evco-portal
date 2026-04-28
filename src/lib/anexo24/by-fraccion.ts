@@ -193,26 +193,51 @@ export async function getAnexoByFraccion(
   }>()
   if (cveProductos.length > 0) {
     const thisYearStart = `${new Date().getUTCFullYear()}-01-01`
-    const { data: partidaRows } = await supabase
+    // Real partida shape: folio, cve_producto, cantidad, precio_unitario,
+    // created_at. The phantom columns `cve_trafico, valor_comercial,
+    // fecha_llegada` live on facturas + traficos — resolved via the
+    // canonical 2-hop helper below.
+    type PartidaRow = {
+      id: number | null
+      folio: number | null
+      cve_producto: string | null
+      cantidad: number | null
+      precio_unitario: number | null
+      created_at: string | null
+    }
+    const { data: rawPartidas } = await supabase
       .from('globalpc_partidas')
-      .select('cve_producto, cve_trafico, valor_comercial, fecha_llegada')
+      .select('id, folio, cve_producto, cantidad, precio_unitario, created_at')
       .eq('company_id', companyId)
       .in('cve_producto', cveProductos)
-      .gte('fecha_llegada', thisYearStart)
+      .gte('created_at', thisYearStart)
       .limit(20_000)
-    for (const row of (partidaRows ?? [])) {
-      const cve = row.cve_producto as string | null
+    const partidaRows = (rawPartidas ?? []) as PartidaRow[]
+
+    const { resolvePartidaLinks } = await import('@/lib/queries/partidas-trafico-link')
+    const links = await resolvePartidaLinks(
+      supabase,
+      companyId,
+      partidaRows.map((r) => ({ folio: r.folio })),
+    )
+
+    for (const row of partidaRows) {
+      const cve = row.cve_producto
       if (!cve) continue
-      const entry = aggByCve.get(cve) ?? { count: 0, valor: 0, lastTrafico: null, lastFecha: null, traficos: new Map<string, string>() }
+      const link = row.folio != null ? links.byFolio.get(row.folio) ?? null : null
+      const fecha = link?.fecha_llegada ?? row.created_at
+      const cveTrafico = link?.cve_trafico ?? null
+      const valor = toNumber(row.cantidad) * toNumber(row.precio_unitario)
+      const entry = aggByCve.get(cve) ?? { count: 0, valor: 0, lastTrafico: null as string | null, lastFecha: null as string | null, traficos: new Map<string, string>() }
       entry.count += 1
-      entry.valor += toNumber(row.valor_comercial)
-      if (row.fecha_llegada && (!entry.lastFecha || row.fecha_llegada > entry.lastFecha)) {
-        entry.lastFecha = row.fecha_llegada
-        entry.lastTrafico = row.cve_trafico
+      entry.valor += valor
+      if (fecha && (!entry.lastFecha || fecha > entry.lastFecha)) {
+        entry.lastFecha = fecha
+        entry.lastTrafico = cveTrafico
       }
-      if (row.cve_trafico && row.fecha_llegada) {
-        const prev = entry.traficos.get(row.cve_trafico)
-        if (!prev || row.fecha_llegada > prev) entry.traficos.set(row.cve_trafico, row.fecha_llegada)
+      if (cveTrafico && fecha) {
+        const prev = entry.traficos.get(cveTrafico)
+        if (!prev || fecha > prev) entry.traficos.set(cveTrafico, fecha)
       }
       aggByCve.set(cve, entry)
     }

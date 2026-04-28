@@ -7,6 +7,7 @@ import { fmtDateTime, fmtUSD } from '@/lib/format-utils'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { approveDraft, rejectDraft, correctDraft, cancelApproval } from './actions'
+import { AguilaTextarea } from '@/components/aguila'
 
 // ── Types ──────────────────────────────────────────────
 
@@ -553,18 +554,13 @@ export function ApprovalQueue({ initialPending, initialRecent, initialEscalation
                 : `Aprobar con corrección para ${((actionModal.draft.draft_data || {}) as DraftData).supplier || 'proveedor'}. Escribe la nota:`
               }
             </div>
-            <textarea
+            <AguilaTextarea
               value={modalText}
-              onChange={e => setModalText(e.target.value)}
+              onChange={(e) => setModalText(e.target.value)}
               placeholder={actionModal.type === 'reject' ? 'Motivo de rechazo...' : 'Nota de corrección...'}
               rows={3}
-              style={{
-                width: '100%', padding: '12px 14px', borderRadius: 12,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255,255,255,0.04)',
-                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'none',
-                fontFamily: 'inherit',
-              }}
+              style={{ resize: 'none' }}
+              required={actionModal.type === 'reject'}
             />
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button

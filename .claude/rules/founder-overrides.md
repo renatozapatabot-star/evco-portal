@@ -88,6 +88,93 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-28 · Renato IV · Vercel cron for sync-watchdog only
+  supersedes: architecture.md "Vercel cron explicitly rejected for sync work"
+  updates:    src/app/api/cron/sync-watchdog/route.ts (new),
+              src/app/api/cron/sync-watchdog/__tests__/route.test.ts (new),
+              vercel.json (cron entry every 5 min)
+  basis:      Co-located Throne watchdog (scripts/watchdog.js) has zero
+              independent failure domain. The 2026-04-24 silent stop proved
+              this — when Throne dies, every Throne process dies with it,
+              including the watchdog itself. globalpc_delta sync was silent
+              for 93 hours; no Telegram fired because withSyncLog only
+              alerts on logged failures, not silent stops.
+              Vercel cron at /api/cron/sync-watchdog runs every 5 min, reads
+              sync_log only (200ms read + conditional alert), fires Telegram
+              on staleness > 30 min. Independent failure domain: when Throne
+              dies, Vercel still alerts. Long-running sync work stays on
+              Throne; this Vercel cron is scoped to staleness alerting only.
+
+2026-04-28 · Renato IV · Contabilidad tile removed from PortalDashboard frontpage
+  supersedes: src/components/portal/PortalDashboard.tsx lines 213-266
+              (Contabilidad/Pedimentos-fallback IIFE; tile #2 inline card)
+  updates:    src/components/portal/PortalDashboard.tsx (Pedimentos card replaces
+              the IIFE; Receipt icon import dropped; comment at line 127 updated),
+              src/app/inicio/page.tsx (drop contabilidadAbiertasCount + econta
+              query + contabilidad nav-counts entry)
+  basis:      User reported the tile bouncing for non-accountant users — the
+              role gate at /contabilidad/inicio:56 redirects client/operator
+              roles to /inicio, so a user who clicked the frontpage tile
+              landed back where they started. UNIFIED_NAV_TILES already
+              excluded Contabilidad post-V1 reset (2026-04-24); this entry
+              completes the cleanup that was missed in PortalDashboard.tsx.
+              Anabel's cockpit at /contabilidad/inicio is unchanged; reachable
+              via CONTABILIDAD_NAV top-bar (contabilidad role only),
+              /admin/eagle ArApTile (admin/broker), and direct URL.
+              Saves one econta_cartera query per client SSR.
+
+2026-04-24 · Renato IV · V1 Clean Visibility reset — strip AI surface from client UI
+  supersedes: .claude/rules/core-invariants.md #29 (six-tile list → five-tile list;
+              Contabilidad removed from client nav),
+              .claude/rules/baseline-2026-04-19.md I15 (Contabilidad tile #2),
+              CRUZ-Project-2026/04-30-DAY-FOCUS.md (three-commit plan:
+              supervisor hardening · 60-sec demo · Activity+Risky widgets)
+  updates:    src/lib/cockpit/nav-tiles.ts (6 tiles → 5),
+              src/components/DashboardShellClient.tsx (chat bubble + ticker
+              gated off for client role),
+              src/app/inicio/page.tsx (strip activity/mensajeria/delta/severity),
+              src/app/entradas/** (clean spreadsheet view, all columns),
+              src/app/pedimentos/** (Cleared/Not cleared text only; NEW detail page),
+              src/app/expedientes/** (inline PDF preview pane),
+              src/app/mi-cuenta/** + src/app/contabilidad/** + 20+ V2 routes
+              (role-gated to notFound() for client role; operator still reaches),
+              new: src/lib/pedimentos/clearance.ts,
+                   src/lib/links/entity-links.ts,
+                   src/lib/auth/require-operator.ts,
+                   src/components/portal/UniversalSearch.tsx,
+                   src/components/portal/PdfPreviewPane.tsx
+  basis:      V1 product direction — pure visibility/transparency for the
+              shipper. The customer sees their own raw data, cleanly, and
+              CRUZ gets out of the way. Supervisor stays running in shadow
+              mode on Throne (PM2 processes untouched); the UI layer
+              removes every AI-forward affordance (chat bubble · CRUZ
+              sugiere · Activity feed · Risky shipments · timelines ·
+              semaforo colors beyond Cleared/Not cleared · A/R dunning
+              tone · Tito's 60-sec demo page). Tenant isolation and every
+              HARD invariant preserved unchanged. Pedimentos and
+              Contabilidad routes stay live on disk for back-compat deep
+              links + operator workflow; only the client-nav composition
+              and the shell chrome change. When L1 supervisor promotion
+              happens later, AI surfaces will be re-added behind an
+              explicit per-feature flag.
+
+2026-04-24 · Renato IV · ship.sh Gate 2 bypassed for bundle-parity CSS deploy
+  supersedes: .claude/rules/ship-process.md Gate 2 (data-integrity smoke) +
+              CLAUDE.md "Every deploy: use npm run ship"
+  updates:    (runtime bypass — no file change)
+              Deploy dpl_Cpg4nD3aNzc3daRb3dWYRQzDKeEU · commits 08abcd5 + b94f795
+  basis:      Gate 2 failed on a pre-existing SEV-2 that predates this work —
+              sync_log failure rate 18.9% over last 7d (threshold 5%). The
+              shipped change is CSS-only (.portal-live-glow, .portal-shine,
+              .portal-activity, .portal-tabs-lux, .portal-momento primitives
+              + portalDrawer keyframes). Physically impossible for CSS to
+              affect sync reliability. User directive "deploy it all and
+              ill fix it" explicitly accepts the red data-integrity signal
+              on production smoke (all 6 tables green, verdict red driven
+              by sync_log rate). Sync reliability investigation owed as
+              follow-up; NOT deferred silently. Direct vercel --prod --yes
+              from feat/ursula-demo-polish-2026-04-22.
+
 2026-04-19 · Renato IV · Client A/R visible on client surface
   supersedes: learned-rules.md — "Client A/R visibility is a known gap
               (broker-internal by design)"

@@ -60,11 +60,13 @@ export async function POST(
   const supabase = createServerClient()
   const update: Record<string, unknown> = { [body.section]: body.value }
 
+  // companies has no updated_at column (phantom — M15 sweep). Return the
+  // server time instead so clients can still show "guardado hace N s".
   const { data, error } = await supabase
     .from('companies')
     .update(update)
     .eq('company_id', id)
-    .select('company_id, updated_at')
+    .select('company_id')
     .single()
 
   if (error) {
@@ -74,5 +76,5 @@ export async function POST(
     return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
   }
 
-  return NextResponse.json({ ok: true, updated_at: data.updated_at ?? null })
+  return NextResponse.json({ ok: true, updated_at: new Date().toISOString() })
 }

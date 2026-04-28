@@ -756,8 +756,9 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
       .lt('fecha_pago', monthStart)
       .limit(500),
     // 4: recently crossed (proxy for inventory)
+    // Real column is bultos_recibidos (not bultos); M15 phantom sweep.
     sb.from('traficos')
-      .select('id, trafico, bultos, peso_bruto, fecha_cruce')
+      .select('id, trafico, bultos_recibidos, peso_bruto, fecha_cruce')
       .eq('company_id', companyId)
       .eq('estatus', 'Cruzado')
       .gte('fecha_cruce', new Date(Date.now() - 30 * 86400000).toISOString())
@@ -876,7 +877,7 @@ async function fetchClientData(companyId: string): Promise<ClientData> {
 
   // Inventory proxy from recently crossed
   const bultos = (recentlyCrossed as Record<string, unknown>[]).reduce(
-    (s, r) => s + Number(r.bultos || 0), 0
+    (s, r) => s + Number(r.bultos_recibidos || 0), 0
   )
   const tons = (recentlyCrossed as Record<string, unknown>[]).reduce(
     (s, r) => s + Number(r.peso_bruto || 0) / 1000, 0

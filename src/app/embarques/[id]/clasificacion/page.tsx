@@ -45,39 +45,89 @@ export default async function ClasificacionPage({
     pedimento: string | null
   } & { tipo_operacion?: string | null }
 
-  const { data: partidasRaw } = await supabase
-    .from('globalpc_partidas')
-    .select(
-      'id, cve_producto, fraccion_arancelaria, fraccion, descripcion, umc, pais_origen, cantidad, valor_comercial, tmec',
-    )
-    .eq('cve_trafico', traficoId)
-    .limit(2000)
+  // Partidas chain: cve_trafico → facturas.folio → partidas → productos enrichment.
+  // globalpc_partidas has no cve_trafico, fraccion, fraccion_arancelaria,
+  // descripcion, umc, valor_comercial, or tmec columns. Real shape: folio (→ facturas),
+  // cve_producto (→ productos for fraccion + descripcion), cantidad, precio_unitario.
+  const companyIdForScope = typedTrafico.company_id ?? session.companyId
 
-  type Row = {
-    id?: string | null
-    cve_producto?: string | null
-    fraccion_arancelaria?: string | null
-    fraccion?: string | null
-    descripcion?: string | null
-    umc?: string | null
-    pais_origen?: string | null
-    cantidad?: number | null
-    valor_comercial?: number | null
-    tmec?: boolean | null
+  const { data: facturasRaw } = await supabase
+    .from('globalpc_facturas')
+    .select('folio, valor_comercial')
+    .eq('cve_trafico', traficoId)
+    .eq('company_id', companyIdForScope)
+    .limit(500)
+
+  const folioValorMap = new Map<number, number | null>()
+  for (const f of (facturasRaw ?? []) as Array<{
+    folio: number | null
+    valor_comercial: number | null
+  }>) {
+    if (f.folio != null) folioValorMap.set(f.folio, f.valor_comercial)
+  }
+  const folios = Array.from(folioValorMap.keys())
+
+  type PartidaRaw = {
+    id: number | null
+    folio: number | null
+    cve_producto: string | null
+    cve_cliente: string | null
+    cantidad: number | null
+    precio_unitario: number | null
+    pais_origen: string | null
+  }
+  let partidaRows: PartidaRaw[] = []
+  if (folios.length > 0) {
+    const { data } = await supabase
+      .from('globalpc_partidas')
+      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, pais_origen')
+      .in('folio', folios)
+      .eq('company_id', companyIdForScope)
+      .limit(2000)
+    partidaRows = (data ?? []) as PartidaRaw[]
   }
 
-  const productos: Producto[] = ((partidasRaw as Row[] | null) ?? []).map((p) => ({
-    id: p.id ?? undefined,
-    cve_producto: p.cve_producto ?? undefined,
-    fraccion_arancelaria: p.fraccion_arancelaria ?? undefined,
-    fraccion: p.fraccion ?? undefined,
-    descripcion: p.descripcion ?? undefined,
-    umc: p.umc ?? undefined,
-    pais_origen: p.pais_origen ?? undefined,
-    cantidad: p.cantidad ?? undefined,
-    valor_comercial: p.valor_comercial ?? undefined,
-    certificado_origen_tmec: p.tmec ?? undefined,
-  }))
+  const productMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+  const cves = Array.from(
+    new Set(partidaRows.map((p) => p.cve_producto).filter((c): c is string => !!c)),
+  )
+  if (cves.length > 0) {
+    const { data: prods } = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, cve_cliente, descripcion, fraccion')
+      .eq('company_id', companyIdForScope)
+      .in('cve_producto', cves)
+      .limit(2000)
+    for (const p of (prods ?? []) as Array<{
+      cve_producto: string | null
+      cve_cliente: string | null
+      descripcion: string | null
+      fraccion: string | null
+    }>) {
+      productMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, {
+        descripcion: p.descripcion,
+        fraccion: p.fraccion,
+      })
+    }
+  }
+
+  const productos: Producto[] = partidaRows.map((p) => {
+    const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+    const cantidad = Number(p.cantidad) || 0
+    const precio = Number(p.precio_unitario) || 0
+    return {
+      id: p.id != null ? String(p.id) : undefined,
+      cve_producto: p.cve_producto ?? undefined,
+      fraccion_arancelaria: enr?.fraccion ?? undefined,
+      fraccion: enr?.fraccion ?? undefined,
+      descripcion: enr?.descripcion ?? undefined,
+      umc: undefined, // globalpc_partidas has no UMC column; derive from fraccion UMT downstream if needed
+      pais_origen: p.pais_origen ?? undefined,
+      cantidad: cantidad || undefined,
+      valor_comercial: cantidad * precio || undefined,
+      certificado_origen_tmec: undefined, // partidas has no tmec column; traficos.predicted_tmec lives on the trafico
+    }
+  })
 
   // Cliente name lookup.
   let clienteName = typedTrafico.company_id ?? '—'

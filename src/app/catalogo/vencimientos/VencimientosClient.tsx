@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { FallbackLink, SectionHeader } from '@/components/aguila'
+import { FallbackLink, SectionHeader, GlassCard } from '@/components/aguila'
 import {
   BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
   TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
@@ -97,10 +97,8 @@ export function VencimientosClient({ rows }: Props) {
         })}
       </div>
 
-      <div style={{
-        display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 20, padding: 12,
-        background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: 12,
-        backdropFilter: `blur(${GLASS_BLUR})`,
+      <GlassCard tier="hero" padding={12} style={{
+        display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 20,
       }}>
         <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED, alignSelf: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Tipo:
@@ -121,13 +119,9 @@ export function VencimientosClient({ rows }: Props) {
             {k === 'all' ? 'Todos' : PERMIT_LABEL[k as PermitKind]}
           </button>
         ))}
-      </div>
+      </GlassCard>
 
-      <div style={{
-        marginTop: 16, background: BG_CARD, border: `1px solid ${BORDER}`,
-        borderRadius: 16, overflow: 'hidden',
-        backdropFilter: `blur(${GLASS_BLUR})`, boxShadow: GLASS_SHADOW,
-      }}>
+      <GlassCard tier="hero" padding={0} style={{ marginTop: 16, overflow: 'hidden' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: '100px minmax(0, 2fr) 90px 120px 120px 110px',
@@ -199,13 +193,13 @@ export function VencimientosClient({ rows }: Props) {
             )
           })
         )}
-      </div>
+      </GlassCard>
 
       <FallbackLink
         href="https://trafico1web.globalpc.net/catalogos/productos"
         label="Catálogo"
         isIncomplete={rows.length === 0}
-        message="Sin permisos capturados en CRUZ — consulta el catálogo de GlobalPC."
+        message="Sin permisos capturados en el portal — consulta el catálogo de GlobalPC."
       />
     </div>
   )

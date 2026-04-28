@@ -22,6 +22,11 @@ const CROSSED_ESTATUS = ['Cruzado', 'E1', 'Entregado']
 export interface LatestCrossing {
   trafico: string
   fecha_cruce: string
+  /** 0 verde · 1 amarillo · 2 rojo · null unknown. Optional so older
+   * call sites that don't need it can ignore it. Added M8 to let the
+   * /inicio subtitle show "cruzó verde hace 3 días" — a meaningful
+   * micro-delight vs the plain "cruzó hace 3 días". */
+  semaforo?: number | null
 }
 
 export async function getLatestCrossing(
@@ -30,7 +35,7 @@ export async function getLatestCrossing(
 ): Promise<LatestCrossing | null> {
   const { data } = await supabase
     .from('traficos')
-    .select('trafico, fecha_cruce')
+    .select('trafico, fecha_cruce, semaforo')
     .eq('company_id', companyId)
     .in('estatus', CROSSED_ESTATUS)
     .not('fecha_cruce', 'is', null)
@@ -38,9 +43,13 @@ export async function getLatestCrossing(
     .limit(1)
     .maybeSingle()
 
-  const row = data as { trafico?: string | null; fecha_cruce?: string | null } | null
+  const row = data as { trafico?: string | null; fecha_cruce?: string | null; semaforo?: number | null } | null
   if (!row || !row.trafico || !row.fecha_cruce) return null
-  return { trafico: row.trafico, fecha_cruce: row.fecha_cruce }
+  return {
+    trafico: row.trafico,
+    fecha_cruce: row.fecha_cruce,
+    semaforo: typeof row.semaforo === 'number' ? row.semaforo : null,
+  }
 }
 
 /**

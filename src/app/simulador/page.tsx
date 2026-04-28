@@ -48,7 +48,9 @@ interface TraficoOption {
   importe_total: number | null
   peso_bruto: number | null
   regimen: string | null
-  fraccion_arancelaria: string | null
+  // fraccion_arancelaria was a phantom on traficos (M16 sweep). Fracción
+  // lives on partidas→productos (3-hop). For the simulator's prefill,
+  // operator types fracción manually — keeping the form light.
 }
 
 interface CalcResult {
@@ -117,7 +119,7 @@ export default function SimuladorPage() {
 
     Promise.resolve(
       supabase.from('traficos')
-        .select('trafico, descripcion_mercancia, proveedores, importe_total, peso_bruto, regimen, fraccion_arancelaria')
+        .select('trafico, descripcion_mercancia, proveedores, importe_total, peso_bruto, regimen')
         .is('fecha_cruce', null)
         .not('estatus', 'ilike', '%cruz%')
         .gte('fecha_llegada', '2024-01-01')
@@ -172,7 +174,8 @@ export default function SimuladorPage() {
 
   function hydrateFromTrafico(t: TraficoOption) {
     if (t.importe_total != null) setValorUsd(String(t.importe_total))
-    if (t.fraccion_arancelaria) setFraccion(t.fraccion_arancelaria)
+    // fracción is entered manually (no phantom traficos.fraccion_arancelaria
+    // after M16 sweep — real home is partidas→productos).
     const code = (t.regimen || '').toUpperCase().trim()
     if (code && REGIMEN_OPTIONS.some(r => r.code === code)) setRegimen(code)
   }

@@ -7,12 +7,13 @@ import { ChevronLeft, AlertTriangle, Package, Scale, FileText } from 'lucide-rea
 import { getClientClaveCookie, PATENTE } from '@/lib/client-config'
 import { fmtDate, fmtDesc } from '@/lib/format-utils'
 import { fmtCarrier } from '@/lib/carrier-names'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Previously held a raw anon-key Supabase client here (createClient
+// from @supabase/supabase-js). That pattern bypassed the app-layer
+// tenant scope and hit globalpc_proveedores + supplier_network
+// directly — both are CLIENT_SCOPED_TABLES. Replaced with
+// /api/proveedores/resolve which carries the session-derived
+// company_id filter through the service role.
 
 interface Entrada {
   id: number
@@ -47,51 +48,54 @@ export default function EntradaDetailPage() {
   const id = params.id as string
   const [entrada, setEntrada] = useState<Entrada | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [proveedorName, setProveedorName] = useState('')
   const [partidaDesc, setPartidaDesc] = useState('')
 
   useEffect(() => {
+    let cancelled = false
     fetch(`/api/data?table=entradas&cve_entrada=${encodeURIComponent(id)}&limit=1`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
+        return r.json()
+      })
       .then(async d => {
+        if (cancelled) return
         const rows = d.data ?? d ?? []
         const entry = rows[0] || null
         setEntrada(entry)
 
-        // Resolve proveedor name
+        // Resolve proveedor name via tenant-scoped endpoint (no anon client).
         const provCode = entry?.cve_proveedor
         if (provCode) {
-          setProveedorName(provCode)
-          const { data: gpc } = await supabase
-            .from('globalpc_proveedores')
-            .select('nombre')
-            .or(`cve_proveedor.eq.${provCode},nombre.ilike.%${provCode}%`)
-            .limit(1)
-          if (gpc?.[0]) {
-            setProveedorName(gpc[0].nombre)
-          } else {
-            const { data: supplier } = await supabase
-              .from('supplier_network')
-              .select('supplier_name')
-              .ilike('supplier_name', `%${provCode}%`)
-              .limit(1)
-            if (supplier?.[0]) setProveedorName(supplier[0].supplier_name)
-          }
+          if (!cancelled) setProveedorName(provCode)
+          const res = await fetch(`/api/proveedores/resolve?code=${encodeURIComponent(provCode)}`)
+            .then(r => r.ok ? r.json() : { name: null })
+            .catch(() => ({ name: null }))
+          if (!cancelled && res?.name) setProveedorName(res.name)
         }
 
         // Resolve partida description if trafico linked
         if (entry?.trafico) {
-          fetch(`/api/data?table=globalpc_partidas&cve_trafico=${encodeURIComponent(entry.trafico)}&select=descripcion&limit=1`)
-            .then(r => r.json())
+          fetch(`/api/data?table=globalpc_partidas&cve_trafico=${encodeURIComponent(entry.trafico)}&limit=1`)
+            .then(r => r.ok ? r.json() : { data: [] })
             .then(pd => {
+              if (cancelled) return
               const arr = pd.data ?? []
               if (arr[0]?.descripcion) setPartidaDesc(arr[0].descripcion)
             })
-            .catch((err) => console.error('[entrada-detail] partida fetch:', err.message))
+            .catch(() => { /* silent — partida is enrichment only */ })
         }
       })
-      .catch((err) => console.error('[entrada-detail] main fetch:', err.message))
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (err.message === 'session_expired') {
+          if (typeof window !== 'undefined') window.location.href = '/login'
+          return
+        }
+        if (!cancelled) setFetchError(true)
+      })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [id])
 
   if (loading) return (
@@ -107,7 +111,14 @@ export default function EntradaDetailPage() {
       <Link href="/entradas" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: 24 }}>
         <ChevronLeft size={14} /> Entradas
       </Link>
-      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--text-primary)' }}>Entrada no encontrada</h1>
+      <h1 style={{ fontSize: 'var(--aguila-fs-headline)', fontWeight: 700, color: 'var(--text-primary)' }}>
+        {fetchError ? 'No pudimos cargar la entrada' : 'Entrada no encontrada'}
+      </h1>
+      {fetchError && (
+        <p style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-muted)', marginTop: 12 }}>
+          Revisa tu conexión e inténtalo de nuevo.
+        </p>
+      )}
     </div>
   )
 

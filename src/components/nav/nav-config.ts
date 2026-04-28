@@ -1,9 +1,10 @@
 import {
   LayoutDashboard, Truck, FileText, FolderOpen,
-  BarChart3, DollarSign, Users2, BookOpen,
+  BarChart3, DollarSign, Users2, BookOpen, Book,
   Shield, Settings, Package,
   Warehouse, TrendingUp, Radio, Brain,
   FileSpreadsheet, ScanLine, Eye, Play, History,
+  Target,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -103,6 +104,15 @@ export const INTERNAL_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: 'ventas',
+    label: 'Ventas',
+    icon: Target,
+    roles: ['admin', 'broker'],
+    children: [
+      { href: '/admin/leads', label: 'Pipeline de leads', icon: Target, roles: ['admin', 'broker'] },
+    ],
+  },
+  {
     key: 'interno',
     label: 'Interno',
     icon: Play,
@@ -123,16 +133,17 @@ export const INTERNAL_BOTTOM: NavTopLevel[] = [
 // CLIENT NAV — client role (8 items visible to clients)
 // ---------------------------------------------------------------------------
 
-// V1 client nav (Phase 4 cull) — 7 items. Non-V1 (/entradas, /catalogo, /solicitar,
-// /clasificar-producto, /ahorro) remain reachable by direct URL.
+// V1 Clean Visibility client nav (2026-04-24) — 6 items.
+// Matches the 5 UNIFIED_NAV_TILES + Inicio landing. /reportes and /kpis
+// were retired from client nav; /embarques stays reachable only via
+// cross-link (trafico IDs on entradas/pedimentos/expediente rows).
 export const CLIENT_NAV: NavTopLevel[] = [
-  { href: '/',                  label: 'Inicio',        icon: LayoutDashboard },
-  { href: '/embarques',          label: 'Embarques',      icon: Truck },
-  { href: '/pedimentos',        label: 'Pedimentos',    icon: FileText },
-  { href: '/reportes',          label: 'Reportes',      icon: BarChart3 },
-  { href: '/reportes/anexo-24', label: 'Anexo 24',      icon: FileSpreadsheet },
-  { href: '/expedientes',       label: 'Expedientes',   icon: FolderOpen },
-  { href: '/kpis',              label: "KPI's",         icon: TrendingUp },
+  { href: '/',            label: 'Inicio',             icon: LayoutDashboard },
+  { href: '/entradas',    label: 'Entradas',           icon: Package },
+  { href: '/pedimentos',  label: 'Pedimentos',         icon: FileText },
+  { href: '/expedientes', label: 'Expediente Digital', icon: FolderOpen },
+  { href: '/catalogo',    label: 'Catálogo',           icon: Book },
+  { href: '/anexo-24',    label: 'Anexo 24',           icon: FileSpreadsheet },
 ]
 
 // ---------------------------------------------------------------------------
@@ -274,25 +285,35 @@ export const ADMIN_ONLY_ROUTES = [
   '/rentabilidad',
   '/resultados',
   '/garantia',
+  // V1 Clean Visibility additions (2026-04-24) — client never sees these
+  '/cruz',
+  '/asistente',
+  '/anomalias',
+  '/analytics',
+  '/monitor',
+  '/inteligencia',
+  '/contabilidad',
+  '/mi-cuenta',
+  '/reportes',
+  '/kpis',
 ] as const
 
-/** Routes accessible by client role */
+/** Routes accessible by client role — V1 Clean Visibility (2026-04-24).
+ *  Five core surfaces + shipment parent (cross-link reachable) +
+ *  support/auth routes. Removed: /reportes, /kpis, /ahorro, /solicitar,
+ *  /clasificar-producto (now operator-only per the reset). */
 export const CLIENT_ROUTES = [
   '/',
+  '/inicio',
   '/entradas',
   '/embarques',
   '/pedimentos',
   '/catalogo',
-  '/anexo24',
+  '/anexo-24',
   '/expedientes',
-  '/reportes',
-  '/kpis',
   '/login',
   '/aduana',
   '/cambiar-contrasena',
-  '/ahorro',
-  '/solicitar',
-  '/clasificar-producto',
 ] as const
 
 // ---------------------------------------------------------------------------

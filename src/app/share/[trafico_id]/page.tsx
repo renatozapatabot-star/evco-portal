@@ -14,6 +14,8 @@ interface TraficoPreview {
   estatus: string | null
   importe_total: number | null
   descripcion_mercancia: string | null
+  // `moneda` lives on globalpc_facturas, not traficos (M15 phantom sweep).
+  // Share previews default to USD for display.
   moneda: string | null
   company_id: string | null
 }
@@ -21,11 +23,12 @@ interface TraficoPreview {
 async function fetchPreview(traficoId: string): Promise<TraficoPreview | null> {
   const { data } = await supabase
     .from('traficos')
-    .select('trafico, estatus, importe_total, descripcion_mercancia, moneda, company_id')
+    .select('trafico, estatus, importe_total, descripcion_mercancia, company_id')
     .eq('trafico', traficoId)
     .gte('fecha_llegada', PORTAL_DATE_FROM)
     .maybeSingle()
-  return data
+  if (!data) return null
+  return { ...(data as Omit<TraficoPreview, 'moneda'>), moneda: null }
 }
 
 function truncate(s: string | null, max: number): string {

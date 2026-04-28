@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Truck, FileText, FolderOpen, Book, Package, ClipboardList, Receipt } from 'lucide-react'
+import { Truck, FileText, FolderOpen, Book, Package, ClipboardList } from 'lucide-react'
 import { PortalTopBar } from './PortalTopBar'
 import { PortalGreeting } from './PortalGreeting'
 import { PortalModuleCard } from './PortalModuleCard'
@@ -18,7 +18,7 @@ import {
   VizDocs,
   VizCatalog,
   VizWarehouseDock,
-  VizRing,
+  VizDonut,
 } from './viz'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 
@@ -52,6 +52,23 @@ export interface PortalDashboardProps {
 }
 
 const ICON_SIZE = 15
+
+/**
+ * First-message greeting the agent shows when the FAB opens /cruz.
+ * Mirrors `DEFAULT_HELLO` in `src/components/aguila/AsistenteButton.tsx`
+ * so the in-content "pregúntale al agente" link and this FAB land on
+ * the same greeting. Role-keyed.
+ */
+const AGENT_HELLO: Record<PortalDashboardRole, string> = {
+  client: '¿En qué te puedo apoyar hoy?',
+  operator: 'Listo para ayudar con el flujo operativo. ¿Qué necesitas?',
+  owner: 'Vista ejecutiva lista. ¿Qué necesitas revisar?',
+}
+
+function buildAgentHref(role: PortalDashboardRole): string {
+  const params = new URLSearchParams({ ctx: role, hello: AGENT_HELLO[role] })
+  return `/cruz?${params.toString()}`
+}
 
 function attachMonth(href: string, month?: string): string {
   if (!month) return href
@@ -107,7 +124,7 @@ export function PortalDashboard({
   useCmdK(openCmd, closeCmd)
 
   // onOpenTheater retained in the prop signature for back-compat callers
-  // but no longer wired — tile 2 is now a direct-nav Contabilidad card.
+  // but no longer wired — tile 2 is a direct-nav Pedimentos card.
   void onOpenTheater
 
   // Prefer the role-aware description but keep the 6 cards identical in
@@ -134,8 +151,8 @@ export function PortalDashboard({
         lastCross={lastCross}
         searchPlaceholder={
           isClient
-            ? 'Busca un embarque, pedimento, o pregunta al Agente…'
-            : 'Busca un SKU, pedimento, embarque, Anexo 24…'
+            ? 'Buscar pedimento, embarque, expediente… o pregúntale al Agente'
+            : 'Buscar SKU, pedimento, embarque, Anexo 24…'
         }
       />
 
@@ -193,60 +210,33 @@ export function PortalDashboard({
             ariaLabel="Ir a Embarques"
           />
 
-          {/* 2. Contabilidad (2026-04-19 founder-override — was Pedimentos).
-               Client → /mi-cuenta (own A/R, ethical contract in
-               .claude/rules/client-accounting-ethics.md). Broker/operator →
-               /contabilidad/inicio (Anabel's cockpit). For clients, gated
-               by NEXT_PUBLIC_MI_CUENTA_ENABLED — when OFF, tile renders
-               AS the old Pedimentos card so Ursula's experience is
-               preserved until Tito flips the flag post-walkthrough. */}
-          {(() => {
-            const miCuentaEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
-            const clientFallback = isClient && !miCuentaEnabled
-            return clientFallback ? (
-              <PortalModuleCard
-                icon={<FileText size={ICON_SIZE} />}
-                title="Pedimentos"
-                desc={
-                  navCounts.pedimentos?.microStatus ??
+          {/* 2. Pedimentos (2026-04-28 founder-override — Contabilidad
+               removed from every landing screen: client /inicio, operator
+               /operador/inicio, owner /admin/eagle. Anabel's cockpit at
+               /contabilidad/inicio is unchanged; reachable via the
+               accountant top-nav and direct URL. */}
+          <PortalModuleCard
+            icon={<FileText size={ICON_SIZE} />}
+            title="Pedimentos"
+            desc={
+              isClient
+                ? navCounts.pedimentos?.microStatus ??
                   'Declaraciones aduanales firmadas este mes.'
-                }
-                badge={
-                  navCounts.pedimentos?.count
-                    ? { tone: 'info', label: `${navCounts.pedimentos.count} MES` }
-                    : undefined
-                }
-                viz={<VizPedimentoLedger />}
-                metric={fmt(navCounts.pedimentos?.count ?? null, '0')}
-                metricLabel="ESTE MES"
-                href={navHref('pedimentos', '/pedimentos')}
-                accent
-                ariaLabel="Ir a Pedimentos"
-              />
-            ) : (
-              <PortalModuleCard
-                icon={<Receipt size={ICON_SIZE} />}
-                title="Contabilidad"
-                desc={
-                  isClient
-                    ? navCounts.contabilidad?.microStatus ??
-                      'Tu saldo, facturas del mes, próximos vencimientos.'
-                    : 'CxC · CxP · cierre del mes.'
-                }
-                badge={
-                  navCounts.contabilidad?.count
-                    ? { tone: 'info', label: `${navCounts.contabilidad.count} ABIERTA${navCounts.contabilidad.count === 1 ? '' : 'S'}` }
-                    : undefined
-                }
-                viz={<VizPedimentoLedger />}
-                metric={fmt(navCounts.contabilidad?.count ?? null, '0')}
-                metricLabel={isClient ? 'ABIERTAS' : 'CxC ABIERTAS'}
-                href={navHref('contabilidad', isClient ? '/mi-cuenta' : '/contabilidad/inicio')}
-                accent
-                ariaLabel={isClient ? 'Ir a Mi cuenta' : 'Ir a Contabilidad'}
-              />
-            )
-          })()}
+                : 'Pedimentos · firmados este mes.'
+            }
+            badge={
+              navCounts.pedimentos?.count
+                ? { tone: 'info', label: `${navCounts.pedimentos.count} MES` }
+                : undefined
+            }
+            viz={<VizPedimentoLedger />}
+            metric={fmt(navCounts.pedimentos?.count ?? null, '0')}
+            metricLabel="ESTE MES"
+            href={navHref('pedimentos', '/pedimentos')}
+            accent
+            ariaLabel="Ir a Pedimentos"
+          />
+
 
           {/* 3. Expedientes */}
           <PortalModuleCard
@@ -316,17 +306,7 @@ export function PortalDashboard({
                 : undefined
             }
             viz={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <VizRing pct={98} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: 'var(--portal-fg-2)' }}>
-                    Clasificación al día
-                  </div>
-                  <div className="portal-meta" style={{ color: 'var(--portal-fg-5)', marginTop: 2 }}>
-                    <span className="portal-num">98.8%</span>
-                  </div>
-                </div>
-              </div>
+              <VizDonut greenPct={98.8} redPct={1.2} size={72} label="63% clasificado" />
             }
             metric={fmt(navCounts.anexo24?.count ?? null, '0')}
             metricLabel="SKUs EN ANEXO"
@@ -341,7 +321,7 @@ export function PortalDashboard({
             by page-level wrappers; we don't re-render it here. */}
       </main>
 
-      <PortalAssistantFab onClick={openCmd} />
+      <PortalAssistantFab href={buildAgentHref(role)} />
       <PortalCommandPalette open={cmdOpen} onClose={closeCmd} />
     </div>
   )

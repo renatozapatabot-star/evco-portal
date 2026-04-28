@@ -19,7 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'reportes',    label: 'Reportes',       sublabel: 'Análisis',      icon: BarChart3,       href: '/reportes',    category: 'Navegación' },
   { id: 'cumplimiento', label: 'Cumplimiento', sublabel: 'Calendario compliance', icon: Shield,   href: '/cumplimiento', category: 'Navegación' },
   { id: 'cuentas',     label: 'Cuentas',        sublabel: 'eConta',        icon: CreditCard,      href: '/cuentas',     category: 'Navegación' },
-  { id: 'anexo24',     label: 'Anexo 24',       sublabel: 'Control IMMEX',  icon: Table2,          href: '/anexo24',     category: 'Navegación' },
+  { id: 'anexo24',     label: 'Anexo 24',       sublabel: 'Control IMMEX',  icon: Table2,          href: '/anexo-24',    category: 'Navegación' },
   { id: 'catalogo',    label: 'Catálogo',       sublabel: 'Fracciones arancelarias', icon: Tags,  href: '/catalogo',    category: 'Navegación' },
   { id: 'documentos',  label: 'Documentos',     sublabel: 'Archivo digital', icon: FileText,      href: '/documentos',  category: 'Navegación' },
   { id: 'bodega',      label: 'Bodega',         sublabel: 'Inventario',    icon: Warehouse,       href: '/bodega',      category: 'Navegación' },

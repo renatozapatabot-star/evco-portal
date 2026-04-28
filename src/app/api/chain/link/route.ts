@@ -131,20 +131,22 @@ export async function POST(req: NextRequest) {
     if (updErr) return err('DB_ERROR', updErr.message, 500)
     linkedDescription = `pedimento ${pedimentoValue} → ${trafico_id}`
   } else if (node_type === 'expediente') {
+    // expediente_documentos real column is pedimento_id (stores the trafico
+    // slug, confusing naming) — no trafico_id. M15 phantom sweep.
     const { data: doc, error: docErr } = await supabase
       .from('expediente_documentos')
-      .select('id, company_id, trafico_id')
+      .select('id, company_id, pedimento_id')
       .eq('id', target_id)
       .maybeSingle()
     if (docErr) return err('DB_ERROR', docErr.message, 500)
     if (!doc) return err('NOT_FOUND', 'Documento no encontrado', 404)
-    const docRow = doc as { id: string; company_id: string | null; trafico_id: string | null }
+    const docRow = doc as { id: string; company_id: string | null; pedimento_id: string | null }
     if (docRow.company_id && docRow.company_id !== traficoCompanyId) {
       return err('VALIDATION_ERROR', 'Documento pertenece a otro cliente', 400)
     }
     const { error: updErr } = await supabase
       .from('expediente_documentos')
-      .update({ trafico_id })
+      .update({ pedimento_id: trafico_id })
       .eq('id', target_id)
     if (updErr) return err('DB_ERROR', updErr.message, 500)
     linkedDescription = `expediente ${target_id} → ${trafico_id}`

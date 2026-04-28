@@ -87,7 +87,7 @@ export interface CockpitInicioProps {
  *  - CockpitBanner (role-aware brand + meta)
  *  - Greeting h1 + summary + LiveTimestamp
  *  - Hero KPI strip (4 tiles)
- *  - UNIFIED_NAV_TILES grid (6 cards, trend sparklines)
+ *  - UNIFIED_NAV_TILES grid (5 cards post-V1 reset 2026-04-24; trend sparklines)
  *  - 2-col main: estadoSections (left) + Actividad reciente (right rail)
  *
  * Consumers:
@@ -120,9 +120,9 @@ export function CockpitInicio({
     return href.includes('?') ? `${href}&month=${encodeURIComponent(month)}` : `${href}?month=${encodeURIComponent(month)}`
   }
   const navItems: NavCardGridItem[] = UNIFIED_NAV_TILES.map((rawTile) => {
-    // resolveNavTile may rewrite the Contabilidad tile back to Pedimentos
-    // for clients when NEXT_PUBLIC_MI_CUENTA_ENABLED is OFF — preserves
-    // Ursula's pre-flag experience until Tito approves /mi-cuenta.
+    // V1 Clean Visibility (2026-04-24): resolveNavTile/resolveNavHref
+    // return the tile as-declared regardless of role. Signatures
+    // preserved so this call site doesn't need to know.
     const tile = resolveNavTile(rawTile, role)
     const cell = navCounts[tile.key as NavTileKey] ?? navCounts[rawTile.key as NavTileKey]
     const roleResolvedHref = resolveNavHref(tile, role)

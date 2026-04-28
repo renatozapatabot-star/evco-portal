@@ -36,13 +36,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
-interface LitePartidaRow {
-  fraccion_arancelaria: string | null
-  fraccion: string | null
-  cantidad: number | null
-  pais_origen: string | null
-  valor_comercial: number | null
-}
+// Partida enrichment now routes via partidasByTrafico (M16 phantom sweep).
 
 export async function GET(
   request: NextRequest,
@@ -78,9 +72,11 @@ export async function GET(
     )
   }
 
+  const { partidasByTrafico } = await import('@/lib/queries/partidas-by-trafico')
+
   const [
     destinatarios, compensaciones, pagos, guias, transportistas,
-    candados, descargas, cuentas, contribuciones, facturas, partidasRes,
+    candados, descargas, cuentas, contribuciones, facturas, partidasEnriched,
   ] = await Promise.all([
     supabase.from('pedimento_destinatarios').select('*').eq('pedimento_id', pedimentoId),
     supabase.from('pedimento_compensaciones').select('*').eq('pedimento_id', pedimentoId),
@@ -92,16 +88,14 @@ export async function GET(
     supabase.from('pedimento_cuentas_garantia').select('*').eq('pedimento_id', pedimentoId),
     supabase.from('pedimento_contribuciones').select('*').eq('pedimento_id', pedimentoId),
     supabase.from('pedimento_facturas').select('*').eq('pedimento_id', pedimentoId),
-    supabase.from('globalpc_partidas')
-      .select('fraccion_arancelaria, fraccion, cantidad, pais_origen, valor_comercial')
-      .eq('cve_trafico', pedRow.trafico_id).limit(2000),
+    partidasByTrafico(supabase, pedRow.company_id, pedRow.trafico_id, { limit: 2000 }),
   ])
 
-  const partidas: PedimentoPartidaLite[] = ((partidasRes.data as LitePartidaRow[] | null) ?? []).map(p => ({
-    fraccion: p.fraccion_arancelaria ?? p.fraccion ?? null,
-    cantidad: p.cantidad ?? null,
-    pais_origen: p.pais_origen ?? null,
-    valor_comercial: p.valor_comercial ?? null,
+  const partidas: PedimentoPartidaLite[] = partidasEnriched.map(p => ({
+    fraccion: p.fraccion,
+    cantidad: p.cantidad,
+    pais_origen: p.pais_origen,
+    valor_comercial: p.valor_comercial,
   }))
 
   const full: FullPedimento = {

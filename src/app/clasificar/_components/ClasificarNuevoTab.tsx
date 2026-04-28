@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from 'react'
 import { GlassCard } from '@/components/aguila/GlassCard'
+import { AguilaTextarea } from '@/components/aguila'
 
 interface Alternative {
   fraccion: string
@@ -180,39 +181,15 @@ export function ClasificarNuevoTab({ canInsert }: ClasificarNuevoTabProps) {
       <GlassCard>
         <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label
-              htmlFor="cn-desc"
-              style={{
-                display: 'block',
-                fontSize: 'var(--aguila-fs-meta)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'rgba(255,255,255,0.6)',
-                marginBottom: 6,
-              }}
-            >
-              Descripción del producto
-            </label>
-            <textarea
+            <AguilaTextarea
               id="cn-desc"
+              label="Descripción del producto"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ej: Resina de polietileno de baja densidad para inyección, peso molecular 100k, presentación pellet…"
               maxLength={2000}
               required
               rows={4}
-              style={{
-                width: '100%',
-                background: 'rgba(255,255,255,0.04)',
-                color: 'rgba(255,255,255,0.92)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 12,
-                padding: '12px 14px',
-                fontSize: 'var(--aguila-fs-section)',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-                outline: 'none',
-              }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
               <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}>

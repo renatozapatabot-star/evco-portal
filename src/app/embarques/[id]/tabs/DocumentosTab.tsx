@@ -157,7 +157,7 @@ export function DocumentosTab({
                   >
                     {d.file_name || displayType}
                   </div>
-                  {d.created_at && (
+                  {d.uploaded_at && (
                     <div
                       style={{
                         fontSize: 'var(--aguila-fs-meta)',
@@ -166,7 +166,7 @@ export function DocumentosTab({
                         fontFamily: 'var(--font-jetbrains-mono)',
                       }}
                     >
-                      {fmtDateTime(d.created_at)}
+                      {fmtDateTime(d.uploaded_at)}
                     </div>
                   )}
                 </div>

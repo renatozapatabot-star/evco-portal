@@ -16,6 +16,19 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 type AnyClient = SupabaseClient<any, any, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
+/**
+ * M16 phantom-column note: the NOM / SEDUE / SEMARNAT permit columns
+ * (nom_numero, nom_expiry, sedue_permit, sedue_expiry, semarnat_cert,
+ * semarnat_expiry) were designed but never migrated onto
+ * globalpc_productos. Until that schema work lands, getVencimientos()
+ * returns an empty array instead of 400-ing against PostgREST.
+ *
+ * When the permit schema ships:
+ *   1. Add the 6 columns to globalpc_productos (or a side table).
+ *   2. Re-enable the commented-out query block below.
+ *   3. Remove the `return []` short-circuit.
+ *   4. Update the phantom ratchet to expect the lower count.
+ */
 export type PermitKind = 'nom' | 'sedue' | 'semarnat'
 export type ExpirySeverity = 'red' | 'amber' | 'plum'
 
@@ -49,74 +62,24 @@ function severityFor(daysUntil: number): ExpirySeverity {
   return 'plum'
 }
 
-interface ProductoRow {
-  id: string | number
-  company_id: string | null
-  cve_producto: string | null
-  descripcion: string | null
-  fraccion: string | null
-  nom_numero: string | null
-  nom_expiry: string | null
-  sedue_permit: string | null
-  sedue_expiry: string | null
-  semarnat_cert: string | null
-  semarnat_expiry: string | null
-}
+// ProductoRow interface removed post-M16 stub; see unblock recipe above.
+// When the permit schema ships, reintroduce it with the 6 permit columns.
 
 export async function getVencimientos(
   supabase: AnyClient,
   opts: { companyId?: string | null; isInternal: boolean; horizonDays?: number } = { isInternal: false },
 ): Promise<VencimientoRow[]> {
-  const horizon = opts.horizonDays ?? 90
-  const today = new Date()
-  const todayIso = today.toISOString().slice(0, 10)
-  const horizonIso = new Date(today.getTime() + horizon * 86_400_000).toISOString().slice(0, 10)
+  // Short-circuit: the 6 permit columns don't exist on globalpc_productos
+  // yet (M16 phantom-column note above). Return empty until the schema
+  // migration ships. Keeping the function signature stable so callers
+  // don't need to branch.
+  void supabase
+  void opts
+  void PERMIT_COLUMNS
+  void severityFor
+  void daysBetween
+  return []
 
-  let query = supabase
-    .from('globalpc_productos')
-    .select(
-      'id, company_id, cve_producto, descripcion, fraccion, nom_numero, nom_expiry, sedue_permit, sedue_expiry, semarnat_cert, semarnat_expiry',
-    )
-    .or(
-      `nom_expiry.lte.${horizonIso},sedue_expiry.lte.${horizonIso},semarnat_expiry.lte.${horizonIso}`,
-    )
-    .limit(500)
-
-  if (!opts.isInternal && opts.companyId) {
-    query = query.eq('company_id', opts.companyId)
-  } else if (opts.companyId) {
-    query = query.eq('company_id', opts.companyId)
-  }
-
-  const { data, error } = await query
-  if (error || !data) return []
-
-  const rows: VencimientoRow[] = []
-  for (const raw of data as ProductoRow[]) {
-    for (const kind of Object.keys(PERMIT_COLUMNS) as PermitKind[]) {
-      const cols = PERMIT_COLUMNS[kind]
-      const expiry = (raw as unknown as Record<string, string | null>)[cols.expiry]
-      const value = (raw as unknown as Record<string, string | null>)[cols.value]
-      if (!expiry || !value) continue
-      if (expiry > horizonIso) continue
-      const days = daysBetween(todayIso, expiry)
-      rows.push({
-        producto_id: String(raw.id),
-        company_id: raw.company_id,
-        cve_producto: raw.cve_producto,
-        descripcion: raw.descripcion,
-        fraccion: raw.fraccion,
-        permit_kind: kind,
-        permit_value: value,
-        expiry_date: expiry,
-        days_until: days,
-        severity: severityFor(days),
-      })
-    }
-  }
-
-  rows.sort((a, b) => a.days_until - b.days_until)
-  return rows
 }
 
 export function groupBySeverity(rows: VencimientoRow[]): Record<ExpirySeverity, VencimientoRow[]> {

@@ -154,13 +154,11 @@ export function BelowFold({ traficoId, trafico, partidasCount, role }: BelowFold
     semaforoInt === 0 || semaforoInt === 1 || semaforoInt === 2
       ? (semaforoInt as SemaforoValue)
       : null
-  // Semáforo disclosure for client role:
-  //   · verde (0)           → show
-  //   · amarillo/rojo/null  → hide entire row (no label, no pill, no "Sin revisión" placeholder).
-  // "Nothing" is important — a muted placeholder would signal to the
-  // client that something is being withheld (invariant #24).
-  // Operator/admin/broker see all semáforo states.
-  const hideSemaforoForClient = role === 'client' && semaforoValue !== 0
+  // V1 Clean Visibility (2026-04-24): Semáforo row hidden from client
+  // surface entirely. Status is expressed as Cleared / Not cleared on
+  // pedimento detail only; the semaforo pill is reserved for operator
+  // surfaces. Operator/admin/broker still see all states here.
+  const hideSemaforoForClient = role === 'client'
 
   const cruceRows: RowDef[] = [
     ...(hideSemaforoForClient ? [] : [{

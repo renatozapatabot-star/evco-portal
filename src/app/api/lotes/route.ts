@@ -9,11 +9,13 @@ const supabase = createClient(
 
 interface Trafico {
   trafico: string
-  proveedor: string | null
+  // traficos real column is `proveedores` (plural text like "PRV_526").
+  // fraccion_arancelaria lives on partidas (via facturas.folio join) and
+  // moneda lives on facturas — both are phantoms on traficos (M15 sweep).
+  // This batch-formation endpoint doesn't use them; dropped.
+  proveedores: string | null
   estatus: string
-  fraccion_arancelaria: string | null
   importe_total: number | null
-  moneda: string | null
   regimen: string | null
 }
 
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
 
   const { data: traficos, error } = await supabase
     .from('traficos')
-    .select('trafico, proveedor, estatus, fraccion_arancelaria, importe_total, moneda, regimen')
+    .select('trafico, proveedores, estatus, importe_total, regimen')
     .eq('company_id', companyId)
     .in('estatus', ['En proceso', 'Pedimento Pagado', 'En tránsito', 'Documentos pendientes'])
     .order('created_at', { ascending: false })
@@ -55,7 +57,7 @@ export async function GET(request: NextRequest) {
   // Group 1: Same supplier + same status
   const supplierGroups: Record<string, Trafico[]> = {}
   for (const t of traficos) {
-    const key = `${t.proveedor || 'Sin proveedor'}::${t.estatus}`
+    const key = `${t.proveedores || 'Sin proveedor'}::${t.estatus}`
     if (!supplierGroups[key]) supplierGroups[key] = []
     supplierGroups[key].push(t)
   }

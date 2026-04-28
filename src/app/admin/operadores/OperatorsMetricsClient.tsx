@@ -22,6 +22,7 @@ import {
 } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
 import { formatHours, formatPct, type OperatorMetricsRow } from '@/lib/operators/metrics'
+import { GlassCard } from '@/components/aguila'
 
 type SortKey =
   | 'name'
@@ -124,17 +125,7 @@ export function OperatorsMetricsClient() {
         margin: '0 auto',
       }}
     >
-      <header
-        style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 20,
-          boxShadow: GLASS_SHADOW,
-          marginBottom: 16,
-        }}
-      >
+      <GlassCard tier="hero" padding={20} style={{ marginBottom: 16 }}>
         <h1
           style={{
             fontFamily: SANS,
@@ -224,22 +215,14 @@ export function OperatorsMetricsClient() {
         {error && (
           <p style={{ marginTop: 12, fontSize: 'var(--aguila-fs-body)', color: 'var(--portal-status-red-fg)' }}>{error}</p>
         )}
-      </header>
+      </GlassCard>
 
       {sorted.length === 0 && !loading ? (
         <EmptyState />
       ) : (
         <>
           {/* Desktop table */}
-          <section className="operadores-table" style={{
-            background: 'rgba(255,255,255,0.045)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${BORDER}`,
-            borderRadius: 20,
-            padding: 8,
-            boxShadow: GLASS_SHADOW,
-            overflowX: 'auto',
-          }}>
+          <GlassCard tier="hero" padding={8} className="operadores-table" style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 760 }}>
               <thead>
                 <tr>
@@ -302,7 +285,7 @@ export function OperatorsMetricsClient() {
                 ))}
               </tbody>
             </table>
-          </section>
+          </GlassCard>
 
           {/* Mobile card stack — appears only on <=640 via CSS */}
           <style>{`
@@ -367,17 +350,7 @@ function cellMono(align: 'left' | 'right'): React.CSSProperties {
 
 function EmptyState() {
   return (
-    <section
-      style={{
-        background: 'rgba(255,255,255,0.045)',
-        backdropFilter: 'blur(20px)',
-        border: `1px solid ${BORDER}`,
-        borderRadius: 20,
-        padding: 40,
-        boxShadow: GLASS_SHADOW,
-        textAlign: 'center',
-      }}
-    >
+    <GlassCard tier="hero" padding={40} style={{ textAlign: 'center' }}>
       <div style={{ fontSize: 'var(--aguila-fs-kpi-large)', marginBottom: 12, opacity: 0.5 }}>○</div>
       <h2 style={{ fontFamily: SANS, fontSize: 'var(--aguila-fs-kpi-small)', fontWeight: 700, margin: 0 }}>
         Sin actividad en el rango seleccionado.
@@ -385,6 +358,6 @@ function EmptyState() {
       <p style={{ color: TEXT_SECONDARY, fontSize: 'var(--aguila-fs-body)', marginTop: 8 }}>
         Ajusta las fechas o verifica que tu equipo esté registrando acciones.
       </p>
-    </section>
+    </GlassCard>
   )
 }

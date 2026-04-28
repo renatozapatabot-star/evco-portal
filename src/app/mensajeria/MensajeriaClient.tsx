@@ -143,7 +143,15 @@ export function MensajeriaClient({ role, companyId, companyName, operatorName }:
           loadThreads()
         },
       )
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'mensajeria', reason: status, error: err?.message },
+            }))
+          }
+        }
+      })
     return () => { supabase.removeChannel(channel) }
   }, [selectedThreadId, isInternal, companyId, loadThreads])
 

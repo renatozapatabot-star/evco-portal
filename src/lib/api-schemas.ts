@@ -5,7 +5,13 @@ export const authSchema = z.object({
   password: z.string().min(1).max(100),
 })
 
-/** /api/cruz-chat — AI chat */
+/** /api/cruz-chat — AI chat
+ *
+ * The optional `mode` field gates the /mi-cuenta/cruz safe-client
+ * surface. When set to 'mi-cuenta-safe', cruz-chat filters tools to
+ * the SAFE_CLIENT_TOOL_NAMES allowlist and swaps the system prompt
+ * to the calm-tone client variant. See
+ * `src/lib/mi-cuenta/cruz-safe.ts` for the contract. */
 export const cruzChatSchema = z.object({
   messages: z.array(z.object({
     role: z.enum(['user', 'assistant']),
@@ -17,6 +23,7 @@ export const cruzChatSchema = z.object({
     timestamp: z.string().optional(),
     voice_mode: z.boolean().optional(),
   }).optional(),
+  mode: z.literal('mi-cuenta-safe').optional(),
 })
 
 /** /api/data — generic data query */

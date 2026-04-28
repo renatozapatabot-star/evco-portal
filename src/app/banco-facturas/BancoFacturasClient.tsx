@@ -24,6 +24,7 @@ import {
 } from '@/lib/design-system'
 import type { InvoiceBankRow, InvoiceBankStatus } from '@/lib/invoice-bank'
 import { trackEvent } from '@/lib/telemetry'
+import { GlassCard } from '@/components/aguila'
 
 const MONO = 'var(--font-jetbrains-mono), JetBrains Mono, monospace'
 const SANS = 'var(--font-geist-sans), Inter, system-ui, sans-serif'
@@ -229,12 +230,7 @@ export function BancoFacturasClient({ role }: Props) {
 
         <DropZone busy={uploadBusy} onFiles={onFiles} />
 
-        <div style={{
-          background: BG_CARD, backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`, borderRadius: 20,
-          boxShadow: `0 0 1px ${GLOW_SILVER_SUBTLE}`,
-          overflow: 'hidden',
-        }}>
+        <GlassCard tier="hero" padding={0} style={{ overflow: 'hidden' }}>
           {loading ? (
             <div style={{ padding: 40, textAlign: 'center', color: TEXT_MUTED }}>Cargando…</div>
           ) : rows.length === 0 ? (
@@ -251,7 +247,7 @@ export function BancoFacturasClient({ role }: Props) {
               ))}
             </div>
           )}
-        </div>
+        </GlassCard>
 
         {selectedId && (
           <BottomBar
@@ -316,12 +312,15 @@ function FilterBar({ filter, onChange }: { filter: FilterState; onChange: (f: Fi
     color: TEXT_MUTED, marginBottom: 4,
   }
   return (
-    <div style={{
-      background: BG_CARD, backdropFilter: 'blur(20px)',
-      border: `1px solid ${BORDER}`, borderRadius: 20, padding: 16,
-      display: 'grid', gap: 12,
-      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    }}>
+    <GlassCard
+      tier="hero"
+      padding={16}
+      style={{
+        display: 'grid',
+        gap: 12,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+      }}
+    >
       <div>
         <div style={labelStyle}>Estado</div>
         <select
@@ -389,7 +388,7 @@ function FilterBar({ filter, onChange }: { filter: FilterState; onChange: (f: Fi
           style={{ ...inputStyle, fontFamily: MONO }} aria-label="Monto máximo"
         />
       </div>
-    </div>
+    </GlassCard>
   )
 }
 

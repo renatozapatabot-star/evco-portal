@@ -142,9 +142,30 @@ export async function POST(request: NextRequest) {
   const fr = trim(criteria.tariffFraction)
   if (fr) {
     const safeFr = sanitizeIlike(fr)
-    const { data: part } = await sb.from('globalpc_partidas')
-      .select('cve_trafico').ilike('fraccion_arancelaria', `%${safeFr}%`).limit(ADVANCED_LIMIT)
-    const traficoKeys = Array.from(new Set((part ?? [])
+    // Fraccion lookup — real schema path:
+    //   productos(fraccion ilike)  →  cve_productos
+    //   partidas(cve_producto in)  →  folios
+    //   facturas(folio in)         →  cve_trafico set
+    // Neither partidas nor traficos carry fraccion directly (M15 sweep).
+    const { data: prods } = await sb.from('globalpc_productos')
+      .select('cve_producto').ilike('fraccion', `%${safeFr}%`).limit(ADVANCED_LIMIT)
+    const cves = Array.from(new Set((prods ?? [])
+      .map((r: { cve_producto: string | null }) => r.cve_producto).filter((x): x is string => !!x)))
+    if (cves.length === 0) {
+      const empty: AdvancedSearchResponse = { ok: true, results: [], count: 0, truncated: false }
+      return NextResponse.json({ data: empty, error: null })
+    }
+    const { data: parts } = await sb.from('globalpc_partidas')
+      .select('folio').in('cve_producto', cves).limit(ADVANCED_LIMIT)
+    const folios = Array.from(new Set((parts ?? [])
+      .map((r: { folio: number | null }) => r.folio).filter((x): x is number => x != null)))
+    if (folios.length === 0) {
+      const empty: AdvancedSearchResponse = { ok: true, results: [], count: 0, truncated: false }
+      return NextResponse.json({ data: empty, error: null })
+    }
+    const { data: facs } = await sb.from('globalpc_facturas')
+      .select('cve_trafico').in('folio', folios).limit(ADVANCED_LIMIT)
+    const traficoKeys = Array.from(new Set((facs ?? [])
       .map((r: { cve_trafico: string | null }) => r.cve_trafico).filter((x): x is string => !!x)))
     if (traficoKeys.length === 0) {
       const empty: AdvancedSearchResponse = { ok: true, results: [], count: 0, truncated: false }

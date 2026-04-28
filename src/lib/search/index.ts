@@ -28,7 +28,7 @@ type ProductoRow = { id: number; cve_producto: string | null; descripcion: strin
 // has no descripcion/fraccion/numero_parte columns. Productos has all three
 // (cve_producto = part #, descripcion = name, fraccion = HTS code).
 type PartidaRow = { id: number; cve_producto: string | null; descripcion: string | null; fraccion: string | null }
-type DocumentoRow = { id: string; nombre: string | null; doc_type: string | null; pedimento_id: string | null }
+type DocumentoRow = { id: string; file_name: string | null; doc_type: string | null; pedimento_id: string | null }
 type CompanyRow = { company_id: string | null; name: string | null; clave_cliente: string | null }
 type OperatorRow = { id: string | null; name: string | null; email: string | null; role: string | null }
 
@@ -211,16 +211,17 @@ async function searchOperadores(sb: SupabaseClient, safe: string, scope: Scope):
 }
 
 async function searchDocumentos(sb: SupabaseClient, safe: string, scope: Scope): Promise<UniversalSearchHit[]> {
+  // expediente_documentos uses file_name, not nombre (M15 phantom sweep).
   let q = sb.from('expediente_documentos')
-    .select('id, nombre, doc_type, pedimento_id')
-    .or(`nombre.ilike.%${safe}%,doc_type.ilike.%${safe}%`)
+    .select('id, file_name, doc_type, pedimento_id')
+    .or(`file_name.ilike.%${safe}%,doc_type.ilike.%${safe}%`)
     .limit(PER_GROUP)
   if (!scope.isInternal) q = q.eq('company_id', scope.companyId)
   const { data } = await q
   return ((data ?? []) as DocumentoRow[]).map(d => ({
     kind: 'documentos',
     id: d.id,
-    title: d.nombre ?? d.doc_type ?? 'Documento',
+    title: d.file_name ?? d.doc_type ?? 'Documento',
     subtitle: `${d.doc_type ?? ''}${d.pedimento_id ? ` · ${d.pedimento_id}` : ''}`,
     href: '/documentos',
   }))

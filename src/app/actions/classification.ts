@@ -21,40 +21,77 @@ import {
 
 async function loadProductos(traficoId: string): Promise<Producto[]> {
   const supabase = createServerClient()
-  const { data } = await supabase
-    .from('globalpc_partidas')
-    .select(
-      'id, cve_producto, fraccion_arancelaria, fraccion, descripcion, umc, pais_origen, cantidad, valor_comercial, tmec',
-    )
-    .eq('cve_trafico', traficoId)
-    .limit(2000)
 
-  type Row = {
-    id?: string | null
-    cve_producto?: string | null
-    fraccion_arancelaria?: string | null
-    fraccion?: string | null
-    descripcion?: string | null
-    umc?: string | null
-    pais_origen?: string | null
-    cantidad?: number | null
-    valor_comercial?: number | null
-    tmec?: boolean | null
+  // Real schema: globalpc_partidas has NO cve_trafico, fraccion,
+  // fraccion_arancelaria, descripcion, umc, valor_comercial, or tmec columns
+  // (M16 phantom-column sweep). The 2-hop canonical join:
+  //   cve_trafico → facturas.cve_trafico → facturas.folio → partidas.folio
+  //   partidas.cve_producto → productos.fraccion + descripcion + umt
+  //   tmec eligibility → traficos.predicted_tmec (derived)
+  const { data: facturas } = await supabase
+    .from('globalpc_facturas')
+    .select('folio')
+    .eq('cve_trafico', traficoId)
+  const folios = (facturas ?? []).map((f: { folio: number | null }) => f.folio).filter((x): x is number => x != null)
+  if (folios.length === 0) return []
+
+  type PartidaRaw = {
+    id: number | null
+    folio: number | null
+    cve_producto: string | null
+    cve_cliente: string | null
+    cantidad: number | null
+    precio_unitario: number | null
+    pais_origen: string | null
+  }
+  const { data: partidaRaw } = await supabase
+    .from('globalpc_partidas')
+    .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, pais_origen')
+    .in('folio', folios)
+    .limit(2000)
+  const partidas = (partidaRaw ?? []) as PartidaRaw[]
+
+  // Enrich via productos (fraccion + descripcion + umt).
+  const cves = Array.from(new Set(partidas.map(p => p.cve_producto).filter((c): c is string => !!c)))
+  const productMap = new Map<string, { descripcion: string | null; fraccion: string | null; umt: string | null }>()
+  if (cves.length > 0) {
+    const { data: prods } = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, cve_cliente, descripcion, fraccion, umt')
+      .in('cve_producto', cves)
+      .limit(2000)
+    for (const p of (prods ?? []) as Array<{
+      cve_producto: string | null
+      cve_cliente: string | null
+      descripcion: string | null
+      fraccion: string | null
+      umt: string | null
+    }>) {
+      productMap.set(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`, {
+        descripcion: p.descripcion,
+        fraccion: p.fraccion,
+        umt: p.umt,
+      })
+    }
   }
 
-  const rows = (data as Row[] | null) ?? []
-  return rows.map((p) => ({
-    id: p.id ?? undefined,
-    cve_producto: p.cve_producto ?? undefined,
-    fraccion_arancelaria: p.fraccion_arancelaria ?? undefined,
-    fraccion: p.fraccion ?? undefined,
-    descripcion: p.descripcion ?? undefined,
-    umc: p.umc ?? undefined,
-    pais_origen: p.pais_origen ?? undefined,
-    cantidad: p.cantidad ?? undefined,
-    valor_comercial: p.valor_comercial ?? undefined,
-    certificado_origen_tmec: p.tmec ?? undefined,
-  }))
+  return partidas.map((p) => {
+    const enr = productMap.get(`${p.cve_cliente ?? ''}|${p.cve_producto ?? ''}`)
+    const cantidad = Number(p.cantidad) || 0
+    const precio = Number(p.precio_unitario) || 0
+    return {
+      id: p.id != null ? String(p.id) : undefined,
+      cve_producto: p.cve_producto ?? undefined,
+      fraccion_arancelaria: enr?.fraccion ?? undefined,
+      fraccion: enr?.fraccion ?? undefined,
+      descripcion: enr?.descripcion ?? undefined,
+      umc: enr?.umt ?? undefined,
+      pais_origen: p.pais_origen ?? undefined,
+      cantidad: cantidad || undefined,
+      valor_comercial: cantidad * precio || undefined,
+      certificado_origen_tmec: undefined, // tmec eligibility lives on traficos.predicted_tmec
+    }
+  })
 }
 
 export async function previewSheet(

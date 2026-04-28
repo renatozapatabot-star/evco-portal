@@ -11,11 +11,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
-  ACCENT_SILVER, AMBER, BG_CARD, BORDER,
-  GLASS_BLUR, GLASS_SHADOW, GREEN, RED,
+  ACCENT_SILVER, AMBER, BORDER,
+  GREEN, RED,
   TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
 } from '@/lib/design-system'
-import { FallbackLink, SectionHeader } from '@/components/aguila'
+import { FallbackLink, SectionHeader, GlassCard } from '@/components/aguila'
 import { renderNull } from '@/lib/ui/cell-renderers'
 
 export interface MonitorRow {
@@ -136,15 +136,9 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
     <div style={{ maxWidth: 1400, margin: '0 auto', padding: 20 }}>
       <SectionHeader title="Monitor de operaciones" count={totalActive} />
 
-      <div style={{
+      <GlassCard tier="hero" padding="16px 20px" style={{
         display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
-        padding: '16px 20px', marginTop: 16,
-        background: BG_CARD,
-        backdropFilter: `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-        border: `1px solid ${BORDER}`,
-        borderRadius: 16,
-        boxShadow: GLASS_SHADOW,
+        marginTop: 16,
       }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {STATUS_OPTIONS.map((opt) => (
@@ -193,18 +187,9 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
             `${filtered.length} visibles · realtime activo`
           )}
         </div>
-      </div>
+      </GlassCard>
 
-      <div style={{
-        marginTop: 16,
-        background: BG_CARD,
-        backdropFilter: `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-        border: `1px solid ${BORDER}`,
-        borderRadius: 16,
-        boxShadow: GLASS_SHADOW,
-        overflow: 'hidden',
-      }}>
+      <GlassCard tier="hero" padding={0} style={{ marginTop: 16, overflow: 'hidden' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(120px, 1.2fr) minmax(80px, 0.8fr) minmax(140px, 1.5fr) 90px minmax(100px, 1fr) 70px 70px',
@@ -279,7 +264,7 @@ export function MonitorClient({ initialRows, role, companyId, isInternal }: Prop
             )
           })
         )}
-      </div>
+      </GlassCard>
 
       <FallbackLink
         href="https://trafico1web.globalpc.net/utilerias/monitor"

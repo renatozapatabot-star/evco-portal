@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { getCookieValue } from '@/lib/client-config'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { GlassCard } from '@/components/aguila'
 import type { LucideIcon } from 'lucide-react'
 import {
   Package, TrendingUp, Zap, Shield,
@@ -116,17 +117,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function GlassPanel({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.04)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 16, padding: '24px',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-      ...style,
-    }}>
+    <GlassCard tier="hero" padding={24} style={style}>
       {children}
-    </div>
+    </GlassCard>
   )
 }
 

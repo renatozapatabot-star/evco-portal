@@ -6,6 +6,7 @@ import { Sparkles, Check, Send, X } from 'lucide-react'
 import { approveAction, requestChangesAction, rejectAction } from '@/app/admin/aprobaciones/actions'
 import { fmtDateTime } from '@/lib/format-utils'
 import { GOLD, GOLD_GRADIENT, BG_CARD, BORDER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED } from '@/lib/design-system'
+import { AguilaTextarea } from '@/components/aguila'
 import type { PendingDraft } from '@/types/cockpit'
 
 interface ActionEngineProps {
@@ -224,22 +225,12 @@ export function ActionEngine({ draft, onActionComplete, totalPending }: ActionEn
           {/* Inline note input */}
           {(mode === 'changes' || mode === 'reject') && (
             <div style={{ marginBottom: 16 }}>
-              <textarea
+              <AguilaTextarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder={mode === 'changes' ? 'Que cambios necesita...' : 'Razon del rechazo (requerido)...'}
-                style={{
-                  width: '100%',
-                  minHeight: 80,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${BORDER}`,
-                  borderRadius: 10,
-                  padding: 12,
-                  color: TEXT_PRIMARY,
-                  fontSize: 'var(--aguila-fs-body)',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
-                }}
+                required={mode === 'reject'}
+                style={{ minHeight: 80 }}
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <button

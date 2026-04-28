@@ -120,10 +120,18 @@ export function CorridorPage({ landmarks, companyId, role }: CorridorPageProps) 
             scheduleRefetch()
           },
         )
-        .subscribe()
+        .subscribe((status: string, err?: Error) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+                detail: { source: 'corredor', reason: status, error: err?.message },
+              }))
+            }
+          }
+        })
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
-        console.warn('[corridor] realtime subscribe failed', err)
+        console.warn('[corridor] realtime subscribe setup failed', err)
       }
     }
 

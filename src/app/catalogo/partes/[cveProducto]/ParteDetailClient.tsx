@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { GlassCard } from '@/components/aguila/GlassCard'
+import { SemaforoPill } from '@/components/aguila/SemaforoPill'
+import { formatPedimento } from '@/lib/format/pedimento'
 
 export interface DetailPayload {
   parte: {
@@ -46,11 +48,27 @@ export interface DetailPayload {
   uses_timeline: Array<{
     created_at: string | null
     trafico_ref: string | null
+    /** Official SAT pedimento number (DD AD PPPP SSSSSSS) when the
+     * trafico has been processed through customs. Null until filed. */
+    pedimento: string | null
+    /** Date the trailer actually crossed the border. */
+    fecha_cruce: string | null
+    /** Date the merchandise arrived at the warehouse pre-cross. */
+    fecha_llegada: string | null
+    /** 0=verde, 1=amarillo, 2=rojo, null=unknown. */
+    semaforo: number | null
     cantidad: number | null
     umt: string | null
     precio_unitario: number | null
     proveedor_clave: string | null
   }>
+  /** Aggregate health of the fetched crossings window — powers the
+   * demo-critical "cruzó verde X/Y · NN%" strip above the table. */
+  crossings_summary?: {
+    total: number
+    verde: number
+    pct_verde: number | null
+  } | null
   proveedores: Array<{
     clave: string
     nombre: string | null
@@ -248,37 +266,131 @@ function HistoryTab({ data }: { data: DetailPayload }) {
       </GlassCard>
     )
   }
+
+  const summary = data.crossings_summary
+  const pctLine =
+    summary && summary.total > 0
+      ? `Cruzó verde ${summary.verde} de ${summary.total}${summary.pct_verde !== null ? ` · ${summary.pct_verde}%` : ''}`
+      : null
+
   return (
-    <GlassCard padding="0">
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <Th>Fecha</Th>
-              <Th>Tráfico</Th>
-              <Th align="right">Cantidad</Th>
-              <Th align="right">Valor U. USD</Th>
-              <Th>Proveedor</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.uses_timeline.map((u, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <Td>{fmtDate(u.created_at)}</Td>
-                <Td>{u.trafico_ref ? (
-                  <Link href={`/embarques/${encodeURIComponent(u.trafico_ref)}`} className="font-mono" style={{ color: 'var(--portal-status-amber-fg)', textDecoration: 'none' }}>
-                    {u.trafico_ref}
-                  </Link>
-                ) : '—'}</Td>
-                <Td align="right" mono>{fmtInt(u.cantidad)}{u.umt ? ` ${u.umt}` : ''}</Td>
-                <Td align="right" mono>{fmtUsd(u.precio_unitario)}</Td>
-                <Td mono>{u.proveedor_clave || '—'}</Td>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Crossings summary strip — the "wow" moment: show a historic
+          green-light track record at a glance before the row-level detail. */}
+      {pctLine && (
+        <GlassCard
+          padding="14px 18px"
+          style={{
+            borderColor: summary && summary.pct_verde !== null && summary.pct_verde >= 90
+              ? 'var(--portal-status-green-ring)'
+              : 'var(--portal-line-2)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+            <p
+              className="portal-eyebrow"
+              style={{
+                margin: 0,
+                fontSize: 'var(--aguila-fs-label)',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'var(--portal-fg-4)',
+                fontWeight: 700,
+              }}
+            >
+              Historial de cruces
+            </p>
+            <p
+              className="font-mono"
+              style={{
+                margin: 0,
+                fontSize: 'var(--aguila-fs-kpi-small)',
+                fontWeight: 700,
+                color:
+                  summary && summary.pct_verde !== null && summary.pct_verde >= 90
+                    ? 'var(--portal-status-green-fg)'
+                    : 'var(--portal-fg-1)',
+              }}
+            >
+              {pctLine}
+            </p>
+          </div>
+        </GlassCard>
+      )}
+
+      <GlassCard padding="0">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--aguila-fs-body)', minWidth: 720 }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                <Th>Cruce</Th>
+                <Th>Semáforo</Th>
+                <Th>Pedimento</Th>
+                <Th>Tráfico</Th>
+                <Th align="right">Cantidad</Th>
+                <Th align="right">USD / U.</Th>
+                <Th>Proveedor</Th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </GlassCard>
+            </thead>
+            <tbody>
+              {data.uses_timeline.map((u, i) => {
+                const semaforoValue =
+                  u.semaforo === 0 || u.semaforo === 1 || u.semaforo === 2
+                    ? u.semaforo
+                    : null
+                return (
+                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <Td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span style={{ color: 'var(--portal-fg-2)' }}>
+                          {fmtDate(u.fecha_cruce) || fmtDate(u.created_at) || '—'}
+                        </span>
+                        {u.fecha_cruce && u.fecha_llegada && u.fecha_cruce !== u.fecha_llegada && (
+                          <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
+                            Llegó {fmtDate(u.fecha_llegada)}
+                          </span>
+                        )}
+                      </div>
+                    </Td>
+                    <Td>
+                      {u.fecha_cruce ? (
+                        <SemaforoPill value={semaforoValue} />
+                      ) : (
+                        <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'var(--portal-fg-5)' }}>
+                          En proceso
+                        </span>
+                      )}
+                    </Td>
+                    <Td mono>
+                      {u.pedimento ? formatPedimento(u.pedimento) : '—'}
+                    </Td>
+                    <Td>
+                      {u.trafico_ref ? (
+                        <Link
+                          href={`/embarques/${encodeURIComponent(u.trafico_ref)}`}
+                          className="font-mono"
+                          style={{ color: 'var(--portal-status-amber-fg)', textDecoration: 'none' }}
+                        >
+                          {u.trafico_ref}
+                        </Link>
+                      ) : (
+                        '—'
+                      )}
+                    </Td>
+                    <Td align="right" mono>
+                      {fmtInt(u.cantidad)}
+                      {u.umt ? ` ${u.umt}` : ''}
+                    </Td>
+                    <Td align="right" mono>{fmtUsd(u.precio_unitario)}</Td>
+                    <Td mono>{u.proveedor_clave || '—'}</Td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+    </div>
   )
 }
 

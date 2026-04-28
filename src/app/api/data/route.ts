@@ -5,9 +5,22 @@ import { verifySession } from '@/lib/session'
 import { sanitizeFilter } from '@/lib/sanitize'
 import { dataQuerySchema } from '@/lib/api-schemas'
 
+// Force dynamic — this route reads the signed session cookie and returns
+// tenant-scoped data. Never CDN-cache a response that varies per session.
+export const dynamic = 'force-dynamic'
+
+// Fail loudly if the service role key is missing. The prior fallback to
+// NEXT_PUBLIC_SUPABASE_ANON_KEY would silently downgrade to a client
+// that hits RLS `USING (false)` and returns empty arrays — every client
+// would see a blank cockpit with no diagnostic.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for /api/data')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 const ALLOWED_TABLES = [
@@ -233,15 +246,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Cache control based on table type
-  const LONG_CACHE = new Set(['oca_database', 'supplier_network', 'anomaly_baselines'])
-  const MEDIUM_CACHE = new Set(['aduanet_facturas', 'econta_facturas', 'econta_cartera', 'product_intelligence'])
-  const maxAge = LONG_CACHE.has(table) ? 7200 : MEDIUM_CACHE.has(table) ? 3600 : 3600
-  const stale = maxAge * 2
+  // Cache control — tenant-scoped payloads must NOT be CDN-cacheable.
+  // Client role doesn't put company_id in the URL (it's derived from
+  // session.companyId at line 160). Two clients requesting the same
+  // URL path would share a cached response — a cross-tenant leak if
+  // Next.js ever stops treating this route as dynamic. Force no-store
+  // on anything client-scoped; allow a short shared cache only on
+  // true reference data that has no tenant column.
+  const PUBLIC_CACHEABLE = new Set(['oca_database', 'bridge_intelligence', 'regulatory_alerts'])
+  const cacheHeader = PUBLIC_CACHEABLE.has(table)
+    ? 's-maxage=600, stale-while-revalidate=1200'
+    : 'private, no-store, max-age=0'
 
   return NextResponse.json({ data }, {
-    headers: {
-      'Cache-Control': `s-maxage=${maxAge}, stale-while-revalidate=${stale}`,
-    },
+    headers: { 'Cache-Control': cacheHeader },
   })
 }

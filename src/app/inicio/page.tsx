@@ -389,11 +389,24 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // actual estatus values (Cruzado/E1 are terminal; Pedimento Pagado +
   // En Proceso are in-flight). Sorted by fecha_llegada ascending → earliest
   // upcoming arrival first.
+  //
+  // Cluster M · 2026-04-28: filter to fecha_llegada >= today-14d. The
+  // audit caught "próximo cruce · 11-feb" rendering on 28-apr — that's
+  // an active-status trafico whose arrival was 76 days stale (likely
+  // an abandoned or never-cleared shipment). Anything that old is no
+  // longer "próximo"; the hero KPI falls back to "Último cruce" when
+  // no fresh imminent shipment exists.
+  const imminentLowerBoundIso = (() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 14)
+    return d.toISOString().slice(0, 10)
+  })()
   const { data: imminentRow } = await supabase
     .from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento')
     .eq('company_id', companyId)
     .not('estatus', 'in', '("Cruzado","E1","Entregado","Cancelado")')
+    .gte('fecha_llegada', imminentLowerBoundIso)
     .order('fecha_llegada', { ascending: true, nullsFirst: false })
     .limit(1)
     .maybeSingle()

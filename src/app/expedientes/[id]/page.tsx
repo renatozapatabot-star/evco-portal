@@ -9,6 +9,8 @@ import { isCleared, clearanceLabelES } from '@/lib/pedimentos/clearance'
 import { linkForTrafico } from '@/lib/links/entity-links'
 import { formatDateDMY } from '@/lib/format'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SyncChip } from '@/components/ui/sync-chip'
+import { readFreshness } from '@/lib/cockpit/freshness'
 import styles from './page.module.css'
 
 /**
@@ -83,13 +85,16 @@ export default async function ExpedienteDetailPage({
   const ownerCompanyId = (traficoRes.data as { company_id: string | null }).company_id
   if (!ownerCompanyId) notFound()
 
-  const { data: docsData } = await supabase
-    .from('expediente_documentos')
-    .select('id, doc_type, file_name, file_url, uploaded_at')
-    .eq('pedimento_id', traficoId)
-    .eq('company_id', ownerCompanyId)
-    .order('uploaded_at', { ascending: false })
-    .limit(500)
+  const [{ data: docsData }, freshness] = await Promise.all([
+    supabase
+      .from('expediente_documentos')
+      .select('id, doc_type, file_name, file_url, uploaded_at')
+      .eq('pedimento_id', traficoId)
+      .eq('company_id', ownerCompanyId)
+      .order('uploaded_at', { ascending: false })
+      .limit(500),
+    readFreshness(supabase, ownerCompanyId),
+  ])
 
   const docs = (docsData ?? []) as Array<{
     id: string
@@ -145,6 +150,7 @@ export default async function ExpedienteDetailPage({
               {status}
             </span>
           )}
+          <SyncChip lastSyncIso={freshness.lastSyncedAt} />
         </div>
         <div className={styles.meta}>
           <span className={styles.metaItem}>

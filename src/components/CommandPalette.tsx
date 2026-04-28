@@ -184,7 +184,7 @@ export function CommandPalette({ open, onClose, initialMode = 'quick' }: Props) 
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Buscar embarques, pedimentos, proveedores…"
+            placeholder="Buscar pedimento, embarque, expediente, SKU…"
             aria-label="Buscar"
             style={{
               flex: 1, minWidth: 0, minHeight: 32,

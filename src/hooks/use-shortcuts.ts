@@ -27,7 +27,7 @@ export function useKeyboardShortcuts() {
 
       const routes: Record<string, string> = {
         '1':'/', '2':'/embarques', '3':'/entradas', '4':'/pedimentos',
-        '5':'/expedientes', '6':'/reportes', '7':'/cuentas', '8':'/anexo24',
+        '5':'/expedientes', '6':'/reportes', '7':'/cuentas', '8':'/anexo-24',
       }
       if (routes[e.key]) { e.preventDefault(); router.push(routes[e.key]); return }
       if (e.key === '9') { e.preventDefault(); document.dispatchEvent(new CustomEvent('cruz:open-chat')); return }

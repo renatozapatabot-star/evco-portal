@@ -60,6 +60,113 @@ push again.
 
 ---
 
+## TODO · investigate the `pedimento_*` + `events_catalog` schema gap
+
+**Owner:** unassigned · **Opened:** 2026-04-28 · **Triggered by:**
+the failed `invoice_dedup` push above.
+
+This is an **investigation task, not a build task.** The output is a
+written assessment, not a migration. Add the assessment to this file
+under the existing "Blocked" section so the next person who picks up
+the unblock has full context before touching production.
+
+### What we know on 2026-04-28
+
+The following 11 tables exist in `supabase/migrations_broken_20260420_1500/20260417_pedimento_data.sql`
+but are **MISSING** on the live Supabase project (probed 2026-04-28
+via service role; PGRST205 on every one):
+
+```
+pedimento_facturas             pedimento_destinatarios
+pedimento_compensaciones       pedimento_pagos_virtuales
+pedimento_guias                pedimento_transportistas
+pedimento_candados             pedimento_descargas
+pedimento_cuentas_garantia     pedimento_contribuciones
+events_catalog
+```
+
+The parent `pedimentos` table **does exist** on remote (created in
+some other migration that was applied), so the gap is specifically
+the child + catalog layer.
+
+### Questions the investigation must answer
+
+1. **What does each of these tables represent in the customs
+   domain?** Each `pedimento_*` child table maps to a SAT pedimento
+   sub-block (destinatarios, contribuciones, guías, etc.). Document
+   one paragraph per table — what data lives there, what code path
+   reads it, what would break if it stays missing.
+
+2. **What code paths currently read these tables?** Run
+   `grep -rn "from('pedimento_destinatarios'" src/ scripts/` (and
+   the other 10) and capture the call sites. Some may be soft-
+   wrapped via `safe-query.ts` and silently returning `[]`; others
+   may be crashing with PGRST205 just like mensajeria-email-fallback
+   was. If any route is currently broken, that's a discovery to
+   surface before unblock.
+
+3. **What's the source-of-truth schema?** Three possibilities:
+   - The parked file (`migrations_broken_20260420_1500/20260417_pedimento_data.sql`)
+     is correct and the unblock is a straight restore.
+   - The parked file has drifted from what the live code expects
+     (same situation we hit with mensajeria_messages.undone +
+     mensajeria_reads + mensajeria_email_notifications). Audit each
+     table's columns against current `src/lib/pedimento/**` reads
+     and writes.
+   - A different, more recent CREATE TABLE was authored after the
+     2026-04-20 reorg and never landed. Search the broken folder
+     for any `_pedimento_*.sql` siblings.
+
+4. **What does `events_catalog` contain?** The original migration
+   has an `INSERT INTO events_catalog` seed at line 225. Document
+   what gets seeded, who reads it, whether the live code expects
+   the seed rows present (cocking `events_catalog`-driven UI
+   labels?).
+
+5. **Is there ANY data depending on these tables today?** If
+   `pedimentos` rows have FK references that would lock them into
+   creation order, document that. The parent exists; the children
+   would be empty on first apply.
+
+6. **Clean unblock plan:**
+   - Single migration vs split? (227 lines is fine for one if it
+     applies idempotently.)
+   - New timestamp prefix (e.g. `20260429HHMMSS_restore_pedimento_data.sql`)
+     so it sorts cleanly.
+   - Any additions needed (similar to the mensajeria pattern: extra
+     tables/columns the live code uses but the original missed).
+   - Idempotency check on the `INSERT INTO events_catalog` —
+     `ON CONFLICT DO NOTHING` or equivalent.
+   - Backfill plan if `pedimentos` rows already exist and need
+     children populated. (Probably "no backfill, fresh data fills
+     forward.")
+   - Order of operations: restore migration → push → unblock
+     `20260422190000_invoice_dedup.sql` → push → verify.
+
+7. **Tenant-isolation review.** Per `.claude/rules/tenant-isolation.md`,
+   every tenant-scoped table MUST include `company_id`. Confirm the
+   parked migration writes `company_id` on every applicable child
+   (or note which ones derive scope transitively via parent
+   `pedimentos.company_id`).
+
+### Deliverable
+
+Append a new section to this file, "Pedimento schema gap · investigation
+results", with answers to all 7 questions above and a recommended
+migration draft (don't apply it — that's a separate authorized step).
+Label any unanswered questions explicitly so the next session knows
+what's still open.
+
+### Why this is intelligence-first, not action-first
+
+The mensajeria push taught us that the 2026-04-20 reorg parked
+multiple migrations — and the live code drifted from the parked
+schema in subtle ways during the gap. Restoring the schema blindly
+would risk re-creating tables that don't match what `src/lib/pedimento/**`
+now expects. Audit before action.
+
+---
+
 ## Applied this session (2026-04-28)
 
 `db push --include-all` applied 5 migrations after one

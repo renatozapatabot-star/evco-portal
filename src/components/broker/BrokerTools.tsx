@@ -56,7 +56,7 @@ export function BrokerTools({ heartbeat, intelligence, isMobile }: BrokerToolsPr
           { href: '/oca', label: 'OCA Clasificación' },
           { href: '/cotizacion', label: 'Cotización' },
           { href: '/usmca', label: 'USMCA' },
-          { href: '/anexo24', label: 'Anexo 24' },
+          { href: '/anexo-24', label: 'Anexo 24' },
           { href: '/admin', label: 'Administración' },
         ].map(tool => (
           <button

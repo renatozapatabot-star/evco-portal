@@ -267,7 +267,7 @@ const TOOLS = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        path: { type: 'string', description: 'Portal path like /embarques, /pedimentos, /entradas, /reportes, /cuentas, /anexo24' },
+        path: { type: 'string', description: 'Portal path like /embarques, /pedimentos, /entradas, /reportes, /cuentas, /anexo-24' },
         label: { type: 'string', description: 'Human-readable description' },
       },
       required: ['path']

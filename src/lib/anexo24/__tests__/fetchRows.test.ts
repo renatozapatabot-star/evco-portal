@@ -109,9 +109,9 @@ const evcoPartidas = [
 ]
 
 const evcoProductos = [
-  { cve_producto: 'PROD-A', descripcion: 'PIEZAS DE CAUCHO', fraccion: '3919100100', umt: 'KGM' },
-  { cve_producto: 'PROD-B', descripcion: 'RESINA DE POLICARBONATO', fraccion: '3907400499', umt: 'KGM' },
-  { cve_producto: 'PROD-C', descripcion: 'TORNILLOS DE ACERO', fraccion: '7318159000', umt: 'PZA' },
+  { cve_producto: 'PROD-A', descripcion: 'PIEZAS DE CAUCHO', fraccion: '3919100100', umt: '1' },     // SAT 1 → KILO
+  { cve_producto: 'PROD-B', descripcion: 'RESINA DE POLICARBONATO', fraccion: '3907400499', umt: '1' }, // SAT 1 → KILO
+  { cve_producto: 'PROD-C', descripcion: 'TORNILLOS DE ACERO', fraccion: '7318159000', umt: '6' },    // SAT 6 → PIEZA
 ]
 
 const evcoProveedores = [
@@ -156,6 +156,29 @@ describe('fetchAnexo24Rows', () => {
     expect(first.tmec).toBe(true)
     expect(first.proveedor).toBe('BAMB')
     expect(first.descripcion).toBe('RESINA DE POLICARBONATO')
+  })
+
+  it('umc translates SAT codes (1 → KILO, 6 → PIEZA) via formatUmc', async () => {
+    const { client } = makeSupabase({
+      companies: [{ clave_cliente: '9254' }],
+      traficos: evcoTraficos,
+      globalpc_facturas: evcoFacturas,
+      globalpc_partidas: evcoPartidas,
+      globalpc_productos: evcoProductos,
+      globalpc_proveedores: evcoProveedores,
+    })
+
+    const result = await fetchAnexo24Rows({
+      supabase: client,
+      companyId: 'evco',
+      dateFrom: '2026-01-01',
+      dateTo: '2026-04-30',
+    })
+
+    const byEmbarque = new Map(result.rows.map((r) => [r.embarque, r]))
+    expect(byEmbarque.get('9254-Y4333')?.umc).toBe('KILO')   // PROD-A umt='1'
+    expect(byEmbarque.get('9254-Y4339')?.umc).toBe('KILO')   // PROD-B umt='1'
+    expect(byEmbarque.get('9254-Y4399')?.umc).toBe('PIEZA')  // PROD-C umt='6'
   })
 
   it('embarque is built as `<clave>-<trafico>` from companies.clave_cliente', async () => {

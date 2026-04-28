@@ -15,6 +15,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { formatPedimento } from '@/lib/format/pedimento'
 import { formatFraccion } from '@/lib/format/fraccion'
+import { formatUmc } from '@/lib/format/umc'
 import { resolveProveedorName } from '@/lib/proveedor-names'
 import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
 import { isTmecRegimen } from '@/lib/anexo24/columns'
@@ -286,7 +287,7 @@ export async function fetchAnexo24Rows(
       fraccion: enr?.fraccion ? formatFraccion(enr.fraccion) ?? enr.fraccion : null,
       descripcion: enr?.descripcion ?? null,
       cantidad,
-      umc: enr?.umt ?? null,
+      umc: formatUmc(enr?.umt ?? null),
       valor_usd: valorUsd,
       proveedor,
       pais: p.pais_origen ?? trafico.pais_procedencia ?? null,

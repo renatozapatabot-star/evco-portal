@@ -15,6 +15,8 @@ import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 import { CockpitSkeleton, CockpitErrorCard } from '@/components/aguila'
 import { Anexo24DownloadCta } from './Anexo24DownloadCta'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SyncChip } from '@/components/ui/sync-chip'
+import { readFreshness } from '@/lib/cockpit/freshness'
 import { formatDateDMY, formatNumber, formatCurrencyUSD } from '@/lib/format'
 import { fetchAnexo24Rows, type Anexo24Row } from '@/lib/anexo24/fetchRows'
 import { ANEXO24_COLUMNS } from '@/lib/anexo24/columns'
@@ -66,12 +68,15 @@ async function Anexo24Content({
     const dateFrom = from ?? yearStart
     const dateTo = to ?? today
 
-    const { rows, truncated } = await fetchAnexo24Rows({
-      supabase,
-      companyId: ownerCompanyId,
-      dateFrom,
-      dateTo,
-    })
+    const [{ rows, truncated }, freshness] = await Promise.all([
+      fetchAnexo24Rows({
+        supabase,
+        companyId: ownerCompanyId,
+        dateFrom,
+        dateTo,
+      }),
+      readFreshness(supabase, ownerCompanyId),
+    ])
 
     const meta: Array<[string, string]> = [
       ['Cliente', clientName],
@@ -85,7 +90,10 @@ async function Anexo24Content({
       <main className={styles.page}>
         <header className={styles.header}>
           <div className={styles.eyebrow}>Inteligencia aduanal · Patente 3596</div>
-          <h1 className={styles.title}>ANEXO 24 · FORMATO 53</h1>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+            <h1 className={styles.title}>ANEXO 24 · FORMATO 53</h1>
+            <SyncChip lastSyncIso={freshness.lastSyncedAt} />
+          </div>
           <div className={styles.meta}>
             {meta.map(([label, value]) => (
               <span key={label} className={styles.metaItem}>

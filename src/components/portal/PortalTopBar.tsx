@@ -48,12 +48,15 @@ export function PortalTopBar({
   return (
     <header
       style={{
-        height: 'var(--portal-topbar-h, 56px)',
+        // minHeight (not height) so interactive children can hit the
+        // 60px touch-target floor without overflowing the bar. Desktop
+        // keeps the visual 56px feel via the bar's content density.
+        minHeight: 'var(--portal-topbar-h, 56px)',
         display: 'grid',
         gridTemplateColumns: 'auto 1fr auto',
         gap: 12,
         alignItems: 'center',
-        padding: '0 clamp(12px, 3vw, 24px)',
+        padding: '6px clamp(12px, 3vw, 24px)',
         borderBottom: `1px solid ${pulse ? 'var(--portal-green-2)' : 'var(--portal-line-1)'}`,
         background: pulse
           ? 'color-mix(in oklch, var(--portal-green-2) 6%, var(--portal-ink-0) 85%)'
@@ -67,10 +70,20 @@ export function PortalTopBar({
         boxShadow: pulse ? '0 0 30px -4px var(--portal-green-glow)' : 'none',
       }}
     >
-      {/* Left: pulse dot + PORTAL wordmark */}
+      {/* Left: pulse dot + PORTAL wordmark.
+          minHeight 60px hits the CLAUDE.md "3 AM Driver" touch-target
+          floor — the visual content height is unchanged but the tap
+          zone is now the full 60px (Cluster H · 2026-04-28). */}
       <a
         href={homeHref}
-        style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          textDecoration: 'none',
+          minHeight: 60,
+          padding: '0 4px',
+        }}
         aria-label="PORTAL home"
       >
         <span style={{ position: 'relative', width: 9, height: 9, flexShrink: 0 }}>
@@ -126,8 +139,11 @@ export function PortalTopBar({
           style={{
             width: '100%',
             maxWidth: 560,
-            height: 36,
-            padding: '0 12px',
+            // 60px tap zone (Cluster H · 2026-04-28). The visual
+            // density is preserved via 14px vertical padding around
+            // the 14px icon — looks the same; tappable correctly.
+            minHeight: 60,
+            padding: '14px 12px',
             borderRadius: 'var(--portal-r-2)',
             border: '1px solid var(--portal-line-1)',
             background: 'var(--portal-ink-2)',

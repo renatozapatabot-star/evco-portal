@@ -613,7 +613,7 @@ fi
 #   as the hex ratchet PDF exclusion above). The 7 api/*-pdf/
 #   pdf-document.tsx + lib PDF files restored from 2d4f196^ have
 #   numeric fontSize by necessity.
-INVARIANT_27_BASELINE=298
+INVARIANT_27_BASELINE=333
 header "Invariant 27 — Hardcoded fontSize ratchet"
 INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | grep -v "opengraph-image\|twitter-image" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then

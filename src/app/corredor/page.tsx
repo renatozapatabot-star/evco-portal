@@ -21,9 +21,16 @@ interface LandmarkRow {
 }
 
 async function fetchLandmarks(): Promise<Landmark[]> {
+  // P0-A4: explicit service-role requirement. corridor_landmarks is
+  // reference data but anon writes are revoked by P0-A1 — this server
+  // component must use service role.
+  const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!SERVICE_ROLE) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /corredor SSR')
+  }
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SERVICE_ROLE,
   )
   const { data, error } = await sb
     .from('corridor_landmarks')

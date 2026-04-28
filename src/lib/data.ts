@@ -2,9 +2,18 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyId, getClientClave } from './client-config'
 
+// P0-A4: fail loud on missing service role. The prior fallback to
+// NEXT_PUBLIC_SUPABASE_ANON_KEY masked env misconfig — queries would
+// silently downgrade to the anon role and (post anon-revoke) return
+// empty arrays, masking the real issue.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for src/lib/data.ts')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 const PAGE_SIZE = 50

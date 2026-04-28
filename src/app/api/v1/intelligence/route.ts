@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 
+// P0-A4: explicit service-role requirement. /v1 intelligence endpoint
+// — partner API key auth gates the call, but DB query needs service
+// role since RLS is deny-all on the underlying tenant tables.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/v1/intelligence')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 const envelope = (data: unknown) => ({

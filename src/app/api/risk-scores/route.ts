@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
   const session = await verifySession(sessionToken)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
   const { data: traficos } = await supabase.from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento, descripcion_mercancia')
     .eq('company_id', companyId).eq('estatus', 'En Proceso').gte('fecha_llegada', PORTAL_DATE_FROM).limit(500)

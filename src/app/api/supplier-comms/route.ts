@@ -3,9 +3,17 @@ import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { resolveTenantScope } from '@/lib/api/tenant-scope'
 
+// P0-A4: explicit service-role requirement. Tenant scope comes from
+// resolveTenantScope (signed session for client role); the underlying
+// supabase client is service-role only.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/supplier-comms')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 // Tenant scope comes from the signed session (client) or from

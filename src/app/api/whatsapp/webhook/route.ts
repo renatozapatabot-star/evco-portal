@@ -17,7 +17,10 @@ function twiml(message?: string): NextResponse {
 // POST: Twilio webhook for incoming WhatsApp messages
 export async function POST(request: NextRequest) {
   try {
-    const companyId = request.cookies.get('company_id')?.value ?? ''
+    // P0-A7: Twilio's webhook never carries a `company_id` cookie — the
+    // pre-fix read was always empty string and silently flowed into
+    // INSERTs. Resolve the tenant from the matching trafico instead,
+    // which is the only authoritative source on inbound webhook calls.
     const formData = await request.formData()
     const from = formData.get('From') as string || ''
     const body = formData.get('Body') as string || ''
@@ -26,16 +29,28 @@ export async function POST(request: NextRequest) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID
     const authToken = process.env.TWILIO_AUTH_TOKEN
 
-    // Try to find the most recent trafico associated with this phone number
+    // Try to find the most recent trafico associated with this phone number,
+    // and read its company_id at the same time so subsequent INSERTs are
+    // tenant-scoped to the actual owner of the conversation.
     const { data: convoMatch } = await supabase
       .from('whatsapp_conversations')
-      .select('trafico_id')
+      .select('trafico_id, company_id')
       .eq('supplier_phone', from)
       .order('created_at', { ascending: false })
       .limit(1)
       .single()
 
     const traficoId = convoMatch?.trafico_id || 'unknown'
+    let companyId: string = (convoMatch?.company_id as string | undefined) ?? ''
+    // Fall back: if no prior conversation row, look up the trafico itself.
+    if (!companyId && traficoId && traficoId !== 'unknown') {
+      const { data: trafRow } = await supabase
+        .from('traficos')
+        .select('company_id')
+        .eq('trafico', traficoId)
+        .maybeSingle()
+      companyId = (trafRow?.company_id as string | undefined) ?? ''
+    }
 
     // Handle media attachments
     if (numMedia > 0) {

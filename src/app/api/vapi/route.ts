@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 
+// P0-A4: explicit service-role requirement. VAPI voice webhook —
+// auth is the VAPI signature header; DB queries traverse traficos /
+// econta_* and need service role.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/vapi')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 async function getTraficoStatus(params: { trafico?: string; pedimento?: string }) {

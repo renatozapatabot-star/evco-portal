@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { computeReportesKpis } from '@/lib/reportes/kpis'
 
 const supabase = createClient(
@@ -20,10 +21,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'No autorizado' } }, { status: 401 })
   }
 
-  const companyId = request.cookies.get('company_id')?.value ?? session.companyId
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) {
+    return NextResponse.json({
+      data: null,
+      error: { code: 'VALIDATION_ERROR', message: 'Tenant scope required' },
+    }, { status: 400 })
+  }
 
-  if (!companyId || !clientClave) {
+  // P0-A7: rebuild clave_cliente from the verified companyId — never
+  // from raw company_clave cookie.
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('clave_cliente')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  const clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  if (!clientClave) {
     return NextResponse.json({
       data: null,
       error: { code: 'MISSING_CLIENT', message: 'Cliente no resuelto' },

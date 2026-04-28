@@ -7,7 +7,8 @@ describe('mergeCatalogoRows', () => {
       { id: 1, cve_producto: 'P-1', descripcion: 'Resina PE', fraccion: '3901.20.01', fraccion_source: 'human_tito', fraccion_classified_at: '2026-01-01', cve_proveedor: 'PRV_1', pais_origen: 'US' },
     ]
     const proveedores = new Map([['PRV_1', 'Duratech LLC']])
-    const agg = new Map([['RESINA PE', { count: 4, valor: 12000, lastTrafico: 'T-9', lastFecha: '2026-04-10' }]])
+    // Cluster J · 2026-04-28: aggregation key is cve_producto, not descripcion.
+    const agg = new Map([['P-1', { count: 4, valor: 12000, lastTrafico: 'T-9', lastFecha: '2026-04-10' }]])
     const rows = mergeCatalogoRows(productos, proveedores, agg)
     expect(rows).toHaveLength(1)
     expect(rows[0].proveedor_nombre).toBe('Duratech LLC')
@@ -15,6 +16,29 @@ describe('mergeCatalogoRows', () => {
     expect(rows[0].valor_ytd_usd).toBe(12000)
     expect(rows[0].ultimo_cve_trafico).toBe('T-9')
     expect(rows[0].fraccion).toBe('3901.20.01')
+  })
+
+  it('REGRESSION (Cluster J): two SKUs sharing descripcion read independent aggregates', () => {
+    // Prior bug: agg map was keyed by descripcion.toUpperCase(), so every
+    // cve_producto sharing a description collapsed into one bucket and
+    // displayed identical "169 unidades · $X" — surfaced on /catalogo as
+    // ~30 SKUs all showing the same aggregate. Fix: key by cve_producto.
+    const productos = [
+      { id: 1, cve_producto: 'P-A', descripcion: 'TORNILLO M8', fraccion: '7318.15.99', fraccion_source: null, fraccion_classified_at: null, cve_proveedor: null, pais_origen: null },
+      { id: 2, cve_producto: 'P-B', descripcion: 'TORNILLO M8', fraccion: '7318.15.99', fraccion_source: null, fraccion_classified_at: null, cve_proveedor: null, pais_origen: null },
+    ]
+    const agg = new Map([
+      ['P-A', { count: 169, valor: 165947.10, lastTrafico: 'T-AAA', lastFecha: '2026-04-01' }],
+      ['P-B', { count:   3, valor:    412.50, lastTrafico: 'T-BBB', lastFecha: '2026-04-15' }],
+    ])
+    const rows = mergeCatalogoRows(productos, new Map(), agg)
+    expect(rows).toHaveLength(2)
+    expect(rows[0].cve_producto).toBe('P-A')
+    expect(rows[0].veces_importado).toBe(169)
+    expect(rows[0].valor_ytd_usd).toBeCloseTo(165947.10, 2)
+    expect(rows[1].cve_producto).toBe('P-B')
+    expect(rows[1].veces_importado).toBe(3)
+    expect(rows[1].valor_ytd_usd).toBeCloseTo(412.50, 2)
   })
 
   it('handles missing fracción (stays null)', () => {
@@ -110,7 +134,7 @@ describe('mergeCatalogoRows', () => {
     const rows = mergeCatalogoRows(
       [{ id: 1, cve_producto: 'P-4', descripcion: 'Cualquier parte', fraccion: '3901.20.01', fraccion_source: null, fraccion_classified_at: null, cve_proveedor: null, pais_origen: null }],
       new Map(),
-      new Map([['CUALQUIER PARTE', { count: 5, valor: 1500, lastTrafico: 'T-99', lastFecha: '2026-04-18' }]]),
+      new Map([['P-4', { count: 5, valor: 1500, lastTrafico: 'T-99', lastFecha: '2026-04-18' }]]),
     )
     expect(rows[0].ultimo_cve_trafico).toBe('T-99')
     expect(rows[0].ultima_fecha_llegada).toBe('2026-04-18')

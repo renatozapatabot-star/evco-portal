@@ -102,8 +102,14 @@ export function mergeCatalogoRows(
     .filter((p) => (p.descripcion ?? '').trim().length > 0)
     .map((p) => {
       const descripcion = (p.descripcion ?? '').trim()
-      const key = descripcion.toUpperCase()
-      const agg = partidaAgg.get(key)
+      // Aggregate lookup is keyed by cve_producto, NOT description.
+      // Bug fix 2026-04-28: prior key was `descripcion.toUpperCase()`,
+      // which collapsed every SKU sharing the same description into a
+      // single bucket — every one of them then displayed the SAME
+      // 169 unidades · $165,947.10 USD. cve_producto is the per-row
+      // primary key in globalpc_partidas, so each SKU now reads its
+      // own usage stats.
+      const agg = p.cve_producto ? partidaAgg.get(p.cve_producto) : undefined
       const anexo = p.cve_producto ? anexoOverlay.get(p.cve_producto) : undefined
 
       // Prefer the anexo24 overlay values for canonical display.
@@ -376,34 +382,37 @@ export async function getCatalogo(
     )
   })()
 
-  // Aggregate partidas by cve_producto (the merger's key) — count uses,
-  // sum value (cantidad × precio_unitario), track last trafico ref +
-  // fecha_cruce via the resolved link map.
+  // Aggregate partidas by cve_producto — count uses, sum value
+  // (cantidad × precio_unitario), track last trafico ref + fecha_cruce
+  // via the resolved link map.
+  //
+  // 2026-04-28 Cluster J fix: this map was previously keyed by the
+  // product's `descripcion.toUpperCase()`. When multiple cve_productos
+  // shared an identical description (common in bulk catalog imports
+  // where the same SKU registers under several keys), all of them
+  // collapsed into the same bucket and every cve_producto read back
+  // the SAME aggregate — surfaced on /catalogo as ~30 SKUs all
+  // showing identical "169 unidades · $165,947.10 USD".
+  // cve_producto is the partidas row's actual identifier; using it
+  // as the aggregation key resolves the duplication.
   const partidaAgg = new Map<
     string,
     { count: number; valor: number; lastTrafico: string | null; lastFecha: string | null }
   >()
   for (const row of partidasRows) {
     if (!row.cve_producto) continue
-    // Merger's key is the product descripcion uppercased (preserved
-    // for the aguila products merger which joins productos by that key).
-    // Look up the product's canonical descripcion from the productos array.
-    const prod = productos.find((p) => p.cve_producto === row.cve_producto)
-    const desc = (prod?.descripcion ?? '').trim().toUpperCase()
-    if (!desc) continue
-
     const link = row.folio != null ? partidaLinks.byFolio.get(row.folio) : null
     const valor = toNumber(row.cantidad) * toNumber(row.precio_unitario)
     const lastEvent = link?.fecha_cruce ?? link?.fecha_llegada ?? row.created_at ?? null
 
-    const prev = partidaAgg.get(desc) ?? { count: 0, valor: 0, lastTrafico: null, lastFecha: null }
+    const prev = partidaAgg.get(row.cve_producto) ?? { count: 0, valor: 0, lastTrafico: null, lastFecha: null }
     prev.count += 1
     prev.valor += valor
     if (lastEvent && (!prev.lastFecha || lastEvent > prev.lastFecha)) {
       prev.lastFecha = lastEvent
       prev.lastTrafico = link?.cve_trafico ?? prev.lastTrafico
     }
-    partidaAgg.set(desc, prev)
+    partidaAgg.set(row.cve_producto, prev)
   }
 
   // Formato 53 overlay — when USE_ANEXO24_CANONICAL=true, fetch the

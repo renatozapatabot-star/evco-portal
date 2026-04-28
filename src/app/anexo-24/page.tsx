@@ -1,8 +1,10 @@
-// CRUZ · /anexo-24 — Formato 53 report surface (audit lock-in 2026-04-25).
+// CRUZ · /anexo-24 — Formato 53 report surface, 13-column GlobalPC parity.
 //
-// Single-purpose screen. Header + download CTA + 12-column partidas table.
-// Existing data only; canonical 5-step join via traficos → facturas →
-// partidas → productos → proveedores. Shared formatters everywhere.
+// Single source of truth: `fetchAnexo24Rows` (src/lib/anexo24/fetchRows.ts).
+// The screen, the PDF, the Excel, and the CSV all read from the same
+// helper and the same `ANEXO24_COLUMNS` contract — drift between
+// surfaces is what shipped a `(placeholder)` XLSX to a client; this
+// surface ends that drift.
 
 import { cookies } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
@@ -14,25 +16,12 @@ import { CockpitSkeleton, CockpitErrorCard } from '@/components/aguila'
 import { Anexo24DownloadCta } from './Anexo24DownloadCta'
 import { EmptyState } from '@/components/ui/empty-state'
 import { formatDateDMY, formatNumber, formatCurrencyUSD } from '@/lib/format'
+import { fetchAnexo24Rows, type Anexo24Row } from '@/lib/anexo24/fetchRows'
+import { ANEXO24_COLUMNS } from '@/lib/anexo24/columns'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
-
-interface Anexo24Row {
-  aduana: string
-  clave: string
-  fechaPago: string | null
-  proveedor: string
-  factura: string
-  fraccion: string
-  cveProducto: string
-  cantidad: number | null
-  umt: string
-  pedimento: string
-  valorUSD: number | null
-  paisOrigen: string
-}
 
 interface PageProps {
   searchParams: Promise<{ from?: string; to?: string }>
@@ -77,7 +66,12 @@ async function Anexo24Content({
     const dateFrom = from ?? yearStart
     const dateTo = to ?? today
 
-    const rows = await fetchAnexo24Rows(supabase, ownerCompanyId, dateFrom, dateTo)
+    const { rows, truncated } = await fetchAnexo24Rows({
+      supabase,
+      companyId: ownerCompanyId,
+      dateFrom,
+      dateTo,
+    })
 
     const meta: Array<[string, string]> = [
       ['Cliente', clientName],
@@ -106,6 +100,13 @@ async function Anexo24Content({
           <Anexo24DownloadCta companyId={ownerCompanyId} isInternal={isInternal} />
         </section>
 
+        {truncated && (
+          <EmptyState
+            title="Rango parcial · descarga deshabilitada"
+            description="El periodo solicitado excede el límite de partidas que podemos garantizar en una sola corrida. Reduce el rango antes de exportar."
+          />
+        )}
+
         {rows.length === 0 ? (
           <EmptyState
             title="Sin partidas en este periodo"
@@ -113,38 +114,31 @@ async function Anexo24Content({
           />
         ) : (
           <div className={styles.tableWrap}>
-            <table className={styles.table} role="table" aria-label="Partidas Formato 53">
+            <table className={styles.table} role="table" aria-label="Partidas Anexo 24">
               <thead>
                 <tr>
-                  <th>Aduana</th>
-                  <th>Clave</th>
-                  <th>Fecha de pago</th>
-                  <th>Proveedor</th>
-                  <th>Factura</th>
-                  <th>Fracción</th>
-                  <th>Número de parte</th>
-                  <th style={{ textAlign: 'right' }}>Cantidad UM-Comercial</th>
-                  <th>UM Comercial</th>
-                  <th>Número de pedimento</th>
-                  <th style={{ textAlign: 'right' }}>Valor dólar</th>
-                  <th>País de origen</th>
+                  {ANEXO24_COLUMNS.map((col) => (
+                    <th
+                      key={col.key}
+                      style={col.align === 'right' ? { textAlign: 'right' } : undefined}
+                    >
+                      {col.header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, i) => (
-                  <tr key={`${r.cveProducto}-${r.factura}-${i}`}>
-                    <td className={styles.cellMono}>{r.aduana || '—'}</td>
-                    <td className={styles.cellMono}>{r.clave || '—'}</td>
-                    <td className={styles.cellMono}>{formatDateDMY(r.fechaPago) || '—'}</td>
-                    <td className={styles.cellSoft} title={r.proveedor || undefined}>{r.proveedor || '—'}</td>
-                    <td className={styles.cellMono}>{r.factura || '—'}</td>
-                    <td className={styles.cellMono}>{r.fraccion || '—'}</td>
-                    <td className={styles.cellMono}>{r.cveProducto || '—'}</td>
-                    <td className={`${styles.cellMono} ${styles.cellRight}`}>{formatNumber(r.cantidad) || '—'}</td>
-                    <td className={styles.cellMono}>{r.umt || '—'}</td>
-                    <td className={styles.cellMono}>{r.pedimento || '—'}</td>
-                    <td className={`${styles.cellMono} ${styles.cellRight} ${styles.cellStrong}`}>{r.valorUSD != null ? formatCurrencyUSD(r.valorUSD) : '—'}</td>
-                    <td className={styles.cellMono}>{r.paisOrigen || '—'}</td>
+                {rows.map((r) => (
+                  <tr key={`${r.embarque}-${r.consecutivo}`}>
+                    {ANEXO24_COLUMNS.map((col) => (
+                      <td
+                        key={col.key}
+                        className={cellClasses(col.mono, col.align === 'right')}
+                        title={col.key === 'descripcion' ? r.descripcion ?? undefined : col.key === 'proveedor' ? r.proveedor : undefined}
+                      >
+                        {renderCell(r, col.key)}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
@@ -160,142 +154,42 @@ async function Anexo24Content({
   }
 }
 
-/**
- * Compose the 12-column partidas slice from existing tenant tables.
- * Same canonical 5-step join used by /pedimentos/[id], here ranged
- * across a date window. All queries anchor company_id unconditionally.
- */
-async function fetchAnexo24Rows(
-  supabase: ReturnType<typeof createServerClient>,
-  companyId: string,
-  dateFrom: string,
-  dateTo: string,
-): Promise<Anexo24Row[]> {
-  const { data: tData } = await supabase
-    .from('traficos')
-    .select('trafico, aduana, regimen, fecha_pago, pedimento')
-    .eq('company_id', companyId)
-    .gte('fecha_pago', dateFrom)
-    .lte('fecha_pago', dateTo)
-    .not('fecha_pago', 'is', null)
-    .order('fecha_pago', { ascending: false })
-    .limit(5000)
+function cellClasses(mono: boolean, right: boolean): string {
+  const out: string[] = []
+  if (mono) out.push(styles.cellMono)
+  if (right) out.push(styles.cellRight)
+  return out.join(' ')
+}
 
-  const traficos = ((tData ?? []) as Array<{
-    trafico: string
-    aduana: string | null
-    regimen: string | null
-    fecha_pago: string | null
-    pedimento: string | null
-  }>)
-
-  if (traficos.length === 0) return []
-
-  const traficoIds = traficos.map((t) => t.trafico)
-  const traficoMap = new Map(traficos.map((t) => [t.trafico, t]))
-
-  const { data: fData } = await supabase
-    .from('globalpc_facturas')
-    .select('folio, numero, cve_trafico')
-    .eq('company_id', companyId)
-    .in('cve_trafico', traficoIds)
-    .limit(10000)
-
-  const facturas = ((fData ?? []) as Array<{
-    folio: number | null
-    numero: string | null
-    cve_trafico: string | null
-  }>)
-
-  if (facturas.length === 0) return []
-
-  const folioToFactura = new Map<number, { numero: string | null; cve_trafico: string | null }>()
-  facturas.forEach((f) => {
-    if (f.folio != null) folioToFactura.set(f.folio, { numero: f.numero, cve_trafico: f.cve_trafico })
-  })
-  const folios = Array.from(folioToFactura.keys())
-
-  if (folios.length === 0) return []
-
-  const { data: pData } = await supabase
-    .from('globalpc_partidas')
-    .select('folio, cve_producto, cve_proveedor, cantidad, precio_unitario, pais_origen')
-    .eq('company_id', companyId)
-    .in('folio', folios)
-    .limit(20000)
-
-  const partidas = ((pData ?? []) as Array<{
-    folio: number | null
-    cve_producto: string | null
-    cve_proveedor: string | null
-    cantidad: number | null
-    precio_unitario: number | null
-    pais_origen: string | null
-  }>)
-
-  if (partidas.length === 0) return []
-
-  const cveSet = Array.from(new Set(partidas.map((p) => p.cve_producto).filter((v): v is string => Boolean(v))))
-  const productosByCve = new Map<string, { fraccion: string | null; umt: string | null }>()
-  if (cveSet.length > 0) {
-    const { data: prodData } = await supabase
-      .from('globalpc_productos')
-      .select('cve_producto, fraccion, umt')
-      .eq('company_id', companyId)
-      .in('cve_producto', cveSet)
-      .limit(20000)
-    for (const p of ((prodData ?? []) as Array<{ cve_producto: string | null; fraccion: string | null; umt: string | null }>)) {
-      if (p.cve_producto && !productosByCve.has(p.cve_producto)) {
-        productosByCve.set(p.cve_producto, { fraccion: p.fraccion, umt: p.umt })
-      }
-    }
+function renderCell(row: Anexo24Row, key: (typeof ANEXO24_COLUMNS)[number]['key']): string {
+  switch (key) {
+    case 'consecutivo':
+      return String(row.consecutivo)
+    case 'pedimento':
+      return row.pedimento ?? '—'
+    case 'fecha':
+      return formatDateDMY(row.fecha) || '—'
+    case 'embarque':
+      return row.embarque || '—'
+    case 'fraccion':
+      return row.fraccion || '—'
+    case 'descripcion':
+      return row.descripcion || '—'
+    case 'cantidad':
+      return formatNumber(row.cantidad) || '—'
+    case 'umc':
+      return row.umc || '—'
+    case 'valor_usd':
+      return row.valor_usd != null ? formatCurrencyUSD(row.valor_usd) : '—'
+    case 'proveedor':
+      return row.proveedor || '—'
+    case 'pais':
+      return row.pais || '—'
+    case 'regimen':
+      return row.regimen || '—'
+    case 'tmec':
+      return row.tmec ? 'Sí' : 'No'
+    default:
+      return '—'
   }
-
-  const proveedorSet = Array.from(new Set(partidas.map((p) => p.cve_proveedor).filter((v): v is string => Boolean(v))))
-  const proveedoresByCve = new Map<string, string>()
-  if (proveedorSet.length > 0) {
-    const { data: provData } = await supabase
-      .from('globalpc_proveedores')
-      .select('cve_proveedor, nombre')
-      .eq('company_id', companyId)
-      .in('cve_proveedor', proveedorSet)
-      .limit(5000)
-    for (const p of ((provData ?? []) as Array<{ cve_proveedor: string | null; nombre: string | null }>)) {
-      if (p.cve_proveedor && p.nombre && !proveedoresByCve.has(p.cve_proveedor)) {
-        proveedoresByCve.set(p.cve_proveedor, p.nombre)
-      }
-    }
-  }
-
-  const rows: Anexo24Row[] = []
-  for (const p of partidas) {
-    if (p.folio == null) continue
-    const factura = folioToFactura.get(p.folio)
-    if (!factura?.cve_trafico) continue
-    const trafico = traficoMap.get(factura.cve_trafico)
-    if (!trafico) continue
-
-    const prod = p.cve_producto ? productosByCve.get(p.cve_producto) : null
-    const proveedorNombre = p.cve_proveedor ? proveedoresByCve.get(p.cve_proveedor) ?? p.cve_proveedor : ''
-    const valor = p.cantidad != null && p.precio_unitario != null
-      ? p.cantidad * p.precio_unitario
-      : null
-
-    rows.push({
-      aduana: trafico.aduana ?? '',
-      clave: trafico.regimen ?? '',
-      fechaPago: trafico.fecha_pago,
-      proveedor: proveedorNombre,
-      factura: factura.numero ?? '',
-      fraccion: prod?.fraccion ?? '',
-      cveProducto: p.cve_producto ?? '',
-      cantidad: p.cantidad,
-      umt: prod?.umt ?? '',
-      pedimento: trafico.pedimento ?? '',
-      valorUSD: valor,
-      paisOrigen: p.pais_origen ?? '',
-    })
-  }
-
-  return rows
 }

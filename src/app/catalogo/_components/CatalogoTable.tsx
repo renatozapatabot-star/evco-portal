@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useTransition, useMemo } from 'react'
+import { useState, useTransition, useMemo, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { CatalogoRow } from '@/lib/catalogo/products'
@@ -51,13 +51,34 @@ export function CatalogoTable({ rows, query }: Props) {
     [deduped, page],
   )
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  // Debounced live filter (Cluster G · 2026-04-28). Replaces the
+  // press-Enter-to-search behavior with a 300ms debounce — matches
+  // standard SaaS search UX. The form's onSubmit is preserved as a
+  // fast-path so Enter still flushes immediately. ?q= URL behavior
+  // is unchanged: each keystroke (after debounce) router.pushes the
+  // updated URL so the server re-fetches with the new query AND the
+  // URL stays shareable / refreshable.
+  const lastPushedRef = useRef<string | null>(query)
+  function pushSearch(next: string) {
+    const trimmed = next.trim()
+    if (lastPushedRef.current === trimmed) return
+    lastPushedRef.current = trimmed
     const params = new URLSearchParams(searchParams.toString())
-    if (search.trim()) params.set('q', search.trim())
+    if (trimmed) params.set('q', trimmed)
     else params.delete('q')
     setPage(0)
     startTransition(() => router.push(`/catalogo?${params.toString()}`))
+  }
+
+  useEffect(() => {
+    const t = setTimeout(() => pushSearch(search), 300)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    pushSearch(search) // fast-path: Enter flushes the pending debounce
   }
 
   const columns: DataTableColumn<CatalogoRow>[] = [

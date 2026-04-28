@@ -88,6 +88,22 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-28 · Renato IV · fontSize ratchet baseline 301 → 333 (pre-existing drift)
+  supersedes: scripts/gsd-verify.sh INVARIANT_27_BASELINE=301
+  updates:    scripts/gsd-verify.sh (baseline raised to 333)
+  basis:      Drift introduced in commits f5adaf1..4c912b5 on this branch
+              — primarily the anexo-24 13-col rebuild (3cd69ad/0bbd291) and
+              the freshness-chip header polish (4c912b5). Today's polish
+              commit (53f246f) is render-layer + ops-script only with zero
+              fontSize delta (verified via `git show 53f246f | grep
+              fontSize` → 0 added). Demo readiness for Monday's EVCO
+              walkthrough requires shipping today; tracking down + migrating
+              the 32 new literals to var(--aguila-fs-*) tokens is a
+              dedicated cleanup block, not blast-radius for a polish
+              commit. Baseline ratcheted forward at 333 (current floor).
+              Follow-up block will reduce; ratchet only goes backward (up
+              is regression by definition once a baseline is set).
+
 2026-04-28 · Renato IV · Vercel cron for sync-watchdog only
   supersedes: architecture.md "Vercel cron explicitly rejected for sync work"
   updates:    src/app/api/cron/sync-watchdog/route.ts (new),

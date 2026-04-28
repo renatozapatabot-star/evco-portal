@@ -53,7 +53,10 @@ function computeRange(preset: Preset, custom: { from: string; to: string }): { f
       return { from: iso(from), to: today, label: `T${q + 1} ${y}` }
     }
     case 'ultimos_90': {
-      const from = new Date(Date.now() - 90 * 86_400_000)
+      // UTC-anchored math so the result doesn't drift ±1 day depending
+      // on the client's timezone. The screen + the exporter both filter
+      // on `traficos.fecha_pago` (DATE in UTC) — anchor here too.
+      const from = new Date(Date.UTC(y, m, now.getUTCDate() - 90))
       return { from: iso(from), to: today, label: 'Últimos 90 días' }
     }
     case 'custom':
@@ -82,6 +85,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
   })
 
   const range = useMemo(() => computeRange(preset, custom), [preset, custom])
+  const rangeInvalid = range.from > range.to
 
   const buildUrl = (format: 'pdf' | 'xlsx') => {
     const params = new URLSearchParams({ format, date_from: range.from, date_to: range.to })
@@ -89,7 +93,11 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
     return `/api/reports/anexo-24/generate?${params.toString()}`
   }
 
-  const csvHref = `/api/anexo-24/csv${isInternal && companyId ? `?company_id=${encodeURIComponent(companyId)}` : ''}`
+  const csvHref = (() => {
+    const params = new URLSearchParams({ date_from: range.from, date_to: range.to })
+    if (isInternal && companyId) params.set('company_id', companyId)
+    return `/api/anexo-24/csv?${params.toString()}`
+  })()
 
   const downloadBlob = async (url: string, filename: string): Promise<Response> => {
     const res = await fetch(url, { credentials: 'include' })
@@ -107,6 +115,10 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
   }
 
   const handleDownload = async (format: 'pdf' | 'xlsx') => {
+    if (rangeInvalid) {
+      setError('La fecha inicial no puede ser posterior a la final.')
+      return
+    }
     setGenerating(format)
     setError(null)
     setResult(null)
@@ -189,7 +201,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
         <button
           type="button"
           onClick={() => handleDownload('pdf')}
-          disabled={generating !== null}
+          disabled={generating !== null || rangeInvalid}
           aria-label="Descargar PDF"
           className={styles.btnPrimary}
         >
@@ -209,7 +221,7 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
         <button
           type="button"
           onClick={() => handleDownload('xlsx')}
-          disabled={generating !== null}
+          disabled={generating !== null || rangeInvalid}
           aria-label="Descargar Excel"
           className={styles.btnPrimary}
         >
@@ -227,8 +239,10 @@ export function Anexo24DownloadCta({ companyId, isInternal }: Props) {
         </button>
 
         <a
-          href={csvHref}
+          href={rangeInvalid ? '#' : csvHref}
           aria-label="Descargar CSV"
+          aria-disabled={rangeInvalid}
+          onClick={(e) => { if (rangeInvalid) e.preventDefault() }}
           className={styles.btnOutline}
         >
           <Download size={16} strokeWidth={2} />

@@ -1,27 +1,22 @@
 /**
- * CRUZ · Anexo 24 Formato 53 generator.
+ * CRUZ · Anexo 24 generator (13-column GlobalPC parity).
  *
  * Two entry points share the same pipeline:
  *
  *   GET  /api/reports/anexo-24/generate?format=pdf|xlsx
- *     Streams the artifact directly as a download. This is the
- *     primary path used by the client button — no storage round-trip,
- *     no waiting for upload, no secondary click.
+ *     Streams the artifact directly as a download — no storage round-trip.
  *
  *   POST /api/reports/anexo-24/generate
- *     Legacy JSON path: generates, uploads both artifacts to
- *     `anexo-24-exports`, logs the decision, returns public URLs.
- *     Kept alive for cron + operator tooling that depends on the
- *     upload-then-link flow.
+ *     Legacy JSON path: generates, uploads to `anexo-24-exports`, logs the
+ *     decision, returns public URLs. Kept for cron + operator tooling.
  *
- * Both paths use the SAME row set as `/anexo-24` (active-parts
- * filtered) so the SKU count on screen matches the partidas in the
- * export — no more "shows 44, exports 10000".
+ * Both paths read rows from `fetchAnexo24Rows` (src/lib/anexo24/fetchRows.ts)
+ * — the same helper the screen at `/anexo-24` uses, so the partidas count
+ * on screen matches the export rowcount byte-for-byte.
  *
- * Error discipline: every failure returns a real diagnostic message
- * (bucket name, row count, SQL error) instead of the generic
- * "Intenta de nuevo en unos minutos" — the user can't fix what the
- * portal won't describe.
+ * Truncated exports refuse to render. Anexo 24 is a regulatory artifact;
+ * a partial export is worse than none — better the user narrows the
+ * range than hands SAT a quietly-incomplete file.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -30,13 +25,10 @@ import { verifySession } from '@/lib/session'
 import { logDecision } from '@/lib/decision-logger'
 import { PATENTE, ADUANA } from '@/lib/client-config'
 import { cleanCompanyDisplayName } from '@/lib/format/company-name'
-import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
-import { resolveProveedorName } from '@/lib/proveedor-names'
-import { formatPedimento } from '@/lib/format/pedimento'
+import { fetchAnexo24Rows } from '@/lib/anexo24/fetchRows'
 import {
   generateAnexo24,
   buildAnexo24StoragePath,
-  type Anexo24Row,
   type Anexo24Data,
 } from '@/lib/anexo-24-export'
 
@@ -51,95 +43,12 @@ const supabase = createClient(
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const BUCKET = 'anexo-24-exports'
-const DEFAULT_PARTIDAS_LIMIT = 20000
 
 const BodySchema = z.object({
   date_from: z.string().regex(ISO_DATE).nullable().optional(),
   date_to: z.string().regex(ISO_DATE).nullable().optional(),
   company_id: z.string().min(1).nullable().optional(),
 })
-
-/**
- * Schema reality check (verified 2026-04-20):
- *
- *   globalpc_partidas has NO cve_trafico / descripcion / fraccion / umc.
- *   Actual columns: id, folio, cve_producto, cve_cliente, cantidad,
- *                   precio_unitario, peso, pais_origen, cve_proveedor.
- *
- *   The partida → trafico link runs through globalpc_facturas:
- *     facturas.cve_trafico = traficos.trafico
- *     partidas.folio       = facturas.folio
- *
- *   descripcion + fraccion live on globalpc_productos, resolved by
- *   (cve_cliente, cve_producto).
- *
- * This mirrors the join chain used by /embarques/[id] and
- * /api/auditoria-pdf — do not reinvent it.
- */
-interface PartidaRaw {
-  id: number
-  folio: number | null
-  cve_producto: string | null
-  cve_cliente: string | null
-  cantidad: number | null
-  precio_unitario: number | null
-  peso: number | null
-  pais_origen: string | null
-  marca: string | null
-  modelo: string | null
-  serie: string | null
-  numero_item: number | null
-}
-
-interface FacturaEnriched {
-  cve_trafico: string | null
-  folio: number | null
-  numero: string | null
-  fecha_facturacion: string | null
-  valor_comercial: number | null
-  moneda: string | null
-  incoterm: string | null
-  cve_proveedor: string | null
-}
-
-interface TraficoLite {
-  trafico: string
-  pedimento: string | null
-  fecha_pago: string | null
-  fecha_llegada: string | null
-  proveedores: string | null
-  regimen: string | null
-  pais_procedencia: string | null
-  aduana: string | null
-  tipo_cambio: number | null
-  peso_bruto: number | null
-  importe_total: number | null
-}
-
-interface ProductoEnrichment {
-  descripcion: string | null
-  fraccion: string | null
-  umt: string | null
-  nico: string | null
-}
-
-interface ProveedorEnrichment {
-  nombre: string | null
-  rfc: string | null
-}
-
-/** Chunk an array into batches of `size` — PostgREST `.in()` clauses
- *  struggle past ~2000 values, so we paginate any bulk lookup. */
-function chunk<T>(arr: T[], size: number): T[][] {
-  const out: T[][] = []
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
-  return out
-}
-
-function isTmec(regimen: string | null): boolean {
-  const r = (regimen ?? '').toUpperCase()
-  return r === 'ITE' || r === 'ITR' || r === 'IMD'
-}
 
 function jsonError(code: string, message: string, status = 500) {
   return NextResponse.json({ data: null, error: { code, message } }, { status })
@@ -157,246 +66,58 @@ type BuildResult =
       generado_en: string
     }
 
-/**
- * Shared core — resolves session, pulls rows, generates both artifacts.
- * Returns the buffers + meta; route handlers decide whether to stream,
- * upload, or both.
- */
-async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: string; dateTo?: string; companyIdOverride?: string | null }): Promise<BuildResult> {
+async function buildAnexo24(
+  request: NextRequest,
+  overrides: { dateFrom: string; dateTo: string; companyIdOverride?: string | null },
+): Promise<BuildResult> {
   const session = await verifySession(request.cookies.get('portal_session')?.value ?? '')
   if (!session) {
     return { ok: false, error: { status: 401, code: 'UNAUTHORIZED', message: 'Sesión inválida. Vuelve a iniciar sesión.' } }
   }
 
   const isInternal = session.role === 'broker' || session.role === 'admin'
-  const companyId = isInternal && overrides?.companyIdOverride
+  const companyId = isInternal && overrides.companyIdOverride
     ? overrides.companyIdOverride
     : session.companyId
-
-  const dateFrom = overrides?.dateFrom ?? null
-  const dateTo = overrides?.dateTo ?? null
-
-  // Active parts — the same filter the /anexo-24 page uses. Without
-  // this the export contains the full 290K partidas mirror instead of
-  // the ~693 parts the client actually imported.
-  const active = await getActiveCveProductos(supabase, companyId)
-  const activeList = activeCvesArray(active)
-  const activeSet = new Set(activeList)
-  const hasActiveFilter = activeList.length > 0
-
-  // --- Step 1: tráficos in window (pedimento-only filter) -------------
-  // "Only Anexo 24" means only partidas that have a pedimento assigned
-  // in the target window. This is the Formato 53 contract — no catalog
-  // rows, only pedimento-bearing merchandise.
-  let traficoQ = supabase
-    .from('traficos')
-    .select('trafico, pedimento, fecha_pago, fecha_llegada, proveedores, regimen, pais_procedencia, aduana, tipo_cambio, peso_bruto, importe_total')
-    .eq('company_id', companyId)
-    .not('pedimento', 'is', null)
-    .limit(5000)
-  if (dateFrom) traficoQ = traficoQ.gte('fecha_pago', dateFrom)
-  if (dateTo) traficoQ = traficoQ.lte('fecha_pago', dateTo)
-
-  const traficoRes = await traficoQ
-  if (traficoRes.error) {
-    return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando tráficos: ${traficoRes.error.message}` } }
-  }
-  const traficos = ((traficoRes.data ?? []) as TraficoLite[]).filter((t) => !!t.trafico)
-  const traficoIds = traficos.map((t) => t.trafico)
-  const traficoMap = new Map<string, TraficoLite>()
-  for (const t of traficos) traficoMap.set(t.trafico, t)
-
-  // --- Step 2: facturas — enriched (numero, fecha, moneda, incoterm, cve_proveedor)
-  const facturas: FacturaEnriched[] = []
-  for (const batch of chunk(traficoIds, 1000)) {
-    if (batch.length === 0) continue
-    const res = await supabase
-      .from('globalpc_facturas')
-      .select('cve_trafico, folio, numero, fecha_facturacion, valor_comercial, moneda, incoterm, cve_proveedor')
-      .eq('company_id', companyId)
-      .in('cve_trafico', batch)
-    if (res.error) {
-      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando facturas: ${res.error.message}` } }
-    }
-    for (const r of (res.data ?? []) as FacturaEnriched[]) facturas.push(r)
-  }
-  const folioToFactura = new Map<number, FacturaEnriched>()
-  const folioToTrafico = new Map<number, string>()
-  for (const f of facturas) {
-    if (f.folio != null && f.cve_trafico) {
-      folioToTrafico.set(f.folio, f.cve_trafico)
-      folioToFactura.set(f.folio, f)
-    }
-  }
-  const folios = Array.from(folioToTrafico.keys())
-
-  // --- Step 3: partidas — enriched (marca, modelo, serie, item seq) ---
-  const partidas: PartidaRaw[] = []
-  for (const batch of chunk(folios, 1000)) {
-    if (batch.length === 0) continue
-    const res = await supabase
-      .from('globalpc_partidas')
-      .select('id, folio, cve_producto, cve_cliente, cantidad, precio_unitario, peso, pais_origen, marca, modelo, serie, numero_item')
-      .eq('company_id', companyId)
-      .in('folio', batch)
-      .limit(DEFAULT_PARTIDAS_LIMIT)
-    if (res.error) {
-      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando partidas: ${res.error.message}` } }
-    }
-    for (const r of (res.data ?? []) as PartidaRaw[]) partidas.push(r)
+  if (!companyId) {
+    return { ok: false, error: { status: 400, code: 'VALIDATION_ERROR', message: 'Sesión sin company_id resoluble.' } }
   }
 
-  // --- Step 4: productos enrichment (descripcion, fraccion, umt, nico)
-  const cvesNeeded = Array.from(new Set(partidas.map((p) => p.cve_producto).filter((x): x is string => !!x)))
-  const productMap = new Map<string, ProductoEnrichment>()
-  for (const batch of chunk(cvesNeeded, 1000)) {
-    if (batch.length === 0) continue
-    const res = await supabase
-      .from('globalpc_productos')
-      .select('cve_producto, descripcion, fraccion, umt, nico')
-      .eq('company_id', companyId)
-      .in('cve_producto', batch)
-    if (res.error) {
-      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando productos: ${res.error.message}` } }
-    }
-    for (const p of (res.data ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null; umt: string | null; nico: string | null }>) {
-      if (p.cve_producto) productMap.set(p.cve_producto, { descripcion: p.descripcion, fraccion: p.fraccion, umt: p.umt, nico: p.nico })
+  const dateFrom = overrides.dateFrom
+  const dateTo = overrides.dateTo
+
+  let rowsResult
+  try {
+    rowsResult = await fetchAnexo24Rows({ supabase, companyId, dateFrom, dateTo })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando partidas: ${msg}` } }
+  }
+
+  if (rowsResult.truncated) {
+    return {
+      ok: false,
+      error: {
+        status: 422,
+        code: 'RANGE_TRUNCATED',
+        message: 'El periodo solicitado excede el límite de partidas. Reduce el rango antes de exportar.',
+      },
     }
   }
 
-  // --- Step 5: proveedores — resolve names + Tax ID/RFC ----------------
-  const cveProveedoresNeeded = Array.from(new Set(facturas.map((f) => f.cve_proveedor).filter((x): x is string => !!x)))
-  const proveedorMap = new Map<string, ProveedorEnrichment>()
-  for (const batch of chunk(cveProveedoresNeeded, 1000)) {
-    if (batch.length === 0) continue
-    // globalpc_proveedores real columns: cve_proveedor, nombre, id_fiscal
-    // (NOT rfc — that column is a phantom; M15 sweep). id_fiscal carries
-    // the RFC for MX suppliers + the foreign tax ID for non-MX suppliers.
-    const res = await supabase
-      .from('globalpc_proveedores')
-      .select('cve_proveedor, nombre, id_fiscal')
-      .eq('company_id', companyId)
-      .in('cve_proveedor', batch)
-    if (res.error) {
-      return { ok: false, error: { status: 500, code: 'DATA_ERROR', message: `Error consultando proveedores: ${res.error.message}` } }
-    }
-    for (const p of (res.data ?? []) as Array<{ cve_proveedor: string | null; nombre: string | null; id_fiscal: string | null }>) {
-      if (p.cve_proveedor) proveedorMap.set(p.cve_proveedor, { nombre: p.nombre, rfc: p.id_fiscal })
-    }
-  }
-
-  // --- Assembly — 41-column Formato 53 shape --------------------------
-  // Date helpers: Formato 53 renders dates DD/MM/YYYY. Pedimento numbers
-  // render in SAT canonical form (`26 24 3596 6500441`).
-  const fmtDate = (iso: string | null): string | null => {
-    if (!iso) return null
-    const d = new Date(iso)
-    if (Number.isNaN(d.getTime())) return null
-    const dd = String(d.getUTCDate()).padStart(2, '0')
-    const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
-    const yy = d.getUTCFullYear()
-    return `${dd}/${mm}/${yy}`
-  }
-  const yearOf = (iso: string | null): string | null => {
-    if (!iso) return null
-    const d = new Date(iso)
-    return Number.isNaN(d.getTime()) ? null : String(d.getUTCFullYear())
-  }
-  const splitPedimento = (ped: string | null): { clave: string | null; numero: string | null } => {
-    if (!ped) return { clave: null, numero: null }
-    // SAT pedimento is `DD AD PPPP SSSSSSS`. The "clave" is the 2-letter
-    // pedimento-type code (A1, A3, IMD, ITE, etc.) which lives on the
-    // trafico.regimen field for us. Return the full 15-digit number here.
-    return { clave: null, numero: formatPedimento(ped) ?? ped }
-  }
-
-  const rows: Anexo24Row[] = []
-  for (const p of partidas) {
-    if (p.folio == null) continue
-    const traficoId = folioToTrafico.get(p.folio)
-    if (!traficoId) continue
-    const t = traficoMap.get(traficoId)
-    if (!t) continue
-    // Active-parts filter — same slice as /anexo-24 page so on-screen
-    // SKU count matches the export row count.
-    if (hasActiveFilter && p.cve_producto && !activeSet.has(p.cve_producto)) continue
-
-    const enr = p.cve_producto ? productMap.get(p.cve_producto) : undefined
-    const factura = folioToFactura.get(p.folio)
-    const proveedorRow = factura?.cve_proveedor ? proveedorMap.get(factura.cve_proveedor) : undefined
-
-    const cantidad = typeof p.cantidad === 'number' ? p.cantidad : (p.cantidad != null ? Number(p.cantidad) : null)
-    const precio = typeof p.precio_unitario === 'number' ? p.precio_unitario : (p.precio_unitario != null ? Number(p.precio_unitario) : null)
-    const valorUsd = cantidad != null && precio != null && Number.isFinite(cantidad * precio)
-      ? Math.round(cantidad * precio * 100) / 100
-      : null
-    const tc = t.tipo_cambio != null && Number.isFinite(Number(t.tipo_cambio)) ? Number(t.tipo_cambio) : null
-    const valorComercial = valorUsd != null && tc != null ? Math.round(valorUsd * tc * 100) / 100 : null
-    const tmec = isTmec(t.regimen)
-    const pedimentoInfo = splitPedimento(t.pedimento)
-
-    rows.push({
-      annio_fecha_pago: yearOf(t.fecha_pago),
-      aduana: t.aduana ?? null,
-      clave_pedimento: null, // TODO: source from at001 C001CVEDOC when available; régimen ≠ clave per Anexo 22 Apéndices 2 & 5
-      fecha_pago: fmtDate(t.fecha_pago),
-      proveedor: resolveProveedorName(
-        factura?.cve_proveedor ?? null,
-        proveedorRow?.nombre ?? t.proveedores ?? null,
-      ),
-      tax_id: proveedorRow?.rfc ?? null,
-      factura: factura?.numero ?? null,
-      fecha_factura: fmtDate(factura?.fecha_facturacion ?? null),
-      fraccion: enr?.fraccion ?? null,
-      numero_parte: p.cve_producto ?? null,
-      clave_insumo: p.cve_producto ?? null,
-      origen: p.pais_origen ?? t.pais_procedencia ?? null,
-      tratado: tmec ? 'SI' : 'No',
-      cantidad_umc: cantidad,
-      umc: enr?.umt ?? null,
-      valor_aduana: valorComercial,
-      valor_comercial: valorComercial,
-      tigi: null,        // pedimento-XML only
-      fp_igi: null,      // pedimento-XML only
-      fp_iva: null,      // pedimento-XML only
-      fp_ieps: null,     // pedimento-XML only
-      tipo_cambio: tc,
-      iva: null,         // requires valor_aduana + DTA + IGI — pedimento-XML only
-      secuencia: typeof p.numero_item === 'number' ? p.numero_item : null,
-      remesa: null,      // pedimento-XML only
-      marca: p.marca ?? null,
-      modelo: p.modelo ?? null,
-      serie: p.serie ?? null,
-      numero_pedimento: pedimentoInfo.numero,
-      cantidad_umt: cantidad,  // same as UMC until pedimento-XML split lands
-      unidad_umt: enr?.umt ?? null,
-      valor_dolar: valorUsd,
-      incoterm: factura?.incoterm ?? null,
-      factor_conversion: 1,
-      fecha_presentacion: fmtDate(t.fecha_llegada),
-      consignatario: null,         // pedimento-XML only
-      destinatario: null,          // pedimento-XML only
-      vinculacion: null,           // pedimento-XML only
-      metodo_valoracion: null,     // pedimento-XML only
-      peso_bruto: p.peso ?? null,
-      pais_origen: p.pais_origen ?? t.pais_procedencia ?? null,
-      tmec,
-    })
-  }
-
-  // Zero-row guard — stream still works but surface the reality.
-  // The PDF renders the empty-rows table cleanly; the caller sees
-  // row_count: 0 and can decide whether to abort (client button does).
-  // P0-A7: rebuild client name from the verified companyId, not from
-  // forgeable company_name cookie. Pre-fix the rendered Anexo-24 PDF
-  // attribution could be flipped to a different tenant via cookie tamper.
+  // P0-A7 cookie-fence (preserved across PR #12's 13-col collapse): rebuild
+  // client name from the verified companyId, not from the forgeable
+  // company_name cookie. Pre-fix the rendered Anexo-24 PDF attribution
+  // could be flipped to a different tenant via cookie tamper. PR #12
+  // extracted the row assembly into fetchAnexo24Rows() so the inline
+  // 41-column block that lived here is gone — but the cookie-fence
+  // clientName lookup stays.
   const { data: clientRow } = await supabase
     .from('companies')
     .select('name')
     .eq('company_id', companyId)
     .maybeSingle()
   const clientName = cleanCompanyDisplayName((clientRow?.name as string | undefined) ?? '') || companyId
-
   const actor = `${session.companyId}:${session.role}`
   const generado_en = new Date().toISOString()
 
@@ -411,7 +132,7 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
       patente: PATENTE,
       aduana: ADUANA,
     },
-    rows,
+    rows: rowsResult.rows,
   }
 
   let artifacts: { excel: Buffer; pdf: Buffer }
@@ -419,24 +140,14 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
     artifacts = await generateAnexo24(data)
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    return { ok: false, error: { status: 500, code: 'RENDER_ERROR', message: `Error generando el Formato 53: ${msg}` } }
+    return { ok: false, error: { status: 500, code: 'RENDER_ERROR', message: `Error generando el Anexo 24: ${msg}` } }
   }
 
-  return {
-    ok: true,
-    data,
-    artifacts,
-    session,
-    companyId,
-    actor,
-    generado_en,
-  }
+  return { ok: true, data, artifacts, session, companyId, actor, generado_en }
 }
 
 /**
- * GET — streaming download. Triggered by the client button so the user
- * gets a real browser download (respects iOS save-to-Files behavior,
- * no blocked popups, no secondary tap).
+ * GET — streaming download triggered by the client button.
  */
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
@@ -448,19 +159,22 @@ export async function GET(request: NextRequest) {
   if (format !== 'pdf' && format !== 'xlsx') {
     return jsonError('VALIDATION_ERROR', 'format debe ser "pdf" o "xlsx"', 400)
   }
+  if (!ISO_DATE.test(dateFrom) || !ISO_DATE.test(dateTo)) {
+    return jsonError('VALIDATION_ERROR', 'date_from y date_to deben tener formato YYYY-MM-DD', 400)
+  }
+  if (dateFrom > dateTo) {
+    return jsonError('VALIDATION_ERROR', 'date_from no puede ser posterior a date_to', 400)
+  }
 
-  const result = await buildFormato53(request, { dateFrom, dateTo, companyIdOverride: companyOverride })
+  const result = await buildAnexo24(request, { dateFrom, dateTo, companyIdOverride: companyOverride })
   if (!result.ok) {
     return jsonError(result.error.code, result.error.message, result.error.status)
   }
 
-  // Audit log — fire-and-forget. Don't block the download on a log write.
-  // The client still sees the PDF even if the log fails; the ops team
-  // sees a Telegram alert on logDecision errors via its own path.
   void logDecision({
     company_id: result.companyId,
     decision_type: 'anexo_24_generated',
-    decision: `Formato 53 descargado (${format.toUpperCase()}, ${result.data.rows.length} partidas)`,
+    decision: `Anexo 24 descargado (${format.toUpperCase()}, ${result.data.rows.length} partidas)`,
     reasoning: 'Descarga directa por el usuario vía botón Anexo 24.',
     dataPoints: {
       format,
@@ -491,9 +205,6 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST — legacy JSON path. Generates, uploads, returns public URLs.
- * Kept for cron/operator tooling. On upload failure, returns URLs for
- * the streaming GET fallback so the caller can still retrieve the
- * artifact by re-requesting.
  */
 export async function POST(request: NextRequest) {
   let body: unknown = {}
@@ -507,9 +218,14 @@ export async function POST(request: NextRequest) {
     return jsonError('VALIDATION_ERROR', 'Parámetros inválidos', 400)
   }
 
-  const result = await buildFormato53(request, {
-    dateFrom: parsed.data.date_from ?? undefined,
-    dateTo: parsed.data.date_to ?? undefined,
+  const today = new Date().toISOString().slice(0, 10)
+  const yearStart = `${new Date().getUTCFullYear()}-01-01`
+  const dateFrom = parsed.data.date_from ?? yearStart
+  const dateTo = parsed.data.date_to ?? today
+
+  const result = await buildAnexo24(request, {
+    dateFrom,
+    dateTo,
     companyIdOverride: parsed.data.company_id ?? null,
   })
   if (!result.ok) {
@@ -531,9 +247,6 @@ export async function POST(request: NextRequest) {
     }),
   ])
 
-  // Upload failures fall back to the streaming URLs — a real diagnostic
-  // message travels back to the caller so they know which surface to
-  // expect when they render the result.
   if (pdfUp.error || xlsxUp.error) {
     const detail = [pdfUp.error?.message, xlsxUp.error?.message].filter(Boolean).join(' · ')
     const streamBase = `/api/reports/anexo-24/generate?date_from=${result.data.meta.date_from ?? ''}&date_to=${result.data.meta.date_to ?? ''}`

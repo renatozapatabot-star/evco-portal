@@ -283,7 +283,13 @@ export async function fetchAnexo24Rows(
       consecutivo,
       pedimento: trafico.pedimento ? formatPedimento(trafico.pedimento) ?? trafico.pedimento : null,
       fecha: trafico.fecha_pago,
-      embarque: clave ? `${clave}-${trafico.trafico}` : trafico.trafico,
+      // Cluster L · 2026-04-28: prevent doubled "<clave>-<clave>-…"
+      // prefix. trafico.trafico sometimes already carries the clave
+      // (e.g. "4598-Y4381"); concatenating clave again produced
+      // "4598-4598-Y4381" on /anexo-24. Idempotent prefix only.
+      embarque: clave
+        ? (trafico.trafico.startsWith(`${clave}-`) ? trafico.trafico : `${clave}-${trafico.trafico}`)
+        : trafico.trafico,
       fraccion: enr?.fraccion ? formatFraccion(enr.fraccion) ?? enr.fraccion : null,
       descripcion: enr?.descripcion ?? null,
       cantidad,

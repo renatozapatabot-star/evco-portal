@@ -201,6 +201,30 @@ describe('fetchAnexo24Rows', () => {
     expect(result.rows[0].embarque).toBe('9999-Y4333')
   })
 
+  it('Cluster L: embarque does NOT double-prefix when trafico already starts with clave', async () => {
+    // Bug fix 2026-04-28: prior implementation produced "4598-4598-Y4381"
+    // when clave="4598" and trafico.trafico="4598-Y4381" (already prefixed).
+    // Idempotent prefix is now enforced.
+    const { client } = makeSupabase({
+      companies: [{ clave_cliente: '4598' }],
+      traficos: [{ ...evcoTraficos[0], trafico: '4598-Y4381' }],
+      globalpc_facturas: [{ ...evcoFacturas[0], cve_trafico: '4598-Y4381' }],
+      globalpc_partidas: [evcoPartidas[0]],
+      globalpc_productos: [evcoProductos[0]],
+      globalpc_proveedores: [evcoProveedores[0]],
+    })
+
+    const result = await fetchAnexo24Rows({
+      supabase: client,
+      companyId: 'evco',
+      dateFrom: '2026-01-01',
+      dateTo: '2026-04-30',
+    })
+
+    expect(result.rows[0].embarque).toBe('4598-Y4381')
+    expect(result.rows[0].embarque).not.toContain('4598-4598-')
+  })
+
   it('embarque falls back to the bare trafico when clave_cliente is null', async () => {
     const { client } = makeSupabase({
       companies: [{ clave_cliente: null }],

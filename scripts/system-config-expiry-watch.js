@@ -29,6 +29,7 @@ const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const { sendTelegram } = require('./lib/telegram')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -47,22 +48,7 @@ function daysBetween(from, to) {
   return Math.floor((to.getTime() - from.getTime()) / DAY_MS)
 }
 
-// Supabase v2 query builders are thenable but not real Promises — they
-// expose .then() but NOT .catch(). Await + try/catch is the v2-safe path.
-async function writeHeartbeat(status, details) {
-  try {
-    const { error } = await supabase.from('heartbeat_log').insert({
-      script: SCRIPT_NAME,
-      status,
-      details,
-    })
-    if (error) console.warn(`[heartbeat skip] ${error.message}`)
-  } catch (e) {
-    console.warn(`[heartbeat skip] ${e?.message || e}`)
-  }
-}
-
-async function main() {
+async function checkExpiry() {
   const startedAt = new Date()
   console.log(`🔔 ${SCRIPT_NAME} — ${DRY_RUN ? 'DRY RUN' : 'LIVE'} @ ${startedAt.toISOString()}`)
 
@@ -75,12 +61,7 @@ async function main() {
     .from('system_config')
     .select('key, value, valid_to')
 
-  if (error) {
-    const msg = `🔴 <b>${SCRIPT_NAME}</b> query failed: ${error.message}`
-    console.error(msg)
-    await sendTelegram(msg)
-    process.exit(1)
-  }
+  if (error) throw new Error(`query failed: ${error.message}`)
 
   if (VERBOSE) {
     console.log(`\n--- system_config snapshot (${(data || []).length} rows) ---`)
@@ -134,13 +115,7 @@ async function main() {
 
   if (totalAlerts === 0) {
     console.log('✅ All system_config rows with valid_to are fresh (> 7 days).')
-    if (!DRY_RUN) {
-      await writeHeartbeat('success', {
-        rows_checked: (data || []).length,
-        alerts: 0,
-      })
-    }
-    return
+    return { rows_synced: 0, expired: 0 }
   }
 
   // Build the Telegram message tiered by urgency
@@ -182,24 +157,29 @@ async function main() {
 
   if (!DRY_RUN) {
     await sendTelegram(telegramMsg)
-    await writeHeartbeat(expired.length > 0 ? 'alerted' : 'success', {
-      rows_checked: (data || []).length,
-      expired: expired.length,
-      urgent: urgent.length,
-      heads_up: heads_up.length,
-      unguarded: unguarded.length,
-      expired_keys: expired.map(e => e.key),
-      unguarded_keys: unguarded.map(u => u.key),
-    })
   }
 
-  // Exit 1 only if something is already expired — surfaces as cron
-  // failure in pipeline-postmortem and keeps the alert loud.
-  process.exit(expired.length > 0 ? 1 : 0)
+  // Successful run that raised an alert is still a successful run for
+  // sync_log. Loud-exit on expired keys is signalled to pipeline-postmortem
+  // via the outer process.exit on `expired > 0`.
+  return {
+    rows_synced: (data || []).length,
+    expired: expired.length,
+  }
 }
 
-main().catch(async (err) => {
+// withSyncLog opens a sync_log row, runs checkExpiry(), closes the row
+// with status='success' (rows_synced from the return) or status='failed'
+// (auto-fires Telegram via scripts/lib/sync-log.js's dispatch). Exit 1
+// only when there are EXPIRED keys — those mean the rate refuse-path has
+// fired and pipeline-postmortem must surface it. heads_up + urgent ran
+// successfully, no exit-1 needed.
+async function main() {
+  const result = await withSyncLog(supabase, { sync_type: SCRIPT_NAME }, checkExpiry)
+  if (!DRY_RUN && result?.expired > 0) process.exit(1)
+}
+
+main().catch((err) => {
   console.error('Fatal:', err.message)
-  await sendTelegram(`🔴 <b>${SCRIPT_NAME}</b> fatal: ${err.message}`)
   process.exit(1)
 })

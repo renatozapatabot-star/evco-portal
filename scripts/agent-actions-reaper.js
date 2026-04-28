@@ -40,7 +40,8 @@
  *
  * Output
  * ------
- *   - heartbeat_log row (success even on zero-reap — silence is not OK)
+ *   - sync_log row (success even on zero-reap — silence is not OK).
+ *     withSyncLog auto-fires Telegram on 'failed' status.
  *   - Telegram alert when rows reaped > REAP_TELEGRAM_THRESHOLD (20),
  *     quiet on normal sweeps to avoid noise
  *   - Hard Telegram alert + exit 1 on query/update failure
@@ -56,6 +57,7 @@ const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const { sendTelegram } = require('./lib/telegram')
+const { withSyncLog } = require('./lib/sync-log')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -70,23 +72,7 @@ const GRACE_MINUTES = 10
 const REAP_TELEGRAM_THRESHOLD = 20
 const CANCEL_REASON_ES = 'Ventana de confirmación expirada — acción abandonada.'
 
-// Supabase v2 query builders are thenable but not real Promises — they
-// expose .then() but NOT .catch(). The previous `.insert(...).catch()`
-// pattern crashed at runtime. Await + try/catch is the v2-safe path.
-async function writeHeartbeat(details) {
-  try {
-    const { error } = await supabase.from('heartbeat_log').insert({
-      script: SCRIPT_NAME,
-      status: 'success',
-      details,
-    })
-    if (error) console.warn(`[heartbeat skip] ${error.message}`)
-  } catch (e) {
-    console.warn(`[heartbeat skip] ${e?.message || e}`)
-  }
-}
-
-async function main() {
+async function reap() {
   const startedAt = new Date()
   const cutoffIso = new Date(startedAt.getTime() - GRACE_MINUTES * 60_000).toISOString()
   console.log(
@@ -102,12 +88,7 @@ async function main() {
     .order('commit_deadline_at', { ascending: true })
     .limit(5000)
 
-  if (readErr) {
-    const msg = `🔴 <b>${SCRIPT_NAME}</b> query failed: ${readErr.message}`
-    console.error(msg)
-    await sendTelegram(msg)
-    process.exit(1)
-  }
+  if (readErr) throw new Error(`query failed: ${readErr.message}`)
 
   const rows = candidates || []
   const byKind = {}
@@ -129,22 +110,15 @@ async function main() {
   }
 
   if (rows.length === 0) {
-    if (!DRY_RUN) {
-      await writeHeartbeat({
-        reaped: 0,
-        cutoff_iso: cutoffIso,
-        grace_minutes: GRACE_MINUTES,
-      })
-    }
     console.log('✅ nothing to reap.')
-    return
+    return { rows_synced: 0 }
   }
 
   if (DRY_RUN) {
     console.log('🟡 dry-run — no rows updated.')
     console.log(`   by kind:    ${JSON.stringify(byKind)}`)
     console.log(`   by company: ${JSON.stringify(byCompany)}`)
-    return
+    return { rows_synced: 0 }
   }
 
   // Single bulk update — filter on status='proposed' defends against a
@@ -161,26 +135,12 @@ async function main() {
     .lt('commit_deadline_at', cutoffIso)
     .select('id')
 
-  if (updateErr) {
-    const msg = `🔴 <b>${SCRIPT_NAME}</b> update failed: ${updateErr.message}`
-    console.error(msg)
-    await sendTelegram(msg)
-    process.exit(1)
-  }
+  if (updateErr) throw new Error(`update failed: ${updateErr.message}`)
 
   const reapedCount = (updated || []).length
   console.log(`✅ reaped ${reapedCount} row(s).`)
   console.log(`   by kind:    ${JSON.stringify(byKind)}`)
   console.log(`   by company: ${JSON.stringify(byCompany)}`)
-
-  await writeHeartbeat({
-    reaped: reapedCount,
-    candidates: rows.length,
-    cutoff_iso: cutoffIso,
-    grace_minutes: GRACE_MINUTES,
-    by_kind: byKind,
-    by_company: byCompany,
-  })
 
   // Quiet on normal sweeps. Loud when the backlog spikes — signals
   // either a UI regression (commit endpoint not firing) or a network
@@ -196,10 +156,20 @@ async function main() {
       `<i>Si este número crece, revisar /api/cruz-ai/actions/commit en el cliente.</i>`,
     )
   }
+
+  return { rows_synced: reapedCount }
 }
 
-main().catch(async (err) => {
+// withSyncLog opens a sync_log row, runs reap(), closes the row with
+// status='success' (rows_synced from the return) or status='failed'
+// (auto-fires Telegram via scripts/lib/sync-log.js's dispatch). DRY_RUN
+// still logs because absence of a row is the silent-failure mode the
+// pm2 process was designed to surface.
+async function main() {
+  return withSyncLog(supabase, { sync_type: SCRIPT_NAME }, reap)
+}
+
+main().catch((err) => {
   console.error('Fatal:', err.message)
-  await sendTelegram(`🔴 <b>${SCRIPT_NAME}</b> fatal: ${err.message}`)
   process.exit(1)
 })

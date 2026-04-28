@@ -383,6 +383,75 @@ export type Database = {
           },
         ]
       }
+      agent_actions: {
+        Row: {
+          actor_id: string | null
+          actor_role: string
+          cancel_reason_es: string | null
+          cancelled_at: string | null
+          commit_deadline_at: string
+          committed_at: string | null
+          company_id: string
+          created_at: string
+          decision_id: string | null
+          execute_attempts: number
+          execute_error_es: string | null
+          execute_result: Json | null
+          executed_at: string | null
+          executed_by: string | null
+          executed_by_role: string | null
+          id: string
+          kind: string
+          payload: Json
+          status: string
+          summary_es: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role: string
+          cancel_reason_es?: string | null
+          cancelled_at?: string | null
+          commit_deadline_at: string
+          committed_at?: string | null
+          company_id: string
+          created_at?: string
+          decision_id?: string | null
+          execute_attempts?: number
+          execute_error_es?: string | null
+          execute_result?: Json | null
+          executed_at?: string | null
+          executed_by?: string | null
+          executed_by_role?: string | null
+          id?: string
+          kind: string
+          payload: Json
+          status?: string
+          summary_es: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string
+          cancel_reason_es?: string | null
+          cancelled_at?: string | null
+          commit_deadline_at?: string
+          committed_at?: string | null
+          company_id?: string
+          created_at?: string
+          decision_id?: string | null
+          execute_attempts?: number
+          execute_error_es?: string | null
+          execute_result?: Json | null
+          executed_at?: string | null
+          executed_by?: string | null
+          executed_by_role?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          status?: string
+          summary_es?: string
+        }
+        Relationships: []
+      }
       agent_decisions: {
         Row: {
           action_taken: string | null
@@ -1941,6 +2010,8 @@ export type Database = {
           is_baseline: boolean | null
           metric_name: string | null
           metrics: Json | null
+          p10: number | null
+          p90: number | null
           percentile: number | null
           period: string | null
           sample_size: number | null
@@ -1960,6 +2031,8 @@ export type Database = {
           is_baseline?: boolean | null
           metric_name?: string | null
           metrics?: Json | null
+          p10?: number | null
+          p90?: number | null
           percentile?: number | null
           period?: string | null
           sample_size?: number | null
@@ -1979,6 +2052,8 @@ export type Database = {
           is_baseline?: boolean | null
           metric_name?: string | null
           metrics?: Json | null
+          p10?: number | null
+          p90?: number | null
           percentile?: number | null
           period?: string | null
           sample_size?: number | null
@@ -3223,6 +3298,36 @@ export type Database = {
           date?: string | null
           id?: string
           viewed_at?: string | null
+        }
+        Relationships: []
+      }
+      data_integrity_log: {
+        Row: {
+          batches: Json
+          created_at: string
+          id: number
+          summary: Json
+          sync_log_id: number | null
+          sync_type: string
+          verdict: string
+        }
+        Insert: {
+          batches?: Json
+          created_at?: string
+          id?: number
+          summary?: Json
+          sync_log_id?: number | null
+          sync_type: string
+          verdict: string
+        }
+        Update: {
+          batches?: Json
+          created_at?: string
+          id?: number
+          summary?: Json
+          sync_log_id?: number | null
+          sync_type?: string
+          verdict?: string
         }
         Relationships: []
       }
@@ -7089,6 +7194,168 @@ export type Database = {
         }
         Relationships: []
       }
+      mensajeria_email_notifications: {
+        Row: {
+          message_id: string
+          recipient_email: string
+          sent_at: string
+        }
+        Insert: {
+          message_id: string
+          recipient_email: string
+          sent_at?: string
+        }
+        Update: {
+          message_id?: string
+          recipient_email?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensajeria_email_notifications_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "mensajeria_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensajeria_messages: {
+        Row: {
+          author_name: string
+          author_role: string
+          body: string
+          company_id: string
+          created_at: string
+          id: string
+          internal_only: boolean
+          redacted_at: string | null
+          redacted_by: string | null
+          status: string
+          thread_id: string
+          undo_until: string | null
+          undone: boolean
+        }
+        Insert: {
+          author_name: string
+          author_role: string
+          body: string
+          company_id: string
+          created_at?: string
+          id?: string
+          internal_only?: boolean
+          redacted_at?: string | null
+          redacted_by?: string | null
+          status?: string
+          thread_id: string
+          undo_until?: string | null
+          undone?: boolean
+        }
+        Update: {
+          author_name?: string
+          author_role?: string
+          body?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          internal_only?: boolean
+          redacted_at?: string | null
+          redacted_by?: string | null
+          status?: string
+          thread_id?: string
+          undo_until?: string | null
+          undone?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensajeria_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "mensajeria_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensajeria_reads: {
+        Row: {
+          last_read_at: string
+          reader_key: string
+          thread_id: string
+        }
+        Insert: {
+          last_read_at?: string
+          reader_key: string
+          thread_id: string
+        }
+        Update: {
+          last_read_at?: string
+          reader_key?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensajeria_reads_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "mensajeria_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensajeria_threads: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by_name: string
+          created_by_role: string
+          escalated_at: string | null
+          id: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          resolved_at: string | null
+          status: string
+          subject: string
+          trafico_id: string | null
+          unread_count_client: number
+          unread_count_internal: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by_name: string
+          created_by_role: string
+          escalated_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          trafico_id?: string | null
+          unread_count_client?: number
+          unread_count_internal?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by_name?: string
+          created_by_role?: string
+          escalated_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          trafico_id?: string | null
+          unread_count_client?: number
+          unread_count_internal?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       module_executions: {
         Row: {
           confidence: number | null
@@ -7161,6 +7428,57 @@ export type Database = {
           report_month?: string | null
           sent_at?: string | null
           sent_to?: string[] | null
+        }
+        Relationships: []
+      }
+      mve_alerts: {
+        Row: {
+          company_id: string
+          created_at: string
+          days_remaining: number | null
+          deadline_at: string
+          id: string
+          message: string | null
+          pedimento_id: string
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          rule_code: string | null
+          severity: string
+          trafico_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          days_remaining?: number | null
+          deadline_at: string
+          id?: string
+          message?: string | null
+          pedimento_id: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule_code?: string | null
+          severity: string
+          trafico_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          days_remaining?: number | null
+          deadline_at?: string
+          id?: string
+          message?: string | null
+          pedimento_id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule_code?: string | null
+          severity?: string
+          trafico_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -10968,6 +11286,119 @@ export type Database = {
           },
         ]
       }
+      workflow_feedback: {
+        Row: {
+          actor_id: string | null
+          actor_role: string
+          comment_es: string | null
+          company_id: string
+          created_at: string
+          finding_id: string
+          id: string
+          kind: string
+          signature: string
+          thumbs: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role: string
+          comment_es?: string | null
+          company_id: string
+          created_at?: string
+          finding_id: string
+          id?: string
+          kind: string
+          signature: string
+          thumbs: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string
+          comment_es?: string | null
+          company_id?: string
+          created_at?: string
+          finding_id?: string
+          id?: string
+          kind?: string
+          signature?: string
+          thumbs?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_feedback_finding_id_fkey"
+            columns: ["finding_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_findings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_findings: {
+        Row: {
+          company_id: string
+          confidence: number
+          created_at: string
+          detail_es: string
+          detector_version: string
+          evidence: Json
+          id: string
+          kind: string
+          last_seen_at: string
+          proposal: Json
+          resolved_at: string | null
+          resolved_by: string | null
+          seen_count: number
+          severity: string
+          signature: string
+          status: string
+          subject_id: string
+          subject_type: string
+          title_es: string
+        }
+        Insert: {
+          company_id: string
+          confidence?: number
+          created_at?: string
+          detail_es: string
+          detector_version?: string
+          evidence?: Json
+          id?: string
+          kind: string
+          last_seen_at?: string
+          proposal?: Json
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seen_count?: number
+          severity?: string
+          signature: string
+          status?: string
+          subject_id: string
+          subject_type: string
+          title_es: string
+        }
+        Update: {
+          company_id?: string
+          confidence?: number
+          created_at?: string
+          detail_es?: string
+          detector_version?: string
+          evidence?: Json
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          proposal?: Json
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seen_count?: number
+          severity?: string
+          signature?: string
+          status?: string
+          subject_id?: string
+          subject_type?: string
+          title_es?: string
+        }
+        Relationships: []
+      }
       workflow_metrics: {
         Row: {
           avg_duration_ms: number | null
@@ -11189,6 +11620,36 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_trade_index_client_position_90d: {
+        Row: {
+          aduana: string | null
+          avg_clearance_days: number | null
+          company_id: string | null
+          computed_at: string | null
+          median_clearance_days: number | null
+          oficina: string | null
+          shipment_count: number | null
+          tmec_rate: number | null
+          total_value_usd: number | null
+        }
+        Relationships: []
+      }
+      mv_trade_index_lane_90d: {
+        Row: {
+          aduana: string | null
+          avg_clearance_days: number | null
+          computed_at: string | null
+          distinct_company_count: number | null
+          median_clearance_days: number | null
+          oficina: string | null
+          p10_clearance_days: number | null
+          p90_clearance_days: number | null
+          shipment_count: number | null
+          tmec_rate: number | null
+          total_value_usd: number | null
+        }
+        Relationships: []
+      }
       pedimentos_assembled: {
         Row: {
           aduana: string | null
@@ -11312,6 +11773,22 @@ export type Database = {
         }
         Relationships: []
       }
+      v_trade_index_public: {
+        Row: {
+          aduana: string | null
+          avg_clearance_days: number | null
+          computed_at: string | null
+          distinct_company_count: number | null
+          median_clearance_days: number | null
+          oficina: string | null
+          p10_clearance_days: number | null
+          p90_clearance_days: number | null
+          shipment_count: number | null
+          tmec_rate: number | null
+          total_value_usd: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       find_classification_patterns: {
@@ -11344,6 +11821,7 @@ export type Database = {
       }
       get_kpi_intelligence: { Args: { p_company_id: string }; Returns: Json }
       normalize_proveedor: { Args: { raw: string }; Returns: string }
+      refresh_trade_index: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

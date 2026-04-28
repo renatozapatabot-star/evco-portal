@@ -38,33 +38,69 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ## Currently pending
 
-### `20260422190000_invoice_dedup.sql`
+_(none — queue drained 2026-04-28; one migration moved to_
+_`supabase/migrations_blocked/`, see below)_
 
-**Rationale:** Phase 1 of V2 Doc Intelligence — duplicate-invoice
-detection. Adds three nullable columns to `pedimento_facturas`
-(`file_hash`, `normalized_invoice_number`, `supplier_rfc`) plus three
-partial indexes for O(log n) dedup lookups.
+---
 
-**Expected effect:** Upload route starts writing the new columns on
-every insert. Legacy rows stay valid (columns are nullable). Three new
-indexes appear in the `pedimento_facturas` pg_stat view. No RLS change.
+## Blocked
 
-**Verification post-apply:**
-```sql
--- Expect 3 new columns, all nullable:
-SELECT column_name, is_nullable FROM information_schema.columns
-  WHERE table_name = 'pedimento_facturas'
-    AND column_name IN ('file_hash','normalized_invoice_number','supplier_rfc');
+### `20260422190000_invoice_dedup.sql` → `supabase/migrations_blocked/`
 
--- Expect 3 new indexes:
-SELECT indexname FROM pg_indexes WHERE tablename = 'pedimento_facturas'
-  AND indexname LIKE 'idx_pedimento_facturas_%';
+**Why moved:** `supabase db push` on 2026-04-28 failed with `relation
+"pedimento_facturas" does not exist (SQLSTATE 42P01)`. The parent
+table — and 10 other `pedimento_*` siblings + `events_catalog` — were
+never re-applied to the live project after the 2026-04-20 reorg. The
+CREATE-TABLE source lives in `supabase/migrations_broken_20260420_1500/20260417_pedimento_data.sql`.
+
+**Unblock plan:** scope a follow-up to restore `20260417_pedimento_data.sql`
+(or a refreshed equivalent), `db push`, then move
+`20260422190000_invoice_dedup.sql` back to `supabase/migrations/` and
+push again.
+
+---
+
+## Applied this session (2026-04-28)
+
+`db push --include-all` applied 5 migrations after one
+`supabase migration repair --status reverted 20260422110000` cleared
+an orphan remote-only row (same pattern as 2026-04-21).
+
+Applied (in order):
+
+```
+✓ 20260422210000_agent_actions_executed_lifecycle.sql
+  └── agent_actions: status check expanded ('executed','execute_failed')
+      + 6 new columns (executed_at/by/by_role, execute_attempts/error_es/result)
+      + agent_actions_operator_queue_idx
+✓ 20260422_cruz_ai_conversations.sql
+  └── cruz_ai_conversations + cruz_ai_messages already present on
+      remote (Path B applied earlier); CREATE TABLE IF NOT EXISTS
+      no-op'd; RLS + deny-all policies (re-)applied
+✓ 20260424120000_workflow_findings.sql
+  └── workflow_findings + workflow_feedback (new); 4 indexes; RLS deny-all
+✓ 20260424_data_integrity_log.sql
+  └── data_integrity_log (new); 3 indexes; RLS deny-all
+  └── verified live: post-sync-integrity wrote first row at 18:45:04
+✓ 20260428120000_restore_mensajeria_tables.sql
+  └── mve_alerts + mensajeria_threads + mensajeria_messages
+      (with new `undone` boolean column the live code expects)
+      + mensajeria_reads + mensajeria_email_notifications (last two
+      not in original 20260415 migration; needed by cron + threads.ts)
+  └── verified live: mensajeria-email-fallback PM2 cron back online,
+      "no pending messages" steady-state at 18:45:17
 ```
 
-**Rollback:** `DROP INDEX IF EXISTS` the three indexes, then `ALTER
-TABLE pedimento_facturas DROP COLUMN IF EXISTS file_hash,
-normalized_invoice_number, supplier_rfc`. Data loss is limited to the
-new columns — nothing else depends on them yet.
+**Skipped (parked in `migrations_blocked/`):** `20260422190000_invoice_dedup.sql`
+— see Blocked section above.
+
+**Migration-history note:** the date-only filenames
+(`20260422_cruz_ai_conversations.sql`, `20260424_data_integrity_log.sql`)
+display as phantom local-only rows in `supabase migration list --linked`
+because the CLI matches on the timestamp prefix and the remote stores
+the full version without a description suffix. The DDL applied
+correctly; the display quirk is cosmetic. Rename to full
+`YYYYMMDDHHMMSS_*` form on a future cleanup pass to reconcile.
 
 ---
 

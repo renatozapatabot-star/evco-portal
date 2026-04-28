@@ -5,15 +5,15 @@
  * the same heritage signal at the same visual weight. Intentionally faint
  * (55% opacity) — presence, not noise.
  *
- * Dedupe via `data-identity-footer` — if multiple footers are mounted
- * (PageShell renders one AND DashboardShellClient renders one), only
- * the first paints. `AguilaFooterShellFallback` uses a client-only
- * effect to suppress the second.
+ * Ownership rule (Cluster F · 2026-04-28): every page renders ONE
+ * <AguilaFooter />. PageShell + AguilaShell mount it automatically;
+ * pages that don't compose through a shell (PortalDashboard, the
+ * pedimento detail page, the 404 page) render it inline. The previous
+ * shell-level `AguilaFooterShellFallback` was removed because its
+ * useEffect-based DOM dedupe was racy and produced double footers on
+ * /catalogo, /embarques/[id], /pedimentos/[id], and 404.
  */
 
-'use client'
-
-import { useEffect, useState } from 'react'
 import { LS_FOOTER } from '@/lib/design-system'
 
 export function AguilaFooter() {
@@ -34,25 +34,4 @@ export function AguilaFooter() {
       Patente 3596 · Aduana 240 · Laredo TX · Est. 1941
     </p>
   )
-}
-
-/**
- * Shell-level fallback: renders an AguilaFooter ONLY if no other
- * footer is already present on the page. Prevents double-render when
- * a page composes through PageShell (which mounts its own footer) AND
- * through DashboardShellClient (which also wants a footer on non-
- * PageShell pages).
- *
- * First render yields null (state starts "undecided"); a layout-effect
- * counts existing `[data-identity-footer]` elements and flips on if
- * there's 0 of them. Second render shows/hides accordingly.
- */
-export function AguilaFooterShellFallback() {
-  const [shouldRender, setShouldRender] = useState(false)
-  useEffect(() => {
-    const count = document.querySelectorAll('[data-identity-footer]').length
-    if (count === 0) setShouldRender(true)
-  }, [])
-  if (!shouldRender) return null
-  return <AguilaFooter />
 }

@@ -18,9 +18,9 @@ import { cleanCompanyDisplayName } from '@/lib/format/company-name'
 const ASK_AGENT_HREF =
   '/cruz?ctx=client&hello=' +
   encodeURIComponent('¿En qué te puedo apoyar hoy?')
-// AguilaFooter is rendered by DashboardShellClient via AguilaFooterShellFallback —
-// importing/rendering it here would bypass the [data-identity-footer] dedup
-// and double-paint. Removed 2026-04-19 after Chrome audit found the regression.
+// AguilaFooter is rendered by PortalDashboard itself (Cluster F ·
+// 2026-04-28). The previous shell-level fallback was racy; per-page
+// ownership is the deterministic fix.
 
 /**
  * Client-side shell for /inicio. Mounts the Próximo-cruce modal

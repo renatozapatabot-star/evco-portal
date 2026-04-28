@@ -4,7 +4,10 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import AguilaLayout from './aguila/AguilaLayout'
-import { AguilaFooterShellFallback } from './aguila/AguilaFooter'
+// AguilaFooterShellFallback removed 2026-04-28 (Cluster F):
+// the useEffect-based DOM dedupe was racy. Pages now own their own
+// footer (PageShell renders it; PortalDashboard + pedimento detail
+// render it explicitly). See .planning/LEARNINGS or commit log.
 import { ToastProvider, useToast } from './Toast'
 import { useKeyboardShortcuts } from '@/hooks/use-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -243,12 +246,13 @@ export default function DashboardShellClient({ children, verifiedRole = null }: 
         )}
         <div id="main-content" ref={scrollRef}>
           {children}
-          {/* Shell-level identity footer — renders on every authenticated
-              page. PageShell also renders an AguilaFooter for pages that
-              compose through it (e.g. /inicio). Dedupe guard in the
-              AguilaFooter component itself: if another [data-identity-footer]
-              is already on the page, this one returns null. */}
-          <AguilaFooterShellFallback />
+          {/* Footer ownership moved to each page (Cluster F · 2026-04-28).
+              The previous shell-level AguilaFooterShellFallback used a
+              useEffect DOM-query to dedupe, which was racy and caused
+              double footers on /catalogo, /embarques/[id], /pedimentos/[id],
+              and 404. Pages now render their own <AguilaFooter />:
+              PageShell + AguilaShell mount it automatically; PortalDashboard
+              renders it inline; the pedimento + 404 pages render it inline. */}
         </div>
       </AguilaLayout>
 

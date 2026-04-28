@@ -18,6 +18,7 @@ import {
 import { formatDateDMY, formatNumber, formatCurrencyUSD, formatCurrencyMXN } from '@/lib/format'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SyncChip } from '@/components/ui/sync-chip'
+import { AguilaFooter } from '@/components/aguila/AguilaFooter'
 import { readFreshness } from '@/lib/cockpit/freshness'
 import styles from './page.module.css'
 
@@ -450,6 +451,7 @@ export default async function PedimentoDetailPage({
           </div>
         </Section>
       )}
+      <AguilaFooter />
     </main>
   )
 }

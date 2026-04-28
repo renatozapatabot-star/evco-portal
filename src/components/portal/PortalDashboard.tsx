@@ -10,6 +10,7 @@ import { PortalAssistantFab } from './PortalAssistantFab'
 import { PortalCommandPalette } from './PortalCommandPalette'
 import { PortalWorldMesh } from './PortalWorldMesh'
 import { PortalTicker } from './PortalTicker'
+import { AguilaFooter } from '@/components/aguila/AguilaFooter'
 import type { PortalTickerItem } from './PortalTicker'
 import { useCmdK } from '@/hooks/useCmdK'
 import {
@@ -317,8 +318,11 @@ export function PortalDashboard({
 
         {extraRow}
 
-        {/* Operation footer — Patente line lives in AguilaFooter mounted
-            by page-level wrappers; we don't re-render it here. */}
+        {/* Identity footer — owned by this page. The shell-level fallback
+            was removed (Cluster F · 2026-04-28) because its useEffect
+            dedupe was racy and produced double footers on PageShell
+            pages. Each page now owns its <AguilaFooter />. */}
+        <AguilaFooter />
       </main>
 
       <PortalAssistantFab href={buildAgentHref(role)} />

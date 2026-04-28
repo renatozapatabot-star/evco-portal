@@ -55,17 +55,23 @@ export function useSupplierNames(): SupplierMap {
   const resolve = useCallback((raw: string): string => {
     if (!raw) return '—'
     const trimmed = raw.trim()
+    // Cluster K · 2026-04-28: GlobalPC stores placeholder proveedores
+    // with nombre like "PROVEEDOR DE <tenant legal name>" — never
+    // surface that to a client. Suppress at this resolve site so the
+    // entradas table, embarques detail, and any other supplier-name
+    // surface get a calm "—" instead of leaking the legal-name string.
+    const isPlaceholder = (s: string) => /^\s*PROVEEDOR\s+DE\s+/i.test(s)
     // Already a real name (not a code)
     if (!trimmed.startsWith('PRV_') && trimmed.length > 5 && !/^\d+$/.test(trimmed)) {
-      return trimmed
+      return isPlaceholder(trimmed) ? '—' : trimmed
     }
     // Look up in map
     const name = lookup.get(trimmed)
-    if (name) return name
+    if (name) return isPlaceholder(name) ? '—' : name
     // Try without PRV_ prefix then with
     if (!trimmed.startsWith('PRV_')) {
       const withPrefix = lookup.get('PRV_' + trimmed)
-      if (withPrefix) return withPrefix
+      if (withPrefix) return isPlaceholder(withPrefix) ? '—' : withPrefix
     }
     // Never expose raw PRV_ codes — strip prefix for display
     if (trimmed.startsWith('PRV_')) {

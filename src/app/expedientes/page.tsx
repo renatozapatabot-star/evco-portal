@@ -16,6 +16,7 @@ import { useFreshness } from '@/hooks/use-freshness'
 import { DataTable, type DataTableColumn } from '@/components/ui/data-table'
 import { SyncChip } from '@/components/ui/sync-chip'
 import { formatDateDMY, formatNumber } from '@/lib/format'
+import { expedienteStatusLabel } from '@/lib/expedientes/status'
 
 const REQUIRED_DOCS = [
   'factura_comercial', 'packing_list', 'pedimento_detallado',
@@ -223,12 +224,29 @@ function ExpedientesContent() {
       ),
     },
     {
+      key: 'estado',
+      header: 'Estado',
+      width: 150,
+      render: (r) => {
+        const status = expedienteStatusLabel(r.missing, Boolean(r.pedimento))
+        const color =
+          status.tone === 'green'  ? 'var(--portal-status-green-fg)' :
+          status.tone === 'amber'  ? 'var(--portal-status-amber-fg)' :
+                                     'var(--text-muted)'
+        return (
+          <span style={{ color, fontSize: 13, fontWeight: 600 }}>
+            {status.label}
+          </span>
+        )
+      },
+    },
+    {
       key: 'documentos',
       header: 'Documentos',
-      width: 130,
+      width: 110,
       mono: true,
       render: (r) => (
-        <span className="text-[var(--text-secondary)] [font-variant-numeric:tabular-nums]">
+        <span className="text-[var(--text-muted)] [font-variant-numeric:tabular-nums] text-[12px]">
           {formatNumber(r.docCount)} / {formatNumber(REQUIRED_TOTAL)}
         </span>
       ),

@@ -31,19 +31,32 @@ export default function NotFound() {
           Esta página no existe
         </p>
 
-        {/* Three-link "¿Buscabas?" recovery list — Chrome audit ADD.
-         * Recovers the broken click without forcing a dashboard round-trip. */}
+        {/* "¿Buscabas?" recovery list — Cluster P (2026-04-28) widened
+         * from 3 to 9 links to match canonical nav-config.ts. The 404
+         * page is role-agnostic; per-role middleware (CLIENT_ROUTES /
+         * ADMIN_ONLY_ROUTES) gates each destination, so a client
+         * clicking /bodega lands cleanly on the role-redirect, not a
+         * second 404. */}
         <nav
           aria-label="Buscabas"
           style={{
             display: 'flex', gap: 18, marginTop: 4,
             fontSize: 'var(--aguila-fs-body, 13px)',
             color: 'var(--portal-fg-3)',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            maxWidth: 640,
           }}
         >
-          <Link href="/inicio" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Inicio</Link>
-          <Link href="/embarques" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Embarques</Link>
-          <Link href="/anexo-24" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Anexo 24</Link>
+          <Link href="/inicio"               style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Inicio</Link>
+          <Link href="/embarques"            style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Embarques</Link>
+          <Link href="/pedimentos"           style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Pedimentos</Link>
+          <Link href="/expedientes"          style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Expedientes</Link>
+          <Link href="/catalogo"             style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Catálogo</Link>
+          <Link href="/entradas"             style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Entradas</Link>
+          <Link href="/anexo-24"             style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Anexo 24</Link>
+          <Link href="/bodega"               style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Bodega</Link>
+          <Link href="/clasificar-producto"  style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--portal-line-2)' }}>Clasificar producto</Link>
         </nav>
 
         <Link href="/" style={{

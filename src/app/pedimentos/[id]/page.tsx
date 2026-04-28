@@ -8,6 +8,7 @@ import { formatPedimento } from '@/lib/format/pedimento'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { fmtDesc } from '@/lib/format-utils'
 import { isCleared, clearanceLabelES } from '@/lib/pedimentos/clearance'
+import { translateEstatus } from '@/lib/estatus-translator'
 import {
   linkForEntrada,
   linkForFraccion,
@@ -275,7 +276,7 @@ export default async function PedimentoDetailPage({
           <Cell label="Régimen" value={trafico.regimen ?? '—'} />
           <Cell label="Aduana" value={trafico.aduana ?? '—'} />
           <Cell label="Patente" value={trafico.patente ?? '—'} mono />
-          <Cell label="Estatus (raw)" value={trafico.estatus ?? '—'} />
+          <Cell label="Estatus" value={translateEstatus(trafico.estatus).label} />
           <Cell label="Fecha de llegada" value={formatDateDMY(trafico.fecha_llegada) || '—'} mono />
           <Cell label="Fecha de cruce" value={formatDateDMY(trafico.fecha_cruce) || '—'} mono />
           <Cell label="Fecha de pago" value={formatDateDMY(trafico.fecha_pago) || '—'} mono />

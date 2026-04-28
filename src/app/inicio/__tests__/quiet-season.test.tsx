@@ -43,7 +43,7 @@ describe('buildClientHeroTiles (quiet-season · v3.3 4-tile)', () => {
       'tasa-exito', 'ultimo-cruce', 'volumen-mes', 'liberacion-inmediata',
     ])
     const tasa = out.heroKPIs[0]
-    expect(tasa.label).toBe('Tasa de éxito')
+    expect(tasa.label).toBe('Operaciones Completadas')
     expect(String(tasa.value)).toBe('97%')
     const liberacion = out.heroKPIs[3]
     // v3.5 (2026-04-20): "Liberación inmediata" replaces "Velocidad

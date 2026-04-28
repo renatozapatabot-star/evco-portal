@@ -151,7 +151,7 @@ export function WorkflowFindingCard({
               color: 'var(--portal-text-muted, rgba(255,255,255,0.55))',
             }}
           >
-            Modo sombra
+            En revisión
           </span>
         </div>
         <span
@@ -370,7 +370,7 @@ export function WorkflowFindingCard({
               letterSpacing: '0.05em',
             }}
           >
-            Gracias · CRUZ ajustó la confianza para futuros ciclos.
+            Gracias · PORTAL ajustó la confianza para futuros ciclos.
           </span>
         )}
 

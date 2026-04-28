@@ -163,16 +163,17 @@ export function buildClientHeroTiles(input: ClientHeroInputs): ClientHeroOutput 
   // to 3 lines + "hac…" / "7.9" truncation — this pass fixes both.
   const tiles: CockpitHeroKPI[] = []
 
-  // Tile 1 — Tasa de éxito (replaces "Días sin incidencias").
+  // Tile 1 — Operaciones completadas (matches /kpis copy; replaces
+  // "Tasa de éxito" which read as a broker quality score).
   if (input.successRatePct != null && input.successRatePct >= 0) {
     const pct = Math.max(0, Math.min(100, Math.round(input.successRatePct)))
     tiles.push({
       key: 'tasa-exito',
-      label: 'Tasa de éxito',
+      label: 'Operaciones Completadas',
       value: `${pct}%`,
       sublabel: 'últimos 90 días',
       tone: 'teal' as QuietTone as CockpitHeroKPI['tone'],
-      ariaLabel: `Tasa de éxito ${pct} por ciento`,
+      ariaLabel: `Operaciones completadas ${pct} por ciento`,
     })
   } else {
     tiles.push({

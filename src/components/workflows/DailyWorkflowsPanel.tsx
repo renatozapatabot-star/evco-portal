@@ -134,7 +134,7 @@ export function DailyWorkflowsPanel({
             textTransform: 'uppercase',
           }}
         >
-          Flujos diarios · Modo sombra
+          Flujos diarios
         </div>
         <h2
           style={{
@@ -145,7 +145,7 @@ export function DailyWorkflowsPanel({
             margin: '4px 0 0',
           }}
         >
-          Lo que CRUZ vigila hoy
+          Lo que PORTAL vigila hoy
         </h2>
         <p
           style={{
@@ -156,9 +156,9 @@ export function DailyWorkflowsPanel({
           }}
         >
           {summary.total === 0
-            ? 'Sin alertas activas. CRUZ sigue revisando cada 5 minutos.'
-            : `CRUZ detectó ${summary.total} ${pluralize(summary.total, 'señal', 'señales')} en los últimos ciclos. ` +
-              'Todas en modo sombra — nada se envía sin autorización.'}
+            ? 'Sin alertas activas. PORTAL sigue revisando cada 5 minutos.'
+            : `PORTAL detectó ${summary.total} ${pluralize(summary.total, 'señal', 'señales')} en los últimos ciclos. ` +
+              'Pendientes de revisión — nada se envía sin autorización.'}
         </p>
       </div>
       <div
@@ -265,13 +265,13 @@ export function DailyWorkflowsPanel({
       }}
     >
       {filter === 'all'
-        ? 'Todo en orden · CRUZ no encontró alertas en este ciclo.'
+        ? 'Todo en orden · PORTAL no encontró alertas en este ciclo.'
         : 'Ningún hallazgo de este tipo en los últimos ciclos.'}
     </div>
   )
 
   return (
-    <GlassCard tier="hero" padding={20} ariaLabel="Flujos diarios · Modo sombra">
+    <GlassCard tier="hero" padding={20} ariaLabel="Flujos diarios">
       {header}
       {findings.length > 0 && filters}
       <div

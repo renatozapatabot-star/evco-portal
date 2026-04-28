@@ -55,11 +55,14 @@ async function gatherContext(companyId, targetDate) {
   // whole row to come back null. Select the safe columns first, then
   // optionally enrich with portal_company_name inside a guarded
   // follow-up query so a missing column never zeros out `ctx.company`.
-  const [company, active, weekCruces, recentPedimentos, savings] = await Promise.all([
+  // recent_pedimentos was removed 2026-04-28 — Sonnet was hallucinating
+  // pedimento serial numbers ("5011033, 5010871, …") into the briefing
+  // text even when given real IDs. The fix is to deny the model any
+  // raw IDs and forbid specific-number citations in the prompt.
+  const [company, active, weekCruces, savings] = await Promise.all([
     supabase.from('companies').select('company_id, name').eq('company_id', companyId).maybeSingle(),
     supabase.from('traficos').select('trafico, estatus, fecha_llegada').eq('company_id', companyId).is('fecha_cruce', null).gte('fecha_llegada', start.toISOString()).order('fecha_llegada', { ascending: true }).limit(10),
     supabase.from('traficos').select('trafico, fecha_cruce').eq('company_id', companyId).gte('fecha_cruce', start.toISOString()).lte('fecha_cruce', end.toISOString()),
-    supabase.from('traficos').select('trafico, pedimento, fecha_pago').eq('company_id', companyId).not('pedimento', 'is', null).order('fecha_pago', { ascending: false }).limit(3),
     supabase.from('operations_savings').select('month, realized_savings_usd').eq('company_id', companyId).gte('month', yearStart.toISOString().slice(0, 10)).order('month', { ascending: false }).limit(24),
   ])
 
@@ -69,7 +72,6 @@ async function gatherContext(companyId, targetDate) {
     active_count: active.data?.length ?? 0,
     next_arrival: active.data?.[0]?.fecha_llegada ?? null,
     week_cruces: weekCruces.data?.length ?? 0,
-    recent_pedimentos: (recentPedimentos.data ?? []).map((r) => ({ ref: r.trafico, pedimento: r.pedimento, fecha: r.fecha_pago })),
     tmec_ytd_usd: Math.round(tmecYtd),
     period_start: isoDate(start),
     period_end: isoDate(end),
@@ -80,7 +82,7 @@ async function askSonnet(ctx) {
   const companyName = ctx.company?.portal_company_name || ctx.company?.name || 'el cliente'
 
   const prompt = `
-Eres CRUZ, el sistema de inteligencia aduanal de Renato Zapata & Company.
+Eres PORTAL, el sistema de inteligencia aduanal de Renato Zapata & Company.
 
 Genera un briefing matutino de EXACTAMENTE 3 oraciones en español para ${companyName}, basado en los datos abajo.
 
@@ -93,6 +95,8 @@ Reglas estrictas:
 - Oración 3: si hay una acción necesaria, decirla con claridad; si no, reafirmar que todo marcha.
 - Sin signos de exclamación. Sin lenguaje de marketing.
 - No saludar ("Buenos días" lo renderiza la UI).
+- PROHIBIDO citar números específicos de pedimento, fracción arancelaria, factura, tráfico, o cualquier ID de 5+ dígitos. Si necesitas referirte a operaciones, usa términos como "los embarques recientes" o "la semana pasada", NUNCA un número.
+- Solo se permiten cifras agregadas: conteos (≤4 dígitos), porcentajes, montos en dólares con formato "$N USD" o "$N,NNN USD".
 
 Devuelve ÚNICAMENTE un objeto JSON con este formato exacto:
 {
@@ -106,7 +110,6 @@ ${JSON.stringify({
   embarques_activos: ctx.active_count,
   proximo_cruce_fecha: ctx.next_arrival,
   cruces_ultima_semana: ctx.week_cruces,
-  pedimentos_recientes: ctx.recent_pedimentos.slice(0, 3),
   ahorro_tmec_ytd_usd: ctx.tmec_ytd_usd,
 }, null, 2)}
 `.trim()

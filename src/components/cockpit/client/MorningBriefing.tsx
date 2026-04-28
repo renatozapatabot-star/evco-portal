@@ -5,8 +5,8 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 
 /**
- * MorningBriefing — CRUZ's 3-sentence personalized briefing at the
- * top of /inicio. Hydrates from `client_briefings` table, rendered
+ * MorningBriefing — 3-sentence personalized briefing at the top of
+ * /inicio. Hydrates from `client_briefings` table, rendered
  * server-side and passed in as a prop so there's no loading state
  * and no flash of empty content.
  *
@@ -19,7 +19,24 @@ import { X } from 'lucide-react'
  * the dismiss write fails the briefing re-appears on next page load
  * (server will still include it). Good enough; no toast spam on the
  * calm surface.
+ *
+ * Defensive sanitizer: any 6+ digit standalone number is stripped.
+ * Sonnet has historically hallucinated pedimento serial numbers
+ * (7 digits) and trafico IDs into the briefing text. Until the
+ * generator prompt is locked down + verified, we strip them at
+ * render time. Real money figures keep their formatting (commas,
+ * $) and survive. Counts ≤4 digits also survive.
  */
+const HALLUCINATED_ID_PATTERN = /\b\d{6,}\b/g
+
+function sanitizeBriefingText(raw: string): string {
+  return raw
+    .replace(HALLUCINATED_ID_PATTERN, '')
+    .replace(/\(\s*[,\s]*\)/g, '')
+    .replace(/[ \t]+([.,;:])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
 
 export interface MorningBriefingData {
   id: string
@@ -52,6 +69,9 @@ export function MorningBriefing({ briefing }: Props) {
     }).catch(() => {})
   }
 
+  const sanitizedText = sanitizeBriefingText(briefing.briefing_text)
+  if (!sanitizedText) return null
+
   return (
     <section
       aria-label="Briefing de la mañana"
@@ -76,7 +96,7 @@ export function MorningBriefing({ briefing }: Props) {
           marginBottom: 8,
         }}
       >
-        Buenos días, {briefing.greeting_name}
+        Resumen del día
       </div>
 
       <p
@@ -88,7 +108,7 @@ export function MorningBriefing({ briefing }: Props) {
           maxWidth: 680,
         }}
       >
-        {briefing.briefing_text}
+        {sanitizedText}
       </p>
 
       {briefing.action_item && briefing.action_url && (

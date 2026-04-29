@@ -96,6 +96,13 @@ export { PortalLoginBackgroundLineMap } from './login/PortalLoginBackgroundLineM
 export { PortalLoginLiveWire } from './login/PortalLoginLiveWire'
 export type { LiveWireItem } from './login/PortalLoginLiveWire'
 
+// Handoff-parity login boot-up: corner ticks + handshake row
+export {
+  PortalLoginCardChrome,
+  PortalLoginHandshakeRow,
+} from './login/PortalLoginCardChrome'
+export { PortalLastSeenLine } from './login/PortalLastSeenLine'
+
 // Phase B — Pedimento detail hero (2px accent line · sticky topbar · giant mono number · 5-stage spine · 2×2 grid)
 export { PortalDetailHero } from './PortalDetailHero'
 export type {

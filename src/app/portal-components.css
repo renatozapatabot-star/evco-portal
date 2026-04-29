@@ -577,6 +577,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   to   { opacity: 0.55; color: var(--portal-fg-5); }
 }
 
+/* —— Login input focus-trace — hairline border draws from center
+   outward on focus, ~320ms, vs the static glow.
+   Per chat1.md: "the password field as the most beautiful input
+   you've ever seen ... not a static glow." Apply class to a wrapper
+   around the input. The wrapper inherits the input's border-radius. ——— */
+.portal-input-focus-trace { position: relative; border-radius: inherit; }
+.portal-input-focus-trace::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  border: 1px solid var(--portal-green-3);
+  opacity: 0;
+  clip-path: inset(50% 50% 50% 50%);
+  transition: opacity 220ms var(--portal-ease-out);
+  pointer-events: none;
+  box-shadow: 0 0 24px var(--portal-green-glow);
+}
+.portal-input-focus-trace:focus-within::after {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition: opacity 220ms var(--portal-ease-out), clip-path 320ms var(--portal-ease-out);
+}
+
 /* —— Login fail tremor — input shakes 3px×3 on auth error ——— */
 @keyframes portalTremor {
   0%, 100% { transform: translateX(0); }

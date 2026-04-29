@@ -10,11 +10,14 @@
 // role-aware landing (admin/broker → /admin/eagle · operator →
 // /operador/inicio · else → /inicio) with ?stale=1 and ?next handling.
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
+  PortalLastSeenLine,
   PortalLoginBackgroundLineMap,
+  PortalLoginCardChrome,
+  PortalLoginHandshakeRow,
   PortalLoginLiveWire,
 } from '@/components/portal'
 import { getCookieValue } from '@/lib/client-config'
@@ -39,6 +42,10 @@ function LoginContent() {
   const [error, setError] = useState('')
   const [session, setSession] = useState<{ role: string; name: string } | null>(null)
   const [dots, setDots] = useState(0)
+  const [inputFocused, setInputFocused] = useState(false)
+  const [capsLockOn, setCapsLockOn] = useState(false)
+  const [errorPulse, setErrorPulse] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -55,6 +62,26 @@ function LoginContent() {
     const i = setInterval(() => setDots(d => (d + 1) % 4), 280)
     return () => clearInterval(i)
   }, [status])
+
+  // Caps Lock detector — listens globally for keyboard events and
+  // tracks the modifier state. The dot is gated on inputFocused at
+  // render time, so we don't need to reset capsLockOn on blur (it
+  // simply stops rendering).
+  useEffect(() => {
+    const handler = (ev: KeyboardEvent) => {
+      try {
+        setCapsLockOn(ev.getModifierState('CapsLock'))
+      } catch {
+        // getModifierState is widely supported; fall back silently
+      }
+    }
+    window.addEventListener('keydown', handler)
+    window.addEventListener('keyup', handler)
+    return () => {
+      window.removeEventListener('keydown', handler)
+      window.removeEventListener('keyup', handler)
+    }
+  }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -94,14 +121,17 @@ function LoginContent() {
         setStatus('idle')
         setError('Demasiados intentos. Espera un minuto antes de intentar de nuevo.')
         setPassword('')
+        setErrorPulse(p => p + 1)
       } else {
         setStatus('idle')
         setError('Código incorrecto. Contacta a Renato Zapata & Company.')
         setPassword('')
+        setErrorPulse(p => p + 1)
       }
     } catch {
       setStatus('idle')
       setError('Error de conexión. Intenta de nuevo.')
+      setErrorPulse(p => p + 1)
     }
   }
 
@@ -114,6 +144,7 @@ function LoginContent() {
 
   return (
     <div
+      data-attention={inputFocused ? 'focused' : undefined}
       style={{
         minHeight: '100vh',
         background:
@@ -125,8 +156,12 @@ function LoginContent() {
         color: 'var(--portal-fg-1)',
       }}
     >
-      {/* Living cartographic background (zIndex 0) */}
+      {/* Living cartographic background (zIndex 0). data-portal-aurora
+          opts the wrapper into the focus-attention dim rule in
+          portal-components.css — opacity drops to 0.85 while the user
+          is in the password field. */}
       <div
+        data-portal-aurora
         style={{
           position: 'absolute',
           inset: 0,
@@ -363,6 +398,19 @@ function LoginContent() {
             </div>
           )}
 
+          {/* Boot-up handshake — VUCEM · OK · SAT · OK · CBP · OK
+              appears mid-boot, settles to dim. Hidden when an active
+              session is short-circuiting login. */}
+          {!session && (
+            <div style={{ marginBottom: 8, animation: 'portalFadeUp 900ms var(--portal-ease-out) 360ms both' }}>
+              <PortalLoginHandshakeRow />
+            </div>
+          )}
+
+          {/* Form wrapped in PortalLoginCardChrome — 4 hairline corner
+              ticks draw in sequence on first paint, framing the form
+              like a Swiss instrument coming online. */}
+          <PortalLoginCardChrome style={{ width: '100%' }}>
           <form
             onSubmit={handleLogin}
             style={{ width: '100%', animation: 'portalFadeUp 900ms var(--portal-ease-out) 320ms both' }}
@@ -385,61 +433,119 @@ function LoginContent() {
             >
               Contraseña
             </label>
-            <input
-              id="portal-code"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value.slice(0, 64))}
-              placeholder="········"
-              autoFocus
-              autoComplete="current-password"
-              disabled={status !== 'idle'}
+            {/* Focus-trace wrapper — emerald hairline draws from
+                center outward on focus via .portal-input-focus-trace
+                ::after rule. Tremor key remounts the container to
+                replay the shake animation on each fresh error. */}
+            <div
+              key={`input-${errorPulse}`}
+              className={`portal-input-focus-trace${error ? ' portal-tremor' : ''}`}
               style={{
-                width: '100%',
-                padding: '22px 22px',
-                background: 'color-mix(in oklch, var(--portal-ink-1) 80%, transparent)',
-                backdropFilter: 'blur(18px)',
-                WebkitBackdropFilter: 'blur(18px)',
-                border: '1px solid ' + (password.length ? 'var(--portal-green-3)' : 'var(--portal-line-2)'),
+                position: 'relative',
                 borderRadius: 'var(--portal-r-4)',
-                fontFamily: 'var(--portal-font-sans)',
-                fontSize: 17,
-                fontWeight: 400,
-                letterSpacing: password.length ? '0.3em' : '0.01em',
-                textAlign: 'left',
-                color: 'var(--portal-fg-1)',
-                outline: 'none',
-                boxShadow: password.length
-                  ? '0 0 0 3px var(--portal-green-glow), 0 12px 40px -12px rgba(0,0,0,0.6)'
-                  : '0 12px 40px -12px rgba(0,0,0,0.6)',
-                transition: 'all var(--portal-dur-2) var(--portal-ease-out)',
-                boxSizing: 'border-box',
-                caretColor: 'var(--portal-green-2)',
               }}
-            />
+            >
+              <input
+                id="portal-code"
+                ref={inputRef}
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value.slice(0, 64))}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
+                placeholder="········"
+                autoFocus
+                autoComplete="current-password"
+                disabled={status !== 'idle'}
+                style={{
+                  width: '100%',
+                  padding: '22px 22px',
+                  paddingRight: inputFocused && capsLockOn ? 110 : 22,
+                  background: 'color-mix(in oklch, var(--portal-ink-1) 80%, transparent)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  border: '1px solid ' + (password.length ? 'var(--portal-green-3)' : 'var(--portal-line-2)'),
+                  borderRadius: 'var(--portal-r-4)',
+                  fontFamily: 'var(--portal-font-sans)',
+                  fontSize: 17,
+                  fontWeight: 400,
+                  letterSpacing: password.length ? '0.3em' : '0.01em',
+                  textAlign: 'left',
+                  color: 'var(--portal-fg-1)',
+                  outline: 'none',
+                  boxShadow: password.length
+                    ? '0 12px 40px -12px rgba(0,0,0,0.6)'
+                    : '0 12px 40px -12px rgba(0,0,0,0.6)',
+                  transition: 'all var(--portal-dur-2) var(--portal-ease-out)',
+                  boxSizing: 'border-box',
+                  caretColor: 'var(--portal-green-2)',
+                }}
+              />
+              {inputFocused && capsLockOn && (
+                <span
+                  aria-live="polite"
+                  style={{
+                    position: 'absolute',
+                    right: 18,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontFamily: 'var(--portal-font-mono)',
+                    fontSize: 10,
+                    letterSpacing: '0.22em',
+                    color: 'var(--portal-amber)',
+                    textTransform: 'uppercase',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: 999,
+                      background: 'var(--portal-amber)',
+                      boxShadow:
+                        '0 0 8px color-mix(in oklch, var(--portal-amber) 60%, transparent)',
+                    }}
+                  />
+                  Mayús
+                </span>
+              )}
+            </div>
 
             <button
               type="submit"
               disabled={!canSubmit}
+              data-state={status === 'auth' ? 'loading' : status === 'ok' ? 'success' : undefined}
               style={{
                 width: '100%',
                 marginTop: 14,
                 padding: '18px 20px',
-                background: canSubmit
-                  ? 'var(--portal-green-2)'
-                  : 'color-mix(in oklch, var(--portal-ink-2) 80%, transparent)',
-                color: canSubmit ? 'var(--portal-ink-0)' : 'var(--portal-fg-5)',
-                border: '1px solid ' + (canSubmit ? 'var(--portal-green-2)' : 'var(--portal-line-2)'),
+                background:
+                  status === 'ok'
+                    ? 'var(--portal-green-2)'
+                    : canSubmit
+                      ? 'var(--portal-green-2)'
+                      : 'color-mix(in oklch, var(--portal-ink-2) 80%, transparent)',
+                color: canSubmit || status === 'ok' ? 'var(--portal-ink-0)' : 'var(--portal-fg-5)',
+                border: '1px solid ' + (canSubmit || status === 'ok' ? 'var(--portal-green-2)' : 'var(--portal-line-2)'),
                 borderRadius: 'var(--portal-r-4)',
                 fontFamily: 'var(--portal-font-sans)',
                 fontSize: 15,
                 fontWeight: 600,
                 letterSpacing: '0.04em',
                 cursor: canSubmit ? 'pointer' : 'not-allowed',
-                boxShadow: canSubmit
-                  ? '0 0 32px var(--portal-green-glow), 0 10px 30px -8px var(--portal-green-3)'
-                  : 'none',
+                boxShadow:
+                  status === 'ok'
+                    ? '0 0 0 1px var(--portal-green-3), 0 0 32px var(--portal-green-glow)'
+                    : canSubmit
+                      ? '0 0 32px var(--portal-green-glow), 0 10px 30px -8px var(--portal-green-3)'
+                      : 'none',
                 transition: 'all var(--portal-dur-2) var(--portal-ease-out)',
+                animation: status === 'ok' ? 'portalSuccessPulse 620ms var(--portal-ease-out)' : undefined,
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -524,7 +630,14 @@ function LoginContent() {
                 ¿Olvidó su código?
               </a>
             </div>
+
+            {/* Trust line — "Último acceso · 27 abr 2026 · 14:32 ·
+                Nuevo Laredo · Chrome/macOS". Reads the HMAC-signed
+                last_seen cookie set on the prior successful login.
+                Renders nothing on first login. */}
+            <PortalLastSeenLine />
           </form>
+          </PortalLoginCardChrome>
         </div>
       </main>
     </div>

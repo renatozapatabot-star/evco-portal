@@ -466,6 +466,29 @@ module.exports = {
       error_file: '/tmp/agent-actions-reaper-error.log',
       out_file: '/tmp/agent-actions-reaper-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      // ADUANET scraper — restored from Trash on 2026-04-29 after 18 days
+      // of daily auth failures on the Throne runner (separate environment).
+      // Logs in via 3-step loginI/login_auth/loginV flow, scrapes pedimentos
+      // + COVEs + at008 contribuciones, writes to pedimentos / partidas /
+      // coves / aduanet_facturas / scrape_runs with per-row tenant
+      // derivation from the at001 RFC (no hardcoded company_id).
+      // See scripts/aduanet-scraper-restored/README.md.
+      name: 'aduanet-scraper',
+      script: 'src/aduanet.js',
+      cwd: cwd + '/scripts/aduanet-scraper-restored',
+      cron_restart: '0 2 * * *',      // 02:00 CST nightly
+      autorestart: false, watch: false, max_memory_restart: '512M',
+      env: {
+        NODE_ENV: 'production',
+        LOOKBACK_DAYS: '7',           // 7-day rolling window — covers any
+                                      // single missed run without
+                                      // re-scraping decades of history.
+      },
+      error_file: '/tmp/aduanet-scraper-err.log',
+      out_file: '/tmp/aduanet-scraper-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]
 }

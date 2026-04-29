@@ -1,6 +1,11 @@
 // AguilaWordmark — inline SVG "PORTAL" wordmark (Block DD · 2026-04-17).
 // Filename preserved for import stability; renders the new PORTAL brand
 // in Instrument Serif per the DESIGN_HANDOFF spec.
+//
+// 2026-04-28 audit: handoff `screen-login.jsx` line 486 renders literal
+// "PORTAL" as the hero wordmark; `<CruzMark>` is defined in `primitives.jsx`
+// but never used by any handoff screen. Our PORTAL wordmark is therefore
+// already verbatim — no rename required.
 
 import type { CSSProperties } from 'react'
 

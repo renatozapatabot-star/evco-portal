@@ -144,7 +144,10 @@ does too. Never hand-roll `@keyframes portalModuleX` per child.
   gold gradient is retired for the wordmark
 
 Internal `AguilaWordmark` component is the single render site; filename
-preserved but `WORDMARK_TEXT = 'PORTAL'`.
+preserved but `WORDMARK_TEXT = 'PORTAL'`. The handoff's `screen-login.jsx`
+also renders literal "PORTAL" — the unused `<CruzMark>` primitive in
+`primitives.jsx:253` is defined for future use but not rendered on any
+handoff screen, so this contract is already verbatim with the handoff.
 
 ---
 

@@ -88,6 +88,50 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-28 · Renato IV · CRUZ design-handoff cinematic surfaces restored
+  supersedes: .claude/rules/founder-overrides.md 2026-04-24 entry
+              "V1 Clean Visibility" — partial reversal scoped to
+              ambient/cinematic surfaces only:
+                · `<PortalWorldMesh>` ambient lat/long mesh placed
+                  behind every cockpit (operator, owner, AND client —
+                  it's calm, no anxiety signal)
+                · `<PortalLiveBorder>` last-cross strip placed on
+                  operator + owner cockpits (NOT on client `/inicio`,
+                  preserves invariant #24 calm-tone)
+                · `<PortalPedimentoTheater>` 5-act overlay remains
+                  available via `window.__cruzOpenTheater` (already
+                  shipped; integration with workflow_events deferred)
+              Wordmark contract is NOT changed: the handoff's
+              `screen-login.jsx:486` renders literal "PORTAL" as the
+              hero wordmark; `<CruzMark>` is defined-but-unused in
+              `primitives.jsx:253`. Existing `WORDMARK_TEXT='PORTAL'`
+              is therefore already verbatim — kept as-is.
+  updates:    src/components/portal/PortalLiveBorder.tsx (new — port
+              of `live-border.jsx`, props-driven for future tenant-
+              scoped data, --portal-* tokens only),
+              src/components/portal/__tests__/PortalLiveBorder.test.tsx (new),
+              src/components/portal/index.ts (export),
+              src/app/inicio/page.tsx (PortalWorldMesh added; no
+              LiveBorder),
+              src/app/operador/inicio/page.tsx (PortalWorldMesh +
+              PortalLiveBorder above InicioClient),
+              src/app/admin/eagle/page.tsx (PortalLiveBorder injected
+              via PortalDashboard `extraRow` slot above PortalCrucesMap)
+  basis:      Renato IV directive 2026-04-28 — "implement it the way
+              the Claude Design handoff specifies." Audit found the
+              repo was already ~95% verbatim (tokens, wordmark, glass
+              chrome, primitives all match). Residual gap was the
+              cinematic surfaces V1 Clean Visibility had stripped from
+              the cockpits (April 24). This entry partially reverses
+              that for non-client cockpits + adds the missing
+              LiveBorder primitive. HARD invariants — tenant isolation,
+              formats, financial config, audit trail, GlobalPC
+              read-only, AI sanitization, client-calm-tone, approval
+              gate — all preserved unchanged. LiveBorder data is
+              currently presentational (matches handoff); piping real
+              `traficos`-derived telemetry is a follow-up gated by
+              tenant-scoped query primitives.
+
 2026-04-24 · Renato IV · V1 Clean Visibility reset — strip AI surface from client UI
   supersedes: .claude/rules/core-invariants.md #29 (six-tile list → five-tile list;
               Contabilidad removed from client nav),

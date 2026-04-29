@@ -103,6 +103,14 @@ export {
 } from './login/PortalLoginCardChrome'
 export { PortalLastSeenLine } from './login/PortalLastSeenLine'
 
+// Handoff-parity cockpit ambient signals: EN ESTE MOMENTO + activity ticker
+export {
+  PortalCockpitMomento,
+  PortalCockpitActivity,
+  auditRowToSignal,
+} from './PortalCockpitSignals'
+export type { PortalSignalItem } from './PortalCockpitSignals'
+
 // Phase B — Pedimento detail hero (2px accent line · sticky topbar · giant mono number · 5-stage spine · 2×2 grid)
 export { PortalDetailHero } from './PortalDetailHero'
 export type {

@@ -1,0 +1,57 @@
+-- Drop the vestigial `pedimentos.moneda` column.
+--
+-- Rationale (full investigation:
+-- ~/Desktop/moneda-investigation-2026-04-29.md):
+--
+-- 1. ZERO READERS. Comprehensive grep across `src/`, `scripts/`, and the
+--    4 sibling V2 repos returns no `from('pedimentos').select…moneda`
+--    pattern, no filter on the column, no reference in any test file.
+-- 2. ZERO WRITERS. The active aduanet scraper, the loose pre-existing
+--    scraper, the GlobalPC sync, and the manual XLSX import all skip
+--    the moneda field on `pedimentos` writes. The 2026-03-31 18:03
+--    bad-batch script also skipped it. Column has been NULL on every
+--    row since the table was created.
+-- 3. CONCEPTUALLY WRONG. SAT at001 has no per-pedimento moneda field.
+--    Pedimentos are MXN-denominated by SAT convention (Anexo 22 §3 +
+--    Article 64 LA); `valor_aduana` and `valor_comercial` at the
+--    pedimento level are always MXN. Currency lives at the COVE /
+--    factura level (`at005` C005MONFAC), where it varies per-invoice
+--    (USD / MXN / EUR / etc.). One pedimento can carry multiple
+--    invoices in different currencies.
+-- 4. SIBLING TABLES CARRY MONEDA CORRECTLY. globalpc_facturas,
+--    aduanet_facturas, and coves are 100% populated with the
+--    per-invoice moneda. partidas / globalpc_partidas / anexo24_partidas
+--    correctly omit the column (they inherit from the parent factura).
+-- 5. PRECEDENT EXISTS. The team already removed the same vestigial
+--    column from `traficos` in the M15 "phantom sweep". Two source
+--    comments document this:
+--      src/app/api/lotes/route.ts:14:
+--        "moneda lives on facturas — both are phantoms on traficos
+--         (M15 sweep)."
+--      src/app/share/[trafico_id]/page.tsx:17:
+--        "`moneda` lives on globalpc_facturas, not traficos
+--         (M15 phantom sweep)."
+--    This migration applies the same pattern one level up to
+--    `pedimentos`.
+--
+-- Safety check before running this migration:
+--   SELECT COUNT(*) FROM pedimentos WHERE moneda IS NOT NULL;
+--   -- Expected: 0 (verified on 2026-04-29: 0 of 4,164 rows populated).
+--   -- If non-zero, STOP and audit the source — somebody started
+--   -- writing to the column unexpectedly.
+
+ALTER TABLE pedimentos DROP COLUMN moneda;
+
+-- Post-migration verification:
+--   SELECT column_name FROM information_schema.columns
+--     WHERE table_schema = 'public' AND table_name = 'pedimentos'
+--     ORDER BY ordinal_position;
+--   -- Expected: column list NO LONGER contains 'moneda'.
+--
+--   SELECT COUNT(*) FROM pedimentos;
+--   -- Expected: 4,164 (unchanged — only the column drops, not any rows).
+--
+-- Type regen reminder (per CLAUDE.md):
+--   npx supabase gen types typescript --linked > types/supabase.ts
+--   ↑ runs in the same commit as this migration so the TS types match
+--     the new schema.

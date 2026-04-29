@@ -7,7 +7,11 @@
  *   node src/aduanet.js --pedimento 6500507     # single pedimento lookup
  *   node src/aduanet.js --from 01/01/2025       # custom date range
  */
-require('dotenv').config();
+// Load .env.local from the parent evco-portal directory (where the laptop's
+// canonical secrets live). The original `dotenv.config()` looked for `.env`
+// in CWD which only works when this script runs from inside its own dir.
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '..', '.env.local') });
 const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 const logger = require('./logger');
@@ -22,9 +26,60 @@ const PATENTE = process.env.EVCO_QUERIES || '3596';
 const ADUANA  = process.env.ADUANA || '240';
 const LOOKBACK_DAYS = parseInt(process.env.LOOKBACK_DAYS || '90', 10);
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
+// Env passthrough: the laptop's .env.local uses NEXT_PUBLIC_SUPABASE_URL,
+// not bare SUPABASE_URL. Accept either to avoid duplicating secrets.
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY env vars required');
+}
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+
+// ── Tenant maps ─────────────────────────────────────────────────────────────
+// Per .claude/rules/tenant-isolation.md: trust cve_cliente (and rfc) as the
+// authoritative ownership signals; derive company_id from the active
+// companies allowlist; never default. Built once per run() in loadTenantMaps.
+let claveToCompany = {}; // clave_cliente or globalpc_clave → company_id
+let rfcToCompany = {};   // companies.rfc → company_id
+
+async function loadTenantMaps() {
+  const { data, error } = await sb
+    .from('companies')
+    .select('clave_cliente, globalpc_clave, rfc, company_id')
+    .eq('active', true);
+  if (error) throw new Error(`Loading companies: ${error.message}`);
+  claveToCompany = {};
+  rfcToCompany = {};
+  for (const c of (data || [])) {
+    if (c.clave_cliente) claveToCompany[c.clave_cliente] = c.company_id;
+    if (c.globalpc_clave) claveToCompany[c.globalpc_clave] = c.company_id;
+    if (c.rfc) rfcToCompany[c.rfc.toUpperCase()] = c.company_id;
+  }
+  logger.info(`Tenant maps loaded: ${Object.keys(claveToCompany).length} claves, ${Object.keys(rfcToCompany).length} RFCs`);
+}
+
+function deriveCompanyId({ rfc, clave }) {
+  if (rfc) {
+    const id = rfcToCompany[rfc.toUpperCase()];
+    if (id) return id;
+  }
+  if (clave) {
+    const id = claveToCompany[clave];
+    if (id) return id;
+  }
+  return null;
+}
+
+function deriveClaveCliente({ rfc, clave, companyId }) {
+  if (clave) return clave;
+  // Reverse-lookup clave from companyId so each row carries both signals.
+  if (companyId) {
+    for (const [k, v] of Object.entries(claveToCompany)) {
+      if (v === companyId) return k;
+    }
+  }
+  return null;
+}
 
 // ── HTTP helpers (plain HTTP — aduanetm3.net uses port 80) ──────────────────
 function rawReq(opts, body) {
@@ -309,8 +364,30 @@ async function extractPartidas(cookies, pedimento) {
     rfc_receptor: xmlVal(block, 'C005RFCREC'),
   })).filter(c => c.cove_numero);
 
-  logger.info(`Pedimento ${numero_pedimento}: ${partidas.length} partidas, ${coves.length} COVEs`);
-  return { partidas, coves, pedimentoMeta };
+  // ── Contribuciones (at008 section — pedimento-level totals per concepto) ──
+  // Field map confirmed against pedimento 6500299 on 2026-04-29:
+  //   C008CVECON ∈ {DTA, IGI/IGE, IVA, IEPS, PREV, IVA PRV}
+  //   N008IMPCON = importe (MXN)
+  // at017 was the original target per the plan but does NOT exist in
+  // current ADUANET XML output. at008 is the canonical source.
+  const at008Rows = xmlRows(xml, 'at008');
+  const contribuciones = { dta: 0, igi: 0, iva: 0, ieps: 0, prev: 0, iva_prv: 0 };
+  let contribucionesPresent = false;
+  for (const block of at008Rows) {
+    const cve = (xmlVal(block, 'C008CVECON') || '').toUpperCase().trim();
+    const monto = parseNum(xmlVal(block, 'N008IMPCON')) || 0;
+    if (!cve) continue;
+    contribucionesPresent = true;
+    if (cve === 'DTA') contribuciones.dta += monto;
+    else if (cve === 'IGI/IGE' || cve === 'IGI') contribuciones.igi += monto;
+    else if (cve === 'IVA') contribuciones.iva += monto;
+    else if (cve === 'IEPS') contribuciones.ieps += monto;
+    else if (cve === 'PREV') contribuciones.prev += monto;
+    else if (cve === 'IVA PRV' || cve === 'IVA PREV') contribuciones.iva_prv += monto;
+  }
+
+  logger.info(`Pedimento ${numero_pedimento}: ${partidas.length} partidas, ${coves.length} COVEs, ${at008Rows.length} contribuciones rows`);
+  return { partidas, coves, pedimentoMeta, contribuciones, contribucionesPresent };
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -408,35 +485,150 @@ async function savePartidas(pedimentoId, partidas) {
   return rows.length;
 }
 
-async function saveCoves(coves, pedimentoId) {
+async function saveCoves(coves) {
   if (!coves.length) return 0;
-  // Match existing coves table schema: cove_numero is the unique COVE identifier
-  const rows = coves.map(c => ({
-    pedimento: c.pedimento,
-    cove_numero: c.cove_numero,
-    factura: c.factura,
-    fecha: c.fecha,
-    proveedor: c.proveedor,
-    cve_proveedor: c.cve_proveedor,
-    id_proveedor: c.id_proveedor,
-    domicilio: c.domicilio,
-    pais: c.pais,
-    moneda: c.moneda,
-    incoterm: c.incoterm,
-    val_dolares: c.val_dolares,
-    val_moneda: c.val_moneda,
-    vinculacion: c.vinculacion,
-    company_id: 'evco',
-  }));
+  // Derive company_id per row from the parent pedimento's RFC. Per
+  // .claude/rules/tenant-isolation.md: trust authoritative signals
+  // (cve_cliente, RFC); never default to 'evco'. Rows whose parent_rfc
+  // is missing or doesn't match a company in the active allowlist are
+  // skipped + logged.
+  const rows = [];
+  let skippedNoOwner = 0;
+  const skippedRfcs = {};
+  for (const c of coves) {
+    const companyId = deriveCompanyId({ rfc: c.parent_rfc });
+    if (!companyId) {
+      skippedNoOwner++;
+      const k = c.parent_rfc || '(no rfc)';
+      skippedRfcs[k] = (skippedRfcs[k] || 0) + 1;
+      continue;
+    }
+    rows.push({
+      pedimento: c.pedimento,
+      cove_numero: c.cove_numero,
+      factura: c.factura,
+      fecha: c.fecha,
+      proveedor: c.proveedor,
+      cve_proveedor: c.cve_proveedor,
+      id_proveedor: c.id_proveedor,
+      domicilio: c.domicilio,
+      pais: c.pais,
+      moneda: c.moneda,
+      incoterm: c.incoterm,
+      val_dolares: c.val_dolares,
+      val_moneda: c.val_moneda,
+      vinculacion: c.vinculacion,
+      company_id: companyId,
+    });
+  }
+  if (skippedNoOwner > 0) {
+    logger.warn(`COVEs skipped (no allowlisted owner derivable from RFC): ${skippedNoOwner}, by RFC: ${JSON.stringify(skippedRfcs)}`);
+  }
 
-  // No unique constraint on cove_numero — delete existing for this pedimento, then insert fresh
-  const pedNums = [...new Set(rows.map(r => r.pedimento).filter(Boolean))];
-  for (const ped of pedNums) {
-    await sb.from('coves').delete().eq('pedimento', ped).eq('company_id', 'evco');
+  if (!rows.length) return 0;
+
+  // Idempotency: delete existing rows for the (pedimento, company_id) pairs
+  // present in this batch, then insert fresh. Per-(pedimento, company_id)
+  // delete rather than per-pedimento avoids touching other tenants' rows.
+  const seenKeys = new Set();
+  for (const r of rows) {
+    const k = `${r.pedimento}|${r.company_id}`;
+    if (seenKeys.has(k)) continue;
+    seenKeys.add(k);
+    await sb.from('coves').delete().eq('pedimento', r.pedimento).eq('company_id', r.company_id);
   }
   const { error } = await sb.from('coves').insert(rows);
   if (error) throw new Error(`Save COVEs: ${error.message}`);
-  logger.info(`Upserted ${rows.length} COVEs`);
+  logger.info(`Inserted ${rows.length} COVEs across ${seenKeys.size} (pedimento, company) groups`);
+  return rows.length;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// aduanet_facturas — per-COVE row carrying pedimento-level contribuciones
+//
+// Schema mapped from production aduanet_facturas (verified 2026-04-29):
+//   pedimento, patente, aduana, referencia, nombre_cliente, clave_cliente,
+//   rfc, fecha_pago, operacion, marca_numero, peso, cve_documento,
+//   tipo_cambio, fletes, seguro, embalaje, otros_incrementos,
+//   totales_incrementales, valor_total, valor_usd, dta, igi, iva, ieps,
+//   num_factura, cove, fecha_factura, incoterm, moneda, proveedor,
+//   tx_id, tenant_id, company_id, tenant_slug, created_at
+//
+// One row per COVE (factura) per pedimento. DTA/IGI/IVA/IEPS values are
+// pedimento-level totals from at008 — they're CARRIED on each COVE row of
+// the pedimento (matches the existing 459-row distribution where multiple
+// facturas under the same pedimento share the same contribuciones values).
+//
+// Idempotency: delete existing (pedimento, company_id) tuples for the
+// pedimentos in this batch, then insert fresh. No table-level unique
+// constraint exists, so onConflict upsert is unsafe.
+async function saveAduanetFacturas(coves, pedimentoMeta, contribuciones) {
+  if (!coves.length) return 0;
+
+  const rows = [];
+  let skippedNoOwner = 0;
+  const skippedRfcs = {};
+  for (const c of coves) {
+    const rfc = c.parent_rfc || pedimentoMeta?.rfc_importador || null;
+    const companyId = deriveCompanyId({ rfc });
+    if (!companyId) {
+      skippedNoOwner++;
+      const k = rfc || '(no rfc)';
+      skippedRfcs[k] = (skippedRfcs[k] || 0) + 1;
+      continue;
+    }
+    const claveCliente = deriveClaveCliente({ companyId });
+    rows.push({
+      pedimento: c.pedimento,
+      patente: c.parent_patente || PATENTE,
+      aduana: c.parent_aduana || ADUANA,
+      referencia: c.parent_referencia || null,
+      nombre_cliente: pedimentoMeta?.nombre_cliente || null,
+      clave_cliente: claveCliente,
+      rfc: rfc,
+      fecha_pago: pedimentoMeta?.fecha_pago ? isoDate(pedimentoMeta.fecha_pago) : null,
+      operacion: c.parent_operacion || null,
+      cve_documento: pedimentoMeta?.clave_pedimento || null,
+      tipo_cambio: pedimentoMeta?.tipo_cambio || null,
+      fletes: 0,
+      seguro: 0,
+      embalaje: 0,
+      otros_incrementos: 0,
+      totales_incrementales: 0,
+      valor_total: c.val_moneda ?? c.val_dolares ?? null,
+      valor_usd: c.val_dolares ?? null,
+      dta: contribuciones?.dta || null,
+      igi: contribuciones?.igi || null,
+      iva: contribuciones?.iva || null,
+      ieps: contribuciones?.ieps || null,
+      num_factura: c.factura || null,
+      cove: c.cove_numero || null,
+      fecha_factura: c.fecha || null,
+      incoterm: c.incoterm || null,
+      moneda: c.moneda || null,
+      proveedor: c.proveedor || null,
+      company_id: companyId,
+    });
+  }
+  if (skippedNoOwner > 0) {
+    logger.warn(`aduanet_facturas skipped (no allowlisted owner derivable from RFC): ${skippedNoOwner}, by RFC: ${JSON.stringify(skippedRfcs)}`);
+  }
+
+  if (!rows.length) return 0;
+
+  // Idempotency by (pedimento, company_id). Each tuple is deleted once
+  // before the bulk insert, so re-running the scraper for the same
+  // pedimento doesn't accumulate duplicates.
+  const seenKeys = new Set();
+  for (const r of rows) {
+    const k = `${r.pedimento}|${r.company_id}`;
+    if (seenKeys.has(k)) continue;
+    seenKeys.add(k);
+    await sb.from('aduanet_facturas').delete().eq('pedimento', r.pedimento).eq('company_id', r.company_id);
+  }
+  const { error } = await sb.from('aduanet_facturas').insert(rows);
+  if (error) throw new Error(`Save aduanet_facturas: ${error.message}`);
+  logger.info(`Inserted ${rows.length} aduanet_facturas rows across ${seenKeys.size} (pedimento, company) groups`);
   return rows.length;
 }
 
@@ -457,9 +649,12 @@ async function logRun(result) {
 // ════════════════════════════════════════════════════════════════════════════
 async function run(opts = {}) {
   const startTime = Date.now();
-  const result = { pedimentosCount: 0, covesCount: 0, partidasCount: 0, error: null };
+  const result = { pedimentosCount: 0, covesCount: 0, partidasCount: 0, aduanetFacturasCount: 0, error: null };
 
   try {
+    // 0. Build the active-companies allowlist (clave + RFC → company_id)
+    await loadTenantMaps();
+
     // 1. Login
     const cookies = await login();
 
@@ -470,16 +665,41 @@ async function run(opts = {}) {
       pedimentoNum: opts.pedimento,
     });
 
-    // 3. For each pedimento, extract partidas + COVEs from XML
+    // 3. For each pedimento, extract partidas + COVEs + contribuciones from XML
     const allPartidas = []; // { pedimentoId, partidas[] }
-    const allCoves = [];
+    const allCoves = [];    // each COVE carries parent meta for tenant derivation
+    const facturasBatches = []; // { coves, pedimentoMeta, contribuciones }
 
     for (const ped of pedimentos) {
       try {
-        const { partidas, coves, pedimentoMeta } = await extractPartidas(cookies, ped);
+        const { partidas, coves, pedimentoMeta, contribuciones, contribucionesPresent } = await extractPartidas(cookies, ped);
         ped.meta = pedimentoMeta;
         if (partidas.length) allPartidas.push({ pedimentoId: ped.pedimento_id, partidas });
-        allCoves.push(...coves);
+
+        // Attach parent context to each COVE so downstream writers (saveCoves,
+        // saveAduanetFacturas) can derive company_id without needing the
+        // pedimento object.
+        const enrichedCoves = coves.map(c => ({
+          ...c,
+          parent_rfc: pedimentoMeta?.rfc_importador || null,
+          parent_patente: ped.patente,
+          parent_aduana: ped.aduana,
+          parent_referencia: ped.referencia,
+          parent_operacion: ped.tipo_operacion,
+        }));
+        allCoves.push(...enrichedCoves);
+
+        // Build a per-pedimento aduanet_facturas batch. Carry the pedimento
+        // metadata + at008 contribuciones so saveAduanetFacturas can write
+        // one row per COVE with the right tax totals copied across.
+        if (enrichedCoves.length > 0) {
+          facturasBatches.push({
+            coves: enrichedCoves,
+            pedimentoMeta: { ...pedimentoMeta, nombre_cliente: ped.raw_row?.[7] || null },
+            contribuciones: contribucionesPresent ? contribuciones : null,
+          });
+        }
+
         await new Promise(r => setTimeout(r, 500));
       } catch (e) {
         logger.warn(`Failed extracting details for ${ped.numero_pedimento}: ${e.message}`);
@@ -499,7 +719,7 @@ async function run(opts = {}) {
       }
     }
 
-    // 6. Save COVEs (deduplicate by cove_numero)
+    // 6. Save COVEs (deduplicate by cove_numero, keep parent context)
     const coveMap = new Map();
     for (const c of allCoves) {
       if (c.cove_numero) coveMap.set(c.cove_numero, c);
@@ -508,7 +728,18 @@ async function run(opts = {}) {
     result.covesCount = await saveCoves(mergedCoves);
     result.partidasCount = totalPartidas;
 
-    logger.info(`Done: ${result.pedimentosCount} pedimentos, ${result.partidasCount} partidas, ${result.covesCount} COVEs`);
+    // 7. Save aduanet_facturas (per-COVE row + at008 contribuciones)
+    let totalFacturas = 0;
+    for (const batch of facturasBatches) {
+      try {
+        totalFacturas += await saveAduanetFacturas(batch.coves, batch.pedimentoMeta, batch.contribuciones);
+      } catch (e) {
+        logger.warn(`Failed saving aduanet_facturas for pedimento batch: ${e.message}`);
+      }
+    }
+    result.aduanetFacturasCount = totalFacturas;
+
+    logger.info(`Done: ${result.pedimentosCount} pedimentos, ${result.partidasCount} partidas, ${result.covesCount} COVEs, ${result.aduanetFacturasCount} aduanet_facturas`);
   } catch (e) {
     result.error = e.message;
     logger.error(`FATAL: ${e.message}`, { stack: e.stack });

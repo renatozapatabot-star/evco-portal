@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { parseLastSeenUnsafe, type LastSeenPayload } from '@/lib/auth/last-seen'
 
 /**
@@ -21,18 +21,20 @@ import { parseLastSeenUnsafe, type LastSeenPayload } from '@/lib/auth/last-seen'
  * you, we remember you, your data is safe.'"
  */
 export function PortalLastSeenLine() {
-  const [payload, setPayload] = useState<LastSeenPayload | null>(null)
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return
+  // Read cookie synchronously during the first client render. The SSR
+  // pass has no `document`, so the lazy initializer returns null and
+  // the component renders nothing — the client hydration replaces it
+  // with the parsed payload (or stays null on first login).
+  const [payload] = useState<LastSeenPayload | null>(() => {
+    if (typeof document === 'undefined') return null
     const match = document.cookie
       .split(';')
       .map(c => c.trim())
       .find(c => c.startsWith('last_seen='))
-    if (!match) return
+    if (!match) return null
     const value = decodeURIComponent(match.slice('last_seen='.length))
-    setPayload(parseLastSeenUnsafe(value))
-  }, [])
+    return parseLastSeenUnsafe(value)
+  })
 
   if (!payload) return null
 

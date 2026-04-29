@@ -1,0 +1,57 @@
+-- Fix régimen-in-clave_pedimento mis-tagging on `pedimentos` table.
+--
+-- 3,309 rows were written between 2026-03-31 18:03:47 and 18:03:50 UTC by
+-- a one-shot backfill script that mapped `traficos.regimen` directly into
+-- `pedimentos.clave_pedimento`. The two are distinct SAT classifications
+-- (Anexo 22 Apéndice 2 = clave de pedimento like A1/IN/V1; Apéndice 5 =
+-- régimen aduanero like IMD/ITE/ITR). Investigation:
+-- ~/Desktop/regimen-clave-investigation-2026-04-29.md
+--
+-- The bad-batch writer is no longer in the codebase. Setting these
+-- values to NULL preserves the rows (their other fields — pedimento_id,
+-- numero_pedimento, aduana, patente — are correct and link to traficos),
+-- and avoids guessing what the real clave should be. The régimen codes
+-- still live in `traficos.regimen` for every affected row, so no
+-- information is lost — it just stops being mis-labeled in the wrong
+-- column.
+--
+-- Pre-migration distribution (verified 2026-04-29 13:14 CT):
+--   IMD = 1,307
+--   ITE = 1,611
+--   ITR =   391
+--   EXD =     0
+--   ETE =     0
+--   DFI =     0
+--   ──────────
+--   Total to NULL = 3,309
+--
+-- True clave codes (A1/IN/V1/RT/AF/BM/F4/A4/BO) and existing NULLs
+-- are NOT touched by this migration:
+--   True clave = 595 (untouched)
+--   NULL       = 263 (untouched)
+--   Total      = 4,167 pedimentos
+--
+-- Dependency scan: every reader of IMD/ITE/ITR T-MEC logic in the
+-- codebase reads `traficos.regimen`, NOT `pedimentos.clave_pedimento`
+-- (verified across kpis/page.tsx, pedimentos/page.tsx, proveedores/page.tsx,
+-- api/reportes-pdf, api/cost-savings, api/anexo24-pdf, api/auditoria-pdf,
+-- api/drafts/recalculate). Every type definition for `clave_pedimento` is
+-- already nullable. No NOT NULL constraint exists. Setting to NULL is safe.
+--
+-- The PART-1 commit on this branch (20d430b) fixed the surface that
+-- inherited the same conceptual bug — the Anexo 24 export route at
+-- src/app/api/reports/anexo-24/generate/route.ts:341 — so a fresh
+-- export will not re-emit the régimen-as-clave value.
+
+UPDATE pedimentos
+SET clave_pedimento = NULL
+WHERE clave_pedimento IN ('IMD','ITE','ITR','EXD','ETE','DFI');
+
+-- Post-migration verification (run these manually or as a sanity gate):
+-- SELECT COUNT(*) FROM pedimentos
+--   WHERE clave_pedimento IN ('IMD','ITE','ITR','EXD','ETE','DFI');
+-- Expected: 0
+--
+-- SELECT clave_pedimento, COUNT(*) FROM pedimentos
+--   GROUP BY clave_pedimento ORDER BY 2 DESC;
+-- Expected: only NULL + true clave codes (A1, IN, V1, RT, AF, BM, F4, A4, BO).

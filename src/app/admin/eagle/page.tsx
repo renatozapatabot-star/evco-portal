@@ -19,7 +19,14 @@ import type { TimelineItem } from '@/components/aguila'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
 import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
-import { PortalDashboard, PortalCrucesMap, PortalLiveBorder } from '@/components/portal'
+import {
+  PortalDashboard,
+  PortalCrucesMap,
+  PortalLiveBorder,
+  PortalCockpitMomento,
+  PortalCockpitActivity,
+  type PortalSignalItem,
+} from '@/components/portal'
 import { AsistenteButton } from '@/components/aguila/AsistenteButton'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { MonthSelector } from '@/components/admin/MonthSelector'
@@ -323,6 +330,15 @@ async function renderEagle(opName: string, rawMonth: string | null) {
     href: r.trafico ? `/embarques/${encodeURIComponent(r.trafico)}` : undefined,
   }))
 
+  // Same feed normalized for the handoff cockpit-signals primitives
+  // (EN ESTE MOMENTO bar + rolling activity ticker). Owner sees
+  // cross-tenant decisions — invariant 31 explicitly allows this.
+  const cockpitSignals: PortalSignalItem[] = decisionRows.map((r) => ({
+    id: String(r.id),
+    what: humanizeDecision(r.decision_type, r.decision),
+    ts: r.created_at,
+  }))
+
   // Series bucketing — use real timestamps (fecha_llegada / fecha_cruce),
   // never updated_at (which fires every sync).
   const traficosActivosSeries = bucketDailySeries(traficosActivosSeriesRows as Array<Record<string, unknown>>, 'fecha_llegada', 14, now)
@@ -526,11 +542,20 @@ async function renderEagle(opName: string, rawMonth: string | null) {
         month={month.ym}
         extraRow={
           <>
+            {/* EN ESTE MOMENTO sticky pulse bar — sourced from the
+                same operational_decisions feed that drives the
+                Actividad feed below. Cross-tenant per invariant 31. */}
+            <PortalCockpitMomento items={cockpitSignals} />
             {/* PORTAL design-handoff LiveBorder strip (founder-overrides
                 2026-04-28). Owner sees the live Laredo II crossing
                 above the legacy CockpitInicio. */}
             <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
               <PortalLiveBorder />
+            </div>
+            {/* Rolling activity ticker — slice past the first item
+                (already shown in the momento bar). */}
+            <div style={{ marginTop: 'var(--portal-s-3, 12px)' }}>
+              <PortalCockpitActivity items={cockpitSignals.slice(1)} limit={6} />
             </div>
             <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
               <PortalCrucesMap />

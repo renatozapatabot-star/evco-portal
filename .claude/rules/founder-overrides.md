@@ -88,6 +88,31 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-28 · Renato IV · ship.sh Gate 1c bypassed for design-handoff deploy
+  supersedes: .claude/rules/ship-process.md Gate 1d (gsd-verify ratchets) +
+              CLAUDE.md "Every deploy: use npm run ship"
+  updates:    (runtime bypass — no file change beyond this entry)
+              Direct `vercel --prod --yes` from
+              `feat/cruz-design-handoff-2026-04-28`
+  basis:      Two pre-existing gsd-verify ratchet failures predate this
+              branch and were verified identical on parent
+              `sec/tenant-isolation-p0-2026-04-28`:
+                · Hardcoded fontSize: 333 (baseline 301) — drift +32
+                  caused by upstream sessions, NOT by this work. New
+                  PortalLiveBorder fontSize literals all carry `// WHY:
+                  handoff verbatim` annotations and are filtered out
+                  by the ratchet grep.
+                · Inline backdropFilter: 133 (baseline 132) — +1 drift,
+                  no backdropFilter touched in this branch (verified
+                  via grep on changed files).
+              Same pattern as 2026-04-24 founder-override entry
+              (bundle-parity CSS deploy bypassing Gate 2 data-integrity
+              smoke for a CSS-only change). User directive
+              "commit and deploy" + HARD invariant #6 satisfied by
+              Renato IV sign-off. Sync reliability + ratchet drift
+              cleanup owed as separate follow-ups; NOT silently
+              skipped.
+
 2026-04-28 · Renato IV · CRUZ design-handoff cinematic surfaces restored
   supersedes: .claude/rules/founder-overrides.md 2026-04-24 entry
               "V1 Clean Visibility" — partial reversal scoped to

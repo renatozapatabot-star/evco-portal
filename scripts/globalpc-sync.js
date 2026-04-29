@@ -7,6 +7,7 @@ require('dotenv').config({ path: '.env.local' })
 const { fetchAll } = require('./lib/paginate')
 const { withSyncLog } = require('./lib/sync-log')
 const { sendTelegram } = require('./lib/telegram')
+const { translateEstatus } = require('./lib/translate-estatus')
 
 // ─── Config ───
 const supabase = createClient(
@@ -194,7 +195,7 @@ async function run() {
       conflictCol: 'trafico',
       mapRow: r => ({
         trafico: r.trafico, company_id: companyId, tenant_id: tenantId, tenant_slug: companyId,
-        estatus: r.fecha_cruce ? 'Cruzado' : 'En Proceso',
+        estatus: translateEstatus({ fecha_cruce: r.fecha_cruce, fecha_pago: r.fecha_pago }),
         descripcion_mercancia: r.descripcion_mercancia, peso_bruto: r.peso_bruto,
         fecha_llegada: r.fecha_llegada, pedimento: r.pedimento,
         transportista_extranjero: r.transp_ext, transportista_mexicano: r.transp_mex,

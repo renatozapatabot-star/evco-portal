@@ -149,11 +149,42 @@ function ddmmyyyy(daysBack = 0) {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-function isoDate(ddmm) {
-  if (!ddmm) return null;
-  const p = ddmm.split('/');
-  if (p.length !== 3) return null;
-  return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+// Normalize a date input (from XML or HTML report) to ISO YYYY-MM-DD.
+//
+// ADUANET XML returns dates already in YYYY-MM-DD form (e.g.
+// `D001FECPAG = "2026-04-23"`), but the older HTML-report path
+// returns dd/mm/yyyy. The original implementation only handled the
+// dd/mm/yyyy case — splitting on "/" and producing length 1 on an ISO
+// string, returning null. Result: every fecha_pago / fecha_entrada
+// silently landed as NULL on fresh writes despite the at001 having the
+// value (verified 2026-04-29 against the most-recent 15 pedimentos
+// scraped via PM2 — all rows had `fecha_pago=null` in the DB).
+//
+// New behavior: detect format. ISO inputs pass through (truncated to
+// the date portion if a time tail is present); dd/mm/yyyy inputs are
+// transformed; anything else returns null. Test coverage in
+// test/iso-date.test.js.
+function isoDate(input) {
+  if (!input) return null;
+  const s = String(input).trim();
+  if (!s) return null;
+
+  // Already ISO YYYY-MM-DD (or YYYY-MM-DDTHH:MM:SS / YYYY-MM-DD HH:MM:SS).
+  // Truncate to the date portion and validate the head matches a real
+  // YYYY-MM-DD pattern before accepting.
+  const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  }
+
+  // Legacy dd/mm/yyyy from the HTML report rows. Accept both '/' and
+  // '-' separators (some endpoints alternate).
+  const dmyMatch = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (dmyMatch) {
+    return `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
+  }
+
+  return null;
 }
 
 // SAT pedimento format: "AA AD PPPP SSSSSSS"
@@ -859,7 +890,8 @@ module.exports = {
   extractPartidas,
   searchCoves,
   run,
-  // Exposed for tests (test/year-padding.test.js):
+  // Exposed for tests (test/year-padding.test.js + test/iso-date.test.js):
   deriveYearFromPedimento,
   buildPedimentoId,
+  isoDate,
 };

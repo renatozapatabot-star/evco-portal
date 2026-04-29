@@ -11,6 +11,7 @@ const mysql = require('mysql2/promise')
 const { withSyncLog } = require('./lib/sync-log')
 const { safeUpsert } = require('./lib/safe-write')
 const { runPostSyncVerification } = require('./lib/post-sync-verify')
+const { translateEstatus } = require('./lib/translate-estatus')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -150,8 +151,11 @@ async function run() {
           return true
         }).map(r => {
           const prev = existMap[r.trafico]
-          if (prev && prev.estatus !== r.estatus) {
-            changes.push({ trafico: r.trafico, from: prev.estatus, to: r.estatus })
+          // Compute the translated estatus once, so the change-tracking
+          // comparison and the upsert payload agree on what we're writing.
+          const translated = translateEstatus({ fecha_cruce: r.fecha_cruce, fecha_pago: r.fecha_pago })
+          if (prev && prev.estatus !== translated) {
+            changes.push({ trafico: r.trafico, from: prev.estatus, to: translated })
           }
           if (!prev) totalNew++; else totalUpdated++
           // FIX 2026-04-16: traficos has no `clave_cliente` column — canonical FK is
@@ -160,6 +164,11 @@ async function run() {
           // schema drift while zero rows were written. Discovered during overnight
           // Phase 1 sync audit.
           const company_id = claveMap[r.clave_cliente]
+          // FIX 2 (audit-sync-pipeline-2026-04-29): translate the raw
+          // sCveEstatusEDespacho code (E1/E2/E3) to the cockpit's display
+          // vocabulary using the same helper as bulk sync. Writing the
+          // raw code to traficos.estatus made <StatusBadge> render an
+          // unmapped fallback for 686 rows.
           return {
             trafico: r.trafico,
             company_id,
@@ -168,7 +177,7 @@ async function run() {
             fecha_llegada: r.fecha_llegada,
             fecha_cruce: r.fecha_cruce,
             fecha_pago: r.fecha_pago,
-            estatus: r.estatus,
+            estatus: translated,
             peso_bruto: r.peso_bruto,
             transportista_extranjero: r.transportista_extranjero,
             transportista_mexicano: r.transportista_mexicano,

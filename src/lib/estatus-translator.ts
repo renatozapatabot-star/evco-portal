@@ -31,6 +31,16 @@ const MAP: Record<string, EstatusDisplay> = {
   'Pedimento Pagado': { label: 'Pagado',          tone: 'positive'  },
   'Cruzado':          { label: 'Cruzado',         tone: 'positive'  },
   'E1':               { label: 'Cruzado',         tone: 'positive'  },
+  // Defensive entries for E2/E3 — the JS-side translator
+  // (scripts/lib/translate-estatus.js) declares all three E-codes in
+  // RAW_DESPACHO_CODES as values that must not leak past sync. E2/E3
+  // are not observed in production data today, but if either ever
+  // reaches the cockpit (mis-merge in sync, manual import, etc.), the
+  // user sees "En proceso" instead of raw "E2"/"E3". The drift fence
+  // test in src/lib/__tests__/estatus-translator.drift.test.ts asserts
+  // every RAW_DESPACHO_CODES entry has a TS-side mapping.
+  'E2':               { label: 'En proceso',      tone: 'in_flight' },
+  'E3':               { label: 'En proceso',      tone: 'in_flight' },
   'Entregado':        { label: 'Cruzado',         tone: 'positive'  },
 }
 

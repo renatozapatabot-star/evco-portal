@@ -566,3 +566,32 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   letter-spacing: 0.14em; color: var(--portal-fg-4); text-transform: uppercase;
   margin-left: auto; flex-shrink: 0;
 }
+
+/* —— Login boot-up sequence — corner ticks + handshake settle ——— */
+@keyframes portalCornerTickIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes portalHandshakeSettle {
+  from { opacity: 1; color: var(--portal-fg-3); }
+  to   { opacity: 0.55; color: var(--portal-fg-5); }
+}
+
+/* —— Login fail tremor — input shakes 3px×3 on auth error ——— */
+@keyframes portalTremor {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-3px); }
+  40%      { transform: translateX(3px); }
+  60%      { transform: translateX(-2px); }
+  80%      { transform: translateX(2px); }
+}
+.portal-tremor { animation: portalTremor 320ms var(--portal-ease-out) both; }
+
+/* —— Login aurora attention — dims ambient layer when input focused.
+   Per chat1.md: aurora "slows and dims by 15%" while the user is in
+   the password field. The dim is CSS; React component reads the same
+   data-attention attribute and slows its phase loop separately. ——— */
+[data-attention="focused"] [data-portal-aurora] {
+  opacity: 0.85;
+  transition: opacity 480ms var(--portal-ease-out);
+}

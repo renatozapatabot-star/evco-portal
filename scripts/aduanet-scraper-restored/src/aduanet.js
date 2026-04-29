@@ -653,20 +653,54 @@ async function saveAduanetFacturas(coves, pedimentoMeta, contribuciones) {
 
   if (!rows.length) return 0;
 
-  // Idempotency by (pedimento, company_id). Each tuple is deleted once
-  // before the bulk insert, so re-running the scraper for the same
-  // pedimento doesn't accumulate duplicates.
-  const seenKeys = new Set();
+  // Idempotency via UPSERT on the table's natural unique key.
+  //
+  // The `aduanet_facturas` table has a unique constraint
+  // `uq_facturas_referencia_cliente` on (referencia, clave_cliente).
+  // The prior delete-by-(pedimento, company_id) + insert pattern broke
+  // when the 7-day lookback returned sibling pedimento variants
+  // (e.g. pedimento + r1pedimento under the same trafico) — both
+  // variants share the same (referencia, clave_cliente) tuple, but
+  // delete only nuked one pedimento's rows, so the second variant's
+  // insert collided. Smoke run 2026-04-29 lost 2 of 58 pedimento
+  // groups to this race.
+  //
+  // UPSERT on (referencia, clave_cliente):
+  //   · Atomic at the DB level — no DELETE/INSERT race window.
+  //   · If a sibling pedimento writes the same key first, the second
+  //     UPDATEs in place instead of failing.
+  //   · Other writers (Throne's separate runner; manual import) can
+  //     coexist without their rows getting wiped — they just get
+  //     overwritten with the latest scrape's values.
+  //   · Preserves DB-side fields the script doesn't write
+  //     (tx_id, tenant_id, tenant_slug, marca_numero, peso) as long
+  //     as PostgREST resolves the upsert's UPDATE to only touch the
+  //     supplied columns.
+  //
+  // De-dup the in-memory batch by the same key so we don't try to
+  // upsert two rows with the same conflict tuple in a single call
+  // (which Postgres rejects with `cannot affect row a second time`).
+  const dedup = new Map();
   for (const r of rows) {
-    const k = `${r.pedimento}|${r.company_id}`;
-    if (seenKeys.has(k)) continue;
-    seenKeys.add(k);
-    await sb.from('aduanet_facturas').delete().eq('pedimento', r.pedimento).eq('company_id', r.company_id);
+    if (!r.referencia || !r.clave_cliente) continue; // null in either ⇒ can't dedupe by key
+    dedup.set(`${r.referencia}|${r.clave_cliente}`, r);
   }
-  const { error } = await sb.from('aduanet_facturas').insert(rows);
+  // Rows that lacked one of the dedup-key fields can still be inserted
+  // — they just won't trip the unique constraint either. Append them
+  // unchanged after dedup.
+  const dedupedRows = [
+    ...dedup.values(),
+    ...rows.filter(r => !r.referencia || !r.clave_cliente),
+  ];
+
+  const { error } = await sb
+    .from('aduanet_facturas')
+    .upsert(dedupedRows, { onConflict: 'referencia,clave_cliente' });
   if (error) throw new Error(`Save aduanet_facturas: ${error.message}`);
-  logger.info(`Inserted ${rows.length} aduanet_facturas rows across ${seenKeys.size} (pedimento, company) groups`);
-  return rows.length;
+
+  const distinctPedimentos = new Set(dedupedRows.map(r => r.pedimento)).size;
+  logger.info(`Upserted ${dedupedRows.length} aduanet_facturas rows across ${distinctPedimentos} pedimentos`);
+  return dedupedRows.length;
 }
 
 async function logRun(result) {

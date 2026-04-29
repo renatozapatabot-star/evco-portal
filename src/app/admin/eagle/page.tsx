@@ -19,7 +19,7 @@ import type { TimelineItem } from '@/components/aguila'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { fetchEscalatedThreads } from '@/lib/mensajeria/feed'
 import { CockpitInicio, PriorityThreadsPanel, TimelineFeed, CockpitSkeleton, ActividadStrip, CapabilityCardGrid, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
-import { PortalDashboard, PortalCrucesMap } from '@/components/portal'
+import { PortalDashboard, PortalCrucesMap, PortalLiveBorder } from '@/components/portal'
 import { AsistenteButton } from '@/components/aguila/AsistenteButton'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
 import { MonthSelector } from '@/components/admin/MonthSelector'
@@ -526,6 +526,12 @@ async function renderEagle(opName: string, rawMonth: string | null) {
         month={month.ym}
         extraRow={
           <>
+            {/* PORTAL design-handoff LiveBorder strip (founder-overrides
+                2026-04-28). Owner sees the live Laredo II crossing
+                above the legacy CockpitInicio. */}
+            <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
+              <PortalLiveBorder />
+            </div>
             <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
               <PortalCrucesMap />
             </div>

@@ -21,6 +21,7 @@ import { softCount, softData, softFirst, createQuerySignals } from '@/lib/cockpi
 import { getLatestCrossing } from '@/lib/queries/latest-crossing'
 import { getActiveCveProductos } from '@/lib/anexo24/active-parts'
 import { CockpitErrorCard, CockpitSkeleton, FreshnessBanner, type CockpitHeroKPI, type ActividadStripItem } from '@/components/aguila'
+import { PortalWorldMesh } from '@/components/portal'
 import { readFreshness } from '@/lib/cockpit/freshness'
 import { computeSuccessRate } from '@/lib/cockpit/success-rate'
 import { InicioClientShell } from './InicioClientShell'
@@ -684,6 +685,11 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   ]
 
   return (
+    <>
+    {/* PORTAL design-handoff ambient layer (founder-overrides 2026-04-28).
+        position: fixed · z-index: 0 · pointer-events: none · 6% opacity.
+        Calm; no anxiety surface — preserves invariant #24 / client-tone. */}
+    <PortalWorldMesh />
     <InicioClientShell
       role="client"
       name={companyName || 'Tu portal'}
@@ -754,5 +760,6 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
         </>
       }
     />
+    </>
   )
 }

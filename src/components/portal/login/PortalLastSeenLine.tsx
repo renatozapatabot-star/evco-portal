@@ -46,7 +46,7 @@ export function PortalLastSeenLine() {
       style={{
         marginTop: 14,
         fontFamily: 'var(--portal-font-mono)',
-        fontSize: 10,
+        fontSize: 10, // WHY: handoff micro label scale (chat1.md)
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: 'var(--portal-fg-5)',

@@ -493,7 +493,7 @@ function LoginContent() {
                     alignItems: 'center',
                     gap: 6,
                     fontFamily: 'var(--portal-font-mono)',
-                    fontSize: 10,
+                    fontSize: 10, // WHY: handoff micro label scale (chat1.md)
                     letterSpacing: '0.22em',
                     color: 'var(--portal-amber)',
                     textTransform: 'uppercase',

@@ -216,7 +216,11 @@ async function searchPedimentos(cookies, { from, to, pedimentoNum } = {}) {
 
     const yr = new Date().getFullYear().toString().slice(-2)
     const ad = (row[2] || ADUANA).toString().slice(0, 2)
-    const pedId = `${yr} ${ad} ${PATENTE} ${seqNum}`
+    // Zero-pad consecutivo to 7 digits per SAT Anexo 22 Apéndice 1.
+    // Same shape as the restored scraper's buildPedimentoId fix; without
+    // this, DODA rows land as "26 24 3596 53784" instead of
+    // "26 24 3596 0053784" and fail the strict format regex.
+    const pedId = `${yr} ${ad} ${PATENTE} ${String(seqNum).padStart(7, '0')}`
     if (seen.has(pedId)) continue
     seen.add(pedId)
 

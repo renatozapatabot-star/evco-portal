@@ -20,7 +20,10 @@ const fs = require('fs')
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 const TG = process.env.TELEGRAM_BOT_TOKEN
 const CHAT = '-5085543275'
-const CLAVE = '9254' // EVCO-specific — not a multi-client pattern
+// Default clave for rows whose XLSX has no clave_cliente column. The
+// per-row clave_cliente column is preferred (see findCol below) — this
+// fallback only matters for legacy single-client EVCO exports.
+const DEFAULT_CLAVE = '9254'
 
 async function tg(msg) {
   if (process.env.TELEGRAM_SILENT === 'true') return
@@ -102,19 +105,53 @@ async function run() {
   const colIgi = findCol(headers, 'igi', 'arancel')
   const colIva = findCol(headers, 'iva')
   const colProv = findCol(headers, 'proveedor', 'supplier', 'provider')
+  const colClave = findCol(headers, 'clave_cliente', 'cve_cliente', 'cliente', 'clave')
 
   if (!colPed) {
     console.error('❌ No "pedimento" column found. Headers:', headers.join(', '))
     process.exit(1)
   }
-  console.log(`Mapped: pedimento="${colPed}" fecha="${colFecha}" valor="${colValor}" ref="${colRef}" dta="${colDta}" igi="${colIgi}" iva="${colIva}" prov="${colProv}"`)
+  console.log(`Mapped: pedimento="${colPed}" fecha="${colFecha}" valor="${colValor}" ref="${colRef}" dta="${colDta}" igi="${colIgi}" iva="${colIva}" prov="${colProv}" clave="${colClave}"`)
 
-  // Parse records
+  // Build clave_cliente → company_id map from companies table — required
+  // for tenant-safe imports. Per .claude/rules/tenant-isolation.md: trust
+  // cve_cliente (MySQL-native), derive company_id. Never let an import
+  // write company_id without resolving it through the companies allowlist.
+  const { data: companiesRows } = await supabase
+    .from('companies')
+    .select('clave_cliente, globalpc_clave, company_id')
+    .eq('active', true)
+  const claveMap = {}
+  for (const c of (companiesRows || [])) {
+    if (c.clave_cliente) claveMap[c.clave_cliente] = c.company_id
+    if (c.globalpc_clave) claveMap[c.globalpc_clave] = c.company_id
+  }
+  console.log(`Clave allowlist loaded: ${Object.keys(claveMap).length} active claves`)
+
+  // Parse records — derive company_id per row from clave_cliente via the
+  // active-companies allowlist. Skip + warn on unknown claves; never
+  // default to 'evco' (the prior behavior mis-tagged 370 of 459 rows in
+  // the 2026-03-09 dump).
   const records = []
   let skipped = 0
+  let skippedUnknownClave = 0
+  const unknownClaveSamples = {}
   for (const row of rows) {
     const ped = String(row[colPed] || '').trim()
     if (ped.length < 5) { skipped++; continue }
+
+    // Per-row clave_cliente takes precedence; fall back to DEFAULT_CLAVE
+    // only when the XLSX lacks the column entirely (legacy single-client).
+    const rowClaveRaw = colClave ? String(row[colClave] || '').trim() : ''
+    const claveCliente = rowClaveRaw || (colClave ? null : DEFAULT_CLAVE)
+    if (!claveCliente) { skipped++; continue }
+
+    const companyId = claveMap[claveCliente]
+    if (!companyId) {
+      skippedUnknownClave++
+      unknownClaveSamples[claveCliente] = (unknownClaveSamples[claveCliente] || 0) + 1
+      continue
+    }
 
     records.push({
       pedimento: ped,
@@ -125,12 +162,19 @@ async function run() {
       igi: colIgi ? parseNum(row[colIgi]) : null,
       iva: colIva ? parseNum(row[colIva]) : null,
       proveedor: colProv ? String(row[colProv] || '').trim() || null : null,
-      clave_cliente: CLAVE,
-      company_id: 'evco',
+      clave_cliente: claveCliente,
+      company_id: companyId,
     })
   }
 
-  console.log(`Parsed: ${records.length} pedimentos (${skipped} skipped)`)
+  console.log(`Parsed: ${records.length} pedimentos (${skipped} skipped, ${skippedUnknownClave} unknown clave)`)
+  if (skippedUnknownClave > 0) {
+    console.log('Unknown claves (not in active companies allowlist):')
+    for (const [k, n] of Object.entries(unknownClaveSamples)) {
+      console.log(`  ${k}: ${n} row(s)`)
+    }
+    await tg(`⚠️ <b>ADUANET import</b> — ${skippedUnknownClave} row(s) skipped: unknown clave_cliente. ${Object.keys(unknownClaveSamples).slice(0, 5).join(', ')}\n— CRUZ 🦀`)
+  }
   if (records.length === 0) {
     console.log('Nothing to import')
     return

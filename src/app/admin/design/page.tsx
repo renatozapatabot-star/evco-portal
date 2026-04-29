@@ -20,6 +20,7 @@ import {
   PortalGlobe,
   PortalCruzMark,
   PortalWorldMesh,
+  PortalLiveBorder,
   PortalGreeting,
   PortalModuleCard,
   PortalCrucesMap,
@@ -368,6 +369,22 @@ export default function DesignGalleryPage() {
       {/* Cruces map */}
       <PortalSection title="Cruces map" eyebrow="portal-cruces-map">
         <PortalCrucesMap />
+      </PortalSection>
+
+      {/* Live border — La Frontera en Vivo */}
+      <PortalSection
+        title="Live border — La Frontera en Vivo"
+        eyebrow="portal-live-border · operator + owner only"
+      >
+        <p className="portal-meta" style={{ marginBottom: 12 }}>
+          Ported from <code>live-border.jsx</code> (claude.ai/design
+          handoff). Three trucks animate MX→US across Laredo II; lead
+          truck fires <code>window.__cruzCrossingBus</code> events on
+          midpoint. Defaults are presentational; props accept tenant-
+          scoped telemetry. Not rendered on client <code>/inicio</code>
+          (calm-tone invariant #24).
+        </p>
+        <PortalLiveBorder />
       </PortalSection>
 
       {/* Login living background preview */}

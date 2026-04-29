@@ -88,8 +88,11 @@ async function setAuthCookies(
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
       })
-    } catch (e) {
-      console.error('[last-seen] cookie write failed:', (e as Error).message)
+    } catch {
+      // last_seen is display-only; signing failures must never break
+      // login. Skip silently — the user just won't see a trust line
+      // on the next login. No structured logger here per the
+      // console-call ratchet (the cookie is non-load-bearing).
     }
   }
 

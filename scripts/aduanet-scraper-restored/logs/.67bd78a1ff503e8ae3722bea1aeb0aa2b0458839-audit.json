@@ -1,0 +1,35 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/renatozapataandcompany/.openclaw/workspace/scripts/aduanet-scraper/logs/.67bd78a1ff503e8ae3722bea1aeb0aa2b0458839-audit.json",
+    "files": [
+        {
+            "date": 1774560599812,
+            "name": "/Users/renatozapataandcompany/.openclaw/workspace/scripts/aduanet-scraper/logs/aduanet-2026-03-26.log",
+            "hash": "9117a43ee863094e1adb7ad1439801edba3877c291d72bde6a3def4f1111f900"
+        },
+        {
+            "date": 1774883648061,
+            "name": "/Users/renatozapataandcompany/.openclaw/workspace/scripts/aduanet-scraper/logs/aduanet-2026-03-30.log",
+            "hash": "19a552790e88e3e2e5bbdadcbbc69d11d438d15fc353a2b0a0bbec95434bafc6"
+        },
+        {
+            "date": 1774940401432,
+            "name": "/Users/renatozapataandcompany/.openclaw/workspace/scripts/aduanet-scraper/logs/aduanet-2026-03-31.log",
+            "hash": "c1b002afcbf79f23409bd9b719545b3f466e209e449b357b5f11efb5dd05b4b9"
+        },
+        {
+            "date": 1775026801878,
+            "name": "/Users/renatozapataandcompany/.openclaw/workspace/scripts/aduanet-scraper/logs/aduanet-2026-04-01.log",
+            "hash": "d65f8da41065ae107f893bbd8855a7e07049ede7a91a68c6849f1ededd291569"
+        },
+        {
+            "date": 1775113201997,
+            "name": "/Users/renatozapataandcompany/.openclaw/workspace/scripts/aduanet-scraper/logs/aduanet-2026-04-02.log",
+            "hash": "c5161f38f142884721c18beeabf106e2fcb0cdb662f46a2a963a3629c648c77b"
+        }
+    ],
+    "hashType": "sha256"
+}

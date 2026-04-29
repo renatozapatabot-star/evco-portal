@@ -11,6 +11,7 @@ import { fetchOperatorMensajeriaFeed, fetchEscalatedThreads } from '@/lib/mensaj
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import { CockpitSkeleton } from '@/components/aguila'
 import { AsistenteButton } from '@/components/aguila/AsistenteButton'
+import { PortalWorldMesh, PortalLiveBorder } from '@/components/portal'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 import type { AuditRow } from '@/lib/cockpit/audit-format'
 
@@ -298,6 +299,14 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
 
   return (
     <>
+    {/* PORTAL design-handoff ambient + live-border (founder-overrides 2026-04-28).
+        WorldMesh sits behind everything (position:fixed, 6% opacity).
+        LiveBorder above the cockpit content — operator + owner only per
+        override scope (client /inicio stays calm). */}
+    <PortalWorldMesh />
+    <div style={{ padding: '24px 24px 0', maxWidth: 'var(--portal-maxw, 1440px)', margin: '0 auto' }}>
+      <PortalLiveBorder />
+    </div>
     <InicioClient
       operatorName={opName}
       operatorId={opId || ''}

@@ -156,6 +156,40 @@ function isoDate(ddmm) {
   return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
 }
 
+// SAT pedimento format: "AA AD PPPP SSSSSSS"
+//   AA   = 2-digit año derived from fecha_pago (preferred) or fecha_entrada
+//          on the at001 header. Falling back to current-year-on-scrape was
+//          the prior bug — it stamped 2026's `26` prefix on 2025-era
+//          pedimentos when LOOKBACK_DAYS spanned a calendar year.
+//   AD   = 2-digit aduana de despacho (first two digits of the 3-digit
+//          aduana code, per Anexo 22 Apéndice 1).
+//   PPPP = 4-digit patente.
+//   SSSSSSS = 7-digit consecutivo.
+//
+// `meta` is the at001-derived `pedimentoMeta` object. The fecha values come
+// out of the XML in YYYY-MM-DD form (already isoDate'd before reaching
+// here) so a plain Date parse is safe.
+function deriveYearFromPedimento(meta) {
+  const dateStr = meta?.fecha_pago || meta?.fecha_entrada || null;
+  if (dateStr) {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return String(d.getUTCFullYear()).slice(-2);
+  }
+  // Fallback: current scrape year. Used for DODAs and any pedimento whose
+  // detail XML didn't return (so meta is empty). DODAs are by definition
+  // recent — they precede the pedimento itself — so today's year is the
+  // safest fallback for them.
+  return String(new Date().getUTCFullYear()).slice(-2);
+}
+
+function buildPedimentoId({ meta, aduana, patente, consecutivo }) {
+  const yr = deriveYearFromPedimento(meta);
+  const ad = (aduana || ADUANA).toString().padStart(2, '0').slice(0, 2);
+  const pp = (patente || PATENTE).toString();
+  const seq = String(consecutivo || '').trim();
+  return `${yr} ${ad} ${pp} ${seq}`;
+}
+
 function parseNum(str) {
   if (!str) return null;
   return parseFloat(str.replace(/[$,\s]/g, '')) || null;
@@ -270,15 +304,18 @@ async function searchPedimentos(cookies, { from, to, pedimentoNum } = {}) {
     // Filter by specific pedimento number if provided
     if (pedimentoNum && !seqNum.includes(pedimentoNum)) continue;
 
-    // pedimento_id: "YY AD PATENTE NUM" — derive year from 2-digit prefix or current
-    const yr = new Date().getFullYear().toString().slice(-2);
-    const ad = (row[2] || ADUANA).toString().slice(0, 2);
-    const pedId = `${yr} ${ad} ${PATENTE} ${seqNum}`;
-    if (seen.has(pedId)) continue;
-    seen.add(pedId);
+    // In-memory dedup key: year-independent, so two same-consecutivo entries
+    // (rare; e.g. one pedimento + its DODA) on the same patente/aduana/tipo
+    // don't slip through. The SAT-format pedimento_id is intentionally NOT
+    // built here — it needs the at001 fecha to choose the right year, and
+    // we don't have that until extractPartidas runs in run(). Built later
+    // by buildPedimentoId() after meta is populated.
+    const dedupKey = `${tipo}|${row[2] || ADUANA}|${row[1] || PATENTE}|${seqNum}`;
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
 
     pedimentos.push({
-      pedimento_id: pedId,
+      pedimento_id: null, // populated by run() after extractPartidas
       numero_pedimento: seqNum,
       aduana: row[2] || ADUANA,
       patente: row[1] || PATENTE,
@@ -674,6 +711,18 @@ async function run(opts = {}) {
       try {
         const { partidas, coves, pedimentoMeta, contribuciones, contribucionesPresent } = await extractPartidas(cookies, ped);
         ped.meta = pedimentoMeta;
+        // Build the SAT-format pedimento_id NOW that we have the at001
+        // fecha. For DODAs and any pedimento whose detail XML didn't
+        // return, meta is empty and buildPedimentoId falls back to the
+        // current scrape year — same behavior as the legacy code path
+        // for those cases, but every pedimento with real meta now gets
+        // its real año stamped instead of the scrape year.
+        ped.pedimento_id = buildPedimentoId({
+          meta: pedimentoMeta,
+          aduana: ped.aduana,
+          patente: ped.patente,
+          consecutivo: ped.numero_pedimento,
+        });
         if (partidas.length) allPartidas.push({ pedimentoId: ped.pedimento_id, partidas });
 
         // Attach parent context to each COVE so downstream writers (saveCoves,
@@ -770,4 +819,13 @@ if (require.main === module) {
   });
 }
 
-module.exports = { login, searchPedimentos, extractPartidas, searchCoves, run };
+module.exports = {
+  login,
+  searchPedimentos,
+  extractPartidas,
+  searchCoves,
+  run,
+  // Exposed for tests (test/year-padding.test.js):
+  deriveYearFromPedimento,
+  buildPedimentoId,
+};

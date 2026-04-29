@@ -217,7 +217,14 @@ function buildPedimentoId({ meta, aduana, patente, consecutivo }) {
   const yr = deriveYearFromPedimento(meta);
   const ad = (aduana || ADUANA).toString().padStart(2, '0').slice(0, 2);
   const pp = (patente || PATENTE).toString();
-  const seq = String(consecutivo || '').trim();
+  // Zero-pad the consecutivo to the SAT-mandated 7 digits per Anexo 22
+  // Apéndice 1. Without padding, DODA rows (whose native consecutivos are
+  // 5 digits, e.g. 53784) wrote `"26 24 3596 53784"` and failed the
+  // `/^\d{2}\s\d{2}\s\d{4}\s\d{7}$/` audit. Padding produces
+  // `"26 24 3596 0053784"` — cosmetic conformance for DODAs (whose real
+  // SAT numbers are natively 5 digits and don't carry leading zeros at
+  // SAT) but uniform-format compliance everywhere else.
+  const seq = String(consecutivo || '').trim().padStart(7, '0');
   return `${yr} ${ad} ${pp} ${seq}`;
 }
 

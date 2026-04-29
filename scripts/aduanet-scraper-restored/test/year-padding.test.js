@@ -120,7 +120,7 @@ t('aduana shorter than 2 digits gets zero-padded', () => {
   assert.equal(id, '26 04 3596 5500001');
 });
 
-t('DODA-like row with empty meta uses current year fallback', () => {
+t('DODA-like row with empty meta uses current year fallback (consec now 7-padded)', () => {
   const expectedYr = String(new Date().getUTCFullYear()).slice(-2);
   const id = buildPedimentoId({
     meta: {},
@@ -128,7 +128,9 @@ t('DODA-like row with empty meta uses current year fallback', () => {
     patente: '3596',
     consecutivo: '53784',
   });
-  assert.equal(id, `${expectedYr} 24 3596 53784`);
+  // After the consecutivo-padding fix: DODA's native 5-digit consecutivo
+  // now lands as 7 digits with leading zeros for SAT-format conformance.
+  assert.equal(id, `${expectedYr} 24 3596 0053784`);
 });
 
 // ── Regression guard: the pre-fix bug behavior would have failed this ─────

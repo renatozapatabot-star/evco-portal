@@ -26,6 +26,9 @@ export interface PortalCruzMarkProps {
  *
  * Ported from .planning/design-handoff/cruz-portal/project/src/primitives.jsx:252-281
  * (original text "CRUZ"; swapped to "PORTAL" per Block DD rebrand).
+ *
+ * 2026-04-28 audit: handoff `<CruzMark>` is defined-but-unused; every
+ * rendered handoff screen uses literal "PORTAL" — keeping our default.
  */
 export function PortalCruzMark({
   size = 14,

@@ -1,0 +1,21 @@
+{
+  "name": "aduanet-scraper",
+  "version": "1.0.0",
+  "description": "Nightly ADUANET scraper — COVEs + Pedimentos → Supabase",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "scrape": "node src/scraper.js",
+    "aduanet": "node src/aduanet.js",
+    "aduanet:pedimento": "node src/aduanet.js --pedimento"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.4.1",
+    "node-cron": "^3.0.3",
+    "pg": "^8.20.0",
+    "playwright": "^1.42.0",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  }
+}

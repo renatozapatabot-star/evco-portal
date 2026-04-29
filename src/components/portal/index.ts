@@ -82,6 +82,11 @@ export * from './viz'
 export { PortalDashboard } from './PortalDashboard'
 export type { PortalDashboardProps, PortalDashboardRole } from './PortalDashboard'
 
+// 2026-04-28 founder-overrides — PORTAL design-handoff verbatim restored.
+// Operator + owner cockpits only; client `/inicio` stays calm.
+export { PortalLiveBorder } from './PortalLiveBorder'
+export type { PortalLiveBorderProps, CruzCrossingEvent } from './PortalLiveBorder'
+
 // Phase 5 — Full-viewport 5-act pedimento theater. Mount once in app/layout.tsx
 // and invoke from anywhere via window.__portalOpenTheater(pedimentoId).
 export { PortalPedimentoTheater } from './PortalPedimentoTheater'

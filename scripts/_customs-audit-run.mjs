@@ -230,7 +230,7 @@ function logSection(name) { console.log('\n=== ' + name + ' (' + ((Date.now()-t0
   // Best we can do: check whether traficos.importe_total ≈ DTA expected, and surface anomalies.
   // Compute expected DTA distribution to give Renato a ballpark.
   const pedWithVA = pedimentos.filter(p => false); // No valor_aduana on the cached projection — re-fetch
-  const pedFull = await paginate(() => sb.from('pedimentos').select('id,pedimento_id,valor_aduana,tipo_cambio,fecha_pago,fecha_entrada,clave_pedimento,moneda,importe_total').not('valor_aduana','is',null));
+  const pedFull = await paginate(() => sb.from('pedimentos').select('id,pedimento_id,valor_aduana,tipo_cambio,fecha_pago,fecha_entrada,clave_pedimento,importe_total').not('valor_aduana','is',null));
   let dtaSum = 0; let countWithDate = 0; let yrDist = {};
   const expectedDtaSamples = [];
   for (const p of pedFull) {
@@ -422,12 +422,11 @@ function logSection(name) { console.log('\n=== ' + name + ' (' + ((Date.now()-t0
     unknown_moneda_samples: monedaSamplesUnk,
   };
 
-  // 6b — pedimentos: moneda, tipo_cambio
-  const pedMonedaDist = {};
+  // 6b — pedimentos: tipo_cambio only (the moneda column was dropped on
+  // 2026-04-29 per the M15 phantom-sweep precedent — pedimentos don't
+  // have a per-document moneda; currency lives at the COVE/factura level).
   const pedTcStats = { populated: 0, null: 0, oddly_low: 0, oddly_high: 0, samples_odd: [] };
   for (const p of pedFull) {
-    const mon = p.moneda || 'null';
-    pedMonedaDist[mon] = (pedMonedaDist[mon] || 0) + 1;
     if (p.tipo_cambio == null) pedTcStats.null++;
     else {
       pedTcStats.populated++;
@@ -436,7 +435,6 @@ function logSection(name) { console.log('\n=== ' + name + ' (' + ((Date.now()-t0
     }
   }
   findings.phase6.pedimentos = {
-    moneda_distribution: pedMonedaDist,
     tipo_cambio_stats: pedTcStats,
   };
 

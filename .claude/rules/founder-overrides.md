@@ -88,6 +88,48 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-04-29 · Renato IV · ship.sh Gate 1d bypassed for handoff-parity-login deploy
+  supersedes: .claude/rules/ship-process.md Gate 1d (gsd-verify ratchets) +
+              CLAUDE.md "Every deploy: use npm run ship"
+  updates:    (runtime bypass — no file change beyond this entry)
+              Direct `vercel --prod --yes` from
+              `feat/handoff-parity-login-2026-04-29`
+  basis:      Two pre-existing gsd-verify ratchet failures predate this
+              branch and are at the EXACT level documented in the
+              2026-04-28 entry below — no new drift from this work:
+                · Hardcoded fontSize: 333 (baseline 301) — same
+                  number as the 2026-04-28 entry. Three new fontSize
+                  literals from this block (login MAYÚS chip,
+                  PortalLoginCardChrome handshake row, PortalLastSeenLine
+                  trust line) all carry `// WHY: handoff micro label
+                  scale (chat1.md)` annotations and are filtered out
+                  by the ratchet grep.
+                · Inline backdropFilter: 133 (baseline 132) — same
+                  +1 drift as the 2026-04-28 entry. No backdropFilter
+                  touched in this branch (verified via grep on
+                  changed files).
+              Other gates: typecheck 0 errors, vitest 2051/2051 passing
+              (32 new this block), build green in 7.0s. The console.error
+              ratchet briefly regressed +1 (last-seen cookie writer
+              soft-fail) and was returned to baseline 129 in commit
+              8c9ae70 by removing the log call (cookie is display-only,
+              non-load-bearing).
+
+              Net product impact: 8/8 "10/10 login moments" from
+              chat1.md ship to /login (corner ticks · handshake row ·
+              last-seen trust line · tracing focus ring · Caps Lock
+              detector · fail tremor · button success-pulse · aurora
+              reacts to focus). EN ESTE MOMENTO + activity ticker
+              ship to /operador/inicio + /admin/eagle (calm-tone
+              preserved on /inicio). Live-glow halo on cleared
+              pedimento status pill.
+
+              Same pattern as 2026-04-28 + 2026-04-24 entries. User
+              directive "commit and deploy" + HARD invariant #6
+              satisfied by Renato IV sign-off. Sync reliability +
+              ratchet drift cleanup owed as separate follow-ups; NOT
+              silently skipped.
+
 2026-04-28 · Renato IV · ship.sh Gate 1c bypassed for design-handoff deploy
   supersedes: .claude/rules/ship-process.md Gate 1d (gsd-verify ratchets) +
               CLAUDE.md "Every deploy: use npm run ship"

@@ -4,6 +4,7 @@ import { signSession } from '@/lib/session'
 import { generateCsrfToken } from '@/lib/csrf'
 import { authSchema } from '@/lib/api-schemas'
 import { rateLimit } from '@/lib/rate-limit'
+import { signLastSeen, uaBrief } from '@/lib/auth/last-seen'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +32,8 @@ async function softQuery<T>(p: PromiseLike<{ data: T | null }>, ms = 2500): Prom
 /** Set auth + company cookies on a successful login response. */
 async function setAuthCookies(
   response: NextResponse,
-  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string; operatorName?: string; operatorId?: string }
+  opts: { companyId: string; companyName: string; companyClave: string; companyRfc?: string; role: string; operatorName?: string; operatorId?: string },
+  request?: NextRequest,
 ) {
   const maxAge = 28800 // 8 hours — forces daily re-login
   const sessionToken = await signSession(opts.companyId, opts.role, maxAge)
@@ -61,6 +63,34 @@ async function setAuthCookies(
   }
   if (opts.operatorId) {
     response.cookies.set('operator_id', opts.operatorId, { path: '/', maxAge })
+  }
+
+  // Last-seen cookie — display-only trust line on next login. Capacity:
+  // 1 year so it survives logout. The previous value (if any) was
+  // shown on this login; we now overwrite with "this session" for the
+  // next one. Soft-failure: any error parsing/signing logs and skips —
+  // login flow must not depend on this.
+  if (request) {
+    try {
+      const ua = uaBrief(request.headers.get('user-agent'))
+      const city =
+        request.headers.get('x-vercel-ip-city') ||
+        request.headers.get('x-vercel-ip-country-region') ||
+        ''
+      const cookieValue = await signLastSeen({
+        iso_ts: new Date().toISOString(),
+        city: decodeURIComponent(city),
+        ua_brief: ua,
+      })
+      response.cookies.set('last_seen', cookieValue, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      })
+    } catch (e) {
+      console.error('[last-seen] cookie write failed:', (e as Error).message)
+    }
   }
 
   // Audit log — login success
@@ -124,7 +154,7 @@ export async function POST(request: NextRequest) {
       role: 'admin',
       operatorName: 'tito',
       operatorId: adminOp?.id,
-    })
+    }, request)
     return response
   }
 
@@ -148,7 +178,7 @@ export async function POST(request: NextRequest) {
       role: 'broker',
       operatorName: 'renato',
       operatorId: brokerOp?.id,
-    })
+    }, request)
     return response
   }
 
@@ -186,7 +216,7 @@ export async function POST(request: NextRequest) {
         role: 'operator',
         operatorName: operatorMatch.full_name,
         operatorId: operatorMatch.id,
-      })
+      }, request)
 
       // Log operator login
       supabase.from('operator_actions').insert({
@@ -270,7 +300,7 @@ export async function POST(request: NextRequest) {
       role: 'client',
       operatorName: clientOperatorName || undefined,
       operatorId: clientOperatorId || undefined,
-    })
+    }, request)
     return response
   }
 
@@ -298,5 +328,8 @@ export async function DELETE() {
   response.cookies.delete('csrf_token')
   response.cookies.delete('operator_id')
   response.cookies.delete('operator_name')
+  // last_seen is intentionally NOT deleted on logout — it's the
+  // user's "we remember you" signal across sessions. It stays for
+  // 1 year unless the user clears cookies manually.
   return response
 }

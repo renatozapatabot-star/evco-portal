@@ -338,7 +338,7 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
     rows.push({
       annio_fecha_pago: yearOf(t.fecha_pago),
       aduana: t.aduana ?? null,
-      clave_pedimento: t.regimen ?? null, // regimen = pedimento clave (A1/IMD/ITE/etc.)
+      clave_pedimento: null, // TODO: source from at001 C001CVEDOC when available; régimen ≠ clave per Anexo 22 Apéndices 2 & 5
       fecha_pago: fmtDate(t.fecha_pago),
       proveedor: resolveProveedorName(
         factura?.cve_proveedor ?? null,

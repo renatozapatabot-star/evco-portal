@@ -1,476 +1,195 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { GlassCard } from '@/components/aguila/GlassCard'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
-import type { CatalogoRow, CatalogoFraccionGroup, CatalogoSummary } from '@/lib/catalogo/products'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import type { CatalogoRow } from '@/lib/catalogo/products'
+import { DataTable, type DataTableColumn } from '@/components/ui/data-table'
+import { formatNumber, formatCurrencyUSD } from '@/lib/format'
+import styles from './CatalogoTable.module.css'
 
 interface Props {
   rows: CatalogoRow[]
-  groups: CatalogoFraccionGroup[]
-  summary: CatalogoSummary
   query: string
-  mode: 'partes' | 'fracciones'
-  /** % of rows whose canonical truth comes from anexo24_parts (Formato 53). */
-  coveragePct?: number
-  /** Rows with fracción or descripción mismatches between GlobalPC + Formato 53. */
-  driftCount?: number
 }
 
-/** Small visual chip per row — audit trust signal. */
-function SourceChip({ row }: { row: CatalogoRow }) {
-  if (row.drift === 'only_in_globalpc') {
-    return (
-      <span title="No aparece en el último Formato 53 · revisar si es SKU activo" style={{
-        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'var(--portal-status-amber-bg)', border: '1px solid var(--portal-status-amber-ring)',
-        color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-      }}>Solo GlobalPC</span>
-    )
+const PAGE_SIZE = 50
+
+/**
+ * Client-side dedup: group rows by `${cve_producto}|${fraccion ?? ''}`
+ * and keep the first occurrence. If duplicates collide (same key),
+ * sum `veces_importado` and `valor_ytd_usd` so the row reflects all
+ * usages. Pure UI aggregation — no extra queries.
+ */
+function dedupRows(rows: CatalogoRow[]): CatalogoRow[] {
+  const map = new Map<string, CatalogoRow>()
+  for (const r of rows) {
+    const key = `${r.cve_producto ?? ''}|${r.fraccion ?? ''}`
+    const prev = map.get(key)
+    if (!prev) {
+      map.set(key, { ...r })
+    } else {
+      prev.veces_importado = (prev.veces_importado ?? 0) + (r.veces_importado ?? 0)
+      prev.valor_ytd_usd = (prev.valor_ytd_usd ?? 0) + (r.valor_ytd_usd ?? 0)
+    }
   }
-  if (row.drift === 'fraccion_mismatch') {
-    return (
-      <span title={`Fracción en GlobalPC difiere del Formato 53 · canónica: ${row.fraccion}`} style={{
-        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'var(--portal-status-red-bg)', border: '1px solid var(--portal-status-red-ring)',
-        color: 'var(--portal-status-red-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-      }}>Fracción no coincide</span>
-    )
-  }
-  if (row.drift === 'description_mismatch') {
-    return (
-      <span title={`Nombre en GlobalPC difiere del Formato 53 · canónico: ${row.merchandise}`} style={{
-        display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-        background: 'var(--portal-status-amber-bg)', border: '1px solid var(--portal-status-amber-ring)',
-        color: 'var(--portal-status-amber-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-      }}>Nombre difiere</span>
-    )
-  }
-  return (
-    <span title="Respaldado por el Formato 53 oficial del SAT" style={{
-      display: 'inline-block', padding: '2px 7px', borderRadius: 6,
-      background: 'var(--portal-status-green-bg)', border: '1px solid var(--portal-status-green-ring)',
-      color: 'var(--portal-status-green-fg)', fontSize: 'var(--aguila-fs-label, 10px)', fontWeight: 600, letterSpacing: '0.04em',
-    }}>Anexo 24 ✓</span>
-  )
+  return Array.from(map.values())
 }
 
-function fmtUsd(n: number | null): string {
-  if (n == null) return '—'
-  return `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-}
-
-function fmtDate(iso: string | null): string {
-  if (!iso) return ''
-  try {
-    return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Chicago' })
-  } catch { return '' }
-}
-
-export function CatalogoTable({ rows, groups, summary, query, mode, coveragePct, driftCount }: Props) {
+export function CatalogoTable({ rows, query }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(query)
+  const [page, setPage] = useState(0)
   const [pending, startTransition] = useTransition()
+
+  const deduped = useMemo(() => dedupRows(rows), [rows])
+  const totalPages = Math.max(1, Math.ceil(deduped.length / PAGE_SIZE))
+  const paged = useMemo(
+    () => deduped.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [deduped, page],
+  )
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     const params = new URLSearchParams(searchParams.toString())
     if (search.trim()) params.set('q', search.trim())
     else params.delete('q')
+    setPage(0)
     startTransition(() => router.push(`/catalogo?${params.toString()}`))
   }
 
-  function setMode(nextMode: 'partes' | 'fracciones') {
-    const params = new URLSearchParams(searchParams.toString())
-    if (nextMode === 'partes') params.set('view', 'partes')
-    else params.delete('view')
-    startTransition(() => router.push(`/catalogo?${params.toString()}`))
-  }
-
-  const showing = mode === 'fracciones' ? groups.length : rows.length
+  const columns: DataTableColumn<CatalogoRow>[] = [
+    {
+      key: 'producto',
+      header: 'Producto',
+      width: 140,
+      mono: true,
+      render: (r) => r.cve_producto ? (
+        <Link
+          href={`/catalogo/partes/${encodeURIComponent(r.cve_producto)}`}
+          className="font-semibold text-[var(--accent-silver-bright,#E8EAED)] no-underline hover:underline underline-offset-2"
+        >
+          {r.cve_producto}
+        </Link>
+      ) : <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      render: (r) => {
+        const d = r.merchandise || r.descripcion
+        return d ? (
+          <span className="block truncate max-w-[360px] text-[var(--text-primary)] font-medium" title={d}>{d}</span>
+        ) : <span className="text-[var(--text-muted)]">—</span>
+      },
+    },
+    {
+      key: 'fraccion',
+      header: 'Fracción',
+      width: 130,
+      mono: true,
+      render: (r) => r.fraccion ? (
+        <span>{r.fraccion}</span>
+      ) : (
+        <span className={styles.fraccionPending}>Pendiente IA</span>
+      ),
+    },
+    {
+      key: 'proveedor',
+      header: 'Proveedor',
+      width: 200,
+      render: (r) => r.proveedor_nombre ? (
+        <span className="block truncate max-w-[220px]" title={r.proveedor_nombre}>{r.proveedor_nombre}</span>
+      ) : <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'pais',
+      header: 'País',
+      width: 90,
+      render: (r) => r.pais_origen || <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'importado',
+      header: 'Importado',
+      width: 100,
+      numeric: true,
+      render: (r) => r.veces_importado > 0
+        ? formatNumber(r.veces_importado)
+        : <span className="text-[var(--text-muted)]">—</span>,
+    },
+    {
+      key: 'valor',
+      header: 'Valor',
+      width: 160,
+      numeric: true,
+      render: (r) => r.valor_ytd_usd != null && r.valor_ytd_usd > 0
+        ? formatCurrencyUSD(r.valor_ytd_usd)
+        : <span className="text-[var(--text-muted)]">—</span>,
+    },
+  ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Pre-audit consolidation summary — now includes Formato 53 coverage. */}
-      <GlassCard padding="14px 18px">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14 }}>
-          <SummaryStat label="Partes activas" value={summary.total_products.toLocaleString('es-MX')} />
-          <SummaryStat label="Fracciones" value={summary.fraccion_count.toLocaleString('es-MX')} />
-          <SummaryStat
-            label="Sin clasificar"
-            value={summary.unclassified_count.toLocaleString('es-MX')}
-            tone={summary.unclassified_count > 0 ? 'amber' : undefined}
-          />
-          {coveragePct != null && (
-            <SummaryStat
-              label="Cobertura Formato 53"
-              value={`${coveragePct}%`}
-              tone={coveragePct < 80 ? 'amber' : undefined}
-              hint={coveragePct >= 95 ? 'respaldadas por SAT' : coveragePct >= 80 ? 'mayormente cubiertas' : 'subir Formato 53 más reciente'}
-            />
-          )}
-          {driftCount != null && driftCount > 0 && (
-            <SummaryStat
-              label="Con drift"
-              value={driftCount.toLocaleString('es-MX')}
-              tone="amber"
-              hint="diferencia GlobalPC vs SAT"
-            />
-          )}
-          <SummaryStat
-            label="A consolidar"
-            value={summary.consolidation_candidates.toLocaleString('es-MX')}
-            tone={summary.consolidation_candidates > 0 ? 'amber' : undefined}
-            hint={summary.consolidation_candidates > 0 ? `${summary.dedup_pool.toLocaleString('es-MX')} variantes duplicadas` : undefined}
-          />
-        </div>
-      </GlassCard>
-
-      <form onSubmit={onSubmit} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+    <div className={styles.shell}>
+      <form onSubmit={onSubmit} className={styles.toolbar}>
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por descripción, fracción o clave..."
+          placeholder="Buscar por descripción, fracción o número de parte…"
           aria-label="Buscar en catálogo"
-          style={{
-            flex: '1 1 280px', minHeight: 60, padding: '0 14px',
-            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 12, color: 'rgba(255,255,255,0.92)', fontSize: 'var(--aguila-fs-section)', outline: 'none',
-          }}
+          className={styles.search}
         />
-        <button
-          type="submit"
-          disabled={pending}
-          style={{
-            minHeight: 60, padding: '0 20px', borderRadius: 12,
-            background: 'rgba(192,197,206,0.12)', color: 'var(--portal-fg-1)',
-            border: '1px solid rgba(192,197,206,0.25)',
-            fontSize: 'var(--aguila-fs-section)', fontWeight: 700,
-            cursor: pending ? 'wait' : 'pointer',
-          }}
-        >
+        <button type="submit" disabled={pending} className={styles.btn}>
           {pending ? 'Buscando…' : 'Buscar'}
         </button>
-        <ModeToggle mode={mode} onChange={setMode} pending={pending} />
-        <span className="font-mono" style={{ fontSize: 'var(--aguila-fs-compact)', color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>
-          {showing.toLocaleString('es-MX')} {mode === 'fracciones' ? (showing === 1 ? 'fracción' : 'fracciones') : (showing === 1 ? 'producto' : 'productos')}
+        <span className={styles.count}>
+          {formatNumber(deduped.length)} {deduped.length === 1 ? 'registro' : 'registros'}
         </span>
       </form>
 
-      {mode === 'fracciones' ? (
-        groups.length === 0 ? (
-          <CalmEmptyState
-            icon="package"
-            title={query ? 'Sin coincidencias' : 'Tu catálogo aparecerá aquí'}
-            message={query
-              ? 'Prueba con otra descripción, fracción o clave.'
-              : 'Una vez clasifiquemos tus productos, podrás ver el historial completo.'}
-          />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {groups.map((g) => <FraccionGroupCard key={g.fraccion} group={g} />)}
-          </div>
-        )
+      {paged.length === 0 ? (
+        <div className={styles.empty}>
+          {query
+            ? `Sin coincidencias para "${query}".`
+            : 'Tu catálogo aparecerá aquí cuando se sincronicen partes.'}
+        </div>
       ) : (
-        rows.length === 0 ? (
-          <CalmEmptyState
-            icon="package"
-            title={query ? 'Sin coincidencias' : 'Tu catálogo aparecerá aquí'}
-            message={query
-              ? 'Prueba con otra descripción, fracción o clave.'
-              : 'Los productos aparecerán conforme clasifiquemos tus embarques.'}
-          />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {rows.map((r) => <CatalogoRowCard key={r.id} row={r} />)}
-          </div>
-        )
+        <DataTable
+          columns={columns}
+          data={paged}
+          rowKey={(r) => r.id}
+          ariaLabel="Catálogo de partes"
+          mobileMinWidth={900}
+        />
+      )}
+
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <span className={styles.paginationInfo}>
+            Página {page + 1} de {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={page === 0}
+            onClick={() => setPage((p) => p - 1)}
+            aria-label="Página anterior"
+            className={styles.paginationBtn}
+          >
+            <ChevronLeft size={16} aria-hidden />
+          </button>
+          <button
+            type="button"
+            disabled={page >= totalPages - 1}
+            onClick={() => setPage((p) => p + 1)}
+            aria-label="Página siguiente"
+            className={styles.paginationBtn}
+          >
+            <ChevronRight size={16} aria-hidden />
+          </button>
+        </div>
       )}
     </div>
-  )
-}
-
-function ModeToggle({ mode, onChange, pending }: { mode: 'partes' | 'fracciones'; onChange: (m: 'partes' | 'fracciones') => void; pending: boolean }) {
-  return (
-    <div role="tablist" aria-label="Vista del catálogo" style={{
-      display: 'inline-flex', padding: 4, borderRadius: 12,
-      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(192,197,206,0.15)',
-    }}>
-      <ModeTab label="Por fracción" active={mode === 'fracciones'} onClick={() => onChange('fracciones')} disabled={pending} />
-      <ModeTab label="Partes" active={mode === 'partes'} onClick={() => onChange('partes')} disabled={pending} />
-    </div>
-  )
-}
-
-function ModeTab({ label, active, onClick, disabled }: { label: string; active: boolean; onClick: () => void; disabled: boolean }) {
-  return (
-    <button type="button" role="tab" aria-selected={active} onClick={onClick} disabled={disabled}
-      style={{
-        // 60 px minimum tap target (CLAUDE.md mobile rule). Horizontal
-        // padding kept proportional so the label doesn't feel cramped.
-        minHeight: 60, minWidth: 88, padding: '0 20px', border: 'none', borderRadius: 10,
-        background: active ? 'rgba(192,197,206,0.14)' : 'transparent',
-        color: active ? 'var(--portal-fg-1)' : 'rgba(255,255,255,0.5)',
-        fontSize: 'var(--aguila-fs-compact)', fontWeight: 700, letterSpacing: '0.04em',
-        cursor: disabled ? 'wait' : 'pointer', textTransform: 'uppercase',
-      }}
-    >
-      {label}
-    </button>
-  )
-}
-
-function SummaryStat({ label, value, tone, hint }: { label: string; value: string; tone?: 'amber'; hint?: string }) {
-  const color = tone === 'amber' ? 'var(--portal-status-amber-fg)' : 'var(--portal-fg-1)'
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
-        {label}
-      </span>
-      <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1.2 }}>{value}</span>
-      {hint && <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>{hint}</span>}
-    </div>
-  )
-}
-
-function FraccionGroupCard({ group }: { group: CatalogoFraccionGroup }) {
-  const topSuppliers = group.supplier_names.slice(0, 4)
-  const extra = Math.max(0, group.supplier_names.length - topSuppliers.length)
-  return (
-    <GlassCard href={`/catalogo/fraccion/${encodeURIComponent(group.fraccion)}`}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(160px, 1fr)', gap: 16, alignItems: 'start' }}>
-        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div>
-            <p style={{
-              margin: 0, fontSize: 'var(--aguila-fs-section)', fontWeight: 600,
-              color: 'rgba(255,255,255,0.92)', lineHeight: 1.35,
-              overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-            }}>
-              {group.primary_descripcion}
-            </p>
-            <p style={{ margin: '4px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.5)' }}>
-              {group.variant_count} variante{group.variant_count === 1 ? '' : 's'} · {group.total_imports.toLocaleString('es-MX')} importación{group.total_imports === 1 ? '' : 'es'}
-            </p>
-          </div>
-          {topSuppliers.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {topSuppliers.map((s) => (
-                <span key={s} title={s} style={{
-                  fontSize: 'var(--aguila-fs-meta)', padding: '3px 10px', borderRadius: 999,
-                  background: 'rgba(192,197,206,0.08)', border: '1px solid rgba(192,197,206,0.18)',
-                  color: 'rgba(255,255,255,0.8)', maxWidth: 220,
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>{s}</span>
-              ))}
-              {extra > 0 && <span style={{ fontSize: 'var(--aguila-fs-meta)', padding: '3px 10px', color: 'rgba(255,255,255,0.5)' }}>+{extra} proveedor{extra === 1 ? '' : 'es'}</span>}
-            </div>
-          )}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-          <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>Fracción</p>
-          <p className="font-mono" style={{ margin: 0, fontSize: 'var(--aguila-fs-headline)', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--portal-fg-1)', textAlign: 'right' }}>{group.fraccion}</p>
-          {group.variant_count >= 5 && (
-            <span style={{ fontSize: 'var(--aguila-fs-label)', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--portal-status-amber-fg)', textTransform: 'uppercase' }}>Consolidar</span>
-          )}
-        </div>
-      </div>
-    </GlassCard>
-  )
-}
-
-function CatalogoRowCard({ row }: { row: CatalogoRow }) {
-  // Right-edge "Ver ficha →" chip drills into /catalogo/partes/[cve].
-  // We don't wrap the whole card because the card already has nested
-  // Links (embarque chip, "Sin clasificar") that'd create invalid HTML
-  // as anchor-in-anchor. Per the drilldown requirement: a dedicated
-  // 60px tap target on the row.
-  return (
-    <GlassCard>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 2fr) minmax(160px, 1fr)',
-          gap: 16,
-          alignItems: 'start',
-        }}
-      >
-        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 'var(--aguila-fs-section)',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.92)',
-                  lineHeight: 1.35,
-                  overflow: 'hidden',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                {row.merchandise || row.descripcion}
-              </p>
-              <SourceChip row={row} />
-            </div>
-            {row.cve_producto && (
-              <p
-                className="font-mono"
-                style={{ margin: '2px 0 0', fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.45)' }}
-              >
-                {row.cve_producto}
-              </p>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 'var(--aguila-fs-compact)' }}>
-            {row.proveedor_nombre && (
-              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Proveedor
-                </span>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>{row.proveedor_nombre}</span>
-              </div>
-            )}
-            {row.pais_origen && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Origen
-                </span>
-                <span style={{ color: 'rgba(255,255,255,0.85)' }}>{row.pais_origen}</span>
-              </div>
-            )}
-            {row.veces_importado > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Importado
-                </span>
-                <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                  {row.veces_importado}×
-                </span>
-              </div>
-            )}
-            {row.valor_ytd_usd != null && row.valor_ytd_usd > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', fontSize: 'var(--aguila-fs-label)', letterSpacing: '0.08em' }}>
-                  Valor
-                </span>
-                <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                  {fmtUsd(row.valor_ytd_usd)} USD
-                </span>
-              </div>
-            )}
-          </div>
-
-          {row.ultimo_cve_trafico ? (
-            <Link
-              href={`/embarques/${encodeURIComponent(row.ultimo_cve_trafico)}`}
-              style={{
-                alignSelf: 'flex-start',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                minHeight: 36,
-                padding: '0 12px',
-                background: 'rgba(234,179,8,0.1)',
-                border: '1px solid rgba(234,179,8,0.3)',
-                borderRadius: 999,
-                color: 'var(--portal-status-amber-fg)',
-                fontSize: 'var(--aguila-fs-compact)',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              <span className="font-mono">{row.ultimo_cve_trafico}</span>
-              {row.ultima_fecha_llegada && (
-                <span style={{ color: 'rgba(250,204,21,0.7)' }}>· {fmtDate(row.ultima_fecha_llegada)}</span>
-              )}
-              <span aria-hidden>→</span>
-            </Link>
-          ) : (
-            <span style={{ fontSize: 'var(--aguila-fs-meta)', color: 'rgba(255,255,255,0.4)' }}>Sin embarque reciente</span>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)' }}>
-            Fracción
-          </p>
-          {row.fraccion ? (
-            <p
-              className="font-mono"
-              style={{
-                margin: 0,
-                fontSize: 'var(--aguila-fs-headline)',
-                fontWeight: 800,
-                letterSpacing: '-0.01em',
-                color: 'var(--portal-fg-1)',
-                textAlign: 'right',
-              }}
-            >
-              {row.fraccion}
-            </p>
-          ) : (
-            <Link
-              href={`/clasificar?q=${encodeURIComponent(row.descripcion)}`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                minHeight: 44,
-                padding: '0 12px',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px dashed rgba(255,255,255,0.2)',
-                borderRadius: 10,
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 'var(--aguila-fs-compact)',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Sin clasificar · Clasificar →
-            </Link>
-          )}
-          {row.fraccion_source && (
-            <span style={{ fontSize: 'var(--aguila-fs-label)', color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
-              {row.fraccion_source.replace(/_/g, ' ')}
-            </span>
-          )}
-          {row.cve_producto && (
-            <Link
-              href={`/catalogo/partes/${encodeURIComponent(row.cve_producto)}`}
-              aria-label={`Ver ficha de ${row.descripcion}`}
-              style={{
-                marginTop: 4,
-                minHeight: 60,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                padding: '0 16px',
-                borderRadius: 12,
-                background: 'rgba(192,197,206,0.08)',
-                border: '1px solid rgba(192,197,206,0.22)',
-                color: 'var(--portal-fg-1)',
-                fontSize: 'var(--aguila-fs-compact)',
-                fontWeight: 600,
-                textDecoration: 'none',
-                letterSpacing: '0.02em',
-              }}
-            >
-              Ver ficha <span aria-hidden>→</span>
-            </Link>
-          )}
-        </div>
-      </div>
-    </GlassCard>
   )
 }

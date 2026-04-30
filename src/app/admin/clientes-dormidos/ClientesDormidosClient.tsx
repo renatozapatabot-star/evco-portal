@@ -22,6 +22,7 @@ import {
 } from '@/lib/design-system'
 import { fmtDate } from '@/lib/format-utils'
 import type { DormantClienteRecord } from '@/lib/dormant/detect'
+import { GlassCard } from '@/components/aguila'
 
 const MONO = 'var(--font-mono)'
 
@@ -120,15 +121,10 @@ export function ClientesDormidosClient({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Threshold control */}
-      <div
+      <GlassCard
+        tier="hero"
+        padding={20}
         style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER_HAIRLINE}`,
-          borderRadius: 20,
-          padding: 20,
-          boxShadow: GLASS_SHADOW,
           display: 'flex',
           alignItems: 'center',
           gap: 16,
@@ -178,7 +174,7 @@ export function ClientesDormidosClient({
         <span style={{ fontSize: 'var(--aguila-fs-compact)', color: TEXT_MUTED, fontFamily: MONO }}>
           {rows.length} de 50 máx · rango 7–60 días
         </span>
-      </div>
+      </GlassCard>
 
       {error ? (
         <div
@@ -197,17 +193,7 @@ export function ClientesDormidosClient({
       ) : null}
 
       {/* Table / empty */}
-      <div
-        style={{
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER_HAIRLINE}`,
-          borderRadius: 20,
-          boxShadow: GLASS_SHADOW,
-          overflow: 'hidden',
-        }}
-      >
+      <GlassCard tier="hero" padding={0} style={{ overflow: 'hidden' }}>
         {rows.length === 0 ? (
           <div style={{ padding: '48px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <div
@@ -289,7 +275,7 @@ export function ClientesDormidosClient({
             </table>
           </div>
         )}
-      </div>
+      </GlassCard>
 
       {modal ? (
         <div

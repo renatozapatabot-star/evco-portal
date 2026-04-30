@@ -17,6 +17,16 @@ import { isActionIntent } from '@/lib/action-intents'
 
 import { rateLimitDB } from '@/lib/rate-limit-db'
 import { getErrorMessage } from '@/lib/errors'
+import {
+  MI_CUENTA_CRUZ_MODE,
+  SAFE_CLIENT_TOOL_NAMES,
+  buildSafeClientCruzSystemPrompt,
+} from '@/lib/mi-cuenta/cruz-safe'
+import {
+  FEATURE_FLAG_OVERRIDE_COOKIE,
+  isFlagEffective,
+  parseOverrideCookie,
+} from '@/lib/admin/feature-flags'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || ''
 const supabase = createClient(
@@ -633,16 +643,43 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         return JSON.stringify({ count: data?.length, results: data })
       }
       case 'query_pedimentos': {
-        let query = supabase.from('globalpc_facturas').select('pedimento, referencia, proveedor, fecha_pago, valor_usd, dta, igi, iva, moneda')
-          .eq('cve_cliente', clientClave)
+        // Pedimento data lives on traficos (not globalpc_facturas). Real
+        // columns: pedimento, referencia_cliente, proveedores (text),
+        // fecha_pago, importe_total (USD), regimen, moneda (NOT on
+        // traficos — lives on facturas, skipped here). tmec filter uses
+        // predicted_tmec (model output). M16 phantom-sweep rewire.
+        let query = supabase.from('traficos').select('trafico, pedimento, referencia_cliente, proveedores, fecha_pago, importe_total, regimen, predicted_tmec, fecha_cruce, semaforo, aduana, patente')
+          .eq('company_id', companyId)
         if (input.pedimento_id) query = query.eq('pedimento', input.pedimento_id)
-        if (input.trafico) query = query.eq('referencia', input.trafico)
-        if (input.tmec_only) query = query.eq('igi', 0)
-        if (input.search) { const s = sanitizeIlike(input.search); query = query.or(`pedimento.ilike.%${s}%,proveedor.ilike.%${s}%`) }
-        query = query.order('fecha_pago', { ascending: false }).limit(input.limit || 10)
+        if (input.trafico) query = query.eq('trafico', input.trafico)
+        if (input.tmec_only) query = query.eq('predicted_tmec', true)
+        if (input.search) { const s = sanitizeIlike(input.search); query = query.or(`pedimento.ilike.%${s}%,referencia_cliente.ilike.%${s}%,trafico.ilike.%${s}%`) }
+        query = query.not('pedimento', 'is', null).order('fecha_pago', { ascending: false, nullsFirst: false }).limit(input.limit || 10)
         const { data, error } = await query
         if (error) return JSON.stringify({ error: error.message })
-        return JSON.stringify({ count: data?.length, results: data })
+        // Shape output for back-compat with downstream consumers — map
+        // proveedores (text) → proveedor, importe_total → valor_usd,
+        // referencia_cliente → referencia.
+        const shaped = (data ?? []).map((r: {
+          trafico: string | null; pedimento: string | null; referencia_cliente: string | null
+          proveedores: string | null; fecha_pago: string | null; importe_total: number | null
+          regimen: string | null; predicted_tmec: boolean | null; fecha_cruce: string | null
+          semaforo: number | null; aduana: string | null; patente: string | null
+        }) => ({
+          trafico: r.trafico,
+          pedimento: r.pedimento,
+          referencia: r.referencia_cliente,
+          proveedor: r.proveedores,
+          fecha_pago: r.fecha_pago,
+          valor_usd: r.importe_total,
+          regimen: r.regimen,
+          tmec: r.predicted_tmec,
+          fecha_cruce: r.fecha_cruce,
+          semaforo: r.semaforo,
+          aduana: r.aduana,
+          patente: r.patente,
+        }))
+        return JSON.stringify({ count: shaped.length, results: shaped })
       }
       case 'query_entradas': {
         let query = supabase.from('entradas').select('cve_entrada, trafico, descripcion_mercancia, fecha_llegada_mercancia, cantidad_bultos, peso_bruto, tiene_faltantes, mercancia_danada, recibido_por')
@@ -774,8 +811,14 @@ async function executeTool(name: string, input: Record<string, any>, clientCtx: 
         return JSON.stringify({ predictions: summary, recommendation: `Best bridge: ${summary[0]?.name || 'World Trade Bridge'}` })
       }
       case 'get_savings': {
-        const { data: facturas } = await supabase.from('globalpc_facturas').select('valor_usd, igi').eq('cve_cliente', clientClave).limit(5000)
-        const tmecOps = (facturas || []).filter((f: { valor_usd: number | null; igi: number | null }) => (f.igi || 0) === 0)
+        // T-MEC savings proxy: traficos with predicted_tmec=true get the
+        // 5% tariff savings credit (vs non-T-MEC). Derived from
+        // traficos.importe_total + predicted_tmec (not phantom
+        // facturas.valor_usd + .igi which don't exist on that table).
+        // M16 phantom-sweep rewire.
+        const { data: traficos } = await supabase.from('traficos').select('importe_total, predicted_tmec').eq('company_id', companyId).limit(5000)
+        const facturas = (traficos ?? []).map(t => ({ valor_usd: t.importe_total, igi: t.predicted_tmec ? 0 : 1 }))
+        const tmecOps = facturas.filter((f: { valor_usd: number | null; igi: number | null }) => (f.igi || 0) === 0)
         const tmecSavings = tmecOps.reduce((s: number, f) => s + (Number(f.valor_usd) || 0) * 0.05, 0)
         return JSON.stringify({
           tmec_operations: tmecOps.length, total_operations: facturas?.length || 0,
@@ -1437,7 +1480,35 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ message: 'Solicitud inválida.' }, { status: 400 })
     }
-    const { messages, context, sessionId } = parsed.data
+    const { messages, context, sessionId, mode } = parsed.data
+    const isSafeClientMode = mode === MI_CUENTA_CRUZ_MODE
+
+    // Safe-client mode = the /mi-cuenta/cruz surface. Belt + suspenders
+    // on top of the page-level gate: refuse if the feature flag is off
+    // for a client role, refuse any role that isn't client or internal.
+    // See .claude/rules/client-accounting-ethics.md + cruz-safe.ts.
+    if (isSafeClientMode) {
+      // Match the page-layer resolver exactly — env is the baseline,
+      // internal roles can also opt in via /admin/feature-flags (cookie
+      // override). Client role never honors the override, so a client
+      // session still sees env-only gating here.
+      const overrides = parseOverrideCookie(req.cookies.get(FEATURE_FLAG_OVERRIDE_COOKIE)?.value)
+      const safeFlagOn = isFlagEffective({
+        key: 'mi_cuenta_cruz_enabled',
+        overrides,
+        role: session.role,
+      })
+      const role = session.role
+      const INTERNAL = new Set(['admin', 'broker', 'operator', 'contabilidad', 'owner'])
+      const isClientRole = role === 'client'
+      const isInternalRole = INTERNAL.has(role)
+      if (!isClientRole && !isInternalRole) {
+        return NextResponse.json({ message: 'Acceso no disponible.' }, { status: 403 })
+      }
+      if (isClientRole && !safeFlagOn) {
+        return NextResponse.json({ message: 'Asistente no disponible.' }, { status: 403 })
+      }
+    }
 
     // Rate limiting: 20 queries per company per hour (persisted in Supabase)
     const rlKey = `cruz_chat:${companyId || sessionId || 'anonymous'}`
@@ -1472,11 +1543,25 @@ export async function POST(req: NextRequest) {
     const actionDetected = userMsgText ? isActionIntent(userMsgText) : false
     const actionLine = actionDetected ? '\n\nACCIÓN DETECTADA: El usuario parece solicitar una acción. Confirma antes de ejecutar.' : ''
 
-    // Filter tools by role — admin-only tools hidden from clients
+    // Filter tools by role — admin-only tools hidden from clients.
+    // When isSafeClientMode, we further intersect with the
+    // SAFE_CLIENT_TOOL_NAMES allowlist regardless of role — an internal
+    // QA session using the safe surface still only sees safe tools.
     const userRole = session.role
     const isInternal = userRole === 'broker' || userRole === 'admin'
     const ADMIN_TOOLS = new Set(['admin_fleet_summary', 'find_prospects', 'simulate_audit', 'integration_status', 'client_health', 'get_memory', 'check_risk_radar', 'search_knowledge'])
-    const filteredTools = isInternal ? TOOLS : TOOLS.filter(t => !ADMIN_TOOLS.has(t.name))
+    let filteredTools = isInternal ? TOOLS : TOOLS.filter(t => !ADMIN_TOOLS.has(t.name))
+    if (isSafeClientMode) {
+      filteredTools = filteredTools.filter(t => SAFE_CLIENT_TOOL_NAMES.has(t.name))
+    }
+
+    // Safe mode overrides the system prompt with the calm-tone
+    // /mi-cuenta variant and disables voice-mode shortening (the
+    // surface is a web chat, not a voice UX).
+    const effectiveVoiceMode = !isSafeClientMode && !!context?.voice_mode
+    const baseSystem = isSafeClientMode
+      ? buildSafeClientCruzSystemPrompt({ clientName: resolvedName, clientClave, patente, aduana })
+      : buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana })
 
     let response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1487,8 +1572,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: context?.voice_mode ? 512 : 4096,
-        system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine + voiceLine + memoryLine + actionLine,
+        max_tokens: effectiveVoiceMode ? 512 : 4096,
+        system: baseSystem + contextLine + (effectiveVoiceMode ? voiceLine : '') + memoryLine + actionLine,
         tools: filteredTools,
         messages,
       }),
@@ -1510,6 +1595,16 @@ export async function POST(req: NextRequest) {
       const toolUseBlocks = data.content.filter((b: { type: string }) => b.type === 'tool_use')
       const toolResults = await Promise.all(
         toolUseBlocks.map(async (block: { type: string; id: string; name: string; input: Record<string, unknown> }) => {
+          // Belt + suspenders — the filtered-tools list should have
+          // prevented this call, but refuse at the executor gate too
+          // so a tool regression never reaches client data.
+          if (isSafeClientMode && !SAFE_CLIENT_TOOL_NAMES.has(block.name)) {
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: block.id,
+              content: JSON.stringify({ error: `Tool ${block.name} no disponible en /mi-cuenta.` }),
+            }
+          }
           try {
             const content = await executeTool(block.name, block.input, { companyId, clientClave, clientName })
             return { type: 'tool_result' as const, tool_use_id: block.id, content }
@@ -1535,7 +1630,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4096,
-          system: buildSystemPrompt({ clientName: resolvedName, companyId, clientClave, patente, aduana }) + contextLine,
+          system: baseSystem + contextLine,
           tools: filteredTools,
           messages: loopMessages,
         }),
@@ -1592,7 +1687,7 @@ export async function POST(req: NextRequest) {
       input_tokens: inputTokens,
       output_tokens: outputTokens,
       cost_usd: (inputTokens * 0.003 + outputTokens * 0.015) / 1000,
-      action: 'cruz_chat',
+      action: isSafeClientMode ? 'mi_cuenta_cruz' : 'cruz_chat',
       client_code: clientClave || companyId,
       latency_ms: Date.now() - startTime,
     }).then(() => {}, (e) => console.error('[audit-log] cruz-chat cost:', e.message))

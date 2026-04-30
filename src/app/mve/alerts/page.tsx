@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ACCENT_SILVER, ACCENT_SILVER_DIM, GLOW_SILVER, BG_ELEVATED } from '@/lib/design-system'
+import { AguilaCheckbox } from '@/components/aguila'
 import { fmtDateTime } from '@/lib/format-utils'
 
 type Severity = 'info' | 'warning' | 'critical'
@@ -185,15 +186,11 @@ export default function MveAlertsPage() {
       )}
 
       <div className="flex items-center gap-4 mb-4 flex-wrap">
-        <label className="flex items-center gap-2 text-[12.5px]" style={{ color: ACCENT_SILVER_DIM }}>
-          <input
-            type="checkbox"
-            checked={showResolved}
-            onChange={(e) => setShowResolved(e.target.checked)}
-            style={{ minWidth: 16, minHeight: 16 }}
-          />
-          Mostrar resueltas
-        </label>
+        <AguilaCheckbox
+          label="Mostrar resueltas"
+          checked={showResolved}
+          onChange={(e) => setShowResolved(e.target.checked)}
+        />
         <input
           type="text"
           placeholder="Filtrar por cliente…"

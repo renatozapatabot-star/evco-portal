@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
-import { PageShell, GlassCard } from '@/components/aguila'
+import { PageShell, GlassCard, AguilaDataTable } from '@/components/aguila'
 import { ThemeSwitcher } from '@/components/portal'
 import { parsePortalTheme, PORTAL_THEME_COOKIE } from '@/lib/portal/theme'
 
@@ -22,7 +22,7 @@ export const revalidate = 30
 
 type Health = 'green' | 'amber' | 'red' | 'unknown'
 
-interface SyncTypeReading {
+type SyncTypeReading = {
   sync_type: string
   last_success_at: string | null
   minutes_ago: number | null
@@ -30,7 +30,7 @@ interface SyncTypeReading {
   health: Health
 }
 
-interface TableReading {
+type TableReading = {
   name: string
   rows_windowed: number
   rows_total: number
@@ -167,40 +167,51 @@ export default async function PipelineMonitorPage() {
         <h2 className="portal-eyebrow" style={{ marginBottom: 12, color: 'var(--portal-fg-3)' }}>
           Sync types · {readings.length}
         </h2>
-        {readings.length === 0 ? (
-          <p style={{ color: 'var(--portal-fg-4)', margin: 0 }}>Sin registros en sync_log.</p>
-        ) : (
-          <table className="portal-table" style={{ width: '100%' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left' }}>Sync</th>
-                <th style={{ textAlign: 'left' }}>Último éxito</th>
-                <th style={{ textAlign: 'right' }} className="num">Fallos desde</th>
-                <th style={{ textAlign: 'left' }}>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {readings.map((r) => (
-                <tr key={r.sync_type}>
-                  <td style={{ fontFamily: 'var(--portal-font-mono)' }}>{r.sync_type}</td>
-                  <td style={{ color: 'var(--portal-fg-3)' }}>{formatMinutes(r.minutes_ago)}</td>
-                  <td className="num" style={{ color: r.failed_since_last_success > 0 ? 'var(--portal-amber)' : 'var(--portal-fg-4)' }}>
-                    {r.failed_since_last_success}
-                  </td>
-                  <td>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      color: TONE[r.health], fontWeight: 500,
-                    }}>
-                      <span aria-hidden style={{ width: 8, height: 8, borderRadius: 999, background: TONE[r.health] }} />
-                      {r.health}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <AguilaDataTable
+          ariaLabel="Sync types por estado"
+          emptyState={<p style={{ color: 'var(--portal-fg-4)', margin: 0 }}>Sin registros en sync_log.</p>}
+          columns={[
+            {
+              key: 'sync_type',
+              label: 'Sync',
+              render: (r) => (
+                <span style={{ fontFamily: 'var(--portal-font-mono)' }}>{r.sync_type}</span>
+              ),
+            },
+            {
+              key: 'minutes_ago',
+              label: 'Último éxito',
+              render: (r) => (
+                <span style={{ color: 'var(--portal-fg-3)' }}>{formatMinutes(r.minutes_ago)}</span>
+              ),
+            },
+            {
+              key: 'failed_since_last_success',
+              label: 'Fallos desde',
+              type: 'number',
+              render: (r) => (
+                <span style={{ color: r.failed_since_last_success > 0 ? 'var(--portal-amber)' : 'var(--portal-fg-4)' }}>
+                  {r.failed_since_last_success}
+                </span>
+              ),
+            },
+            {
+              key: 'health',
+              label: 'Estado',
+              render: (r) => (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  color: TONE[r.health], fontWeight: 500,
+                }}>
+                  <span aria-hidden style={{ width: 8, height: 8, borderRadius: 999, background: TONE[r.health] }} />
+                  {r.health}
+                </span>
+              ),
+            },
+          ]}
+          rows={readings}
+          keyFor={(r) => r.sync_type}
+        />
       </GlassCard>
 
       <GlassCard tier="hero" style={{ marginBottom: 16 }}>
@@ -214,32 +225,38 @@ export default async function PipelineMonitorPage() {
         <h2 className="portal-eyebrow" style={{ marginBottom: 12, color: 'var(--portal-fg-3)' }}>
           Tablas base · {tables.length}
         </h2>
-        <table className="portal-table" style={{ width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>Tabla</th>
-              <th style={{ textAlign: 'right' }} className="num">Filas (estimado)</th>
-              <th style={{ textAlign: 'left' }}>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tables.map((t) => (
-              <tr key={t.name}>
-                <td style={{ fontFamily: 'var(--portal-font-mono)' }}>{t.name}</td>
-                <td className="num">{t.rows_total.toLocaleString('es-MX')}</td>
-                <td>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    color: TONE[t.health], fontWeight: 500,
-                  }}>
-                    <span aria-hidden style={{ width: 8, height: 8, borderRadius: 999, background: TONE[t.health] }} />
-                    {t.health}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <AguilaDataTable
+          ariaLabel="Tablas base — filas estimadas"
+          columns={[
+            {
+              key: 'name',
+              label: 'Tabla',
+              render: (t) => (
+                <span style={{ fontFamily: 'var(--portal-font-mono)' }}>{t.name}</span>
+              ),
+            },
+            {
+              key: 'rows_total',
+              label: 'Filas (estimado)',
+              type: 'number',
+            },
+            {
+              key: 'health',
+              label: 'Estado',
+              render: (t) => (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  color: TONE[t.health], fontWeight: 500,
+                }}>
+                  <span aria-hidden style={{ width: 8, height: 8, borderRadius: 999, background: TONE[t.health] }} />
+                  {t.health}
+                </span>
+              ),
+            },
+          ]}
+          rows={tables}
+          keyFor={(t) => t.name}
+        />
       </GlassCard>
     </PageShell>
   )

@@ -1,22 +1,16 @@
-import { Truck, FileText, FolderOpen, Book, Package, BarChart3, ClipboardList, Receipt } from 'lucide-react'
+import { FileText, FolderOpen, Book, Package, ClipboardList } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 /**
- * UI nav-tile union. Six canonical tiles, post-founder-override 2026-04-19
- * (tile #2 promoted from "Pedimentos" to "Contabilidad" per the active
- * override in `.claude/rules/founder-overrides.md`). Changing the list
- * requires Renato IV founder sign-off (recorded in the override log) —
- * the invariant is no longer "tile list frozen" but "tile list governed
- * by the override log".
+ * UI nav-tile union. Five-tile V1 Clean Visibility layout per founder
+ * override 2026-04-24. Client cockpit renders Entradas · Pedimentos ·
+ * Expediente · Catálogo · Anexo 24. Contabilidad removed from client
+ * nav (reachable by operator from /operador/inicio). Embarques reachable
+ * by cross-link only from the three core surfaces.
  *
- * Role-specific cockpits (trafico/bodega/contabilidad) populate extra
- * counts via additional keys below — these are NOT rendered as top-level
- * nav; they're extension slots for role-filtered counters.
- *
- * `reportes` and `pedimentos` keys remain in the union for back-compat
- * (old routes, old role-filter code, /pedimentos deep-links). The
- * `pedimentos` tile itself is retired from the nav grid but the route
- * stays live — reachable via CruzCommand, CRUZ AI tools, and deep links.
+ * Keys kept in the union for back-compat (legacy counts, role-filter
+ * code, deep links): `traficos`, `contabilidad`, `expedientes`, `reportes`,
+ * `clasificaciones`, `facturas`, `cartera`, `bodega`.
  */
 export type NavTileKey =
   | 'traficos'
@@ -45,76 +39,48 @@ export interface NavTileDef {
 export type NavRole = 'client' | 'operator' | 'owner' | 'admin' | 'broker' | string
 
 /**
- * Six cockpit nav tiles — post-override 2026-04-19.
+ * Five cockpit nav tiles — V1 Clean Visibility (2026-04-24).
  *
- * Identical order, labels, icons, descriptions across /inicio,
- * /operador/inicio, /admin/eagle. Role decides the counts; role does
- * NOT decide which cards appear.
+ * Client cockpit renders these five. Operator/owner cockpits compose
+ * from the same array but have additional deep-link access (via
+ * `/operador/inicio`) to Contabilidad, Embarques, and internal queues.
  *
- * Tile #2 = Contabilidad — routes to `/mi-cuenta` for clients (their
- * own A/R per `client-accounting-ethics.md`) and `/contabilidad/inicio`
- * for operator + owner (Anabel's broker cockpit). Resolve via
- * `resolveNavHref(tile, role)`.
+ * Order matters — ranked by daily-use frequency for the shipper:
+ *   1. Entradas        — "did my merchandise arrive?"
+ *   2. Pedimentos      — "did it clear customs?"
+ *   3. Expediente      — "what PDFs are on file?"
+ *   4. Catálogo        — "what parts / fractions are we on?"
+ *   5. Anexo 24        — "IMMEX inventory proof"
  *
- * Legacy /pedimentos/** routes stay alive behind deep-link access for
- * back-compat. Tile #6 remains Anexo 24 (SAT-audit truth document).
+ * Embarques is NOT a tile — reachable only via cross-link from the
+ * three core surfaces (a trafico is the parent record, not a primary
+ * lookup key for the shipper).
  */
 export const UNIFIED_NAV_TILES: readonly NavTileDef[] = [
-  { key: 'traficos',     href: '/embarques',          label: 'Tráficos',     icon: Truck,          description: 'Operaciones activas' },
-  { key: 'contabilidad', href: '/contabilidad/inicio', label: 'Contabilidad', icon: Receipt,        description: 'Saldo y facturas' },
-  { key: 'expedientes',  href: '/expedientes',        label: 'Expedientes',  icon: FolderOpen,     description: 'Documentos por operación' },
-  { key: 'catalogo',     href: '/catalogo',           label: 'Catálogo',     icon: Book,           description: 'Partes e historial' },
-  { key: 'entradas',     href: '/entradas',           label: 'Entradas',     icon: Package,        description: 'Control de almacén' },
-  { key: 'anexo24',      href: '/anexo-24',           label: 'Anexo 24',     icon: ClipboardList,  description: 'Control de inventario IMMEX' },
+  { key: 'entradas',     href: '/entradas',     label: 'Entradas',           icon: Package,        description: 'Llegadas al almacén' },
+  { key: 'pedimentos',   href: '/pedimentos',   label: 'Pedimentos',         icon: FileText,       description: 'Declaraciones aduanales' },
+  { key: 'expedientes',  href: '/expedientes',  label: 'Expediente Digital', icon: FolderOpen,     description: 'PDFs por operación' },
+  { key: 'catalogo',     href: '/catalogo',     label: 'Catálogo',           icon: Book,           description: 'Partes y fracciones' },
+  { key: 'anexo24',      href: '/anexo-24',     label: 'Anexo 24',           icon: ClipboardList,  description: 'Control IMMEX' },
 ] as const
 
 /**
- * Resolve the href for a nav tile given a role. Client role sees their
- * own A/R at /mi-cuenta (gated by NEXT_PUBLIC_MI_CUENTA_ENABLED); every
- * other role routes to the broker cockpit.
- *
- * When the client flag is OFF, the Contabilidad tile for clients routes
- * to /pedimentos — the pre-2026-04-19 destination — so Ursula's click
- * still lands on a usable surface instead of a redirect loop.
+ * Resolve the href for a nav tile given a role. V1 Clean Visibility
+ * uses the tile's declared href unconditionally — no role-aware
+ * remapping remains after the 2026-04-24 reset. Signature preserved
+ * for back-compat with existing callers.
  */
-export function resolveNavHref(tile: NavTileDef, role: NavRole): string {
-  if (tile.key === 'contabilidad' && role === 'client') {
-    const clientEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
-    return clientEnabled ? '/mi-cuenta' : '/pedimentos'
-  }
+export function resolveNavHref(tile: NavTileDef, _role: NavRole): string {
   return tile.href
 }
 
 /**
- * Returns a possibly-relabelled tile for a given role + env flag state.
- *
- * Contract: when a client lands on the Contabilidad tile AND the
- * NEXT_PUBLIC_MI_CUENTA_ENABLED flag is OFF, the tile renders AS
- * "Pedimentos" (the pre-override label/icon/description + route) so the
- * pre-flag UX is 100% preserved for clients. When the flag is ON, or
- * for non-client roles, the tile renders normally as Contabilidad.
- *
- * This is the integration point the approval gate rides on: Tito flips
- * the flag after walking through /mi-cuenta on preview, and clients
- * see the change only once approval has landed.
+ * Returns the tile as-declared. Signature preserved for back-compat;
+ * role-aware relabelling was retired with the V1 reset (2026-04-24).
  */
-export function resolveNavTile(tile: NavTileDef, role: NavRole): NavTileDef {
-  if (tile.key !== 'contabilidad' || role !== 'client') return tile
-  const clientEnabled = process.env.NEXT_PUBLIC_MI_CUENTA_ENABLED === 'true'
-  if (clientEnabled) return tile
-  return {
-    key: tile.key,
-    href: '/pedimentos',
-    label: 'Pedimentos',
-    icon: FileText,
-    description: 'Declaraciones aduanales',
-  }
+export function resolveNavTile(tile: NavTileDef, _role: NavRole): NavTileDef {
+  return tile
 }
-
-// Suppress unused-import warnings — retained for downstream consumers
-// that still reference these by name (legacy components, operator extras).
-void BarChart3
-void FileText
 
 export interface NavCellData {
   count: number | null

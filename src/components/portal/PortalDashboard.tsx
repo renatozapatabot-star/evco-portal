@@ -18,7 +18,7 @@ import {
   VizDocs,
   VizCatalog,
   VizWarehouseDock,
-  VizRing,
+  VizDonut,
 } from './viz'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 
@@ -52,6 +52,23 @@ export interface PortalDashboardProps {
 }
 
 const ICON_SIZE = 15
+
+/**
+ * First-message greeting the agent shows when the FAB opens /cruz.
+ * Mirrors `DEFAULT_HELLO` in `src/components/aguila/AsistenteButton.tsx`
+ * so the in-content "pregúntale al agente" link and this FAB land on
+ * the same greeting. Role-keyed.
+ */
+const AGENT_HELLO: Record<PortalDashboardRole, string> = {
+  client: '¿En qué te puedo apoyar hoy?',
+  operator: 'Listo para ayudar con el flujo operativo. ¿Qué necesitas?',
+  owner: 'Vista ejecutiva lista. ¿Qué necesitas revisar?',
+}
+
+function buildAgentHref(role: PortalDashboardRole): string {
+  const params = new URLSearchParams({ ctx: role, hello: AGENT_HELLO[role] })
+  return `/cruz?${params.toString()}`
+}
 
 function attachMonth(href: string, month?: string): string {
   if (!month) return href
@@ -134,8 +151,8 @@ export function PortalDashboard({
         lastCross={lastCross}
         searchPlaceholder={
           isClient
-            ? 'Busca un embarque, pedimento, o pregunta al Agente…'
-            : 'Busca un SKU, pedimento, embarque, Anexo 24…'
+            ? 'Buscar pedimento, embarque, expediente… o pregúntale al Agente'
+            : 'Buscar SKU, pedimento, embarque, Anexo 24…'
         }
       />
 
@@ -316,17 +333,7 @@ export function PortalDashboard({
                 : undefined
             }
             viz={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <VizRing pct={98} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: 'var(--portal-fg-2)' }}>
-                    Clasificación al día
-                  </div>
-                  <div className="portal-meta" style={{ color: 'var(--portal-fg-5)', marginTop: 2 }}>
-                    <span className="portal-num">98.8%</span>
-                  </div>
-                </div>
-              </div>
+              <VizDonut greenPct={98.8} redPct={1.2} size={72} label="63% clasificado" />
             }
             metric={fmt(navCounts.anexo24?.count ?? null, '0')}
             metricLabel="SKUs EN ANEXO"
@@ -341,7 +348,7 @@ export function PortalDashboard({
             by page-level wrappers; we don't re-render it here. */}
       </main>
 
-      <PortalAssistantFab onClick={openCmd} />
+      <PortalAssistantFab href={buildAgentHref(role)} />
       <PortalCommandPalette open={cmdOpen} onClose={closeCmd} />
     </div>
   )

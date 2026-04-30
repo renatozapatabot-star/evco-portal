@@ -18,13 +18,46 @@ export async function GET(req: NextRequest) {
   const trafico = req.nextUrl.searchParams.get('trafico')
   if (!trafico) return NextResponse.json({ error: 'Missing trafico param' }, { status: 400 })
 
-  // Get products for this trafico from globalpc_partidas
-  const { data: partidas } = await supabase
-    .from('globalpc_partidas')
-    .select('descripcion, fraccion, precio_unitario, cantidad')
+  // Get products for this trafico via the canonical 2-hop join:
+  //   facturas(cve_trafico) → folios
+  //   partidas(folio in)    → cve_producto + precio_unitario + cantidad
+  //   productos(cve_producto in) → descripcion + fraccion
+  // globalpc_partidas has no cve_trafico, descripcion, or fraccion columns
+  // (M15 phantom sweep).
+  const { data: facturas } = await supabase
+    .from('globalpc_facturas')
+    .select('folio')
     .eq('cve_trafico', trafico)
-
-  const items = partidas || []
+  const folios = (facturas ?? []).map(f => f.folio).filter((x): x is number => x != null)
+  type PartidaRow = { cve_producto: string | null; precio_unitario: number | null; cantidad: number | null }
+  let partidaRows: PartidaRow[] = []
+  if (folios.length > 0) {
+    const { data } = await supabase
+      .from('globalpc_partidas')
+      .select('cve_producto, precio_unitario, cantidad')
+      .in('folio', folios)
+    partidaRows = (data ?? []) as PartidaRow[]
+  }
+  const cves = Array.from(new Set(partidaRows.map(p => p.cve_producto).filter((x): x is string => !!x)))
+  const productMap = new Map<string, { descripcion: string | null; fraccion: string | null }>()
+  if (cves.length > 0) {
+    const { data: prods } = await supabase
+      .from('globalpc_productos')
+      .select('cve_producto, descripcion, fraccion')
+      .in('cve_producto', cves)
+    for (const p of (prods ?? []) as Array<{ cve_producto: string | null; descripcion: string | null; fraccion: string | null }>) {
+      if (p.cve_producto) productMap.set(p.cve_producto, { descripcion: p.descripcion, fraccion: p.fraccion })
+    }
+  }
+  const items = partidaRows.map(p => {
+    const prod = p.cve_producto ? productMap.get(p.cve_producto) : undefined
+    return {
+      descripcion: prod?.descripcion ?? '',
+      fraccion: prod?.fraccion ?? '',
+      precio_unitario: p.precio_unitario,
+      cantidad: p.cantidad,
+    }
+  })
   if (items.length === 0) {
     return NextResponse.json({ clean: true, anomalies: [], message: 'Sin partidas para este embarque' })
   }

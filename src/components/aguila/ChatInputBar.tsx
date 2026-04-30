@@ -14,6 +14,8 @@ interface ChatInputBarProps {
   onStartVoice: () => void
   onStopVoice: () => void
   onAbort?: () => void
+  /** Override the textarea placeholder (e.g. calm-tone for /mi-cuenta/cruz). */
+  placeholder?: string
 }
 
 export default function ChatInputBar({
@@ -25,6 +27,7 @@ export default function ChatInputBar({
   onStartVoice,
   onStopVoice,
   onAbort,
+  placeholder = 'Pregunta sobre embarques, puentes, impuestos...',
 }: ChatInputBarProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -49,7 +52,7 @@ export default function ChatInputBar({
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Pregunta sobre embarques, puentes, impuestos..."
+          placeholder={placeholder}
           rows={1}
           disabled={loading}
           style={{

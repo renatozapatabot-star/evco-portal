@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
     supabase.from('globalpc_facturas').select('*').eq('cve_trafico', safe).eq('company_id', scopedCompanyId),
     supabase.from('globalpc_partidas').select('*').eq('cve_trafico', safe).eq('company_id', scopedCompanyId),
     supabase.from('globalpc_proveedores').select('*').eq('company_id', scopedCompanyId).limit(100),
-    supabase.from('expediente_documentos').select('doc_type, file_url, nombre').eq('company_id', scopedCompanyId).or(`pedimento_id.eq.${safe},pedimento_id.eq.${safeSuffix}`),
+    // expediente_documentos uses file_name, not nombre (M15 phantom sweep).
+    supabase.from('expediente_documentos').select('doc_type, file_url, file_name').eq('company_id', scopedCompanyId).or(`pedimento_id.eq.${safe},pedimento_id.eq.${safeSuffix}`),
     supabase.from('pedimento_risk_scores').select('score, risk_factors').eq('trafico_id', trafico).eq('company_id', scopedCompanyId).single(),
     supabase.from('supplier_contacts').select('supplier_name, usmca_eligible').eq('company_id', scopedCompanyId).limit(200),
     fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('.supabase.co', '.supabase.co')}/rest/v1/`, { headers: {} }).catch(() => null),
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest) {
     risk_score: riskScore,
     risk_factors: riskFactors,
     documents: {
-      present: docs.map((d: { doc_type?: string; nombre?: string; file_url?: string }) => ({ type: d.doc_type, name: d.nombre, url: d.file_url })),
+      present: docs.map((d: { doc_type?: string; file_name?: string; file_url?: string }) => ({ type: d.doc_type, name: d.file_name, url: d.file_url })),
       missing: missingDocs.map(d => ({ type: d, label: DOC_LABELS[d] || d })),
     },
     ready_to_transmit: blockers.length === 0,

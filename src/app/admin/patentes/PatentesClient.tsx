@@ -2,10 +2,10 @@
 
 import { useMemo } from 'react'
 import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  BORDER,
   TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY,
 } from '@/lib/design-system'
-import { SectionHeader } from '@/components/aguila'
+import { SectionHeader, GlassCard } from '@/components/aguila'
 
 export interface PatenteRow {
   id: string
@@ -94,11 +94,12 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
             { label: 'Renovación patente', expiry: p.patent_renewal_date, sev: renew },
           ]
           return (
-            <section key={p.id} style={{
-              background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: 20,
-              padding: 24, backdropFilter: `blur(${GLASS_BLUR})`, boxShadow: GLASS_SHADOW,
-              opacity: p.active ? 1 : 0.5,
-            }}>
+            <GlassCard
+              key={p.id}
+              tier="hero"
+              padding={24}
+              style={{ opacity: p.active ? 1 : 0.5 }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', color: TEXT_MUTED, fontWeight: 700 }}>
@@ -162,7 +163,7 @@ export function PatentesClient({ initialRows }: { initialRows: PatenteRow[] }) {
                   {p.notes}
                 </div>
               )}
-            </section>
+            </GlassCard>
           )
         })}
       </div>

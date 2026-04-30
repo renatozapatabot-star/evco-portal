@@ -153,9 +153,10 @@ async function clientActiveTraficos(companyId: string): Promise<Item | null> {
 
 async function clientLastCrossing(companyId: string): Promise<Item | null> {
   try {
+    // traficos has `trafico` (the ref string) — `trafico_number` is a phantom.
     const { data } = await supabase
       .from('traficos')
-      .select('fecha_cruce, trafico_number')
+      .select('fecha_cruce, trafico')
       .eq('company_id', companyId)
       .not('fecha_cruce', 'is', null)
       .order('fecha_cruce', { ascending: false })
@@ -235,16 +236,17 @@ async function dormantClientsItems(): Promise<Item[]> {
       .gte('created_at', cutoff)
       .limit(2000)
     const activeIds = new Set((recent ?? []).map((r) => r.company_id).filter(Boolean))
+    // companies real columns: name (not razon_social), active (not is_active).
     const { data: companies } = await supabase
       .from('companies')
-      .select('company_id, razon_social')
-      .eq('is_active', true)
+      .select('company_id, name')
+      .eq('active', true)
       .limit(100)
     const dormant = (companies ?? []).filter((c) => !activeIds.has(c.company_id)).slice(0, 2)
     return dormant.map((c, i) => ({
       id: `dormant-${i}`,
       label: 'Sin movimiento 14d+',
-      value: String(c.razon_social ?? c.company_id ?? '—').slice(0, 24),
+      value: String(c.name ?? c.company_id ?? '—').slice(0, 24),
     }))
   } catch {
     return []

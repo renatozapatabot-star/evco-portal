@@ -13,8 +13,8 @@ import {
   ACCENT_SILVER,
   ACCENT_SILVER_DIM,
   TEXT_MUTED,
-  TEXT_PRIMARY,
 } from '@/lib/design-system'
+import { AguilaInput, AguilaSelect, AguilaTextarea } from '@/components/aguila'
 
 const BORDER_SILVER = 'rgba(192,197,206,0.22)'
 const BG_INPUT = 'rgba(255,255,255,0.045)'
@@ -68,30 +68,19 @@ export function TextField({
   maxLength,
 }: TextFieldProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <Label required={required}>{label}</Label>
-      <input
-        type={type}
-        value={value ?? ''}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoComplete={autoComplete}
-        maxLength={maxLength}
-        style={{
-          minHeight: 60,
-          padding: '0 14px',
-          background: BG_INPUT,
-          border: `1px solid ${BORDER_SILVER}`,
-          borderRadius: 10,
-          color: TEXT_PRIMARY,
-          fontSize: 'var(--aguila-fs-section)',
-          fontFamily: mono ? MONO_STACK : 'inherit',
-          outline: 'none',
-        }}
-      />
-    </div>
+    <AguilaInput
+      label={label}
+      required={required}
+      mono={mono}
+      type={type}
+      value={value ?? ''}
+      onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      disabled={disabled}
+      autoComplete={autoComplete}
+      maxLength={maxLength}
+    />
   )
 }
 
@@ -119,33 +108,22 @@ export function NumberField({
   disabled,
 }: NumberFieldProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <Label required={required}>{label}</Label>
-      <input
-        type="number"
-        value={value ?? ''}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          const v = e.target.value
-          onChange(v === '' ? undefined : Number(v))
-        }}
-        onBlur={onBlur}
-        min={min}
-        max={max}
-        step={step}
-        disabled={disabled}
-        style={{
-          minHeight: 60,
-          padding: '0 14px',
-          background: BG_INPUT,
-          border: `1px solid ${BORDER_SILVER}`,
-          borderRadius: 10,
-          color: TEXT_PRIMARY,
-          fontSize: 'var(--aguila-fs-section)',
-          fontFamily: MONO_STACK,
-          outline: 'none',
-        }}
-      />
-    </div>
+    <AguilaInput
+      label={label}
+      required={required}
+      mono
+      type="number"
+      value={value ?? ''}
+      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+        const v = e.target.value
+        onChange(v === '' ? undefined : Number(v))
+      }}
+      onBlur={onBlur}
+      min={min}
+      max={max}
+      step={step}
+      disabled={disabled}
+    />
   )
 }
 
@@ -170,36 +148,22 @@ export function SelectField<T extends string>({
   placeholder,
   disabled,
 }: SelectFieldProps<T>) {
+  const fullOptions = placeholder
+    ? [{ value: '' as T, label: placeholder }, ...options]
+    : options
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <Label required={required}>{label}</Label>
-      <select
-        value={value ?? ''}
-        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-          const v = e.target.value
-          onChange(v === '' ? undefined : (v as T))
-        }}
-        onBlur={onBlur}
-        disabled={disabled}
-        style={{
-          minHeight: 60,
-          padding: '0 14px',
-          background: BG_INPUT,
-          border: `1px solid ${BORDER_SILVER}`,
-          borderRadius: 10,
-          color: TEXT_PRIMARY,
-          fontSize: 'var(--aguila-fs-section)',
-          outline: 'none',
-        }}
-      >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </div>
+    <AguilaSelect
+      label={label}
+      required={required}
+      value={value ?? ''}
+      onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+        const v = e.target.value
+        onChange(v === '' ? undefined : (v as T))
+      }}
+      onBlur={onBlur}
+      disabled={disabled}
+      options={fullOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+    />
   )
 }
 
@@ -223,28 +187,15 @@ export function TextAreaField({
   disabled,
 }: TextAreaFieldProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <Label>{label}</Label>
-      <textarea
-        value={value ?? ''}
-        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        rows={rows}
-        disabled={disabled}
-        style={{
-          padding: 14,
-          background: BG_INPUT,
-          border: `1px solid ${BORDER_SILVER}`,
-          borderRadius: 10,
-          color: TEXT_PRIMARY,
-          fontSize: 'var(--aguila-fs-section)',
-          lineHeight: 1.5,
-          resize: 'vertical',
-          outline: 'none',
-        }}
-      />
-    </div>
+    <AguilaTextarea
+      label={label}
+      value={value ?? ''}
+      onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      rows={rows}
+      disabled={disabled}
+    />
   )
 }
 

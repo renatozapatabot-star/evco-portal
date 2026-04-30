@@ -32,13 +32,17 @@ export interface AsistenteButtonProps {
  *
  * Sits bottom-right, 60px touch target, composes inline glass chrome
  * (does NOT wrap GlassCard — sits outside card flow). Links to
- * `/mensajeria?ctx={roleTag}&hello={firstMessage}` so the chat surface
- * can prepend the role-specific first message to the system prompt.
+ * `/cruz?ctx={roleTag}&hello={firstMessage}` so the natural-language
+ * chat surface can prepend the role-specific first message to the
+ * system prompt. `/cruz` consumes the Phase 3 #1 agent tools
+ * (analyze_trafico, tenant_anomalies, etc.) + Phase 3 #4
+ * draft_mensajeria. Callers may pass `href='/mensajeria'` to keep
+ * the legacy thread-based chat destination.
  */
 export function AsistenteButton({
   roleTag,
   firstMessage,
-  href = '/mensajeria',
+  href = '/cruz',
   label = 'Asistente PORTAL',
 }: AsistenteButtonProps) {
   const hello = firstMessage ?? DEFAULT_HELLO[roleTag]

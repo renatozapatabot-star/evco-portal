@@ -441,14 +441,10 @@ function CompletenessRail({
   }
 
   return (
-    <div
+    <GlassCard
+      tier="hero"
+      padding={16}
       style={{
-        background: 'rgba(255,255,255,0.045)',
-        border: `1px solid ${BORDER_SILVER}`,
-        borderRadius: 20,
-        padding: 16,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
@@ -526,6 +522,6 @@ function CompletenessRail({
           )
         })}
       </ul>
-    </div>
+    </GlassCard>
   )
 }

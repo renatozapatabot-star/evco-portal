@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { csrfFetch } from '@/lib/client-config'
 import { ROUTABLE_EVENT_KINDS, EVENT_KIND_LABELS } from '@/lib/telegram/formatters'
+import { AguilaCheckbox } from '@/components/aguila'
 
 type RoutingRow = {
   id: string
@@ -180,25 +181,12 @@ export function NotificacionesClient({ role }: { role: string }) {
                     if (v && v !== row?.chat_id) void save(kind, { chat_id: v })
                   }}
                 />
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontSize: 'var(--aguila-fs-compact)',
-                    color: 'var(--portal-fg-4)',
-                    minHeight: 44,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={row?.enabled ?? false}
-                    disabled={!row?.chat_id}
-                    onChange={(e) => void save(kind, { enabled: e.currentTarget.checked })}
-                    style={{ width: 20, height: 20 }}
-                  />
-                  Activa
-                </label>
+                <AguilaCheckbox
+                  label="Activa"
+                  checked={row?.enabled ?? false}
+                  disabled={!row?.chat_id}
+                  onChange={(e) => void save(kind, { enabled: e.currentTarget.checked })}
+                />
                 <button
                   type="button"
                   onClick={() => void sendTest(kind)}

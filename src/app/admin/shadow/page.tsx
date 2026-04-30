@@ -6,9 +6,10 @@ import { createServerClient } from '@/lib/supabase-server'
 import { verifySession } from '@/lib/session'
 import { computeAgreementStats } from '@/lib/shadow-analysis'
 import {
-  ACCENT_SILVER, BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
+  ACCENT_SILVER, BORDER,
   TEXT_MUTED, TEXT_PRIMARY,
 } from '@/lib/design-system'
+import { GlassCard } from '@/components/aguila'
 import { HeroStrip, type HeroTile } from '@/app/embarques/[id]/legacy/_components/HeroStrip'
 import { AgreementChart } from './_components/AgreementChart'
 import { PageOpenTracker } from './_components/PageOpenTracker'
@@ -25,17 +26,7 @@ function getWeekAgoISO(): string {
 
 function GlassShell({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        background: BG_CARD,
-        backdropFilter: `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-        border: `1px solid ${BORDER}`,
-        borderRadius: 20,
-        padding: '16px 20px',
-        boxShadow: GLASS_SHADOW,
-      }}
-    >
+    <GlassCard tier="hero" padding="16px 20px">
       <div
         style={{
           fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: TEXT_MUTED,
@@ -46,7 +37,7 @@ function GlassShell({ title, children }: { title: string; children: React.ReactN
         {title}
       </div>
       {children}
-    </div>
+    </GlassCard>
   )
 }
 
@@ -145,16 +136,7 @@ export default async function AdminShadowPage() {
       </div>
 
       {stats7.insufficient ? (
-        <div style={{
-          background: BG_CARD,
-          backdropFilter: `blur(${GLASS_BLUR})`,
-          WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: '32px 24px',
-          boxShadow: GLASS_SHADOW,
-          textAlign: 'center',
-        }}>
+        <GlassCard tier="hero" padding="32px 24px" style={{ textAlign: 'center' }}>
           <div style={{
             fontSize: 'var(--aguila-fs-meta)', fontWeight: 700, color: ACCENT_SILVER,
             textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
@@ -167,7 +149,7 @@ export default async function AdminShadowPage() {
           <div style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_MUTED, fontFamily: 'var(--font-mono)' }}>
             Actual: {stats7.progress}/100
           </div>
-        </div>
+        </GlassCard>
       ) : (
         <HeroStrip tiles={heroTiles} />
       )}

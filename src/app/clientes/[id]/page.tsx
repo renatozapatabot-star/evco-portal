@@ -37,11 +37,14 @@ interface TraficoDbRow {
   company_id: string | null
 }
 
-interface PartidaDbRow {
+// PartidaDbRow removed post-M16: globalpc_partidas has no
+// fraccion/fraccion_arancelaria/descripcion/cve_trafico columns. The
+// fraccion histogram now derives directly from globalpc_productos (the
+// real home of fraccion + descripcion).
+interface ProductoDbRow {
+  cve_producto: string | null
   fraccion: string | null
-  fraccion_arancelaria: string | null
   descripcion: string | null
-  cve_trafico: string | null
 }
 
 interface DecisionDbRow {
@@ -53,7 +56,9 @@ interface DecisionDbRow {
 
 interface ProveedorDbRow {
   nombre: string | null
-  rfc: string | null
+  // globalpc_proveedores real column is id_fiscal (the RFC for MX
+  // suppliers + foreign tax ID for non-MX). `rfc` was a phantom (M16).
+  id_fiscal: string | null
   cve_proveedor: string | null
 }
 
@@ -159,11 +164,15 @@ export default async function ClienteDetailPage({
     supabase.from('traficos')
       .select('trafico, estatus, pedimento, importe_total, created_at, updated_at, fecha_llegada, company_id')
       .eq('company_id', clienteId).order('updated_at', { ascending: false }).limit(100),
-    supabase.from('globalpc_partidas')
-      .select('fraccion, fraccion_arancelaria, descripcion, cve_trafico')
-      .eq('company_id', clienteId).limit(2000),
+    // Fraccion histogram derives directly from productos (fraccion +
+    // descripcion live there, not on partidas). Limit 5000 to cover
+    // EVCO's ~14K classified products at top-fraccion resolution.
+    supabase.from('globalpc_productos')
+      .select('cve_producto, fraccion, descripcion')
+      .eq('company_id', clienteId).not('fraccion', 'is', null).limit(5000),
+    // id_fiscal is the real column (phantom rfc — M16 sweep).
     supabase.from('globalpc_proveedores')
-      .select('nombre, rfc, cve_proveedor')
+      .select('nombre, id_fiscal, cve_proveedor')
       .eq('company_id', clienteId).limit(100),
     supabase.from('operational_decisions')
       .select('id, decision_type, decision, created_at')
@@ -178,7 +187,7 @@ export default async function ClienteDetailPage({
   const ytdRows = (traficosYtdRes.data as TraficoDbRow[] | null) ?? []
   const ytdValue = ytdRows.reduce((acc, r) => acc + Number(r.importe_total ?? 0), 0)
   const allTraficos = (traficosAllRes.data as TraficoDbRow[] | null) ?? []
-  const partidas = (partidasRes.data as PartidaDbRow[] | null) ?? []
+  const productos = (partidasRes.data as ProductoDbRow[] | null) ?? []
   const proveedores = (proveedoresRes.error ? [] : (proveedoresRes.data as ProveedorDbRow[] | null) ?? [])
   const decisions = (decisionsRes.data as DecisionDbRow[] | null) ?? []
 
@@ -192,10 +201,12 @@ export default async function ClienteDetailPage({
     compliancePct = `${Math.min(100, pct)}%`
   }
 
-  // Fracciones histogram (top 20)
+  // Fracciones histogram (top 20) — counts distinct classified SKUs per
+  // fracción. Derived from globalpc_productos (the real home of the
+  // column), not partidas (which has no fraccion column).
   const fraccionMap = new Map<string, { count: number; descripcion: string | null }>()
-  for (const p of partidas) {
-    const key = (p.fraccion ?? p.fraccion_arancelaria ?? '').trim()
+  for (const p of productos) {
+    const key = (p.fraccion ?? '').trim()
     if (!key) continue
     const existing = fraccionMap.get(key)
     if (existing) {
@@ -240,9 +251,9 @@ export default async function ClienteDetailPage({
         </thead>
         <tbody>
           {proveedores.slice(0, 50).map((p, i) => (
-            <tr key={`${p.cve_proveedor ?? p.rfc ?? 'row'}-${i}`}>
+            <tr key={`${p.cve_proveedor ?? p.id_fiscal ?? 'row'}-${i}`}>
               <td style={{ padding: '8px 12px', color: TEXT_PRIMARY }}>{p.nombre ?? '—'}</td>
-              <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)', color: TEXT_MUTED }}>{p.rfc ?? '—'}</td>
+              <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)', color: TEXT_MUTED }}>{p.id_fiscal ?? '—'}</td>
             </tr>
           ))}
         </tbody>

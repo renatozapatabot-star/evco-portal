@@ -17,6 +17,8 @@ import { ErrorCard } from '@/components/ui/ErrorCard'
 import { useSupplierNames } from '@/hooks/use-supplier-names'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
+import { FreshnessBanner } from '@/components/aguila'
+import { useFreshness } from '@/hooks/use-freshness'
 
 interface TraficoRow {
   trafico: string
@@ -133,6 +135,7 @@ function TraficosContent() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const { getCached, setCache } = useSessionCache()
+  const freshness = useFreshness()
 
   // Lookup maps from aduanet_facturas, entradas, globalpc_partidas, globalpc_facturas, globalpc_proveedores
   const [facturasMap, setFacturasMap] = useState<Map<string, FacturaLookup>>(new Map())
@@ -416,6 +419,8 @@ function TraficosContent() {
           options={monthOptions}
         />
       </div>
+
+      {freshness && <div style={{ marginBottom: 12 }}><FreshnessBanner reading={freshness} /></div>}
 
       {fetchError && (
         <div style={{ marginBottom: 16 }}>

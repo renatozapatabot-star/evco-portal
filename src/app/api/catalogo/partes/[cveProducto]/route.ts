@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
 import { formatFraccion } from '@/lib/format/fraccion'
 import { resolveProveedorName } from '@/lib/proveedor-names'
+import { resolvePartidaLinks } from '@/lib/queries/partidas-trafico-link'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,9 +75,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
   // All follow-up queries are guarded — one failure shouldn't blank the
   // whole page. The base parte row is already loaded above.
   const [partidasRes, classificationsRes, ocasRes, tmecRes, supertitoRes] = await Promise.all([
+    // Real partidas schema — NO cve_trafico (M12 fix). Linkage to
+    // traficos goes through facturas.folio. See
+    // src/lib/queries/partidas-trafico-link.ts.
     supabase
       .from('globalpc_partidas')
-      .select('created_at, cantidad, precio_unitario, cve_proveedor, cve_trafico')
+      .select('created_at, cantidad, precio_unitario, cve_proveedor, folio')
       .eq('cve_producto', cveProducto)
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
@@ -116,19 +120,57 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
     cantidad: number | null
     precio_unitario: number | null
     cve_proveedor: string | null
-    cve_trafico: string | null
+    folio: number | null
   }
   const partidas = (partidasRes.data as PartidaLite[] | null) || []
 
-  // Derived: usage_timeline (first 20)
-  const uses_timeline = partidas.slice(0, 20).map((p) => ({
-    created_at: p.created_at,
-    trafico_ref: p.cve_trafico,
-    cantidad: p.cantidad,
-    umt: parteRow.umt,
-    precio_unitario: p.precio_unitario,
-    proveedor_clave: p.cve_proveedor,
-  }))
+  // Resolve the 2-hop join (partidas.folio → facturas → traficos) via
+  // the shared helper. Tenant-scoped internally.
+  const firstFortyPartidas = partidas.slice(0, 40)
+  const links = await resolvePartidaLinks(
+    supabase,
+    companyId,
+    firstFortyPartidas.map((p) => ({
+      folio: p.folio,
+      cve_proveedor: p.cve_proveedor,
+    })),
+  )
+
+  // Derived: usage_timeline (first 20), enriched
+  const uses_timeline = partidas.slice(0, 20).map((p) => {
+    const link = p.folio != null ? links.byFolio.get(p.folio) ?? null : null
+    return {
+      created_at: p.created_at,
+      trafico_ref: link?.cve_trafico ?? null,
+      pedimento: link?.pedimento ?? null,
+      fecha_cruce: link?.fecha_cruce ?? null,
+      fecha_llegada: link?.fecha_llegada ?? null,
+      semaforo: link?.semaforo ?? null,
+      cantidad: p.cantidad,
+      umt: parteRow.umt,
+      precio_unitario: p.precio_unitario,
+      proveedor_clave: p.cve_proveedor,
+    }
+  })
+
+  // Aggregate crossing health over the fetched window.
+  // semaforo: 0 = verde, 1 = amarillo, 2 = rojo (null = unknown)
+  let crossings_total = 0
+  let crossings_verde = 0
+  for (const enriched of uses_timeline) {
+    if (enriched.fecha_cruce) {
+      crossings_total += 1
+      if (enriched.semaforo === 0) crossings_verde += 1
+    }
+  }
+  const crossings_summary = {
+    total: crossings_total,
+    verde: crossings_verde,
+    pct_verde:
+      crossings_total > 0
+        ? Math.round((crossings_verde / crossings_total) * 100)
+        : null,
+  }
 
   // Derived: proveedores aggregate (top 5)
   const proveedorStats = new Map<string, { uses: number; priceSum: number; priceN: number; last: string | null }>()
@@ -243,6 +285,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cveProducto
         classifications: (classificationsRes.data || []) as Record<string, unknown>[],
         ocas: (ocasRes.data || []) as Record<string, unknown>[],
         uses_timeline,
+        crossings_summary,
         proveedores,
         cost_trend,
         supertito_stats,

@@ -24,6 +24,7 @@ import { CockpitErrorCard, CockpitSkeleton, FreshnessBanner, type CockpitHeroKPI
 import { readFreshness } from '@/lib/cockpit/freshness'
 import { computeSuccessRate } from '@/lib/cockpit/success-rate'
 import { InicioClientShell } from './InicioClientShell'
+import { DailyWorkflowsWidget } from '@/components/workflows/DailyWorkflowsWidget'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import { buildClientHeroTiles } from '@/lib/cockpit/quiet-season'
 import { fetchClientMensajeriaFeed, mensajeriaClientEnabled } from '@/lib/mensajeria/feed'
@@ -615,10 +616,23 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
     morningBriefing = briefingData as BriefingRow | null
   } catch { /* table missing or RLS denied — briefing feature dormant */ }
 
+  // When there's a recent crossing, surface its semáforo in-line so the
+  // subtitle reads "cruzó verde hace 3 días" instead of the plain "cruzó
+  // hace 3 días". The verde adjective lands as a micro-delight moment
+  // without adding a new component — pure copy enrichment. Fallbacks to
+  // the plain form when semaforo is null/unknown.
+  const lastCruceSemaforoWord: string | null =
+    lastCruce?.semaforo === 0
+      ? 'verde'
+      : lastCruce?.semaforo === 1
+        ? 'amarillo'
+        : lastCruce?.semaforo === 2
+          ? 'rojo'
+          : null
   const computedSummary = activeTraficos.length > 0
     ? `${activeTraficos.length} embarque${activeTraficos.length === 1 ? '' : 's'} en tránsito · Patente en movimiento`
     : lastCruzadoRow
-      ? `Último embarque · ${lastCruzadoRow.trafico} · cruzó ${daysAgoLabel(lastCruzadoRow.fecha_cruce)}`
+      ? `Último embarque · ${lastCruzadoRow.trafico} · cruzó${lastCruceSemaforoWord ? ` ${lastCruceSemaforoWord}` : ''} ${daysAgoLabel(lastCruzadoRow.fecha_cruce)}`
       : 'Sin embarques activos. Tus próximas operaciones aparecerán aquí.'
   const summaryLine = heroBuild.summaryLine ?? computedSummary
 
@@ -690,7 +704,28 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
       } : null}
       freshnessSlot={
         <>
-          {signals.failureCount >= 2 && (
+          {/*
+           * Demo-polish 2026-04-22 — the amber "Estamos revalidando…"
+           * partial-data banner is hidden for the EVCO launch. It fires
+           * when ≥2 soft-queries fail on render — legit during the PM2
+           * outage earlier today, but reads as an alert-bar next to
+           * Ursula's calm greeting. With PM2 back (globalpc_delta + 9
+           * other syncs green), the trigger condition is rare; when it
+           * DOES fire, it scares more than it helps.
+           *
+           * FreshnessBanner stays: fresh-mode renders as quiet silver
+           * microcopy ("Sincronizado hace 3 min") — the signal we
+           * actually want Ursula to read. Stale-mode remains load-
+           * bearing per .claude/rules/sync-contract.md.
+           *
+           * To re-enable: set `NEXT_PUBLIC_PARTIAL_DATA_BANNER=true` in
+           * Vercel env + redeploy. The humanizeFailedLabels helper +
+           * amber styling + dedup-against-stale rule are all intact;
+           * only the render is gated.
+           */}
+          {process.env.NEXT_PUBLIC_PARTIAL_DATA_BANNER === 'true'
+            && signals.failureCount >= 2
+            && !freshness.isStale && (
             <div
               role="status"
               aria-live="polite"
@@ -711,6 +746,11 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
             </div>
           )}
           <FreshnessBanner reading={freshness} />
+          {/* 3 Killer Daily Driver Workflows · shadow mode · EVCO + MAFESA only.
+              Renders null for other tenants; scope enforced in DailyWorkflowsWidget. */}
+          <div style={{ marginTop: 20 }}>
+            <DailyWorkflowsWidget companyId={session.companyId} role={session.role} />
+          </div>
         </>
       }
     />

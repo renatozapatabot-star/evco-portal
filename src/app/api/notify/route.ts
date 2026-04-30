@@ -31,12 +31,9 @@ export async function POST(request: NextRequest) {
   const session = await verifySession(request.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  // 1. Auth — broker or admin only
-  const userRole = request.cookies.get('user_role')?.value
-  if (!userRole) {
-    return NextResponse.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'No autenticado' } }, { status: 401 })
-  }
-  if (userRole !== 'broker' && userRole !== 'admin') {
+  // 1. Auth — broker or admin only. Role from HMAC session per
+  // baseline I20 (no forgeable user_role cookie reads).
+  if (session.role !== 'broker' && session.role !== 'admin') {
     return NextResponse.json({ data: null, error: { code: 'FORBIDDEN', message: 'Solo brokers pueden enviar notificaciones' } }, { status: 403 })
   }
 
@@ -51,7 +48,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { message, trafico_id, type } = parsed.data
-  const companyId = request.cookies.get('company_id')?.value ?? ''
+  const companyId = session.companyId
 
   // 3. Build Telegram message with context
   const typeLabels: Record<string, string> = {
@@ -76,7 +73,7 @@ export async function POST(request: NextRequest) {
       telegram_sent: sent,
       channel: 'telegram',
     },
-    actor: userRole,
+    actor: session.role,
     timestamp: new Date().toISOString(),
   }).then(() => {}, (e) => console.error('[audit-log] notify:', e.message))
 

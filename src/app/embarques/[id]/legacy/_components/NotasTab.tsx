@@ -6,6 +6,7 @@ import { ACCENT_SILVER, BORDER, GOLD, TEXT_MUTED, TEXT_PRIMARY, TEXT_SECONDARY }
 import { useToast } from '@/components/Toast'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { addTraficoNote } from '../actions'
+import { AguilaTextarea } from '@/components/aguila'
 
 export interface NoteRow {
   id: string
@@ -83,40 +84,15 @@ export function NotasTab({ traficoId, notes }: { traficoId: string; notes: NoteR
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
-        <label
-          htmlFor="nota-textarea"
-          style={{
-            display: 'block',
-            fontSize: 'var(--aguila-fs-meta)',
-            fontWeight: 700,
-            color: TEXT_MUTED,
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            marginBottom: 8,
-          }}
-        >
-          Nueva nota
-        </label>
-        <textarea
+        <AguilaTextarea
           id="nota-textarea"
+          label="Nueva nota"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Escribe aquí. Usa @companyId:role para mencionar a alguien."
           rows={3}
           maxLength={4000}
-          style={{
-            width: '100%',
-            minHeight: 80,
-            padding: 12,
-            background: 'rgba(0,0,0,0.3)',
-            color: TEXT_PRIMARY,
-            border: `1px solid ${BORDER}`,
-            borderRadius: 12,
-            fontSize: 'var(--aguila-fs-body)',
-            fontFamily: 'inherit',
-            resize: 'vertical',
-            outline: 'none',
-          }}
+          style={{ minHeight: 80 }}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 'var(--aguila-fs-meta)', color: TEXT_MUTED }}>{draft.length} / 4000</span>

@@ -1,50 +1,66 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+// PORTAL · /login — bundle-parity cinematic login surface (2026-04-24).
+// Ports screen-login.jsx from the Claude Design bundle: giant PORTAL
+// wordmark with pulsing emerald dot, living cartographic background,
+// green-glow contraseña input, 3-state Entrar button (idle → auth →
+// ok), LoginLiveWire rotating strip, Est. 1941 identity chip.
+//
+// Auth mechanism preserved unchanged: POST /api/auth {password} →
+// role-aware landing (admin/broker → /admin/eagle · operator →
+// /operador/inicio · else → /inicio) with ?stale=1 and ?next handling.
+
+import { Suspense, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   PortalLoginBackgroundLineMap,
   PortalLoginLiveWire,
 } from '@/components/portal'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
-import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--portal-ink-0)' }} />}>
+    <Suspense
+      fallback={
+        <div style={{ minHeight: '100vh', background: 'var(--portal-ink-0)' }} />
+      }
+    >
       <LoginContent />
     </Suspense>
   )
 }
 
+type Status = 'idle' | 'auth' | 'ok'
+
 function LoginContent() {
   const [password, setPassword] = useState('')
+  const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const [session, setSession] = useState<{ role: string; name: string } | null>(null)
-  const [mounted, setMounted] = useState(false)
-  const [entering, setEntering] = useState(false)
+  const [dots, setDots] = useState(0)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const role = getCookieValue('user_role')
-    if (role) {
-      setSession({ role, name: getCookieValue('company_name') ?? '' })
-    }
-    // Self-heal banner — when /inicio bounces a user with ?stale=1 because
-    // their session.companyId no longer maps to a companies row.
+    if (role) setSession({ role, name: getCookieValue('company_name') ?? '' })
     if (searchParams.get('stale') === '1') {
       setError('Tu sesión venció con un cambio de configuración. Vuelve a iniciar sesión.')
     }
-    requestAnimationFrame(() => setMounted(true))
   }, [searchParams])
+
+  useEffect(() => {
+    if (status !== 'auth') return
+    const i = setInterval(() => setDots(d => (d + 1) % 4), 280)
+    return () => clearInterval(i)
+  }, [status])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
+    if (password.length < 3 || status !== 'idle') return
     setError('')
+    setStatus('auth')
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
@@ -52,11 +68,10 @@ function LoginContent() {
         body: JSON.stringify({ password }),
       })
       if (res.ok) {
-        setEntering(true)
-        if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('cruz_just_entered', '1')
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('cruz_just_entered', '1')
+        }
         const next = searchParams.get('next')
-        // Role-aware landing — jump straight to the correct cockpit so
-        // admin/broker don't flash through / before the role redirect.
         let landing = '/'
         if (!next || !next.startsWith('/')) {
           try {
@@ -71,500 +86,447 @@ function LoginContent() {
         } else {
           landing = next
         }
-        await new Promise(resolve => setTimeout(resolve, 300))
+        setStatus('ok')
+        await new Promise(r => setTimeout(r, 450))
         router.push(landing)
         router.refresh()
       } else if (res.status === 429) {
-        // Rate limited — don't suggest "wrong password"; be honest.
+        setStatus('idle')
         setError('Demasiados intentos. Espera un minuto antes de intentar de nuevo.')
         setPassword('')
       } else {
+        setStatus('idle')
         setError('Código incorrecto. Contacta a Renato Zapata & Company.')
         setPassword('')
       }
     } catch {
+      setStatus('idle')
       setError('Error de conexión. Intenta de nuevo.')
     }
-    setLoading(false)
   }
 
-  const roleLabel = session?.role === 'broker'
-    ? 'Operador interno'
-    : session?.role === 'admin'
-      ? 'Administrador'
+  const canSubmit = password.length >= 3 && status === 'idle'
+  const roleLabel =
+    session?.role === 'broker' ? 'Agente'
+      : session?.role === 'admin' ? 'Admin'
+      : session?.role === 'operator' ? 'Operador'
       : 'Cliente'
 
   return (
-    <div className="login-page">
-      {/* Living background — animated US↔MX border with bridges, trucks,
-          and periodic pedimento-cleared pings. Ported from
-          .planning/design-handoff/cruz-portal/project/src/login-backgrounds.jsx
-          (Bg_LineMap, the final default). Sits at z-index:1 behind the
-          existing topo/glow/aura overlays + the form card. */}
-      <div className="login-bg-livingmap" aria-hidden="true">
+    <div
+      style={{
+        minHeight: '100vh',
+        background:
+          'radial-gradient(ellipse 60% 40% at 50% 50%, color-mix(in oklch, var(--portal-ink-1) 50%, var(--portal-ink-0)) 0%, var(--portal-ink-0) 70%)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+        color: 'var(--portal-fg-1)',
+      }}
+    >
+      {/* Living cartographic background (zIndex 0) */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      >
         <PortalLoginBackgroundLineMap />
       </div>
-      {/* Topo hairline overlay */}
-      <div className="login-topo" aria-hidden="true" />
-      {/* Subtle radial silver glow */}
-      <div className="login-glow" />
-      {/* Ambient drifting aura behind eagle */}
-      <div className="login-aura" aria-hidden="true" />
 
-      <div
-        className={`login-container${mounted && !entering ? ' is-entered' : ''}${entering ? ' is-exiting' : ''}`}
+      {/* Subtle grid anchor (zIndex 1) */}
+      <svg
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          opacity: 0.35,
+        }}
       >
-        {/* Editorial eyebrow — reference handoff adds this above the
-            wordmark so PORTAL reads as a named system within a house of
-            operations, not a free-floating brand. Mono micro uppercase,
-            wide tracking, heavily muted so it's presence-not-noise. */}
-        <p className="login-eyebrow" aria-label="Un sistema de Renato Zapata & Co.">
-          — UN SISTEMA DE RENATO ZAPATA & CO.
-        </p>
+        <defs>
+          <pattern id="portal-grid" width="64" height="64" patternUnits="userSpaceOnUse">
+            <path d="M64 0H0v64" fill="none" stroke="rgba(255,255,255,0.022)" strokeWidth="1" />
+          </pattern>
+          <radialGradient id="portal-grid-mask" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="white" stopOpacity="0" />
+            <stop offset="60%" stopColor="white" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="white" stopOpacity="0.3" />
+          </radialGradient>
+          <mask id="portal-grid-mask-m">
+            <rect width="100%" height="100%" fill="url(#portal-grid-mask)" />
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#portal-grid)" mask="url(#portal-grid-mask-m)" />
+      </svg>
 
-        {/* Wordmark-only lockup — Z monogram removed 2026-04-17 after
-            Tito's review ("tira la Z"). Wordmark stands alone in silver;
-            the tagline underneath carries the brand weight. */}
-        <p className="login-wordmark login-wordmark-hero" aria-label="PORTAL">PORTAL</p>
+      {/* Center vignette (zIndex 2) */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(ellipse 38% 50% at 50% 52%, color-mix(in oklch, var(--portal-ink-0) 70%, transparent) 0%, color-mix(in oklch, var(--portal-ink-0) 30%, transparent) 45%, transparent 75%)',
+        }}
+      />
 
-        {/* Corridor subtitle — reference pattern. Emerald on the Mexican
-            side signals "live route" without decoration. */}
-        <p className="login-corridor">
-          Laredo TX <span aria-hidden>↔</span>{' '}
-          <span className="login-corridor-mx">Nuevo Laredo TAMPS</span>
-        </p>
-
-        {/* Tagline */}
-        <p className="login-tagline">TOTAL VISIBILIDAD. SIN FRONTERAS.</p>
-
-        {/* Alive signal — matches the cockpit's "Datos en vivo" pill so
-            Ursula's first glance at the portal telegraphs "this is a
-            live system, it's awake and waiting for me." Green dot
-            breathes via .aguila-dot-pulse (gated by
-            prefers-reduced-motion in globals.css). */}
-        <div className="login-alive" role="status" aria-label="Sistema en línea">
-          <span aria-hidden className="login-alive-dot aguila-dot-pulse" />
-          <span className="login-alive-text">Sistema en línea · Patente 3596</span>
-        </div>
-
-        {/* Active session banner */}
-        {session && (
-          <div className="login-session-card">
-            <p className="login-session-label">Sesión activa</p>
-            <p className="login-session-name">{session.name || session.role}</p>
-            <p className="login-session-role">{roleLabel}</p>
-            <div className="login-session-actions">
-              <Link href="/" className="login-btn-silver">Ir al portal</Link>
-              <a href="/api/auth/logout" className="login-btn-outline">Cambiar cuenta</a>
-            </div>
+      <main
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 28px',
+          position: 'relative',
+          zIndex: 5,
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 440,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+          }}
+        >
+          {/* Quiet eyebrow */}
+          <div
+            style={{
+              fontFamily: 'var(--portal-font-mono)',
+              fontSize: 10,
+              letterSpacing: '0.32em',
+              color: 'var(--portal-fg-5)',
+              textTransform: 'uppercase',
+              paddingLeft: 'calc(14px + 22px + 0.2em)',
+              marginBottom: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              animation: 'portalFadeUp 900ms var(--portal-ease-out) 40ms both',
+            }}
+          >
+            <span style={{ width: 18, height: 1, background: 'var(--portal-line-3)' }} />
+            Un sistema de Renato Zapata &amp; Co.
           </div>
-        )}
 
-        {/* Glass form card */}
-        <div className="login-card">
-          {error && (
-            <div className="login-error shake-error">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="login-error-icon">
-                <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 5a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0V5zM8 11.5A.75.75 0 118 10a.75.75 0 010 1.5z" fill="var(--portal-status-red-fg)"/>
-              </svg>
-              <div>
-                <p className="login-error-text">{error}</p>
-                <p className="login-error-links">
-                  <a href="https://wa.me/19565551234" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                  {' · '}
-                  <a href="mailto:ai@renatozapata.com">Email</a>
-                </p>
+          {/* PORTAL wordmark with pulsing dot */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 22,
+              marginBottom: 6,
+              animation: 'portalFadeUp 900ms var(--portal-ease-out) 80ms both',
+            }}
+          >
+            <span style={{ position: 'relative', width: 14, height: 14, flexShrink: 0 }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: 999,
+                  background: 'var(--portal-green-2)',
+                  boxShadow: '0 0 16px var(--portal-green-glow)',
+                  animation: 'portalDotPulse 2.4s ease-in-out infinite',
+                }}
+              />
+              <span
+                style={{
+                  position: 'absolute',
+                  inset: -6,
+                  borderRadius: 999,
+                  border: '1px solid var(--portal-green-2)',
+                  opacity: 0.55,
+                  animation: 'portalPing 2.4s ease-out infinite',
+                }}
+              />
+              <span
+                style={{
+                  position: 'absolute',
+                  inset: -6,
+                  borderRadius: 999,
+                  border: '1px solid var(--portal-green-2)',
+                  opacity: 0.35,
+                  animation: 'portalPing 2.4s ease-out 1.2s infinite',
+                }}
+              />
+            </span>
+            <span
+              style={{
+                fontFamily: 'var(--portal-font-serif)',
+                fontSize: 'clamp(44px, 6.5vw, 68px)',
+                fontWeight: 400,
+                letterSpacing: '0.28em',
+                color: 'var(--portal-fg-1)',
+                textShadow: '0 0 32px color-mix(in oklch, var(--portal-green-2) 14%, transparent)',
+                lineHeight: 1,
+                paddingLeft: '0.2em',
+              }}
+            >
+              PORTAL
+            </span>
+          </div>
+
+          {/* Patente subtitle */}
+          <div
+            style={{
+              fontFamily: 'var(--portal-font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.28em',
+              color: 'var(--portal-fg-4)',
+              textTransform: 'uppercase',
+              paddingLeft: 'calc(14px + 22px + 0.2em)',
+              marginBottom: 20,
+              animation: 'portalFadeUp 900ms var(--portal-ease-out) 180ms both',
+            }}
+          >
+            Patente <span style={{ color: 'var(--portal-fg-2)' }}>3596</span> · Aduana{' '}
+            <span style={{ color: 'var(--portal-fg-2)' }}>240</span> ·{' '}
+            <span style={{ color: 'var(--portal-green-3)' }}>Laredo TX ↔ Nuevo Laredo TAMPS</span>
+          </div>
+
+          {/* Delicate divider */}
+          <div
+            style={{
+              height: 1,
+              width: '100%',
+              background:
+                'linear-gradient(90deg, transparent 0%, var(--portal-line-2) 30%, var(--portal-line-2) 70%, transparent 100%)',
+              marginBottom: 36,
+              animation: 'portalFadeUp 900ms var(--portal-ease-out) 260ms both',
+            }}
+          />
+
+          {/* Active session banner — short-circuits login when cookie present */}
+          {session && status === 'idle' && (
+            <div
+              style={{
+                marginBottom: 20,
+                padding: '14px 16px',
+                background: 'color-mix(in oklch, var(--portal-ink-1) 80%, transparent)',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+                border: '1px solid var(--portal-line-2)',
+                borderRadius: 'var(--portal-r-3)',
+                fontFamily: 'var(--portal-font-mono)',
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                color: 'var(--portal-fg-3)',
+              }}
+            >
+              <div style={{ color: 'var(--portal-fg-5)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.22em', fontSize: 10 }}>
+                Sesión activa
+              </div>
+              <div style={{ color: 'var(--portal-fg-1)', marginBottom: 10, fontSize: 14, letterSpacing: '0.04em' }}>
+                {session.name || session.role} · <span style={{ color: 'var(--portal-fg-3)' }}>{roleLabel}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <Link
+                  href="/"
+                  style={{
+                    padding: '8px 14px',
+                    background: 'var(--portal-green-2)',
+                    color: 'var(--portal-ink-0)',
+                    borderRadius: 'var(--portal-r-2)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    fontFamily: 'var(--portal-font-sans)',
+                  }}
+                >
+                  Continuar →
+                </Link>
+                <a
+                  href="/api/auth/logout"
+                  style={{
+                    padding: '8px 14px',
+                    border: '1px solid var(--portal-line-2)',
+                    color: 'var(--portal-fg-2)',
+                    borderRadius: 'var(--portal-r-2)',
+                    fontSize: 12,
+                    letterSpacing: '0.04em',
+                    fontFamily: 'var(--portal-font-sans)',
+                  }}
+                >
+                  Cambiar cuenta
+                </a>
               </div>
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="login-form" noValidate>
-            <div className="login-field">
-              <label htmlFor="login-code" className="login-label">CÓDIGO DE ACCESO</label>
-              <input
-                id="login-code"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Código de acceso"
-                required
-                autoFocus
-                className="login-input"
-                autoComplete="off"
-              />
-            </div>
+          <form
+            onSubmit={handleLogin}
+            style={{ width: '100%', animation: 'portalFadeUp 900ms var(--portal-ease-out) 320ms both' }}
+            noValidate
+          >
+            <label
+              htmlFor="portal-code"
+              style={{
+                display: 'block',
+                fontFamily: 'var(--portal-font-mono)',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.28em',
+                color: 'var(--portal-fg-4)',
+                textTransform: 'uppercase',
+                textAlign: 'left',
+                marginBottom: 12,
+                marginLeft: 2,
+              }}
+            >
+              Contraseña
+            </label>
+            <input
+              id="portal-code"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value.slice(0, 64))}
+              placeholder="········"
+              autoFocus
+              autoComplete="current-password"
+              disabled={status !== 'idle'}
+              style={{
+                width: '100%',
+                padding: '22px 22px',
+                background: 'color-mix(in oklch, var(--portal-ink-1) 80%, transparent)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                border: '1px solid ' + (password.length ? 'var(--portal-green-3)' : 'var(--portal-line-2)'),
+                borderRadius: 'var(--portal-r-4)',
+                fontFamily: 'var(--portal-font-sans)',
+                fontSize: 17,
+                fontWeight: 400,
+                letterSpacing: password.length ? '0.3em' : '0.01em',
+                textAlign: 'left',
+                color: 'var(--portal-fg-1)',
+                outline: 'none',
+                boxShadow: password.length
+                  ? '0 0 0 3px var(--portal-green-glow), 0 12px 40px -12px rgba(0,0,0,0.6)'
+                  : '0 12px 40px -12px rgba(0,0,0,0.6)',
+                transition: 'all var(--portal-dur-2) var(--portal-ease-out)',
+                boxSizing: 'border-box',
+                caretColor: 'var(--portal-green-2)',
+              }}
+            />
 
-            <button type="submit" disabled={loading || !password} className="login-submit">
-              <span>{loading ? 'Iniciando…' : 'Entrar'}</span>
-              {!loading && (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 8 }}>
-                  <path d="M3 8h10m-4-4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              style={{
+                width: '100%',
+                marginTop: 14,
+                padding: '18px 20px',
+                background: canSubmit
+                  ? 'var(--portal-green-2)'
+                  : 'color-mix(in oklch, var(--portal-ink-2) 80%, transparent)',
+                color: canSubmit ? 'var(--portal-ink-0)' : 'var(--portal-fg-5)',
+                border: '1px solid ' + (canSubmit ? 'var(--portal-green-2)' : 'var(--portal-line-2)'),
+                borderRadius: 'var(--portal-r-4)',
+                fontFamily: 'var(--portal-font-sans)',
+                fontSize: 15,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                cursor: canSubmit ? 'pointer' : 'not-allowed',
+                boxShadow: canSubmit
+                  ? '0 0 32px var(--portal-green-glow), 0 10px 30px -8px var(--portal-green-3)'
+                  : 'none',
+                transition: 'all var(--portal-dur-2) var(--portal-ease-out)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                minHeight: 60,
+              }}
+            >
+              {status === 'idle' && (
+                <>
+                  Entrar <span style={{ fontSize: 18 }}>→</span>
+                </>
               )}
-              {loading && <span className="login-spinner" />}
+              {status === 'auth' && <>Verificando{'.'.repeat(dots)}</>}
+              {status === 'ok' && <>✓ Acceso concedido</>}
             </button>
+
+            {error && (
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: '12px 14px',
+                  border: '1px solid color-mix(in oklch, var(--portal-red) 40%, transparent)',
+                  background: 'color-mix(in oklch, var(--portal-red) 6%, transparent)',
+                  borderRadius: 'var(--portal-r-3)',
+                  fontFamily: 'var(--portal-font-sans)',
+                  fontSize: 13,
+                  color: 'var(--portal-fg-2)',
+                  lineHeight: 1.4,
+                }}
+                role="alert"
+              >
+                {error}
+              </div>
+            )}
+
+            <PortalLoginLiveWire />
+
+            <div
+              style={{
+                marginTop: 18,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontFamily: 'var(--portal-font-mono)',
+                fontSize: 10,
+                letterSpacing: '0.22em',
+                color: 'var(--portal-fg-5)',
+                textTransform: 'uppercase',
+              }}
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <svg
+                  aria-hidden
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                TLS 1.3 · 2FA
+              </span>
+              <a
+                href="mailto:contacto@renatozapata.com?subject=Recuperar%20acceso%20PORTAL"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--portal-font-mono)',
+                  fontSize: 10,
+                  letterSpacing: '0.22em',
+                  color: 'var(--portal-fg-4)',
+                  textTransform: 'uppercase',
+                  textDecoration: 'none',
+                }}
+              >
+                ¿Olvidó su código?
+              </a>
+            </div>
           </form>
-
-          {/* LiveWire — rotating border-status strip below the form.
-              Ticks through 6 live metrics every 2.6s. */}
-          <PortalLoginLiveWire />
         </div>
-
-        {/* Footer identity */}
-        <p className="login-footer">Patente 3596 · Aduana 240 · Laredo TX · Est. 1941</p>
-      </div>
-
-      <style>{`
-        .login-page {
-          min-height: 100vh;
-          min-height: 100dvh;
-          background: #0A0A0C;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 32px 20px;
-          font-family: var(--font-sans);
-          position: relative;
-          overflow: hidden;
-        }
-        .login-topo {
-          position: absolute;
-          top: -10%;
-          right: -10%;
-          width: 70%;
-          height: 70%;
-          background-image: url('/brand/topo-hairline.svg');
-          background-repeat: no-repeat;
-          background-size: cover;
-          background-position: top right;
-          opacity: 0.15;
-          pointer-events: none;
-        }
-        .login-glow {
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, rgba(192,197,206,0.10) 0%, transparent 70%);
-          pointer-events: none;
-        }
-        .login-aura {
-          position: absolute;
-          top: 22%;
-          left: 50%;
-          width: 400px;
-          height: 400px;
-          transform: translate(-50%, -50%);
-          background: radial-gradient(circle, rgba(192,197,206,0.14) 0%, transparent 65%);
-          pointer-events: none;
-          z-index: 0;
-          will-change: transform;
-          animation: auraDrift 12s ease-in-out infinite;
-        }
-        @keyframes auraDrift {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          25% { transform: translate(calc(-50% + 8px), calc(-50% - 6px)) scale(1.02); }
-          50% { transform: translate(calc(-50% - 6px), calc(-50% + 8px)) scale(1.04); }
-          75% { transform: translate(calc(-50% + 4px), calc(-50% + 4px)) scale(1.02); }
-        }
-        .login-container {
-          width: 100%;
-          max-width: 420px;
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          transition: opacity 500ms cubic-bezier(.2,0,0,1), transform 500ms cubic-bezier(.2,0,0,1);
-        }
-        .login-container.is-exiting {
-          opacity: 0;
-          transform: translateY(8px) scale(0.98);
-        }
-        .login-eagle,
-        .login-wordmark,
-        .login-tagline,
-        .login-alive,
-        .login-session-card,
-        .login-card,
-        .login-footer {
-          opacity: 0;
-        }
-        .login-container.is-entered .login-eagle {
-          animation: aguilaRise 600ms cubic-bezier(.2,0,0,1) 0ms both;
-        }
-        .login-container.is-entered .login-wordmark {
-          animation: aguilaRise 600ms cubic-bezier(.2,0,0,1) 180ms both;
-        }
-        .login-container.is-entered .login-tagline {
-          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 340ms both;
-        }
-        .login-container.is-entered .login-alive {
-          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 420ms both;
-        }
-        .login-container.is-entered .login-session-card,
-        .login-container.is-entered .login-card {
-          animation: aguilaRiseCard 600ms cubic-bezier(.2,0,0,1) 520ms both;
-        }
-        .login-container.is-entered .login-footer {
-          animation: aguilaFade 500ms cubic-bezier(.2,0,0,1) 680ms both;
-        }
-        @keyframes aguilaRise {
-          from { opacity: 0; transform: translateY(8px) scale(0.96); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes aguilaRiseCard {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes aguilaFade {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        .login-eagle {
-          margin-bottom: 16px;
-          filter: drop-shadow(0 0 28px rgba(192,197,206,0.32));
-        }
-        .login-wordmark {
-          margin: 12px 0 18px;
-          text-align: center;
-          font-family: var(--font-instrument-serif), 'Instrument Serif', 'Times New Roman', serif;
-          font-size: 44px;
-          font-weight: 400;
-          font-style: normal;
-          letter-spacing: 0.24em;
-          /* PORTAL hero · editorial serif · silver gradient for nameplate read. */
-          background: linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: #C0C5CE;
-          text-transform: uppercase;
-          line-height: 1;
-        }
-        /* Hero variant — PORTAL wordmark stands alone on login · Block DD. */
-        .login-wordmark-hero {
-          font-size: 72px;
-          letter-spacing: 0.24em;
-          margin: 24px 0 28px;
-          filter: drop-shadow(0 0 32px rgba(192,197,206,0.22));
-        }
-        @media (min-width: 720px) {
-          .login-wordmark { font-size: 56px; }
-          .login-wordmark-hero { font-size: 112px; letter-spacing: 0.24em; }
-        }
-        .login-tagline {
-          font-size: 10px;
-          letter-spacing: 0.3em;
-          color: #7A7E86;
-          text-transform: uppercase;
-          margin: 0 0 16px;
-          text-align: center;
-        }
-        .login-eyebrow {
-          font-family: var(--portal-font-mono, 'Geist Mono', monospace);
-          font-size: 10px;
-          letter-spacing: 0.28em;
-          color: rgba(122,126,134,0.55);
-          text-transform: uppercase;
-          margin: 0 0 14px;
-          text-align: center;
-          font-weight: 500;
-        }
-        .login-corridor {
-          font-family: var(--portal-font-sans, 'Geist', system-ui, sans-serif);
-          font-size: 13px;
-          letter-spacing: 0.08em;
-          color: rgba(192,197,206,0.72);
-          text-transform: none;
-          margin: 6px 0 18px;
-          text-align: center;
-          font-weight: 500;
-        }
-        .login-corridor-mx {
-          color: var(--portal-green-2);
-          text-shadow: 0 0 14px color-mix(in oklch, var(--portal-green-2) 30%, transparent);
-        }
-        .login-bg-livingmap {
-          position: absolute;
-          inset: 0;
-          z-index: 0;
-          opacity: 0.55;
-          pointer-events: none;
-        }
-        /* Alive signal — chip that breathes to signal the portal is
-           connected + awake. Matches PageShell's "Datos en vivo"
-           treatment so the theme reads consistent from login through
-           every authenticated surface. */
-        .login-alive {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 5px 12px;
-          margin: 0 auto 28px;
-          border-radius: 999px;
-          background: var(--portal-status-green-bg);
-          border: 1px solid rgba(34,197,94,0.22);
-          font-size: 10px;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          font-weight: 600;
-          color: rgba(134,239,172,0.88);
-          font-family: var(--font-jetbrains-mono, monospace);
-        }
-        .login-alive-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #22C55E;
-          box-shadow: 0 0 10px rgba(34,197,94,0.5);
-          flex-shrink: 0;
-        }
-        .login-alive-text {
-          display: inline-block;
-          line-height: 1;
-        }
-        .login-session-card {
-          width: 100%;
-          background: rgba(0,0,0,0.4);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(192,197,206,0.18);
-          border-radius: 20px 20px 0 0;
-          padding: 20px 24px;
-          margin-bottom: -1px;
-        }
-        .login-session-label { font-size: 11px; color: #7A7E86; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
-        .login-session-name { font-size: 16px; font-weight: 600; color: #E8EAED; margin-bottom: 2px; }
-        .login-session-role { font-size: 12px; color: #7A7E86; margin-bottom: 16px; }
-        .login-session-actions { display: flex; gap: 10px; }
-        .login-btn-silver {
-          flex: 1; display: flex; align-items: center; justify-content: center;
-          height: 60px; border-radius: 10px; font-size: 13px; font-weight: 600;
-          text-decoration: none; color: #0A0A0C;
-          background: linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%);
-          transition: transform 100ms ease;
-        }
-        .login-btn-silver:hover { transform: translateY(-1px); }
-        .login-btn-outline {
-          flex: 1; display: flex; align-items: center; justify-content: center;
-          height: 60px; border-radius: 10px; font-size: 13px; font-weight: 600;
-          text-decoration: none; color: #C0C5CE;
-          border: 1px solid rgba(192,197,206,0.18);
-          background: rgba(0,0,0,0.4);
-        }
-        .login-btn-outline:hover { border-color: rgba(192,197,206,0.4); }
-
-        .login-card {
-          width: 100%;
-          background: rgba(0,0,0,0.4);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: 20px;
-          padding: 32px;
-          border: 1px solid rgba(192,197,206,0.18);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(192,197,206,0.08);
-        }
-
-        .login-error {
-          display: flex; gap: 10px; padding: 12px 14px;
-          background: var(--portal-status-red-bg); border: 1px solid var(--portal-status-red-ring);
-          border-radius: 10px; margin-bottom: 20px; align-items: flex-start;
-        }
-        .login-error-icon { flex-shrink: 0; margin-top: 1px; }
-        .login-error-text { font-size: 13px; font-weight: 600; color: #FCA5A5; line-height: 1.4; }
-        .login-error-links { font-size: 11px; color: #F87171; margin-top: 4px; }
-        .login-error-links a { color: #F87171; text-decoration: underline; font-weight: 600; }
-
-        .login-form { display: flex; flex-direction: column; }
-        .login-field { margin-bottom: 16px; }
-        .login-label {
-          display: block; font-size: 10px; font-weight: 600;
-          letter-spacing: 0.15em; text-transform: uppercase;
-          color: #7A7E86; margin-bottom: 8px;
-        }
-        .login-input {
-          width: 100%; height: 60px;
-          border: 1px solid rgba(192,197,206,0.18);
-          border-radius: 10px; padding: 0 16px;
-          font-size: 16px; background: rgba(0,0,0,0.4);
-          color: #E8EAED; outline: none;
-          font-family: inherit; box-sizing: border-box;
-          transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
-        }
-        .login-input::placeholder {
-          color: #9AA0A8;
-          font-size: 15px;
-          letter-spacing: 0.02em;
-        }
-        .login-input:focus {
-          border-color: rgba(232,234,237,0.7);
-          background: rgba(0,0,0,0.55);
-          box-shadow: 0 0 0 3px rgba(192,197,206,0.18), 0 0 20px rgba(192,197,206,0.08);
-        }
-
-        .login-submit {
-          width: 100%; height: 60px; margin-top: 8px;
-          background: linear-gradient(135deg, #E8EAED 0%, #C0C5CE 50%, #7A7E86 100%);
-          border: none; border-radius: 10px;
-          color: #0A0A0C; font-size: 14px; font-weight: 700;
-          cursor: pointer; font-family: inherit;
-          letter-spacing: 0.05em; text-transform: uppercase;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 0 0 1px rgba(232,234,237,0.08), 0 8px 24px rgba(0,0,0,0.4);
-          transition: all 220ms cubic-bezier(.2,0,0,1);
-        }
-        .login-submit:hover:not(:disabled) {
-          background: linear-gradient(135deg, #F5F7FA 0%, #D8DCE3 50%, #8A8E96 100%);
-          transform: translateY(-1px);
-          box-shadow: 0 0 0 1px rgba(232,234,237,0.3), 0 12px 32px rgba(192,197,206,0.25), 0 0 24px rgba(192,197,206,0.2);
-        }
-        .login-submit:active:not(:disabled) {
-          transform: translateY(0) scale(0.99);
-          box-shadow: 0 0 0 1px rgba(232,234,237,0.15), 0 4px 12px rgba(0,0,0,0.4);
-        }
-        .login-submit:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
-
-        .login-spinner {
-          width: 16px; height: 16px;
-          border: 2px solid rgba(10,10,12,0.2);
-          border-top-color: #0A0A0C;
-          border-radius: 50%;
-          animation: spin 600ms linear infinite;
-          margin-left: 8px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .login-footer {
-          margin-top: 40px;
-          font-size: 9px;
-          color: rgba(122,126,134,0.55);
-          letter-spacing: 0.12em;
-          font-family: var(--font-mono);
-          text-align: center;
-        }
-
-        @media (max-width: 480px) {
-          .login-card { padding: 24px; border-radius: 16px; }
-          .login-eagle svg { width: 110px; height: 110px; }
-          .login-aura { width: 280px; height: 280px; top: 18%; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .login-aura { animation: none; }
-          .login-container.is-entered .login-eagle,
-          .login-container.is-entered .login-wordmark,
-          .login-container.is-entered .login-tagline,
-          .login-container.is-entered .login-session-card,
-          .login-container.is-entered .login-card,
-          .login-container.is-entered .login-footer {
-            animation: aguilaFade 300ms ease both !important;
-            animation-delay: 0ms !important;
-          }
-        }
-      `}</style>
+      </main>
     </div>
   )
 }

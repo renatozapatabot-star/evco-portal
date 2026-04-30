@@ -18,25 +18,12 @@ import { CruceClient, type CruceRow } from './CruceClient'
  */
 export const dynamic = 'force-dynamic'
 
-interface TraficoDbRow {
-  trafico: string
-  estatus: string | null
-  company_id: string | null
-  fecha_cruce_planeada: string | null
-  fecha_cruce_estimada: string | null
-  bridge: string | null
-  lane: string | null
-  semaforo: string | null
-}
-
-function startOfToday(): Date {
-  const now = new Date()
-  const laredo = new Date(
-    now.toLocaleString('en-US', { timeZone: 'America/Chicago' })
-  )
-  laredo.setHours(0, 0, 0, 0)
-  return laredo
-}
+// M16 phantom-sweep: fecha_cruce_planeada, fecha_cruce_estimada, bridge,
+// lane are prediction features that were designed but never materialized
+// on traficos. Querying them 400s against PostgREST. Until the prediction
+// pipeline fills these columns (or a dedicated table ships), this page
+// renders an empty-state schedule with a deliberate calm message. Keeping
+// the page alive preserves the nav entry + deep links.
 
 export default async function CrucePage() {
   const cookieStore = await cookies()
@@ -50,46 +37,19 @@ export default async function CrucePage() {
     session.role === 'admin' ||
     session.role === 'operator'
 
-  const supabase = createServerClient()
-
-  const rangeStart = startOfToday()
+  // Pre-activation empty state — the prediction feature that populates
+  // these columns hasn't shipped yet. Don't call .from('traficos') with
+  // phantom fields; render a clean schedule placeholder instead.
+  const rows: CruceRow[] = []
+  const rangeStart = (() => {
+    const now = new Date()
+    const laredo = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    laredo.setHours(0, 0, 0, 0)
+    return laredo
+  })()
   const rangeEnd = new Date(rangeStart.getTime() + 7 * 86_400_000)
-
-  const startISO = rangeStart.toISOString()
-  const endISO = rangeEnd.toISOString()
-
-  // Fetch planeada + estimada in a single query using the "or" filter.
-  // We accept either field as a scheduling signal; the component resolves
-  // which one to render per row.
-  let query = supabase
-    .from('traficos')
-    .select(
-      'trafico,estatus,company_id,fecha_cruce_planeada,fecha_cruce_estimada,bridge,lane,semaforo'
-    )
-    .or(
-      `and(fecha_cruce_planeada.gte.${startISO},fecha_cruce_planeada.lte.${endISO}),and(fecha_cruce_estimada.gte.${startISO},fecha_cruce_estimada.lte.${endISO})`
-    )
-    .limit(500)
-
-  // Client-scoped: only their own company_id.
-  if (!isInternal) {
-    query = query.eq('company_id', session.companyId)
-  }
-
-  const { data, error } = await query
-
-  const raw: TraficoDbRow[] = error || !data ? [] : (data as TraficoDbRow[])
-
-  const rows: CruceRow[] = raw.map((r) => ({
-    trafico: r.trafico,
-    estatus: r.estatus,
-    companyId: r.company_id,
-    fechaCrucePlaneada: r.fecha_cruce_planeada,
-    fechaCruceEstimada: r.fecha_cruce_estimada,
-    bridge: r.bridge,
-    lane: r.lane,
-    semaforo: r.semaforo,
-  }))
+  void session
+  void isInternal
 
   // Distinct client list for the filter dropdown — internal only.
   const clientOptions = isInternal

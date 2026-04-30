@@ -64,8 +64,9 @@ export async function GET(request: NextRequest) {
           .select('cve_entrada, descripcion_mercancia, peso_bruto, fecha_llegada_mercancia, tiene_faltantes, mercancia_danada')
           .eq('trafico', traficoId)
           .limit(50),
+        // expediente_documentos uses file_name, not nombre (M15 phantom sweep).
         supabase.from('expediente_documentos')
-          .select('doc_type, file_url, uploaded_at, nombre')
+          .select('doc_type, file_url, uploaded_at, file_name')
           .eq('pedimento_id', traficoId)
           .limit(20),
       ])
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
         })),
         documentos: (docsRes.data || []).map(d => ({
           tipo: d.doc_type,
-          nombre: d.nombre,
+          nombre: d.file_name,
           file_url: d.file_url,
           uploaded_at: d.uploaded_at,
         })),
@@ -189,16 +190,21 @@ export async function GET(request: NextRequest) {
           .or(`nombre.ilike.%${safe}%,cve_proveedor.ilike.%${safe}%,id_fiscal.ilike.%${safe}%`)
           .limit(8)
     ),
-    // Partidas — client-scoped.
+    // Partidas — searchable by cve_producto only (partidas has no
+    // descripcion/fraccion_arancelaria/cve_trafico columns — those live
+    // on productos + facturas respectively). The productos search above
+    // already surfaces descripción/fracción matches, so partidas here
+    // adds coverage for direct SKU code matches that appear in the
+    // partida line-items. M15 phantom sweep.
     (isInternal
       ? supabase.from('globalpc_partidas')
-          .select('id, cve_trafico, descripcion, fraccion_arancelaria')
-          .or(`descripcion.ilike.%${safe}%,fraccion_arancelaria.ilike.%${safe}%,cve_trafico.ilike.%${safe}%`)
+          .select('id, folio, cve_producto')
+          .ilike('cve_producto', `%${safe}%`)
           .limit(8)
       : supabase.from('globalpc_partidas')
-          .select('id, cve_trafico, descripcion, fraccion_arancelaria')
+          .select('id, folio, cve_producto')
           .eq('company_id', companyId)
-          .or(`descripcion.ilike.%${safe}%,fraccion_arancelaria.ilike.%${safe}%,cve_trafico.ilike.%${safe}%`)
+          .ilike('cve_producto', `%${safe}%`)
           .limit(8)
     ),
   ])
@@ -242,8 +248,8 @@ export async function GET(request: NextRequest) {
       view: 'proveedores',
     })),
     ...(partRes.data || []).map(pt => ({
-      type: 'partida', id: pt.cve_trafico || String(pt.id), title: pt.cve_trafico || `Partida ${pt.id}`,
-      sub: `${pt.descripcion?.substring(0, 40) || ''} · ${pt.fraccion_arancelaria || ''}`,
+      type: 'partida', id: pt.cve_producto || String(pt.id), title: pt.cve_producto || `Partida ${pt.id}`,
+      sub: `Folio ${pt.folio ?? '—'}`,
       date: null, view: 'traficos',
     })),
   ]

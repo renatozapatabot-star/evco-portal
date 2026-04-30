@@ -125,17 +125,15 @@ export async function POST(request: NextRequest) {
   }
 
   // Resolve cliente display name — fall back to company_id if no row.
+  // companies real columns: name. `nombre_comercial` and `razon_social` are
+  // phantoms (M15 sweep).
   const { data: companyRow } = await supabase
     .from('companies')
-    .select('name, nombre_comercial, razon_social')
+    .select('name')
     .eq('company_id', entry.company_id)
-    .maybeSingle<{ name?: string | null; nombre_comercial?: string | null; razon_social?: string | null }>()
+    .maybeSingle<{ name?: string | null }>()
 
-  const clienteName =
-    companyRow?.nombre_comercial ||
-    companyRow?.razon_social ||
-    companyRow?.name ||
-    entry.company_id
+  const clienteName = companyRow?.name || entry.company_id
 
   const effectiveDock = dockId ?? entry.dock_assigned ?? null
 

@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useCallback, useRef, useTransition } from 'react'
+import { useEffect, useCallback, useRef, useTransition, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Activity } from 'lucide-react'
+import { Activity, Sparkles, CheckCircle2, Radio } from 'lucide-react'
 import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client'
 import {
-  BG_CARD, BORDER, GLASS_BLUR, GLASS_SHADOW,
-  TEXT_MUTED, TEXT_SECONDARY, ACCENT_SILVER, GOLD, AMBER,
+  BORDER,
+  TEXT_MUTED, TEXT_SECONDARY, ACCENT_SILVER, ACCENT_SILVER_DIM, GOLD, AMBER,
 } from '@/lib/design-system'
 import {
   CockpitInicio,
+  GlassCard,
   SeverityRibbon, severityFromCount,
   OperatorActivityStack,
   ActividadStrip,
@@ -137,7 +138,43 @@ export function InicioClient(props: Props) {
     />
   )
 
-  // Estado de operaciones — operator-specific: celebration banner + cola excepciones + active embarques
+  // Estado de operaciones — operator-specific: celebration banner + cola excepciones + active embarques.
+  // Wrapped in <SupervisorSection/> so the cascade reads as one premium, choreographed strip.
+  const supervisorCards: ReactNode[] = [
+    <ColaCard key="cola" colaCount={props.colaCount} />,
+    <FacturasBancoCard
+      key="facturas"
+      enBanco={props.facturasEnBanco}
+      asignadasHoy={props.facturasAsignadasHoy}
+    />,
+    <MonitorCard
+      key="monitor"
+      activos={props.monitorActivos}
+      rojo={props.monitorRojo}
+    />,
+    <ClasificacionesCard
+      key="clasif"
+      pendientes={props.clasificacionesPendientes}
+      aprobadasMes={props.clasificacionesAprobadasMes}
+    />,
+    <CatalogoCard
+      key="catalogo"
+      total={props.catalogoTotal}
+      vencimientosPronto={props.vencimientosPronto}
+    />,
+    <TransportistasCard
+      key="transportistas"
+      activos={props.transportistasActivos}
+      top={props.transportistasTop}
+    />,
+    <ReportesEcontaCard
+      key="reportes"
+      pendientes={props.econtaPendientes}
+      exportadasHoy={props.econtaExportadasHoy}
+    />,
+  ]
+  const supervisorLiveCount = props.monitorActivos + props.colaCount
+
   const estadoSections = (
     <>
       <RoleKPIBanner
@@ -150,31 +187,9 @@ export function InicioClient(props: Props) {
           `${name}, cerraste ${thisWeek} embarque${thisWeek === 1 ? '' : 's'} esta semana (+${pct}% vs semana pasada). PORTAL te lo reconoce.`
         }
       />
-      <ColaCard colaCount={props.colaCount} />
-      <FacturasBancoCard
-        enBanco={props.facturasEnBanco}
-        asignadasHoy={props.facturasAsignadasHoy}
-      />
-      <MonitorCard
-        activos={props.monitorActivos}
-        rojo={props.monitorRojo}
-      />
-      <ClasificacionesCard
-        pendientes={props.clasificacionesPendientes}
-        aprobadasMes={props.clasificacionesAprobadasMes}
-      />
-      <CatalogoCard
-        total={props.catalogoTotal}
-        vencimientosPronto={props.vencimientosPronto}
-      />
-      <TransportistasCard
-        activos={props.transportistasActivos}
-        top={props.transportistasTop}
-      />
-      <ReportesEcontaCard
-        pendientes={props.econtaPendientes}
-        exportadasHoy={props.econtaExportadasHoy}
-      />
+      <SupervisorSection liveCount={supervisorLiveCount}>
+        {supervisorCards}
+      </SupervisorSection>
       <ActiveTraficos rows={props.traficos} onRefresh={refresh} />
     </>
   )
@@ -236,6 +251,14 @@ export function InicioClient(props: Props) {
             <div style={{ marginTop: 'var(--portal-s-6, 24px)' }}>
               <PortalCrucesMap />
             </div>
+            {/* WHY: no FreshnessBanner on the operator cockpit — operator
+                surfaces are ops-wide (no session.companyId scope) and
+                readFreshness is per-tenant (returns empty on null
+                companyId, src/lib/cockpit/freshness.ts line 48).
+                LiveTimestamp + StateOfDayStrip inside CockpitInicio
+                carry the liveness signal. Per-sync-type health band for
+                cross-tenant surfaces planned post-Ursula — see
+                sync-contract.md §2.5 (readPipelineHealth). */}
             <CockpitInicio
               role="operator"
             name={props.operatorName}
@@ -261,21 +284,107 @@ export function InicioClient(props: Props) {
   )
 }
 
+/**
+ * Premium header + choreographed entrance for the Supervisor strip. The cards
+ * themselves keep their `GlassCard tier="hero"` chrome — this primitive only
+ * contributes the eyebrow rhythm and the staggered reveal (gated by
+ * `prefers-reduced-motion`). Gold hairline under the eyebrow is the one
+ * identity accent; every metric stays silver.
+ */
+function SupervisorSection({
+  liveCount,
+  children,
+}: {
+  liveCount: number
+  children: ReactNode[]
+}) {
+  return (
+    <section aria-label="Supervisor en vivo" style={{ display: 'grid', gap: 'var(--aguila-gap-stack, 12px)' }}>
+      <header
+        className="aguila-reveal"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          paddingBottom: 10,
+          borderBottom: '1px solid var(--portal-line-1, rgba(255,255,255,0.08))',
+          position: 'relative',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: 'var(--aguila-fs-label, 10px)',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: 'var(--aguila-ls-dramatic, 0.15em)',
+            color: GOLD,
+          }}>
+            <Sparkles size={12} strokeWidth={2} aria-hidden style={{ color: GOLD }} />
+            Supervisor · en vivo
+          </div>
+          <p style={{
+            fontSize: 'var(--aguila-fs-body, 13px)',
+            color: ACCENT_SILVER_DIM,
+            margin: 0,
+            lineHeight: 1.4,
+          }}>
+            Toda la operación en una mirada · un toque abre el siguiente movimiento.
+          </p>
+        </div>
+        <div
+          aria-label={liveCount > 0 ? `${liveCount} eventos activos` : 'Operación en calma'}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '6px 12px',
+            borderRadius: 999,
+            background: 'var(--portal-ink-2, rgba(255,255,255,0.04))',
+            border: '1px solid var(--portal-line-1, rgba(255,255,255,0.08))',
+            flexShrink: 0,
+          }}
+        >
+          <Radio
+            size={12}
+            strokeWidth={2}
+            aria-hidden
+            className={liveCount > 0 ? 'aguila-dot-pulse' : undefined}
+            style={{ color: liveCount > 0 ? 'var(--portal-status-green-fg)' : TEXT_MUTED }}
+          />
+          <span style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            fontSize: 'var(--aguila-fs-meta, 11px)',
+            fontWeight: 700,
+            letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+            fontVariantNumeric: 'tabular-nums',
+            color: liveCount > 0 ? ACCENT_SILVER : TEXT_MUTED,
+          }}>
+            {liveCount > 0 ? `${liveCount} EN MOVIMIENTO` : 'EN CALMA'}
+          </span>
+        </div>
+      </header>
+      {children.map((child, i) => (
+        <div
+          key={i}
+          className="aguila-stagger-in"
+          style={{ animationDelay: `${Math.min(i, 5) * 60}ms` }}
+        >
+          {child}
+        </div>
+      ))}
+    </section>
+  )
+}
+
 function ColaCard({ colaCount }: { colaCount: number }) {
   const severity = severityFromCount(colaCount, { warn: 1, crit: 6 })
+  const critical = severity === 'critical'
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
-      {colaCount > 0 && <SeverityRibbon tone={severity} />}
+    <GlassCard tier="hero" severity={colaCount > 0 ? severity : undefined}>
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -285,15 +394,18 @@ function ColaCard({ colaCount }: { colaCount: number }) {
       }}>
         Cola de excepciones
       </div>
-      <div style={{
-        fontFamily: 'var(--font-jetbrains-mono), monospace',
-        fontSize: 'var(--aguila-fs-kpi-large, 44px)',
-        fontWeight: 800,
-        color: colaCount > 0 ? (severity === 'critical' ? AMBER : GOLD) : TEXT_MUTED,
-        margin: '8px 0 12px 0',
-        lineHeight: 1,
-        fontVariantNumeric: 'tabular-nums',
-      }}>
+      <div
+        className={critical ? 'aguila-pulse' : undefined}
+        style={{
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+          fontSize: 'var(--aguila-fs-kpi-large, 44px)',
+          fontWeight: 800,
+          color: colaCount > 0 ? (critical ? AMBER : GOLD) : TEXT_MUTED,
+          margin: '8px 0 12px 0',
+          lineHeight: 1,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
         {colaCount}
       </div>
       {colaCount > 0 ? (
@@ -317,28 +429,39 @@ function ColaCard({ colaCount }: { colaCount: number }) {
           Ver cola →
         </Link>
       ) : (
-        <p style={{ fontSize: 'var(--aguila-fs-body)', color: TEXT_SECONDARY, margin: 0 }}>
-          Sin excepciones pendientes.
-        </p>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '8px 10px',
+          borderRadius: 10,
+          background: 'var(--portal-status-green-bg)',
+          border: '1px solid var(--portal-status-green-ring)',
+        }}>
+          <CheckCircle2
+            size={14}
+            strokeWidth={2.25}
+            style={{ color: 'var(--portal-status-green-fg)', flexShrink: 0 }}
+            aria-hidden
+          />
+          <p style={{
+            fontSize: 'var(--aguila-fs-body)',
+            color: TEXT_SECONDARY,
+            margin: 0,
+            lineHeight: 1.35,
+          }}>
+            Todo al corriente · supervisor sin cola.
+          </p>
+        </div>
       )}
-    </section>
+    </GlassCard>
   )
 }
 
 function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignadasHoy: number }) {
   const isIncomplete = enBanco === 0 && asignadasHoy === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px',
-    }}>
+    <GlassCard tier="hero">
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -402,34 +525,62 @@ function FacturasBancoCard({ enBanco, asignadasHoy }: { enBanco: number; asignad
         isIncomplete={isIncomplete}
         message="Sin facturas en PORTAL todavía — el banco de GlobalPC tiene el histórico."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
   const severity = rojo > 0 ? 'critical' : 'healthy'
   const isIncomplete = activos === 0
+  const live = activos > 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
+    <GlassCard tier="hero">
       {rojo > 0 && <SeverityRibbon tone={severity} />}
       <div style={{
-        fontSize: 'var(--aguila-fs-label, 10px)',
-        fontWeight: 700,
-        textTransform: 'uppercase',
-        letterSpacing: 'var(--aguila-ls-label, 0.08em)',
-        color: TEXT_MUTED,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
       }}>
-        Monitor en vivo
+        <span style={{
+          fontSize: 'var(--aguila-fs-label, 10px)',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+          color: TEXT_MUTED,
+        }}>
+          Monitor en vivo
+        </span>
+        {live && (
+          <span
+            aria-label="En vivo"
+            title="Transmitiendo en vivo"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 'var(--aguila-fs-meta, 11px)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--aguila-ls-label, 0.08em)',
+              color: rojo > 0 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)',
+            }}
+          >
+            <span
+              className="aguila-dot-pulse"
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 999,
+                background: rojo > 0 ? 'var(--portal-status-red-fg)' : 'var(--portal-status-green-fg)',
+                boxShadow: rojo > 0
+                  ? '0 0 6px rgba(239,68,68,0.55)'
+                  : '0 0 6px rgba(34,197,94,0.55)',
+              }}
+            />
+            EN VIVO
+          </span>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, margin: '12px 0' }}>
         <div>
@@ -485,24 +636,14 @@ function MonitorCard({ activos, rojo }: { activos: number; rojo: number }) {
         isIncomplete={isIncomplete}
         message="Sin tráficos activos en PORTAL — el monitor de GlobalPC tiene el histórico."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number; aprobadasMes: number }) {
   const isIncomplete = pendientes === 0 && aprobadasMes === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px',
-    }}>
+    <GlassCard tier="hero">
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -566,24 +707,14 @@ function ClasificacionesCard({ pendientes, aprobadasMes }: { pendientes: number;
         isIncomplete={isIncomplete}
         message="Sin productos por clasificar en PORTAL — consulta el histórico en GlobalPC."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimientosPronto: number }) {
   const isIncomplete = total === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
+    <GlassCard tier="hero">
       {vencimientosPronto > 0 && <SeverityRibbon tone="critical" />}
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
@@ -648,24 +779,14 @@ function CatalogoCard({ total, vencimientosPronto }: { total: number; vencimient
         isIncomplete={isIncomplete}
         message="Sin productos en PORTAL — consulta el catálogo en GlobalPC."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function TransportistasCard({ activos, top }: { activos: number; top: number }) {
   const isIncomplete = activos === 0
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px',
-    }}>
+    <GlassCard tier="hero">
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
         fontWeight: 700,
@@ -729,23 +850,13 @@ function TransportistasCard({ activos, top }: { activos: number; top: number }) 
         isIncomplete={isIncomplete}
         message="Sin transportistas capturados en PORTAL — consulta el catálogo de GlobalPC."
       />
-    </section>
+    </GlassCard>
   )
 }
 
 function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number; exportadasHoy: number }) {
   return (
-    <section style={{
-      position: 'relative',
-      overflow: 'hidden',
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 'var(--aguila-radius-card, 20px)',
-      boxShadow: GLASS_SHADOW,
-      padding: '20px 20px 20px 23px',
-    }}>
+    <GlassCard tier="hero">
       {pendientes > 5 && <SeverityRibbon tone="warning" />}
       <div style={{
         fontSize: 'var(--aguila-fs-label, 10px)',
@@ -810,7 +921,7 @@ function ReportesEcontaCard({ pendientes, exportadasHoy }: { pendientes: number;
         isIncomplete={false}
         cta="Reportes legacy en GlobalPC"
       />
-    </section>
+    </GlassCard>
   )
 }
 

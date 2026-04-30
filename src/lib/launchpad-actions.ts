@@ -262,8 +262,9 @@ export async function scoreLaunchpadActions(
       .order('created_at', { ascending: false })
       .limit(20),
     supabase
+      // expediente_documentos uses file_name, not nombre (M15 phantom sweep).
       .from('expediente_documentos')
-      .select('id, pedimento_id, doc_type, nombre')
+      .select('id, pedimento_id, doc_type, file_name')
       .eq('company_id', companyId)
       .is('file_url', null)
       .limit(20),

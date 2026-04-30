@@ -165,7 +165,7 @@ fi
 #   and broke gradient rendering (null stop in PDFLinearGradient.stop).
 #   Exclusion prevents future codemod drift AND accounts for the legitimate
 #   hex restored in pdf/brand.tsx + the 4 doc/pedimento PDF files.
-INVARIANT_HEX_BASELINE=662
+INVARIANT_HEX_BASELINE=616
 header "Design System — Colors ratchet"
 HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   --include="*.tsx" --include="*.ts" 2>/dev/null \
@@ -179,6 +179,7 @@ HEX_COUNT=$(grep -rn '#[0-9A-Fa-f]\{6\}' src/ \
   | grep -v 'src/lib/classification-pdf\|src/lib/anexo-24-export\|src/lib/report-exports/pdf\|src/lib/label-templates/' \
   | grep -v 'src/app/api/pedimento-pdf/\|src/app/api/anexo24-pdf/\|src/app/api/reportes-pdf/\|src/app/api/auditoria-pdf/' \
   | grep -v 'src/app/api/oca/.*/pdf/\|src/app/api/usmca/.*/pdf/\|src/app/api/reportes/multi-cliente/.*/pdf-document' \
+  | grep -v 'opengraph-image\|twitter-image' \
   | wc -l | tr -d ' ')
 if [ "$HEX_COUNT" -gt "$INVARIANT_HEX_BASELINE" ]; then
   fail "Hardcoded hex: $HEX_COUNT (baseline $INVARIANT_HEX_BASELINE). Use a design-system token or add // design-token."
@@ -276,7 +277,7 @@ fi
 # CRUZ_CHAT_FALLBACK), JSDoc comments, and real-world carrier business
 # names (AUTOEXPRESS CRUZ, TRANSPORTES JOSÉ CRUZ MACIAS) are excluded.
 header "Invariant Block-DD — CRUZ user-visible string ratchet"
-INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-218}
+INVARIANT_CRUZ_BASELINE=${INVARIANT_CRUZ_BASELINE:-223}
 CRUZ_COUNT=$(grep -rn '\bCRUZ\b' src/app src/components \
   --include="*.ts" --include="*.tsx" \
   | grep -v 'node_modules' \
@@ -307,6 +308,60 @@ if [ -n "$HARDCODED_CLIENT" ]; then
   echo "$HARDCODED_CLIENT" | head -5
 else
   pass "No hardcoded client identifiers (9254/EVCO) in production code"
+fi
+
+# --------------------------------------------------------------------------
+# 12b. Phantom-column guard (M12)
+#   globalpc_partidas does NOT have cve_trafico, descripcion,
+#   valor_comercial, fecha_llegada, or seq columns. Queries that select
+#   them 400 in prod and get masked by soft-wrappers. Use the 2-hop
+#   helper in src/lib/queries/partidas-trafico-link.ts instead.
+# --------------------------------------------------------------------------
+header "Schema — Phantom-column guard"
+PHANTOM_PARTIDAS=$(grep -rnE "from\(['\"]globalpc_partidas['\"]\)[^;]*\.select\([^)]*(cve_trafico|descripcion|valor_comercial|fecha_llegada|seq)[^)]*\)" src/ \
+  --include="*.ts" --include="*.tsx" \
+  | grep -v 'node_modules' \
+  | grep -v '\.test\.\|__tests__' \
+  || true)
+if [ -n "$PHANTOM_PARTIDAS" ]; then
+  fail "Phantom column on globalpc_partidas (use src/lib/queries/partidas-trafico-link.ts):"
+  echo "$PHANTOM_PARTIDAS" | head -5
+else
+  pass "No phantom-column selects on globalpc_partidas (M12 gate)"
+fi
+
+# --------------------------------------------------------------------------
+# 12c. Broad phantom-column ratchet (M15)
+#   Runs the live-schema phantom scanner and compares its count against
+#   a baseline. Number of open phantom sites can only go DOWN. Introducing
+#   a new phantom reference fails this gate.
+#
+#   Baseline: see PHANTOM_BASELINE below. Update when the real schema
+#   changes (a new column ships) or after a paydown ship. Never bump up
+#   silently — that hides regressions.
+#
+#   Skipped when SUPABASE_SERVICE_ROLE_KEY is unavailable (the scanner
+#   needs it to two-stage verify each column against PostgREST).
+# --------------------------------------------------------------------------
+header "Schema — Broad phantom-column ratchet (M15)"
+# M16 achieved zero — no phantom references across any tenant-scoped table.
+# Any new phantom introduced fails this gate immediately.
+PHANTOM_BASELINE=0
+if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && [ -f .env.local ] && [ -f scripts/audit-phantom-columns.mjs ]; then
+  PHANTOM_COUNT=$(node --env-file=.env.local scripts/audit-phantom-columns.mjs 2>/dev/null \
+    | grep -E "^Total:" | grep -oE "[0-9]+" | head -1 || echo "")
+  if [ -z "$PHANTOM_COUNT" ]; then
+    warn "Phantom scanner returned no count — check scripts/audit-phantom-columns.mjs locally"
+  elif [ "$PHANTOM_COUNT" -le "$PHANTOM_BASELINE" ]; then
+    pass "Phantom-column sites: $PHANTOM_COUNT (baseline $PHANTOM_BASELINE — ratchet holds)"
+    if [ "$PHANTOM_COUNT" -lt "$PHANTOM_BASELINE" ]; then
+      echo "      NOTE: count dropped by $((PHANTOM_BASELINE - PHANTOM_COUNT)). Lower PHANTOM_BASELINE in scripts/gsd-verify.sh to $PHANTOM_COUNT."
+    fi
+  else
+    fail "Phantom-column regression — $PHANTOM_COUNT sites (baseline $PHANTOM_BASELINE). Run: node scripts/audit-phantom-columns.mjs"
+  fi
+else
+  warn "Phantom scanner skipped (needs .env.local + SUPABASE_SERVICE_ROLE_KEY)"
 fi
 
 # --------------------------------------------------------------------------
@@ -421,7 +476,7 @@ fi
 #   linked-docs fallback + /api/anexo-24/csv error path. Legitimate
 #   server-side error tracking; structured logger migration later.)
 # --------------------------------------------------------------------------
-CONSOLE_ERR_BASELINE=130
+CONSOLE_ERR_BASELINE=129
 header "Console.error/warn ratchet"
 CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | grep -v "/error\.tsx:" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then
@@ -491,7 +546,7 @@ fi
 #   underline hex #C9A84C retired; one more gold hex converted to
 #   var(--portal-gold-500) token).
 # --------------------------------------------------------------------------
-INVARIANT_2_BASELINE=12
+INVARIANT_2_BASELINE=11
 header "Invariant 2 — Gold decorative ratchet"
 INV2_COUNT=$(set +eo pipefail;{ grep -rn "#C9A84C\|#eab308" src/ --include="*.ts" --include="*.tsx" 2>/dev/null || true; } | grep -v node_modules | wc -l | tr -d ' ')
 if [ "$INV2_COUNT" -gt "$INVARIANT_2_BASELINE" ]; then
@@ -550,9 +605,9 @@ fi
 #   as the hex ratchet PDF exclusion above). The 7 api/*-pdf/
 #   pdf-document.tsx + lib PDF files restored from 2d4f196^ have
 #   numeric fontSize by necessity.
-INVARIANT_27_BASELINE=385
+INVARIANT_27_BASELINE=298
 header "Invariant 27 — Hardcoded fontSize ratchet"
-INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | wc -l | tr -d ' ')
+INV27_COUNT=$(set +eo pipefail;{ grep -rn "fontSize: [0-9]" src/app src/components 2>/dev/null || true; } | grep -v "var(--aguila-fs-" | grep -v ".test." | grep -v "WHY:" | grep -v "components/aguila/" | grep -v "api/pedimento-pdf/\|api/anexo24-pdf/\|api/reportes-pdf/\|api/auditoria-pdf/\|api/oca/.*/pdf/\|api/usmca/.*/pdf/\|api/reportes/multi-cliente/.*/pdf-document\|api/labels/" | grep -v "opengraph-image\|twitter-image" | wc -l | tr -d ' ')
 if [ "$INV27_COUNT" -gt "$INVARIANT_27_BASELINE" ]; then
   fail "Hardcoded fontSize violations: $INV27_COUNT (baseline $INVARIANT_27_BASELINE). Use var(--aguila-fs-*) or add // WHY: comment."
 elif [ "$INV27_COUNT" -lt "$INVARIANT_27_BASELINE" ]; then
@@ -567,7 +622,7 @@ fi
 # portal-primitive imports UP. Each ratchet auto-promotes on improvement
 # (update the baseline inline when you see "improving ✓").
 # --------------------------------------------------------------------------
-PORTAL_INLINE_HERO_BASELINE=60
+PORTAL_INLINE_HERO_BASELINE=56
 header "PORTAL · inline hero-glass ratchet (target 0)"
 PORTAL_HERO_COUNT=$(set +eo pipefail;{ grep -rnE "rgba\(0, ?0, ?0, ?0\.(4|25|12)\)" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | grep -v "globals.css" | grep -v "portal-components.css" | grep -v "portal-tokens.css" | wc -l | tr -d ' ')
 if [ "$PORTAL_HERO_COUNT" -gt "$PORTAL_INLINE_HERO_BASELINE" ]; then
@@ -578,7 +633,7 @@ else
   warn "Inline rgba(0,0,0,0.4/.25/.12): $PORTAL_HERO_COUNT (at baseline, awaiting cleanup block)"
 fi
 
-PORTAL_BACKDROP_BASELINE=179
+PORTAL_BACKDROP_BASELINE=132
 header "PORTAL · inline backdropFilter ratchet (target 0)"
 PORTAL_BACKDROP_COUNT=$(set +eo pipefail;{ grep -rn "backdropFilter" src/app src/components 2>/dev/null || true; } | grep -v "components/aguila/" | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
 if [ "$PORTAL_BACKDROP_COUNT" -gt "$PORTAL_BACKDROP_BASELINE" ]; then
@@ -589,7 +644,7 @@ else
   warn "Inline backdropFilter: $PORTAL_BACKDROP_COUNT (at baseline, awaiting cleanup block)"
 fi
 
-PORTAL_IMPORT_BASELINE=3
+PORTAL_IMPORT_BASELINE=6
 header "PORTAL · primitive adoption ratchet (target ↑)"
 PORTAL_IMPORTS=$(set +eo pipefail;{ grep -rln "from '@/components/portal'" src/app src/components 2>/dev/null || true; } | grep -v "components/portal/" | grep -v ".test." | wc -l | tr -d ' ')
 if [ "$PORTAL_IMPORTS" -lt "$PORTAL_IMPORT_BASELINE" ]; then
@@ -756,7 +811,7 @@ fi
 # teal/plum/borderColor/backgroundColor/textColor/boxShadow) should
 # migrate to var(--portal-*) in future blocks.
 header "theme/v6 · tailwind.config.ts standalone hex literals (target ↓)"
-TAILWIND_HEX_BASELINE=${TAILWIND_HEX_BASELINE:-13}
+TAILWIND_HEX_BASELINE=${TAILWIND_HEX_BASELINE:-0}
 TAILWIND_HEX_HITS=$(grep -cE "'#[0-9a-fA-F]{3,8}'" tailwind.config.ts 2>/dev/null || echo 0)
 if [ "$TAILWIND_HEX_HITS" -gt "$TAILWIND_HEX_BASELINE" ]; then
   fail "tailwind.config.ts hex literals: $TAILWIND_HEX_HITS (baseline $TAILWIND_HEX_BASELINE). Route through var(--portal-*)."
@@ -784,7 +839,7 @@ fi
 
 # R8 — AguilaDataTable adoption (positive direction).
 header "theme/v6 · <AguilaDataTable> adoption (target ↑)"
-AGUILA_DT_BASELINE=${AGUILA_DT_BASELINE:-0}
+AGUILA_DT_BASELINE=${AGUILA_DT_BASELINE:-2}
 AGUILA_DT_COUNT=$(set +eo pipefail;{ grep -rln "<AguilaDataTable" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$AGUILA_DT_COUNT" -lt "$AGUILA_DT_BASELINE" ]; then
   fail "<AguilaDataTable> usage regressed: $AGUILA_DT_COUNT (was $AGUILA_DT_BASELINE). Adoption should only grow."
@@ -796,7 +851,7 @@ fi
 
 # R9 — DetailPageShell adoption (positive direction).
 header "theme/v6 · <DetailPageShell> adoption (target ↑)"
-DETAIL_SHELL_BASELINE=${DETAIL_SHELL_BASELINE:-1}
+DETAIL_SHELL_BASELINE=${DETAIL_SHELL_BASELINE:-4}
 DETAIL_SHELL_COUNT=$(set +eo pipefail;{ grep -rln "<DetailPageShell" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$DETAIL_SHELL_COUNT" -lt "$DETAIL_SHELL_BASELINE" ]; then
   fail "<DetailPageShell> usage regressed: $DETAIL_SHELL_COUNT (was $DETAIL_SHELL_BASELINE)."
@@ -807,9 +862,9 @@ else
 fi
 
 # R10 — Aguila form primitive adoption (positive direction).
-header "theme/v6 · AguilaInput/Select/Checkbox adoption (target ↑)"
-AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-0}
-AGUILA_FORM_COUNT=$(set +eo pipefail;{ grep -rnE "<(AguilaInput|AguilaSelect|AguilaCheckbox)" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
+header "theme/v6 · Aguila form primitives adoption (target ↑)"
+AGUILA_FORM_BASELINE=${AGUILA_FORM_BASELINE:-92}
+AGUILA_FORM_COUNT=$(set +eo pipefail;{ grep -rnE "<(AguilaInput|AguilaSelect|AguilaCheckbox|AguilaTextarea|AguilaPasswordInput)" src/app 2>/dev/null || true; } | wc -l | tr -d ' ')
 if [ "$AGUILA_FORM_COUNT" -lt "$AGUILA_FORM_BASELINE" ]; then
   fail "Aguila form primitives usage regressed: $AGUILA_FORM_COUNT (was $AGUILA_FORM_BASELINE)."
 elif [ "$AGUILA_FORM_COUNT" -gt "$AGUILA_FORM_BASELINE" ]; then

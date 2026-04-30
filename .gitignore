@@ -62,6 +62,14 @@ scripts/.sync-checkpoints/
 # Migration backups (SQL rollback snapshots — keep local, not in VCS)
 supabase/migrations/*.sql.backup-*
 
+# Archived migration sets — kept on disk during consolidation, not in VCS
+# (git history preserves the originals; these folders are rollback-only).
+supabase/migrations_broken_*/
+supabase/migrations_backup_*/
+
+# Schema snapshots — regenerable via `pg_dump -s --schema=public`
+.planning/schema-public-*.sql
+
 # Temporary scratch (local-only debugging / curl / paste buffer)
 tmp/
 
@@ -69,3 +77,7 @@ tmp/
 # These can contain pasted secrets or proprietary context; never commit.
 .aider*
 schema_*.sql
+
+# Auto-generated API docs — regenerable via `npm run docs:api`.
+# Output is HTML + assets (~5 MB); no need to version-control it.
+docs/api/

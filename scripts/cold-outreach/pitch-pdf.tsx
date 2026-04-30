@@ -73,39 +73,98 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   heroLine: {
-    fontSize: 21,
-    lineHeight: 1.25,
+    fontSize: 22,
+    lineHeight: 1.2,
     color: C.silverBright,
     marginBottom: 4,
   },
+  heroAccent: {
+    fontSize: 22,
+    lineHeight: 1.2,
+    color: C.silverBright,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 6,
+  },
   heroEn: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: C.silverDim,
     fontStyle: 'italic',
+    marginTop: 2,
   },
 
-  proofRow: {
+  deltaStrip: {
     flexDirection: 'row',
-    marginBottom: 22,
+    marginBottom: 20,
     gap: 10,
   },
-  proofCell: {
+  deltaCell: {
     flex: 1,
     padding: 12,
     border: `0.5 solid ${C.line}`,
     borderRadius: 4,
   },
-  proofNum: {
-    fontFamily: 'Courier-Bold',
-    fontSize: 16,
-    letterSpacing: -0.5,
-    color: C.silverBright,
-    marginBottom: 4,
+  deltaLabel: {
+    fontFamily: 'Courier',
+    fontSize: 7,
+    letterSpacing: 1.2,
+    color: C.silverDim,
+    marginBottom: 6,
+    textTransform: 'uppercase',
   },
-  proofLabel: {
+  deltaNum: {
+    fontFamily: 'Courier-Bold',
+    fontSize: 26,
+    letterSpacing: -1,
+    color: C.silverBright,
+    marginBottom: 2,
+  },
+  deltaSub: {
     fontSize: 8.5,
     color: C.silver,
-    lineHeight: 1.35,
+  },
+
+  proofRow: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    gap: 10,
+  },
+  proofCell: {
+    flex: 1,
+    padding: 10,
+    border: `0.5 solid ${C.line}`,
+    borderRadius: 4,
+  },
+  proofNum: {
+    fontFamily: 'Courier-Bold',
+    fontSize: 14,
+    letterSpacing: -0.5,
+    color: C.silverBright,
+    marginBottom: 3,
+  },
+  proofLabel: {
+    fontSize: 8,
+    color: C.silver,
+    lineHeight: 1.3,
+  },
+
+  quoteBlock: {
+    marginBottom: 18,
+    paddingLeft: 14,
+    borderLeft: `1 solid ${C.lineStrong}`,
+  },
+  quoteText: {
+    fontSize: 11,
+    color: C.silverBright,
+    fontStyle: 'italic',
+    lineHeight: 1.45,
+    marginBottom: 6,
+  },
+  quoteAttrib: {
+    fontFamily: 'Courier',
+    fontSize: 8,
+    letterSpacing: 1,
+    color: C.silverDim,
+    textTransform: 'uppercase',
   },
 
   sectionTitle: {
@@ -159,6 +218,18 @@ const styles = StyleSheet.create({
   ctaLead: {
     fontSize: 11,
     color: C.silverBright,
+    marginBottom: 4,
+  },
+  ctaDemo: {
+    fontFamily: 'Courier-Bold',
+    fontSize: 13,
+    color: C.silverBright,
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  ctaLeadSecondary: {
+    fontSize: 9.5,
+    color: C.silver,
     marginBottom: 8,
   },
   ctaChannels: {
@@ -255,34 +326,59 @@ export function PitchPDF({ data }: { data: PitchData }) {
         </View>
 
         <View style={styles.hero}>
-          <Text style={styles.heroKicker}>PARA {data.recipientCompany.toUpperCase()}</Text>
-          <Text style={styles.heroLine}>
-            85 años cruzando la frontera. Ahora con inteligencia.
+          <Text style={styles.heroKicker}>
+            PARA {data.recipientFirstName ? `${data.recipientFirstName.toUpperCase()} · ` : ''}
+            {data.recipientCompany.toUpperCase()}
           </Text>
+          <Text style={styles.heroLine}>Despacho aduanal</Text>
+          <Text style={styles.heroAccent}>10× más rápido.</Text>
           <Text style={styles.heroEn}>
-            85 years on this border — now AI-native.
+            Customs clearance, ten times faster — built by two people with Patente 3596.
           </Text>
+        </View>
+
+        <View style={styles.deltaStrip}>
+          <View style={styles.deltaCell}>
+            <Text style={styles.deltaLabel}>Antes · clasificación manual</Text>
+            <Text style={styles.deltaNum}>22 min</Text>
+            <Text style={styles.deltaSub}>Por SKU · Excel + WhatsApp + Word</Text>
+          </View>
+          <View style={styles.deltaCell}>
+            <Text style={styles.deltaLabel}>Hoy · con PORTAL</Text>
+            <Text style={styles.deltaNum}>2 min</Text>
+            <Text style={styles.deltaSub}>Por SKU · IA + revisión de Tito + firma</Text>
+          </View>
         </View>
 
         <View style={styles.proofRow}>
           <View style={styles.proofCell}>
-            <Text style={styles.proofNum}>1,687</Text>
+            <Text style={styles.proofNum}>148,537</Text>
             <Text style={styles.proofLabel}>
-              fracciones arancelarias ya clasificadas · 307K documentos vivos
+              SKUs activos clasificados · catálogo EVCO
             </Text>
           </View>
           <View style={styles.proofCell}>
-            <Text style={styles.proofNum}>3.8 s</Text>
+            <Text style={styles.proofNum}>98%</Text>
             <Text style={styles.proofLabel}>
-              de email del cliente a cruce listo · demo punta a punta, 10 pasos
+              liberación inmediata · semáforo verde, últimos 90 días
             </Text>
           </View>
           <View style={styles.proofCell}>
-            <Text style={styles.proofNum}>16,344</Text>
+            <Text style={styles.proofNum}>85 años</Text>
             <Text style={styles.proofLabel}>
-              cruces en Aduana 240 analizados · semáforo y tiempos reales
+              cruzando la frontera de Laredo · Patente 3596 · Est. 1941
             </Text>
           </View>
+        </View>
+
+        <View style={styles.quoteBlock}>
+          <Text style={styles.quoteText}>
+            &ldquo;Abro el portal a las 11 PM, veo todo en una pantalla, y me voy a dormir.
+            Esto no existía antes.&rdquo;
+          </Text>
+          <Text style={styles.quoteAttrib}>
+            Ursula Banda · Dir. de Operaciones · EVCO Plastics de México
+          </Text>
         </View>
 
         <Text style={styles.sectionTitle}>POR QUÉ SOMOS DIFERENTES</Text>
@@ -320,7 +416,11 @@ export function PitchPDF({ data }: { data: PitchData }) {
 
         <View style={styles.ctaBox}>
           <Text style={styles.ctaLead}>
-            Contáctanos como te sea más fácil. Respondemos en menos de 4 horas hábiles.
+            Abre el demo público — sin registro, sin email, zero compromiso:
+          </Text>
+          <Text style={styles.ctaDemo}>{data.portalUrl}/demo/live</Text>
+          <Text style={styles.ctaLeadSecondary}>
+            O contáctanos directo · respondemos en {'<'} 4 horas hábiles:
           </Text>
           <View style={styles.ctaChannels}>
             <View style={styles.ctaChannel}>
@@ -345,10 +445,6 @@ export function PitchPDF({ data }: { data: PitchData }) {
                 <Text style={styles.ctaChannelVal}>{data.cta.calendly}</Text>
               </View>
             ) : null}
-            <View style={styles.ctaChannel}>
-              <Text style={styles.ctaChannelLabel}>PORTAL</Text>
-              <Text style={styles.ctaChannelVal}>{data.portalUrl}</Text>
-            </View>
           </View>
         </View>
 

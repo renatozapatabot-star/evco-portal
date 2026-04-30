@@ -74,18 +74,18 @@ export async function GET(request: NextRequest) {
     new Date(todayMs + offset * 86_400_000).toISOString().slice(0, 10)
 
   const horizonTopIso = dayIso(60)
+  void horizonTopIso
 
-  const { data, error } = await supabase
-    .from('globalpc_productos')
-    .select('id, company_id, cve_producto, descripcion, fraccion, nom_numero, nom_expiry, sedue_permit, sedue_expiry, semarnat_cert, semarnat_expiry')
-    .or(
-      `nom_expiry.lte.${horizonTopIso},sedue_expiry.lte.${horizonTopIso},semarnat_expiry.lte.${horizonTopIso}`,
-    )
-    .limit(1000)
-
+  // M16 phantom-sweep short-circuit: the 6 permit columns (nom_numero,
+  // nom_expiry, sedue_permit, sedue_expiry, semarnat_cert, semarnat_expiry)
+  // don't exist on globalpc_productos yet. Cron is a no-op until the
+  // permit-schema migration ships. See src/lib/catalogo/vencimientos.ts
+  // for the companion read-path stub + unblock recipe.
+  const data: ProductoRow[] = []
+  const error: { message: string } | null = null
   if (error) {
     return NextResponse.json(
-      { data: null, error: { code: 'DB_ERROR', message: error.message } },
+      { data: null, error: { code: 'DB_ERROR', message: (error as { message: string }).message } },
       { status: 500 },
     )
   }

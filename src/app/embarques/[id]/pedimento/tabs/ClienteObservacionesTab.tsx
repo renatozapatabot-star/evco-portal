@@ -12,6 +12,7 @@ import { usePedimento, errorFor } from '@/components/pedimento/PedimentoContext'
 import { useAutosaveField } from '@/lib/hooks/useAutosaveField'
 import { ACCENT_SILVER, ACCENT_SILVER_DIM } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
+import { GlassCard } from '@/components/aguila'
 
 const RED = 'var(--portal-status-red-fg)'
 
@@ -73,13 +74,10 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div
+      <GlassCard
+        tier="hero"
+        padding={20}
         style={{
-          padding: 20,
-          borderRadius: 20,
-          background: 'rgba(255,255,255,0.045)',
-          border: '1px solid rgba(192,197,206,0.18)',
-          backdropFilter: 'blur(20px)',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
           gap: 16,
@@ -130,17 +128,9 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
             Resuelto desde <code style={{ fontFamily: 'var(--font-mono)' }}>companies.name</code>.
           </div>
         </div>
-      </div>
+      </GlassCard>
 
-      <div
-        style={{
-          padding: 20,
-          borderRadius: 20,
-          background: 'rgba(255,255,255,0.045)',
-          border: '1px solid rgba(192,197,206,0.18)',
-          backdropFilter: 'blur(20px)',
-        }}
-      >
+      <GlassCard tier="hero" padding={20}>
         <AutosaveField
           pedimentoId={pedimentoId}
           tab="cliente_observaciones"
@@ -155,17 +145,9 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
           onError={(m) => onError('observations', m)}
           validationError={e('observations')}
         />
-      </div>
+      </GlassCard>
 
-      <div
-        style={{
-          padding: 20,
-          borderRadius: 20,
-          background: 'rgba(255,255,255,0.045)',
-          border: '1px solid rgba(192,197,206,0.18)',
-          backdropFilter: 'blur(20px)',
-        }}
-      >
+      <GlassCard tier="hero" padding={20}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
           <span
             style={{
@@ -262,7 +244,7 @@ export function ClienteObservacionesTab({ pedimento, clienteName }: ClienteObser
             {identifiersError}
           </div>
         )}
-      </div>
+      </GlassCard>
     </div>
   )
 }

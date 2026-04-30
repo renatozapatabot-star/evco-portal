@@ -21,6 +21,7 @@ import {
   TEXT_SECONDARY,
 } from '@/lib/design-system'
 import { fmtDateTime } from '@/lib/format-utils'
+import { GlassCard } from '@/components/aguila'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -112,18 +113,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
         ← Equipo
       </Link>
 
-      <header
-        style={{
-          marginTop: 12,
-          background: 'rgba(255,255,255,0.045)',
-          backdropFilter: 'blur(20px)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: 20,
-          padding: 20,
-          boxShadow: GLASS_SHADOW,
-          marginBottom: 16,
-        }}
-      >
+      <GlassCard tier="hero" padding={20} style={{ marginTop: 12, marginBottom: 16 }}>
         <h1
           style={{
             fontFamily: SANS,
@@ -150,7 +140,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
             {operator.active ? '● Activo' : '○ Inactivo'}
           </span>
         </div>
-      </header>
+      </GlassCard>
 
       <section
         style={{
@@ -161,16 +151,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
         }}
       >
         {/* Per-action-type counts */}
-        <aside
-          style={{
-            background: 'rgba(255,255,255,0.045)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${BORDER}`,
-            borderRadius: 20,
-            padding: 20,
-            boxShadow: GLASS_SHADOW,
-          }}
-        >
+        <GlassCard tier="hero" padding={20}>
           <h2 style={{
             fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
@@ -210,19 +191,10 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
               ))}
             </ul>
           )}
-        </aside>
+        </GlassCard>
 
         {/* Recent action feed */}
-        <div
-          style={{
-            background: 'rgba(255,255,255,0.045)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${BORDER}`,
-            borderRadius: 20,
-            padding: 20,
-            boxShadow: GLASS_SHADOW,
-          }}
-        >
+        <GlassCard tier="hero" padding={20}>
           <h2 style={{
             fontSize: 'var(--aguila-fs-label)',
             fontWeight: 700,
@@ -272,7 +244,7 @@ export default async function OperatorDetailPage({ params }: { params: Promise<{
               ))}
             </ol>
           )}
-        </div>
+        </GlassCard>
       </section>
     </main>
   )

@@ -94,7 +94,7 @@ export default function TopBar({
             input. ⌘K focuses the input (wins over the legacy modal);
             Shift+⌘K still falls through to the advanced palette. */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 12px', minWidth: 0 }}>
-          <CruzCommand mode="compact" />
+          <CruzCommand mode="compact" hideAI={isClient} />
         </div>
 
         {/* Right: status indicators + alive pill + company name + logout */}

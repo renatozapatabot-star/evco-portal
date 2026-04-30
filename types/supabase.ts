@@ -387,17 +387,22 @@ export type Database = {
         Row: {
           action_taken: string | null
           autonomy_level: number | null
-          company_id: string | null
+          company_id: string
           confidence: number | null
           corrected_by: string | null
           created_at: string | null
           cycle_id: string
           decision: string
+          human_feedback: Json | null
           id: number
           outcome: string | null
+          outcome_recorded_at: string | null
           payload: Json | null
           processing_ms: number | null
           reasoning: string | null
+          tool_input: Json | null
+          tool_name: string | null
+          tool_output: Json | null
           trigger_id: string | null
           trigger_type: string
           was_correct: boolean | null
@@ -406,17 +411,22 @@ export type Database = {
         Insert: {
           action_taken?: string | null
           autonomy_level?: number | null
-          company_id?: string | null
+          company_id: string
           confidence?: number | null
           corrected_by?: string | null
           created_at?: string | null
           cycle_id: string
           decision: string
+          human_feedback?: Json | null
           id?: number
           outcome?: string | null
+          outcome_recorded_at?: string | null
           payload?: Json | null
           processing_ms?: number | null
           reasoning?: string | null
+          tool_input?: Json | null
+          tool_name?: string | null
+          tool_output?: Json | null
           trigger_id?: string | null
           trigger_type: string
           was_correct?: boolean | null
@@ -425,17 +435,22 @@ export type Database = {
         Update: {
           action_taken?: string | null
           autonomy_level?: number | null
-          company_id?: string | null
+          company_id?: string
           confidence?: number | null
           corrected_by?: string | null
           created_at?: string | null
           cycle_id?: string
           decision?: string
+          human_feedback?: Json | null
           id?: number
           outcome?: string | null
+          outcome_recorded_at?: string | null
           payload?: Json | null
           processing_ms?: number | null
           reasoning?: string | null
+          tool_input?: Json | null
+          tool_name?: string | null
+          tool_output?: Json | null
           trigger_id?: string | null
           trigger_type?: string
           was_correct?: boolean | null
@@ -2281,12 +2296,14 @@ export type Database = {
         Row: {
           active: boolean | null
           aduana: string | null
+          branding: Json | null
           clave_cliente: string | null
           company_id: string
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string | null
+          features: Json | null
           first_login_at: string | null
           first_question_at: string | null
           globalpc_clave: string | null
@@ -2311,12 +2328,14 @@ export type Database = {
         Insert: {
           active?: boolean | null
           aduana?: string | null
+          branding?: Json | null
           clave_cliente?: string | null
           company_id: string
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          features?: Json | null
           first_login_at?: string | null
           first_question_at?: string | null
           globalpc_clave?: string | null
@@ -2341,12 +2360,14 @@ export type Database = {
         Update: {
           active?: boolean | null
           aduana?: string | null
+          branding?: Json | null
           clave_cliente?: string | null
           company_id?: string
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          features?: Json | null
           first_login_at?: string | null
           first_question_at?: string | null
           globalpc_clave?: string | null
@@ -2947,6 +2968,80 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      cruz_ai_conversations: {
+        Row: {
+          company_id: string
+          id: string
+          last_message_at: string
+          metadata: Json | null
+          operator_id: string | null
+          role: string
+          session_id: string
+          started_at: string
+        }
+        Insert: {
+          company_id: string
+          id?: string
+          last_message_at?: string
+          metadata?: Json | null
+          operator_id?: string | null
+          role: string
+          session_id: string
+          started_at?: string
+        }
+        Update: {
+          company_id?: string
+          id?: string
+          last_message_at?: string
+          metadata?: Json | null
+          operator_id?: string | null
+          role?: string
+          session_id?: string
+          started_at?: string
+        }
+        Relationships: []
+      }
+      cruz_ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          tools_called: string[]
+          turn_index: number
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          tools_called?: string[]
+          turn_index: number
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          tools_called?: string[]
+          turn_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cruz_ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cruz_ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cruz_conversations: {
         Row: {
@@ -6425,6 +6520,137 @@ export type Database = {
           },
         ]
       }
+      lead_activities: {
+        Row: {
+          actor_name: string | null
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          lead_id: string
+          metadata: Json | null
+          occurred_at: string
+          summary: string
+        }
+        Insert: {
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          lead_id: string
+          metadata?: Json | null
+          occurred_at?: string
+          summary: string
+        }
+        Update: {
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          lead_id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          aduana: string | null
+          client_code_assigned: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_title: string | null
+          converted_at: string | null
+          created_at: string
+          firm_name: string
+          id: string
+          industry: string | null
+          last_contact_at: string | null
+          next_action_at: string | null
+          next_action_note: string | null
+          notes: string | null
+          owner_user_id: string | null
+          priority: string | null
+          rfc: string | null
+          source: string
+          source_campaign: string | null
+          source_url: string | null
+          stage: string
+          stage_changed_at: string | null
+          updated_at: string
+          value_monthly_mxn: number | null
+          volume_note: string | null
+        }
+        Insert: {
+          aduana?: string | null
+          client_code_assigned?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_title?: string | null
+          converted_at?: string | null
+          created_at?: string
+          firm_name: string
+          id?: string
+          industry?: string | null
+          last_contact_at?: string | null
+          next_action_at?: string | null
+          next_action_note?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          priority?: string | null
+          rfc?: string | null
+          source?: string
+          source_campaign?: string | null
+          source_url?: string | null
+          stage?: string
+          stage_changed_at?: string | null
+          updated_at?: string
+          value_monthly_mxn?: number | null
+          volume_note?: string | null
+        }
+        Update: {
+          aduana?: string | null
+          client_code_assigned?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_title?: string | null
+          converted_at?: string | null
+          created_at?: string
+          firm_name?: string
+          id?: string
+          industry?: string | null
+          last_contact_at?: string | null
+          next_action_at?: string | null
+          next_action_note?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          priority?: string | null
+          rfc?: string | null
+          source?: string
+          source_campaign?: string | null
+          source_url?: string | null
+          stage?: string
+          stage_changed_at?: string | null
+          updated_at?: string
+          value_monthly_mxn?: number | null
+          volume_note?: string | null
+        }
+        Relationships: []
+      }
       learned_patterns: {
         Row: {
           active: boolean | null
@@ -7238,7 +7464,7 @@ export type Database = {
       operator_actions: {
         Row: {
           action_type: string
-          company_id: string | null
+          company_id: string
           created_at: string
           duration_ms: number | null
           id: number
@@ -7251,7 +7477,7 @@ export type Database = {
         }
         Insert: {
           action_type: string
-          company_id?: string | null
+          company_id: string
           created_at?: string
           duration_ms?: number | null
           id?: number
@@ -7264,7 +7490,7 @@ export type Database = {
         }
         Update: {
           action_type?: string
-          company_id?: string | null
+          company_id?: string
           created_at?: string
           duration_ms?: number | null
           id?: number
@@ -7450,7 +7676,7 @@ export type Database = {
       }
       pedimento_drafts: {
         Row: {
-          company_id: string | null
+          company_id: string
           created_at: string | null
           created_by: string | null
           draft_data: Json | null
@@ -7464,7 +7690,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          company_id?: string | null
+          company_id: string
           created_at?: string | null
           created_by?: string | null
           draft_data?: Json | null
@@ -7478,7 +7704,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          company_id?: string | null
+          company_id?: string
           created_at?: string | null
           created_by?: string | null
           draft_data?: Json | null

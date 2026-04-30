@@ -36,6 +36,7 @@ import { AguilaMark } from '@/components/brand/AguilaMark'
 import { AguilaWordmark } from '@/components/brand/AguilaWordmark'
 import { categoryForDocCode, type DocCategory } from '@/lib/document-types'
 import { track } from '@/lib/telemetry/useTrack'
+import { AguilaTextarea } from '@/components/aguila'
 
 const CATEGORY_LABELS: Record<DocCategory, string> = {
   COMERCIAL: 'Comercial',
@@ -824,39 +825,17 @@ export default function ProveedorPage() {
                   Al confirmar, el agente aduanal recibe aviso de que la mercancía está
                   lista para recoger.
                 </p>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: 'var(--aguila-fs-meta)',
-                    fontWeight: 700,
-                    color: 'var(--portal-fg-4)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    marginBottom: 6,
-                  }}
-                >
-                  Nota (opcional)
-                </label>
-                <textarea
-                  value={confirmNote}
-                  onChange={(e) => setConfirmNote(e.target.value)}
-                  maxLength={500}
-                  rows={3}
-                  placeholder="Ej. Listo para recoger mañana 8 AM en bodega Norte"
-                  style={{
-                    width: '100%',
-                    minHeight: 72,
-                    padding: 12,
-                    borderRadius: 12,
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    color: 'var(--portal-fg-1)',
-                    fontSize: 'var(--aguila-fs-section)',
-                    fontFamily: 'inherit',
-                    resize: 'vertical',
-                    marginBottom: 12,
-                  }}
-                />
+                <div style={{ marginBottom: 12 }}>
+                  <AguilaTextarea
+                    label="Nota (opcional)"
+                    value={confirmNote}
+                    onChange={(e) => setConfirmNote(e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                    placeholder="Ej. Listo para recoger mañana 8 AM en bodega Norte"
+                    style={{ minHeight: 72 }}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={handleConfirm}

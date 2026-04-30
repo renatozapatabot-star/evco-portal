@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
+import { Lock, CheckCircle, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getCookieValue } from '@/lib/client-config'
 import { BG_ELEVATED } from '@/lib/design-system'
+import { AguilaPasswordInput } from '@/components/aguila'
 
 export default function CambiarContrasena() {
   const router = useRouter()
@@ -122,113 +123,40 @@ export default function CambiarContrasena() {
         )}
 
         {/* Current password */}
-        <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: 'var(--portal-fg-1)', display: 'block', marginBottom: 6 }}>
-            Contraseña actual
-          </span>
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showCurrent ? 'text' : 'password'}
-              value={currentPw}
-              onChange={e => setCurrentPw(e.target.value)}
-              required
-              autoComplete="current-password"
-              style={{
-                width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
-                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                background: 'var(--portal-ink-0)', minHeight: 60,
-                boxSizing: 'border-box',
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowCurrent(!showCurrent)}
-              style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', padding: 8,
-                color: 'var(--portal-fg-5)', minHeight: 44, minWidth: 44,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-              aria-label={showCurrent ? 'Ocultar' : 'Mostrar'}
-            >
-              {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </label>
+        <div style={{ marginBottom: 16 }}>
+          <AguilaPasswordInput
+            label="Contraseña actual"
+            value={currentPw}
+            onChange={(e) => setCurrentPw(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
 
         {/* New password */}
-        <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: 'var(--portal-fg-1)', display: 'block', marginBottom: 6 }}>
-            Nueva contraseña
-          </span>
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showNew ? 'text' : 'password'}
-              value={newPw}
-              onChange={e => setNewPw(e.target.value)}
-              required
-              minLength={6}
-              autoComplete="new-password"
-              style={{
-                width: '100%', padding: '12px 44px 12px 12px', fontSize: 15,
-                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                background: 'var(--portal-ink-0)', minHeight: 60,
-                boxSizing: 'border-box',
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', padding: 8,
-                color: 'var(--portal-fg-5)', minHeight: 44, minWidth: 44,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-              aria-label={showNew ? 'Ocultar' : 'Mostrar'}
-            >
-              {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-          {newPw.length > 0 && newPw.length < 6 && (
-            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--amber-text, #92400E)', marginTop: 4, display: 'block' }}>
-              Mínimo 6 caracteres
-            </span>
-          )}
-        </label>
+        <div style={{ marginBottom: 16 }}>
+          <AguilaPasswordInput
+            label="Nueva contraseña"
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+            required
+            minLength={6}
+            autoComplete="new-password"
+            hint={newPw.length > 0 && newPw.length < 6 ? 'Mínimo 6 caracteres' : undefined}
+          />
+        </div>
 
         {/* Confirm password */}
-        <label style={{ display: 'block', marginBottom: 24 }}>
-          <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 500, color: 'var(--portal-fg-1)', display: 'block', marginBottom: 6 }}>
-            Confirmar nueva contraseña
-          </span>
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showConfirm ? 'text' : 'password'}
-              value={confirmPw}
-              onChange={e => setConfirmPw(e.target.value)}
-              required
-              autoComplete="new-password"
-              style={{
-                width: '100%', padding: 12, paddingRight: 48, fontSize: 15,
-                border: `1px solid ${confirmPw && confirmPw !== newPw ? 'var(--red-500, #DC2626)' : 'rgba(255,255,255,0.08)'}`,
-                borderRadius: 8, background: 'var(--portal-ink-0)', minHeight: 60,
-                boxSizing: 'border-box',
-              }}
-            />
-            <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{
-              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--portal-fg-4)', padding: 4,
-            }}>
-              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-          {confirmPw && confirmPw !== newPw && (
-            <span style={{ fontSize: 'var(--aguila-fs-compact)', color: 'var(--red-text, #991B1B)', marginTop: 4, display: 'block' }}>
-              Las contraseñas no coinciden
-            </span>
-          )}
-        </label>
+        <div style={{ marginBottom: 24 }}>
+          <AguilaPasswordInput
+            label="Confirmar nueva contraseña"
+            value={confirmPw}
+            onChange={(e) => setConfirmPw(e.target.value)}
+            required
+            autoComplete="new-password"
+            error={confirmPw && confirmPw !== newPw ? 'Las contraseñas no coinciden' : undefined}
+          />
+        </div>
 
         {currentPw === newPw && newPw.length > 0 && (
           <div style={{

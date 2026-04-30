@@ -18,11 +18,35 @@ Tenant-scoped tables (must include `company_id` on every write):
 
 ```
 globalpc_productos · globalpc_partidas · globalpc_facturas · globalpc_eventos
-globalpc_proveedores · globalpc_contenedores · globalpc_ordenes_carga
-globalpc_bultos · anexo24_partidas · pedimento_drafts
-traficos · entradas · expediente_documentos · audit_log · sync_log
-classification_log · pedimento_ocas · mensajeria_* · proveedor_rfc_cache
+globalpc_proveedores · anexo24_partidas · pedimento_drafts
+traficos · entradas · expediente_documentos
+pedimento_ocas · mensajeria_* · proveedor_rfc_cache
+operator_actions · agent_decisions · notifications
 ```
+
+**Mixed-scope tables (company_id MAY be NULL for infrastructure-level rows):**
+
+```
+sync_log         → per-tenant runs MUST stamp company_id
+                   (risk_scorer, risk_feed).
+                   Infra-wide runs MAY be NULL
+                   (globalpc_delta, email_intake, content_intel).
+audit_log        → broker-internal events MAY be NULL; client-scoped
+                   actions MUST stamp company_id.
+classification_log → uses legacy `client_id + ts` keys, NOT
+                     `company_id`. Queries must join on those.
+```
+
+**Tables without company_id (out of scope for this contract):**
+
+```
+globalpc_contenedores · globalpc_ordenes_carga · globalpc_bultos
+heartbeat_log · clients
+```
+
+These reach tenant scope transitively (e.g. `globalpc_bultos` →
+`globalpc_ordenes_carga` → `cve_cliente` → `companies`). Reads must
+still filter via the parent's tenant key.
 
 If you add a new tenant-scoped table, add it here in the same PR.
 

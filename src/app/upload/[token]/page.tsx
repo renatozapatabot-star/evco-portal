@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
+import { AguilaInput } from '@/components/aguila'
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
@@ -297,10 +298,17 @@ function ReferralForm() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre de la empresa"
-        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: 'var(--portal-fg-2)', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
-      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email de contacto (opcional)"
-        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(196,150,60,0.3)', background: 'rgba(255,255,255,0.05)', color: 'var(--portal-fg-2)', fontSize: 'var(--aguila-fs-body)', outline: 'none' }} />
+      <AguilaInput
+        placeholder="Nombre de la empresa"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <AguilaInput
+        type="email"
+        placeholder="Email de contacto (opcional)"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
       <button onClick={submit} disabled={!name.trim()}
         style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: name.trim() ? 'var(--gold)' : 'var(--text-primary)', color: name.trim() ? 'var(--text-primary)' : 'var(--portal-fg-5)', fontSize: 'var(--aguila-fs-body)', fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default' }}>
         Recomendar

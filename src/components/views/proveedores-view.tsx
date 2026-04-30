@@ -29,8 +29,10 @@ export function ProveedoresView() {
           .from('supplier_network')
           .select('supplier_name, reliability_score, tmec_eligible, total_operations'),
         supabase
+          // traficos real column is `proveedores` (plural text, e.g.
+          // "PRV_526"). No scalar `proveedor` column (M15 phantom sweep).
           .from('traficos')
-          .select('proveedor, fecha_llegada, fecha_cruce')
+          .select('proveedores, fecha_llegada, fecha_cruce')
           .eq('company_id', companyId)
           .not('fecha_llegada', 'is', null)
           .not('fecha_cruce', 'is', null)
@@ -43,7 +45,7 @@ export function ProveedoresView() {
       // Compute avg crossing days per supplier from traficos
       const daysMap = new Map<string, number[]>()
       for (const t of traficosData) {
-        const key = (t.proveedor || '').toLowerCase().trim()
+        const key = (t.proveedores || '').toLowerCase().trim()
         if (!key) continue
         const arrival = new Date(t.fecha_llegada)
         const cross = new Date(t.fecha_cruce)

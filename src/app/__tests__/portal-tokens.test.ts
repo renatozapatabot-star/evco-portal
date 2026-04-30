@@ -49,6 +49,25 @@ describe('portal-tokens.css', () => {
     expect(tokens).toMatch(/\[data-density=["']?compact/)
     expect(tokens).toMatch(/\[data-motion=["']?off/)
   })
+
+  // V1 canonical brand tokens — single source of truth for
+  // tailwind.config.ts + design-system.ts mirrors.
+  it('defines the 9-step gold scale (50 + 100-800) and gold-500 canonical base', () => {
+    expect(tokens).toMatch(/--portal-gold-50:/)
+    for (const step of [100, 200, 300, 400, 500, 600, 700, 800]) {
+      expect(tokens).toMatch(new RegExp(`--portal-gold-${step}:`))
+    }
+    // Canonical brand base (ZAPATA_GOLD_BASE)
+    expect(tokens).toMatch(/--portal-gold-500:\s*#C9A74A/)
+  })
+
+  it('defines --portal-z-red (heraldic mark-only color)', () => {
+    expect(tokens).toMatch(/--portal-z-red:\s*#CC1B2F/)
+  })
+
+  it('defines a silver gold gradient for wordmark + CTAs', () => {
+    expect(tokens).toMatch(/--portal-gold-gradient:\s*linear-gradient/)
+  })
 })
 
 describe('portal-components.css', () => {
@@ -60,5 +79,16 @@ describe('portal-components.css', () => {
 
   it('respects prefers-reduced-motion', () => {
     expect(components).toMatch(/prefers-reduced-motion:\s*reduce/)
+  })
+
+  // V1 chip chemistry — canonical per portal-design-system.md §chip chemistry.
+  it('ships the portal-badge--live emerald variant', () => {
+    expect(components).toMatch(/\.portal-badge--live\s*\{/)
+  })
+
+  // V1 module-grid stagger — canonical per portal-design-system.md §stagger.
+  it('ships the module-grid staggered entrance animation', () => {
+    expect(components).toMatch(/\.portal-modules-grid\s*>\s*\*\s*\{/)
+    expect(components).toMatch(/portalReveal\s+400ms/)
   })
 })

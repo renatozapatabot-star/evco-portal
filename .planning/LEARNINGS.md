@@ -239,3 +239,55 @@ What the next block should do:
 - Delete orphan `src/components/aguila/design-tokens.ts` (`statusConfig`
   + `TraficoStatus` type have zero consumers). Move the type to
   `@/types/supabase` if retained.
+
+
+---
+
+## 2026-04-24 · V1 Clean Visibility audit — 3 deferred FLAGs
+
+After PR #1 (V1 reset, b29e627) merged, a three-subagent audit
+(security-auditor / aduanero / reviewer) found 5 BLOCKs and 6 FLAGs.
+PR #2 (b8da4ba) hotfixed all 5 BLOCKs and 3 FLAGs. The remaining 3
+FLAGs are deferred here for the next session:
+
+**FLAG-01 — `src/app/api/auditoria-pdf/pdf-document.tsx:193,242`**
+The audit PDF strips the `DD AD PPPP ` prefix and renders only the
+7-digit sequential pedimento number. May be intentional column-width
+truncation, may be a format compliance issue under Art. 59-A Ley
+Aduanera. Owner: Tito to review whether the audit PDF format is SAT-
+acceptable as-is. Action if regulatory issue: revert truncation; widen
+the column or wrap. Action if approved: add inline comment documenting
+that the truncation is intentional and Tito-approved with date.
+
+**FLAG-02 — `src/lib/pedimentos/clearance.ts` vs `src/lib/cockpit/success-rate.ts` divergence**
+`CLEARED_STATUSES` includes `Entregado` + `Completo`; `SUCCESS_ESTATUSES`
+includes `Desaduanado` instead. Zero rows in current data for any of
+the three on Patente 3596 (only Cruzado / E1 / Pedimento Pagado / En
+Proceso emit). Future client (MAFESA, Tier-1) may emit `Desaduanado`
+and the cockpit success-rate KPI would diverge from the /pedimentos
+list page Cleared/Not cleared label. Action: align both sets to one
+canonical list, with a comment citing the inventory-statuses.js output
+date the list was validated against. Run before MAFESA activation.
+
+**FLAG-03 — `.claude/rules/design-system.md` v7 section stale**
+Says "Six nav cards" with `traficos / pedimentos / expedientes /
+catalogo / entradas / clasificaciones`. Now five cards per V1 reset.
+Doc-only drift; a future Claude session reading this file will be
+misled toward the prior tile list. Action: append `[SUPERSEDED
+2026-04-24 by founder-overrides.md]` marker above the table, OR update
+the table to match `UNIFIED_NAV_TILES`. Owner: Renato IV at next polish
+pass.
+
+**Process learning:** running `gsd-verify --ratchets-only` is NOT
+sufficient pre-merge; the full `gsd-verify.sh` catches drift the
+ratchet-only mode silently passes. Update the ship.sh Gate 1 to run
+the full suite, with a dedicated `--ship-gates` mode that exits
+non-zero only on NEW failures (delta vs main).
+
+**Process learning #2:** subagent-only audits scale beyond what the
+operator can review by hand. The 3-subagent panel (security-auditor /
+aduanero / reviewer) on this audit found 5 BLOCKs that no single agent
+caught — F1b internal-role bypass was security-auditor; fecha_cruce
+miss was aduanero; scroll-lock + 60px were reviewer. Use the parallel
+panel pattern on every future ship-gate audit, not just on
+controversial changes.

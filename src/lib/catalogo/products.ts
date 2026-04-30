@@ -28,6 +28,13 @@ export interface CatalogoRow {
   valor_ytd_usd: number | null
   ultimo_cve_trafico: string | null
   ultima_fecha_llegada: string | null
+  /** Crossing-health enrichment from the traficos join (M8 — list-level
+   * signal so Ursula sees semáforo health without drilling in). All
+   * three are null when the last trafico never filed (still in-process)
+   * or when the ref doesn't join (stale partida ref). */
+  ultimo_semaforo: number | null
+  ultima_fecha_cruce: string | null
+  ultimo_pedimento: string | null
   /** Where this row's canonical name + fracción came from. */
   source_of_truth: SourceOfTruth
   /** Relationship between anexo24_parts + globalpc_productos for this cve. */
@@ -50,11 +57,17 @@ interface RawProveedor {
   nombre: string | null
 }
 
+// Real partidas schema — M12 fix. Prior shape (cve_trafico, descripcion,
+// valor_comercial, fecha_llegada) was phantom; queries 400'd silently
+// and every catalog row showed 0 uses. Now joining by cve_producto
+// (real column) and computing value from cantidad × precio_unitario
+// (valor_comercial lives on globalpc_facturas, not partidas).
 interface RawPartida {
-  cve_trafico: string | null
-  descripcion: string | null
-  valor_comercial: number | string | null
-  fecha_llegada: string | null
+  cve_producto: string | null
+  folio: number | null
+  created_at: string | null
+  cantidad: number | null
+  precio_unitario: number | null
 }
 
 function toNumber(v: unknown): number {
@@ -127,6 +140,13 @@ export function mergeCatalogoRows(
         valor_ytd_usd: agg ? agg.valor : null,
         ultimo_cve_trafico: agg?.lastTrafico ?? null,
         ultima_fecha_llegada: agg?.lastFecha ?? null,
+        // Crossing enrichment filled in a separate pass after the merge
+        // (see enrichRowsWithCrossings below). mergeCatalogoRows stays
+        // pure — the traficos query needs a Supabase client which belongs
+        // in getCatalogo, not here.
+        ultimo_semaforo: null,
+        ultima_fecha_cruce: null,
+        ultimo_pedimento: null,
         source_of_truth: sourceOfTruth,
         drift,
       }
@@ -310,9 +330,12 @@ export async function getCatalogo(
   const proveedorIds = Array.from(new Set(
     productos.map((p) => p.cve_proveedor).filter((x): x is string => Boolean(x)),
   ))
-  const descripciones = Array.from(new Set(
-    productos.map((p) => (p.descripcion ?? '').trim().toUpperCase()).filter((x) => x.length > 0),
-  ))
+  // Join partidas by cve_producto (real column · M12 fix). Each partida
+  // carries its folio — we resolve the 2-hop trafico linkage in a
+  // follow-up step via resolvePartidaLinks.
+  const cvesInBatch = Array.from(
+    new Set(productos.map((p) => p.cve_producto).filter((x): x is string => !!x)),
+  )
 
   const [proveedoresRes, partidasRes] = await Promise.all([
     proveedorIds.length > 0
@@ -321,12 +344,12 @@ export async function getCatalogo(
           .select('cve_proveedor, nombre')
           .in('cve_proveedor', proveedorIds)
       : Promise.resolve({ data: [] as RawProveedor[] }),
-    descripciones.length > 0
+    cvesInBatch.length > 0
       ? supabase
           .from('globalpc_partidas')
-          .select('cve_trafico, descripcion, valor_comercial, fecha_llegada')
+          .select('cve_producto, folio, created_at, cantidad, precio_unitario')
           .eq('company_id', companyId)
-          .in('descripcion', descripciones.slice(0, 200))
+          .in('cve_producto', cvesInBatch.slice(0, 1000))
           .limit(5000)
       : Promise.resolve({ data: [] as RawPartida[] }),
   ])
@@ -336,16 +359,49 @@ export async function getCatalogo(
     if (p.cve_proveedor && p.nombre) proveedorMap.set(p.cve_proveedor, p.nombre)
   }
 
-  const partidaAgg = new Map<string, { count: number; valor: number; lastTrafico: string | null; lastFecha: string | null }>()
-  for (const row of (partidasRes.data ?? []) as RawPartida[]) {
-    const desc = (row.descripcion ?? '').trim().toUpperCase()
+  // Resolve partidas → facturas → traficos for the fetched partidas so
+  // the aggregate carries real fecha_llegada + cve_trafico per SKU.
+  const partidasRows = (partidasRes.data ?? []) as RawPartida[]
+  const partidaLinks = await (async () => {
+    if (partidasRows.length === 0) {
+      return { byFolio: new Map(), distinctCveTraficos: [] as string[] }
+    }
+    const { resolvePartidaLinks } = await import(
+      '@/lib/queries/partidas-trafico-link'
+    )
+    return resolvePartidaLinks(
+      supabase,
+      companyId,
+      partidasRows.map((p) => ({ folio: p.folio })),
+    )
+  })()
+
+  // Aggregate partidas by cve_producto (the merger's key) — count uses,
+  // sum value (cantidad × precio_unitario), track last trafico ref +
+  // fecha_cruce via the resolved link map.
+  const partidaAgg = new Map<
+    string,
+    { count: number; valor: number; lastTrafico: string | null; lastFecha: string | null }
+  >()
+  for (const row of partidasRows) {
+    if (!row.cve_producto) continue
+    // Merger's key is the product descripcion uppercased (preserved
+    // for the aguila products merger which joins productos by that key).
+    // Look up the product's canonical descripcion from the productos array.
+    const prod = productos.find((p) => p.cve_producto === row.cve_producto)
+    const desc = (prod?.descripcion ?? '').trim().toUpperCase()
     if (!desc) continue
+
+    const link = row.folio != null ? partidaLinks.byFolio.get(row.folio) : null
+    const valor = toNumber(row.cantidad) * toNumber(row.precio_unitario)
+    const lastEvent = link?.fecha_cruce ?? link?.fecha_llegada ?? row.created_at ?? null
+
     const prev = partidaAgg.get(desc) ?? { count: 0, valor: 0, lastTrafico: null, lastFecha: null }
     prev.count += 1
-    prev.valor += toNumber(row.valor_comercial)
-    if (row.fecha_llegada && (!prev.lastFecha || row.fecha_llegada > prev.lastFecha)) {
-      prev.lastFecha = row.fecha_llegada
-      prev.lastTrafico = row.cve_trafico
+    prev.valor += valor
+    if (lastEvent && (!prev.lastFecha || lastEvent > prev.lastFecha)) {
+      prev.lastFecha = lastEvent
+      prev.lastTrafico = link?.cve_trafico ?? prev.lastTrafico
     }
     partidaAgg.set(desc, prev)
   }
@@ -392,6 +448,58 @@ export async function getCatalogo(
   }
 
   let merged = mergeCatalogoRows(productos, proveedorMap, partidaAgg, anexoOverlay)
+
+  // Crossings enrichment — single bulk query by distinct
+  // ultimo_cve_trafico, then back-fill each row. Keeps the hot-list
+  // page to ≤4 DB roundtrips while still delivering the M8 list-level
+  // signal ("Último cruce · verde · 3 abr").
+  const distinctLastTraficos = Array.from(
+    new Set(
+      merged
+        .map((r) => r.ultimo_cve_trafico)
+        .filter((t): t is string => typeof t === 'string' && t.length > 0),
+    ),
+  )
+  if (distinctLastTraficos.length > 0) {
+    try {
+      const { data: traficoRows } = await supabase
+        .from('traficos')
+        .select('trafico, pedimento, fecha_cruce, semaforo')
+        .eq('company_id', companyId)
+        .in('trafico', distinctLastTraficos)
+      const lookup = new Map<
+        string,
+        { semaforo: number | null; pedimento: string | null; fecha_cruce: string | null }
+      >()
+      for (const t of (traficoRows ?? []) as Array<{
+        trafico: string | null
+        pedimento: string | null
+        fecha_cruce: string | null
+        semaforo: number | null
+      }>) {
+        if (!t.trafico) continue
+        lookup.set(t.trafico, {
+          semaforo: typeof t.semaforo === 'number' ? t.semaforo : null,
+          pedimento: t.pedimento ?? null,
+          fecha_cruce: t.fecha_cruce ?? null,
+        })
+      }
+      merged = merged.map((r) => {
+        if (!r.ultimo_cve_trafico) return r
+        const hit = lookup.get(r.ultimo_cve_trafico)
+        if (!hit) return r
+        return {
+          ...r,
+          ultimo_semaforo: hit.semaforo,
+          ultimo_pedimento: hit.pedimento,
+          ultima_fecha_cruce: hit.fecha_cruce,
+        }
+      })
+    } catch {
+      // Enrichment is best-effort — if traficos query fails, rows keep
+      // their null defaults and the UI degrades gracefully.
+    }
+  }
 
   // Source-of-truth filter at the row level (post-merge, so the drift
   // classification is already populated).

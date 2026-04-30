@@ -5,29 +5,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand — Gold (canonical: ZAPATA_GOLD_BASE #C9A74A — identity only)
-        // Mirrors --portal-gold-* in src/app/portal-tokens.css + ZAPATA_GOLD_*
-        // in src/lib/design-system.ts. Changing a value here must update both.
+        // Brand — Gold (canonical source: --portal-gold-* in portal-tokens.css,
+        // mirrored to ZAPATA_GOLD_* in design-system.ts). Tailwind reads from
+        // CSS vars so a token change in one place cascades here automatically.
         gold: {
-          DEFAULT: '#C9A74A',
-          50: 'rgba(201,167,74,0.08)',
-          100: '#FBF5E6',
-          200: '#F0D88A',
-          300: '#E8C468',
-          400: '#F4D47A',
-          500: '#C9A74A',
-          600: '#B8933B',
-          700: '#8F7628',
-          800: '#7A5C1E',
+          DEFAULT: 'rgb(from var(--portal-gold-500) r g b / <alpha-value>)',
+          50:  'rgb(from var(--portal-gold-50) r g b / <alpha-value>)',
+          100: 'rgb(from var(--portal-gold-100) r g b / <alpha-value>)',
+          200: 'rgb(from var(--portal-gold-200) r g b / <alpha-value>)',
+          300: 'rgb(from var(--portal-gold-300) r g b / <alpha-value>)',
+          400: 'rgb(from var(--portal-gold-400) r g b / <alpha-value>)',
+          500: 'rgb(from var(--portal-gold-500) r g b / <alpha-value>)',
+          600: 'rgb(from var(--portal-gold-600) r g b / <alpha-value>)',
+          700: 'rgb(from var(--portal-gold-700) r g b / <alpha-value>)',
+          800: 'rgb(from var(--portal-gold-800) r g b / <alpha-value>)',
         },
-        // Brand — Navy (sidebar)
+        // Brand — Navy (sidebar). Source: --navy-* in globals.css.
         navy: {
-          700: '#18293F',
-          800: '#1A2535',
-          900: '#0D0D0C',
+          700: 'rgb(from var(--navy-700) r g b / <alpha-value>)',
+          800: 'rgb(from var(--navy-800) r g b / <alpha-value>)',
+          900: 'rgb(from var(--navy-900) r g b / <alpha-value>)',
         },
-        // Brand — Z Red (mark only)
-        'z-red': '#CC1B2F',
+        // Brand — Z Red (mark only). Source: --portal-z-red in portal-tokens.css.
+        'z-red': 'rgb(from var(--portal-z-red) r g b / <alpha-value>)',
         // Canvas (v6 dark — was #FAFAF8 warm-white in pre-v6)
         canvas: 'rgb(from var(--portal-ink-0) r g b / <alpha-value>)',
         // Status

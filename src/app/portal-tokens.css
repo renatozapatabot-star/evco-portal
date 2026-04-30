@@ -65,6 +65,13 @@
   --portal-gold-glow:         rgba(201,167,74,0.28);
   --portal-gold-glow-subtle:  rgba(201,167,74,0.12);
 
+  /* —— Brand Z mark (exclusive token, mark-only use) ————
+     Canonical source for the Z mark red. Mirrors Z_RED in
+     src/lib/design-system.ts. Not interchangeable with semáforo red
+     (--portal-status-red-fg) or status red — Z mark is the heraldic
+     accent on the brand identity surface only. */
+  --portal-z-red:             #CC1B2F;
+
   /* —— Semáforo (customs inspection) ——————————————————
      Consumed by SemaforoPill. Tokenized so recoloring the semáforo palette
      cascades through every list and detail page without hunting inline rgba. */

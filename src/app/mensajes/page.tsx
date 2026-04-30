@@ -138,7 +138,15 @@ export default function MensajesPage() {
         if (!isInternal && companyId && newMsg.company_id !== companyId) return
         setMessages(prev => [newMsg, ...prev])
       })
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cruz:realtime-degraded', {
+              detail: { source: 'whatsapp', reason: status, error: err?.message },
+            }))
+          }
+        }
+      })
 
     return () => { supabase.removeChannel(channel) }
   }, [companyId, isInternal])

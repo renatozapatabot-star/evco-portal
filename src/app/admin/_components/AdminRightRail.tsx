@@ -1,6 +1,7 @@
 'use client'
 
-import { BG_CARD, BORDER, GLASS_BLUR, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, GREEN, GOLD, ACCENT_SILVER } from '@/lib/design-system'
+import { BORDER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, GREEN, GOLD, ACCENT_SILVER } from '@/lib/design-system'
+import { GlassCard } from '@/components/aguila'
 import { fmtDateTime } from '@/lib/format-utils'
 import type { PipelineStage, ActivityEvent, TeamMember } from '@/types/cockpit'
 
@@ -155,14 +156,7 @@ export function AdminRightRail({ pipeline, activity, team, isLive }: AdminRightR
 
 function RailCard({ title, children, dot }: { title: string; children: React.ReactNode; dot?: boolean }) {
   return (
-    <div style={{
-      background: BG_CARD,
-      backdropFilter: `blur(${GLASS_BLUR})`,
-      WebkitBackdropFilter: `blur(${GLASS_BLUR})`,
-      border: `1px solid ${BORDER}`,
-      borderRadius: 20,
-      padding: '16px 18px',
-    }}>
+    <GlassCard tier="hero" padding="16px 18px">
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -195,6 +189,6 @@ function RailCard({ title, children, dot }: { title: string; children: React.Rea
           50% { opacity: 0.3; }
         }
       `}</style>
-    </div>
+    </GlassCard>
   )
 }

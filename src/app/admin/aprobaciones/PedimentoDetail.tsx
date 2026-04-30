@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast'
 import { LineItemsTable } from './LineItemsTable'
 import { ComplianceFlags } from './ComplianceFlags'
 import { approveAction, requestChangesAction, rejectAction } from './actions'
+import { AguilaTextarea } from '@/components/aguila'
 
 interface DraftRow {
   id: string
@@ -258,15 +259,12 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
 
         {actionState === 'changes' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <textarea
+            <AguilaTextarea
               value={note}
-              onChange={e => setNote(e.target.value)}
+              onChange={(e) => setNote(e.target.value)}
               placeholder="Describe los cambios necesarios..."
-              style={{
-                width: '100%', minHeight: 80, padding: 12, borderRadius: 12,
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
-              }}
+              rows={3}
+              style={{ minHeight: 80 }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
               <button
@@ -298,15 +296,13 @@ export function PedimentoDetail({ draft, onActionComplete }: Props) {
 
         {actionState === 'rejecting' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <textarea
+            <AguilaTextarea
               value={reason}
-              onChange={e => setReason(e.target.value)}
+              onChange={(e) => setReason(e.target.value)}
               placeholder="Razón del rechazo (requerido)..."
-              style={{
-                width: '100%', minHeight: 80, padding: 12, borderRadius: 12,
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(239,68,68,0.15)',
-                color: 'var(--portal-fg-1)', fontSize: 'var(--aguila-fs-section)', resize: 'vertical',
-              }}
+              required
+              rows={3}
+              style={{ minHeight: 80 }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
               <button

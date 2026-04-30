@@ -22,6 +22,7 @@ import {
   type WaitBucket,
 } from '@/lib/yard-entries'
 import { BG_ELEVATED } from '@/lib/design-system'
+import { GlassCard } from '@/components/aguila'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
@@ -355,17 +356,14 @@ export function PatioClient() {
       </div>
 
       {/* Active trailer grid */}
-      <section
-        aria-label="Cajas activas en patio"
+      <GlassCard
+        tier="hero"
+        padding={14}
+        ariaLabel="Cajas activas en patio"
         style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
-          padding: 14,
-          borderRadius: 20,
-          background: BG_ELEVATED,
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(192,197,206,0.18)',
         }}
       >
         <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)', margin: 0 }}>
@@ -456,20 +454,17 @@ export function PatioClient() {
             })}
           </ul>
         )}
-      </section>
+      </GlassCard>
 
       {/* Quick entry form */}
-      <section
-        aria-label="Registrar entrada"
+      <GlassCard
+        tier="hero"
+        padding={14}
+        ariaLabel="Registrar entrada"
         style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
-          padding: 14,
-          borderRadius: 20,
-          background: BG_ELEVATED,
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(192,197,206,0.18)',
         }}
       >
         <h2 style={{ fontSize: 'var(--aguila-fs-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--portal-fg-4)', margin: 0 }}>
@@ -756,7 +751,7 @@ export function PatioClient() {
             'Registrar'
           )}
         </button>
-      </section>
+      </GlassCard>
 
       {/* Grid picker modal */}
       {gridOpen && (

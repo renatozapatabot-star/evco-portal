@@ -41,11 +41,14 @@ interface TraficoRow {
 
 interface DocRow {
   id: string
-  document_type: string | null
-  document_type_confidence: number | null
+  // Real columns on expediente_documentos.
   doc_type: string | null
   file_name: string | null
-  created_at: string | null
+  uploaded_at: string | null
+  // Legacy optional fields — never in DB, retained only so consumer fallbacks
+  // `d.document_type || d.doc_type` stay valid at type level.
+  document_type?: string | null
+  document_type_confidence?: number | null
 }
 
 interface PartidaRow {
@@ -123,11 +126,13 @@ export default async function TraficoDetailPage({
 
   const [traficoRes, docsRes, facturasRes, decisionsRes, notesRes] = await Promise.all([
     traficoQ.maybeSingle(),
+    // expediente_documentos real columns: id, doc_type, file_name, uploaded_at.
+    // `pedimento_id` stores the trafico slug (not a pedimento number).
     supabase
       .from('expediente_documentos')
-      .select('id, document_type, document_type_confidence, doc_type, file_name, created_at')
-      .eq('trafico_id', traficoId)
-      .order('created_at', { ascending: false })
+      .select('id, doc_type, file_name, uploaded_at')
+      .eq('pedimento_id', traficoId)
+      .order('uploaded_at', { ascending: false })
       .limit(200),
     // Step 1 of partidas chain: folios for this embarque from globalpc_facturas.
     // (globalpc_partidas has no cve_trafico column — must hop via folio.)

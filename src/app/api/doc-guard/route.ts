@@ -26,7 +26,10 @@ export async function GET(req: NextRequest) {
 
   const [docsRes, traficoRes, dupsRes] = await Promise.all([
     supabase.from('documents').select('document_type, doc_type').or(`trafico_id.eq.${safe},metadata->>trafico.eq.${safe}`),
-    supabase.from('traficos').select('mve_folio, pedimento').eq('trafico', safe).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
+    // traficos.mve_folio is a phantom — MVE tracking lives in mve_alerts
+    // (not on traficos). MVE-present check falls back to checking mve_alerts
+    // separately if needed; for now just checks pedimento presence. M15 sweep.
+    supabase.from('traficos').select('pedimento').eq('trafico', safe).gte('fecha_llegada', PORTAL_DATE_FROM).single(),
     supabase.from('duplicates_detected').select('*').or(`trafico_id_1.eq.${safe},trafico_id_2.eq.${safe}`).eq('status', 'pending'),
   ])
 
@@ -38,8 +41,8 @@ export async function GET(req: NextRequest) {
   const required = REQUIRED_DOCS.map(rd => {
     let present = rd.patterns.some(p => docTypes.some(dt => dt.includes(p)))
 
-    // Special checks
-    if (rd.type === 'MVE' && traficoData?.mve_folio) present = true
+    // Special checks. MVE presence no longer inferred from traficos (no
+    // mve_folio column); the doc-pattern match above handles MVE detection.
     if (rd.type === 'PEDIMENTO' && traficoData?.pedimento) present = true
 
     return { ...rd, present }

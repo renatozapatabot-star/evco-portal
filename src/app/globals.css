@@ -2199,15 +2199,14 @@ tr.row-odd  { background: rgba(248,250,252,0.5); }
 
 /* ── Accessibility ───────────────────────────────── */
 
-/* Universal focus ring — brand gold (ZAPATA_GOLD_BASE #C9A74A) so
-   keyboard navigation lands on a visible, on-brand signal. Inherits the
-   element's own border-radius so the ring wraps cards at 20px and pills
-   at 999px without manually tuning per component.
-   The transition on outline-offset + outline-color lets the ring fade
-   in over 150ms when focus lands, instead of snapping. Tiny detail,
-   big "feels premium" delta. */
+/* Universal focus ring — PORTAL emerald (--portal-green-2, the PRIMARY
+   accent) so keyboard navigation lands on a visible, on-brand signal
+   against the dark canvas. Inherits the element's own border-radius so
+   the ring wraps cards at 20px and pills at 999px without per-component
+   tuning. The transition on outline-offset + outline-color lets the
+   ring fade in over 150ms when focus lands, instead of snapping. */
 *:focus-visible {
-  outline: 2px solid #C9A74A;
+  outline: 2px solid var(--portal-green-2);
   outline-offset: 2px;
   border-radius: inherit;
   transition: outline-offset 150ms var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1)), outline-color 150ms ease;
@@ -3612,9 +3611,10 @@ html {
 }
 
 /* Focus-visible rule — canonical definition is at the ── Accessibility ──
-   section above (*:focus-visible, brand gold #C9A74A with border-radius
-   inherit). This duplicate was overriding that rule with silver; now
-   intentionally empty so the cascade lands on the canonical block. */
+   section above (*:focus-visible, PORTAL emerald var(--portal-green-2)
+   with border-radius inherit). This duplicate was overriding that rule
+   with silver; now intentionally empty so the cascade lands on the
+   canonical block. */
 
 /* Prevent layout shift on images */
 img {
@@ -3622,10 +3622,11 @@ img {
   max-width: 100%;
 }
 
-/* Table keyboard navigation — brand gold ring with negative offset so the
-   row's own border stays visible. Matches the canonical focus token. */
+/* Table keyboard navigation — PORTAL emerald ring with negative offset
+   so the row's own border stays visible. Matches the canonical focus
+   token (*:focus-visible above). */
 tr:focus-within {
-  outline: 2px solid #C9A74A;
+  outline: 2px solid var(--portal-green-2);
   outline-offset: -2px;
 }
 

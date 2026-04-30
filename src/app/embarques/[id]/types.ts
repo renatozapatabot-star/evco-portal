@@ -27,6 +27,7 @@ export interface TraficoRow {
   tipo_cambio: number | null
   peso_bruto: number | null
   fecha_cruce: string | null
+  fecha_pago: string | null
   semaforo: string | null
   doda_status: string | null
   u_level: string | null
@@ -41,11 +42,14 @@ export interface TraficoRow {
 
 export interface DocRow {
   id: string
-  document_type: string | null
-  document_type_confidence: number | null
+  // Real columns on expediente_documentos.
   doc_type: string | null
   file_name: string | null
-  created_at: string | null
+  uploaded_at: string | null
+  // Legacy optional fields (never in DB; kept only so consumer fallbacks
+  // `d.document_type || d.doc_type` stay valid at type level).
+  document_type?: string | null
+  document_type_confidence?: number | null
 }
 
 export interface PartidaRow {

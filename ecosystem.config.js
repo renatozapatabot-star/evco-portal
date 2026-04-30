@@ -208,6 +208,27 @@ module.exports = {
       max_size: '10M',
     },
     {
+      // Build 12 — Data Integrity Guard. Belt-and-suspenders: even if the
+      // in-process verifier wired into globalpc-delta-sync.js silently
+      // returns green (e.g. early-return path), this independent reader
+      // re-samples the last 4h of writes every 30 min and Telegram-alerts
+      // on any drift. Two independent failure modes must align before
+      // contamination reaches a client. Offset by 7 minutes so it doesn't
+      // collide with the :00/:15/:30/:45 delta-sync windows.
+      name: 'post-sync-integrity',
+      script: 'scripts/post-sync-integrity.js',
+      cwd,
+      cron_restart: '7,37 * * * *',
+      autorestart: false,
+      watch: false,
+      max_memory_restart: '512M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/post-sync-integrity-error.log',
+      out_file: '/tmp/post-sync-integrity-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_size: '10M',
+    },
+    {
       // Weekly full GlobalPC → globalpc_facturas reconciliation.
       // Safety net against delta drift. Sundays at 02:00.
       name: 'full-sync-facturas',
@@ -429,6 +450,21 @@ module.exports = {
       env: { NODE_ENV: 'production' },
       error_file: '/tmp/econta-reconciler-error.log',
       out_file: '/tmp/econta-reconciler-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
+    },
+    {
+      // Reaps abandoned agent_actions (proposed rows past commit_deadline_at
+      // by >10min grace). Flips to 'cancelled' — never 'committed' — so the
+      // approval-gate invariant holds even when the UI never fired /commit.
+      // Policy + grace-window rationale live in the script header.
+      name: 'agent-actions-reaper',
+      script: 'scripts/agent-actions-reaper.js',
+      cwd,
+      cron_restart: '0 3 * * *',      // 03:00 CST nightly, post-postmortem
+      autorestart: false, watch: false, max_memory_restart: '256M',
+      env: { NODE_ENV: 'production' },
+      error_file: '/tmp/agent-actions-reaper-error.log',
+      out_file: '/tmp/agent-actions-reaper-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss', max_size: '10M',
     }
   ]

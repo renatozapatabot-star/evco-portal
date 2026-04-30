@@ -215,33 +215,61 @@ export async function getAnexoSnapshot(
     if (p.cve_proveedor && p.nombre) proveedorMap.set(p.cve_proveedor, p.nombre)
   }
 
-  // Partida-level aggregate per descripcion (for "times imported" + YTD).
-  // We lookup by descripcion (not cve_producto) because partidas rows
-  // historically carry their own descripcion freetext that may diverge
-  // from globalpc_productos; match on the text EVCO's team sees.
-  const descripciones = Array.from(new Set(
-    productos.map((p) => (p.descripcion ?? '').trim().toUpperCase()).filter((x) => x.length > 0),
+  // Partida-level aggregate per cve_producto (for "times imported" + YTD).
+  // Real shape: globalpc_partidas has `cve_producto, folio, cantidad,
+  // precio_unitario, created_at` but NOT `descripcion, valor_comercial,
+  // fecha_llegada, cve_trafico`. The enrichment columns live elsewhere:
+  //   valor_comercial is derived per-partida as cantidad × precio_unitario
+  //   (facturas.valor_comercial is folio-level, not partida-level).
+  //   cve_trafico + fecha_llegada come from the 2-hop join via facturas
+  //   (handled below by resolvePartidaLinks).
+  // Keying by cve_producto (the real partida column) instead of descripcion
+  // which partidas doesn't carry.
+  const cvesForAgg = Array.from(new Set(
+    productos.map((p) => p.cve_producto).filter((x): x is string => !!x),
   )).slice(0, 200)
-  const partidaAggRes = descripciones.length > 0
+
+  type AggPartida = {
+    id: number | null
+    folio: number | null
+    cve_producto: string | null
+    cantidad: number | null
+    precio_unitario: number | null
+    created_at: string | null
+  }
+  const partidaAggRes = cvesForAgg.length > 0
     ? await supabase
         .from('globalpc_partidas')
-        .select('cve_trafico, descripcion, valor_comercial, fecha_llegada')
+        .select('id, folio, cve_producto, cantidad, precio_unitario, created_at')
         .eq('company_id', companyId)
-        .in('descripcion', descripciones)
+        .in('cve_producto', cvesForAgg)
         .limit(5000)
-    : { data: [] as Array<{ cve_trafico: string | null; descripcion: string | null; valor_comercial: number | string | null; fecha_llegada: string | null }> }
+    : { data: [] as AggPartida[] }
+
+  const aggPartidas = (partidaAggRes.data ?? []) as AggPartida[]
+
+  // 2-hop join to resolve cve_trafico + fecha_llegada from facturas → traficos.
+  const { resolvePartidaLinks } = await import('@/lib/queries/partidas-trafico-link')
+  const links = await resolvePartidaLinks(
+    supabase,
+    companyId,
+    aggPartidas.map((r) => ({ folio: r.folio })),
+  )
 
   const partidaAgg = new Map<string, { count: number; valor: number; lastTrafico: string | null; lastFecha: string | null }>()
   const thisYearStart = `${new Date().getUTCFullYear()}-01-01`
-  for (const row of (partidaAggRes.data ?? [])) {
-    const key = (row.descripcion ?? '').trim().toUpperCase()
+  for (const row of aggPartidas) {
+    const key = row.cve_producto ?? ''
     if (!key) continue
     const prev = partidaAgg.get(key) ?? { count: 0, valor: 0, lastTrafico: null, lastFecha: null }
     prev.count += 1
-    if ((row.fecha_llegada ?? '') >= thisYearStart) prev.valor += toNumber(row.valor_comercial)
-    if (!prev.lastFecha || (row.fecha_llegada ?? '') > prev.lastFecha) {
-      prev.lastFecha = row.fecha_llegada
-      prev.lastTrafico = row.cve_trafico
+    const valor = toNumber(row.cantidad) * toNumber(row.precio_unitario)
+    const link = row.folio != null ? links.byFolio.get(row.folio) ?? null : null
+    const fecha = link?.fecha_llegada ?? row.created_at
+    if ((fecha ?? '') >= thisYearStart) prev.valor += valor
+    if (!prev.lastFecha || (fecha ?? '') > prev.lastFecha) {
+      prev.lastFecha = fecha ?? null
+      prev.lastTrafico = link?.cve_trafico ?? null
     }
     partidaAgg.set(key, prev)
   }
@@ -259,8 +287,7 @@ export async function getAnexoSnapshot(
 
   // Compose rendered SKUs.
   const skus: AnexoSku[] = productos.map((p) => {
-    const key = (p.descripcion ?? '').trim().toUpperCase()
-    const agg = partidaAgg.get(key)
+    const agg = p.cve_producto ? partidaAgg.get(p.cve_producto) : undefined
     const canonical = canonicalEnabled && p.cve_producto ? overlay.get(p.cve_producto) : undefined
     const merchName = resolveMerchName({
       cve_producto: p.cve_producto,

@@ -11,6 +11,7 @@ const path = require('path')
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const { fetchAll } = require('./lib/paginate')
+const { recordCronStart } = require('./lib/cron-observability')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -37,6 +38,11 @@ async function sendTelegram(msg) {
 }
 
 async function main() {
+  // FIX 5 (audit-sync-pipeline-2026-04-29): record cron start so the
+  // weekly Monday reconciler stops being a sync_log ghost.
+  const tracker = await recordCronStart(supabase, 'econta_reconciler')
+  globalThis.__econtaReconcilerTracker = tracker
+
   console.log(`💰 CRUZ eConta Reconciler — ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
   // ── 1. Get completed tráficos ──
@@ -152,7 +158,16 @@ async function main() {
   await sendTelegram(lines.join('\n'))
 
   console.log(`\n✅ ${matched.length}/${ops.length} matched (${Math.round(matched.length / Math.max(1, ops.length) * 100)}%)`)
+  if (globalThis.__econtaReconcilerTracker) {
+    await globalThis.__econtaReconcilerTracker.finish('success', null, matched.length)
+  }
   process.exit(0)
 }
 
-main().catch(err => { console.error('Fatal:', err.message); process.exit(1) })
+main().catch(async err => {
+  console.error('Fatal:', err.message)
+  if (globalThis.__econtaReconcilerTracker) {
+    await globalThis.__econtaReconcilerTracker.finish('failed', err.message)
+  }
+  process.exit(1)
+})

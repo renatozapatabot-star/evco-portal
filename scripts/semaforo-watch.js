@@ -14,9 +14,18 @@
  * so the pipeline can't die unnoticed.
  */
 
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
+const { createClient } = require('@supabase/supabase-js')
+const { recordCronStart } = require('./lib/cron-observability')
+
 const BASE = (process.env.AGUILA_APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://portal.renatozapata.com').replace(/\/$/, '')
 const SECRET = process.env.CRON_SECRET
 const SCRIPT_NAME = 'semaforo-watch'
+const SYNC_TYPE = 'semaforo_watch'
+
+const supabase = (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null
 
 async function sendTelegram(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN
@@ -32,9 +41,15 @@ async function sendTelegram(text) {
 }
 
 async function main() {
+  // FIX 5 (audit-sync-pipeline-2026-04-29): record cron start so this
+  // job stops being a sync_log ghost. Best-effort — if Supabase env is
+  // missing the script still runs.
+  const tracker = supabase ? await recordCronStart(supabase, SYNC_TYPE) : null
+
   if (!SECRET) {
     console.error(`[${SCRIPT_NAME}] CRON_SECRET env var is required`)
     await sendTelegram(`🔴 ${SCRIPT_NAME}: CRON_SECRET missing`)
+    if (tracker) await tracker.finish('failed', 'CRON_SECRET missing')
     process.exit(1)
   }
 
@@ -49,11 +64,13 @@ async function main() {
   if (!res.ok) {
     console.error(`[${SCRIPT_NAME}] HTTP ${res.status}:`, body)
     await sendTelegram(`🔴 ${SCRIPT_NAME} failed: HTTP ${res.status}`)
+    if (tracker) await tracker.finish('failed', `HTTP ${res.status}`)
     process.exit(1)
   }
 
   const { checked = 0, notified = 0 } = body?.data ?? {}
   console.log(`[${SCRIPT_NAME}] checked=${checked} notified=${notified} (${new Date().toISOString()})`)
+  if (tracker) await tracker.finish('success', null, checked)
 }
 
 main().catch(async (err) => {

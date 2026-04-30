@@ -31,6 +31,7 @@ const { Resend } = require('resend')
 // import is for SCRIPT-FAILURE alerts only (the cron crashed), NOT for
 // client-facing messaging. Client messaging goes through Resend above.
 const { sendTelegram } = require('./lib/telegram')
+const { recordCronStart } = require('./lib/cron-observability')
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -50,6 +51,13 @@ async function main() {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
   const resend = new Resend(RESEND_KEY)
+
+  // FIX 5 (audit-sync-pipeline-2026-04-29): record cron start.
+  const tracker = await recordCronStart(supabase, 'mensajeria_email_fallback')
+  // Throw-on-error path (the outer .catch fires) — closeSyncLog runs
+  // via the process.on('exit') hook in recordCronStart. Success path
+  // sets `tracker.finish('success', null, sentCount)` at the bottom.
+  globalThis.__mensajeriaTracker = tracker
 
   const clientCutoff = new Date(Date.now() - CLIENT_UNREAD_WINDOW_MS).toISOString()
   const internalCutoff = new Date(Date.now() - INTERNAL_UNREAD_WINDOW_MS).toISOString()
@@ -89,6 +97,7 @@ async function main() {
   const pending = (msgs || []).filter(m => !sentSet.has(m.id))
   if (pending.length === 0) {
     console.log(`[mensajeria-email-fallback] no pending messages (${new Date().toISOString()})`)
+    await tracker.finish('success', null, 0)
     return
   }
 
@@ -174,6 +183,7 @@ async function main() {
   }
 
   console.log(`[mensajeria-email-fallback] sent ${sentCount}/${pending.length} (${new Date().toISOString()})`)
+  await tracker.finish('success', null, sentCount)
 }
 
 function escapeHtml(s) {

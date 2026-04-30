@@ -16,6 +16,8 @@
  *   node scripts/globalpc-productos-reconcile.js --apply         # actually write deleted_at
  *   node scripts/globalpc-productos-reconcile.js --clave=9254    # one client only
  *   node scripts/globalpc-productos-reconcile.js --apply --clave=9254
+ *   node scripts/globalpc-productos-reconcile.js --apply --only 9254,5020   # subset
+ *   node scripts/globalpc-productos-reconcile.js --apply --page-size 2000   # smaller pages
  *
  * Pre-condition: the `deleted_at` column must exist on globalpc_productos.
  * Apply migration `supabase/migrations/20260429_globalpc_productos_deleted_at.sql`
@@ -42,6 +44,30 @@ const supabase = createClient(
 
 const APPLY = process.argv.includes('--apply')
 const SINGLE_CLAVE = (process.argv.find(a => a.startsWith('--clave=')) || '').split('=')[1]
+
+// --only <clave1,clave2,...>  OR  --only=<clave1,clave2,...>
+function parseOnly() {
+  const flagIdx = process.argv.findIndex(a => a === '--only' || a.startsWith('--only='))
+  if (flagIdx === -1) return null
+  const arg = process.argv[flagIdx]
+  const raw = arg.includes('=') ? arg.split('=')[1] : process.argv[flagIdx + 1]
+  if (!raw) return null
+  return raw.split(',').map(s => s.trim()).filter(Boolean)
+}
+const ONLY_CLAVES = parseOnly()
+
+// --page-size <N>  OR  --page-size=<N>
+function parsePageSize() {
+  const flagIdx = process.argv.findIndex(a => a === '--page-size' || a.startsWith('--page-size='))
+  if (flagIdx === -1) return null
+  const arg = process.argv[flagIdx]
+  const raw = arg.includes('=') ? arg.split('=')[1] : process.argv[flagIdx + 1]
+  const n = parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 100 || n > 50000) return null
+  return n
+}
+const MIRROR_PAGE_OVERRIDE = parsePageSize()
+const MIRROR_PAGE_DEFAULT = 5000
 
 async function buildSourceKeySet(conn, clave) {
   // Source rows for this clave. Key = `${cve_producto}::${cve_proveedor}`
@@ -103,34 +129,95 @@ async function reconcileClient(conn, { clave, companyId }) {
   const sourceKeys = await buildSourceKeySet(conn, clave)
   console.log(`   source keys: ${sourceKeys.size.toLocaleString()}`)
 
-  // 2. Stream mirror rows for this clave via keyset pagination on id.
-  //    Range-based pagination times out on the 700K-row table; gt(id)
-  //    + order(id) lets the index do the heavy lifting.
-  const PAGE = 1000
-  let lastId = 0
+  // 2. Stream mirror rows for this clave via id-range partitioning.
+  //
+  //    Why not pure keyset (gt(id, lastId)): when the partial index on
+  //    `(cve_cliente) WHERE deleted_at IS NULL` is combined with deep
+  //    `id > X` keysets, the planner has to skip past many irrelevant
+  //    index entries, and at depth (id > 2M) a single page hits the
+  //    30s statement_timeout.
+  //
+  //    Range-based: walk the id space in fixed-width windows
+  //    [lastId, lastId+PAGE). Each query is bounded by the window
+  //    size, NOT by the position in the table. We don't filter on
+  //    deleted_at server-side (the partial index disagrees with the
+  //    keyset plan); since the column was just added in
+  //    20260429_globalpc_productos_deleted_at.sql and most rows are
+  //    NULL, app-side filtering is cheap.
+  //
+  //    PAGE here is an id-range width, not a row count. With ~700K
+  //    rows in id-range ~0..3M, an average window of 5,000 ids
+  //    yields a few hundred rows per request — well under the 30s
+  //    timeout per query. Override with --page-size N if needed.
+  const PAGE = MIRROR_PAGE_OVERRIDE || MIRROR_PAGE_DEFAULT
+
+  // Try to bound the loop with max(id) for this tenant. For most tenants
+  // this resolves in <1s; for some (sparse rows over large id space, no
+  // matching index plan) it hits statement_timeout. On error we fall
+  // back to walk-forward with empty-window early-stop.
+  let maxId = null
+  {
+    const { data, error } = await supabase
+      .from('globalpc_productos')
+      .select('id')
+      .eq('cve_cliente', clave)
+      .order('id', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (error) {
+      console.log(`   max(id) lookup failed (${error.message.slice(0, 60)}); using walk-forward with early-stop`)
+    } else {
+      maxId = data ? data.id : 0
+    }
+  }
+
+  // Empty-window early-stop bound. If we see this many consecutive
+  // empty windows we assume we're past the tenant's last row.
+  const EMPTY_STOP = 30
+
   const staleIds = []
   let scanned = 0
+  let pageNum = 0
+  let lastId = 0
+  let consecutiveEmpty = 0
+  let observedMaxId = 0
+  // eslint-disable-next-line no-constant-condition
   while (true) {
-    let q = supabase
+    if (maxId !== null && lastId > maxId) break
+    const pageStart = Date.now()
+    const upper = lastId + PAGE
+    const { data, error } = await supabase
       .from('globalpc_productos')
-      .select('id, cve_producto, cve_proveedor')
+      .select('id, cve_producto, cve_proveedor, deleted_at')
       .eq('cve_cliente', clave)
-      .gt('id', lastId)
+      .gte('id', lastId)
+      .lt('id', upper)
       .order('id', { ascending: true })
-      .limit(PAGE)
-    if (colExists) q = q.is('deleted_at', null) // skip already-soft-deleted
-    const { data, error } = await q
-    if (error) throw new Error(`mirror read failed: ${error.message}`)
-    if (!data || !data.length) break
-    for (const row of data) {
-      const key = `${row.cve_producto || ''}::${row.cve_proveedor || ''}`
-      if (!sourceKeys.has(key)) staleIds.push(row.id)
+    if (error) throw new Error(`mirror read failed (page ${pageNum} range ${lastId}..${upper}): ${error.message}`)
+    if (data && data.length) {
+      consecutiveEmpty = 0
+      for (const row of data) {
+        if (row.id > observedMaxId) observedMaxId = row.id
+        if (colExists && row.deleted_at) continue // already soft-deleted
+        const key = `${row.cve_producto || ''}::${row.cve_proveedor || ''}`
+        if (!sourceKeys.has(key)) staleIds.push(row.id)
+        scanned++
+      }
+    } else {
+      consecutiveEmpty++
+      if (maxId === null && consecutiveEmpty >= EMPTY_STOP) break
     }
-    scanned += data.length
-    lastId = data[data.length - 1].id
-    if (data.length < PAGE) break
+    const pageMs = Date.now() - pageStart
+    if (pageMs > 20000) {
+      console.log(`   ⚠ range ${lastId}..${upper} took ${pageMs}ms — consider --page-size ${Math.max(500, Math.floor(PAGE / 2))}`)
+    }
+    pageNum++
+    lastId = upper
   }
-  console.log(`   mirror scanned: ${scanned.toLocaleString()} active rows`)
+  const boundLabel = maxId !== null
+    ? `max id ${maxId.toLocaleString()}`
+    : `walk-forward, observed max ${observedMaxId.toLocaleString()}, stopped after ${EMPTY_STOP} empty windows`
+  console.log(`   mirror scanned: ${scanned.toLocaleString()} active rows across ${pageNum} id-range(s) of ${PAGE.toLocaleString()} (${boundLabel})`)
   console.log(`   stale (mirror-only): ${staleIds.length.toLocaleString()}`)
 
   // 3. Mark stale rows
@@ -174,7 +261,9 @@ async function run() {
   console.log('═'.repeat(50))
   console.log(`mode: ${APPLY ? 'APPLY' : 'DRY-RUN'}`)
   if (SINGLE_CLAVE) console.log(`scope: clave=${SINGLE_CLAVE}`)
+  else if (ONLY_CLAVES && ONLY_CLAVES.length) console.log(`scope: --only ${ONLY_CLAVES.join(',')}`)
   else console.log('scope: all active companies')
+  console.log(`mirror page size: ${(MIRROR_PAGE_OVERRIDE || MIRROR_PAGE_DEFAULT).toLocaleString()}${MIRROR_PAGE_OVERRIDE ? ' (override)' : ''}`)
 
   const { data: companies, error: cErr } = await supabase
     .from('companies')
@@ -183,7 +272,16 @@ async function run() {
     .not('clave_cliente', 'is', null)
   if (cErr) throw new Error(`load companies: ${cErr.message}`)
   let targets = companies
-  if (SINGLE_CLAVE) targets = targets.filter(c => c.clave_cliente === SINGLE_CLAVE)
+  if (SINGLE_CLAVE) {
+    targets = targets.filter(c => c.clave_cliente === SINGLE_CLAVE)
+  } else if (ONLY_CLAVES && ONLY_CLAVES.length) {
+    const set = new Set(ONLY_CLAVES)
+    targets = targets.filter(c => set.has(c.clave_cliente))
+    const missing = ONLY_CLAVES.filter(k => !companies.some(c => c.clave_cliente === k))
+    if (missing.length) {
+      console.log(`   ⚠ --only included claves not in active companies: ${missing.join(',')}`)
+    }
+  }
   if (!targets.length) {
     console.log('No active companies match scope — nothing to do.')
     return { rows_synced: 0 }

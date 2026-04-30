@@ -940,6 +940,82 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# R-DR-1..6 — Demo readiness invariants (added 2026-04-29 overnight).
+# Ratchets the source-code surface against regression of the integrity
+# issues caught by ~/Desktop/audit-data-quality-2026-04-29.md +
+# ~/Desktop/overnight-2026-04-29/01-demo-scope-integrity.md.
+# Live-DB conscience lives in the audit script; this is the source-code
+# conscience. Hard 0 baseline — every match is a regression to fix.
+# --------------------------------------------------------------------------
+header "Demo readiness — clave-shape company_id literals (R-DR-1)"
+DR1_HITS=$(set +eo pipefail;{ grep -rEn "company_id:[[:space:]]*['\"][0-9]{4}['\"]" src/ scripts/ 2>/dev/null || true; } \
+  | grep -v node_modules | grep -v "/__tests__/" \
+  | grep -vE "\.test\.(ts|tsx|js)" | grep -v "/_audit-tmp/" \
+  | grep -v "generate-notifications.js" \
+  | grep -vE "scripts/(run-migration|setup-intelligence)\.ts" \
+  | wc -l | tr -d ' ')
+if [ "$DR1_HITS" -gt 0 ]; then
+  fail "company_id: '<clave>' literal: $DR1_HITS site(s). Use src/lib/tenant/resolve-slug.ts or scripts/lib/tenant-tags.js. See ~/Desktop/audit-data-quality-2026-04-29.md."
+else
+  pass "Tenant-tag literals (R-DR-1): clean"
+fi
+
+header "Demo readiness — clave in .eq('company_id', …) filters (R-DR-2)"
+DR2_HITS=$(set +eo pipefail;{ grep -rEn "\.eq\(['\"]company_id['\"],[[:space:]]*['\"][0-9]{4}['\"]\)" src/ 2>/dev/null || true; } \
+  | grep -v node_modules | grep -v "/__tests__/" \
+  | grep -vE "\.test\.(ts|tsx|js)" \
+  | wc -l | tr -d ' ')
+if [ "$DR2_HITS" -gt 0 ]; then
+  fail ".eq('company_id', '<clave>') literal: $DR2_HITS site(s). Use session.companyId."
+else
+  pass "Tenant-filter literals (R-DR-2): clean"
+fi
+
+header "Demo readiness — currency MXP literals (R-DR-3)"
+DR3_HITS=$(set +eo pipefail;{ grep -rEn "moneda['\"]?[[:space:]]*:[[:space:]]*['\"]MXP['\"]|moneda[[:space:]]*=[[:space:]]*['\"]MXP['\"]|currency:[[:space:]]*['\"]MXP['\"]" src/ scripts/ 2>/dev/null || true; } \
+  | grep -v node_modules | grep -v "/__tests__/" \
+  | grep -vE "\.test\.(ts|tsx|js)" | grep -v "/_audit-tmp/" \
+  | wc -l | tr -d ' ')
+if [ "$DR3_HITS" -gt 0 ]; then
+  fail "MXP currency literal: $DR3_HITS site(s). Use 'MXN' (current ISO 4217 code)."
+else
+  pass "Currency literals (R-DR-3): clean"
+fi
+
+header "Demo readiness — régimen → clave_pedimento writes (R-DR-4)"
+DR4_HITS=0
+for CODE in IMD ITE ITR EXD ETE DFI; do
+  N=$(set +eo pipefail;{ grep -rEn "clave_pedimento[^=]{0,40}['\"]${CODE}['\"]" src/ scripts/ 2>/dev/null || true; } \
+    | grep -v node_modules | grep -v "/__tests__/" \
+    | grep -vE "\.test\.(ts|tsx|js)" | grep -v "/_audit-tmp/" \
+    | wc -l | tr -d ' ')
+  DR4_HITS=$((DR4_HITS + N))
+done
+if [ "$DR4_HITS" -gt 0 ]; then
+  fail "régimen-in-clave_pedimento literal: $DR4_HITS site(s). See 20260429170000_fix_regimen_clave_pedimento.sql."
+else
+  pass "Régimen-vs-clave separation (R-DR-4): clean"
+fi
+
+header "Demo readiness — tenant resolver helpers wired (R-DR-5)"
+DR5_OK=1
+for F in src/lib/tenant/resolve-slug.ts scripts/lib/tenant-tags.js src/lib/format/pedimento.ts scripts/globalpc-productos-reconcile.js; do
+  [ -f "$F" ] || { fail "Missing tenant/format helper: $F"; DR5_OK=0; }
+done
+if [ "$DR5_OK" = "1" ]; then
+  pass "Tenant + format helpers present (R-DR-5)"
+fi
+
+header "Demo readiness — central writers compose the resolver (R-DR-6)"
+NOTIF_OK=$(set +eo pipefail; grep -Ec "buildClaveMap|resolveCompanyIdSlug" src/lib/notifications.ts 2>/dev/null || echo 0)
+DECLOG_OK=$(set +eo pipefail; grep -Ec "buildClaveMap|resolveCompanyIdSlug" src/lib/decision-logger.ts 2>/dev/null || echo 0)
+if [ "${NOTIF_OK:-0}" -lt 1 ] || [ "${DECLOG_OK:-0}" -lt 1 ]; then
+  fail "Central writers not composing resolver: notifications=$NOTIF_OK decision-logger=$DECLOG_OK (each must be ≥ 1)"
+else
+  pass "Central writers compose tenant resolver (R-DR-6)"
+fi
+
+# --------------------------------------------------------------------------
 # Results
 # --------------------------------------------------------------------------
 echo ""

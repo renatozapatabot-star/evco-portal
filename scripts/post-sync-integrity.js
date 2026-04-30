@@ -21,6 +21,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 const { createClient } = require('@supabase/supabase-js')
 const { runPostSyncVerification } = require('./lib/post-sync-verify')
+const { recordCronStart } = require('./lib/cron-observability')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -46,6 +47,10 @@ async function recentPks(table, pkColumn, timestampColumn, hours, sample) {
 }
 
 async function main() {
+  // FIX 5 (audit-sync-pipeline-2026-04-29): record cron start so the
+  // 30-min Data Integrity Guard stops being a sync_log ghost.
+  const tracker = await recordCronStart(supabase, 'post_sync_integrity')
+
   const start = Date.now()
   console.log(`\n🔎 Post-Sync Data Integrity Guard — last ${LOOKBACK_HOURS}h, sample ${SAMPLE_PER_TABLE}/table`)
 
@@ -55,6 +60,7 @@ async function main() {
     .eq('active', true)
   if (companiesErr || !companies) {
     console.error('Cannot load active companies:', companiesErr?.message)
+    await tracker.finish('failed', `companies load: ${companiesErr?.message || 'empty'}`)
     process.exit(1)
   }
   const companyIds = new Set(companies.map(c => c.company_id).filter(Boolean))
@@ -68,6 +74,7 @@ async function main() {
 
   if (traficoPks.length === 0 && entradaPks.length === 0) {
     console.log('  No recent rows to verify — nothing to do.')
+    await tracker.finish('success', null, 0)
     process.exit(0)
   }
 
@@ -88,8 +95,15 @@ async function main() {
     console.log(`   Violations: ${JSON.stringify(result.summary.violations)}`)
   }
 
-  if (result.verdict === 'red') process.exit(1)
-  if (result.verdict === 'amber') process.exit(2)
+  if (result.verdict === 'red') {
+    await tracker.finish('failed', `verdict=red ${result.summary.integrity_pct}%`)
+    process.exit(1)
+  }
+  if (result.verdict === 'amber') {
+    await tracker.finish('success', `verdict=amber ${result.summary.integrity_pct}%`)
+    process.exit(2)
+  }
+  await tracker.finish('success', null, result.summary.found)
   process.exit(0)
 }
 

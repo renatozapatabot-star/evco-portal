@@ -200,8 +200,6 @@ function QAButton({ href, icon, label, primary }: { href: string; icon: React.Re
         padding: '0 18px',
         borderRadius: 14,
         background: primary ? GOLD : BG_CARD,
-        backdropFilter: primary ? undefined : `blur(${GLASS_BLUR})`,
-        WebkitBackdropFilter: primary ? undefined : `blur(${GLASS_BLUR})`,
         border: `1px solid ${primary ? GOLD : BORDER}`,
         color: primary ? 'var(--portal-ink-0)' : TEXT_PRIMARY,
         fontWeight: 700,

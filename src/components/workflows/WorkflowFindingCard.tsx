@@ -133,7 +133,7 @@ export function WorkflowFindingCard({
               gap: 4,
               padding: '4px 10px',
               borderRadius: 999,
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               background: 'rgba(255,255,255,0.04)',
@@ -145,7 +145,7 @@ export function WorkflowFindingCard({
           </span>
           <span
             style={{
-              fontSize: 10,
+              fontSize: 'var(--aguila-fs-label)',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               color: 'var(--portal-text-muted, rgba(255,255,255,0.55))',
@@ -158,7 +158,7 @@ export function WorkflowFindingCard({
           className="portal-num"
           title="Confianza combinada con retroalimentación"
           style={{
-            fontSize: 11,
+            fontSize: 'var(--aguila-fs-meta)',
             color: 'var(--portal-text-secondary, rgba(232,234,237,0.7))',
           }}
         >
@@ -170,7 +170,7 @@ export function WorkflowFindingCard({
         <h3
           style={{
             margin: 0,
-            fontSize: 14,
+            fontSize: 'var(--aguila-fs-section)',
             fontWeight: 600,
             color: 'var(--portal-text-primary, #E8EAED)',
             letterSpacing: '-0.005em',
@@ -181,7 +181,7 @@ export function WorkflowFindingCard({
         <p
           style={{
             margin: '6px 0 0',
-            fontSize: 13,
+            fontSize: 'var(--aguila-fs-body)',
             color: 'var(--portal-text-secondary, rgba(232,234,237,0.72))',
             lineHeight: 1.4,
           }}
@@ -200,7 +200,7 @@ export function WorkflowFindingCard({
           background: 'transparent',
           border: 0,
           color: 'var(--portal-accent-silver, #C0C5CE)',
-          fontSize: 11,
+          fontSize: 'var(--aguila-fs-meta)',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
           cursor: 'pointer',
@@ -217,14 +217,14 @@ export function WorkflowFindingCard({
             display: 'flex',
             flexDirection: 'column',
             gap: 8,
-            fontSize: 12,
+            fontSize: 'var(--aguila-fs-compact)',
             color: 'var(--portal-text-secondary, rgba(232,234,237,0.78))',
           }}
         >
           <div>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 'var(--aguila-fs-label)',
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
                 color: 'var(--portal-text-muted, rgba(255,255,255,0.55))',
@@ -235,7 +235,7 @@ export function WorkflowFindingCard({
             </span>
             <strong
               style={{
-                fontSize: 13,
+                fontSize: 'var(--aguila-fs-body)',
                 color: 'var(--portal-text-primary, #E8EAED)',
                 fontWeight: 600,
                 display: 'block',
@@ -257,7 +257,7 @@ export function WorkflowFindingCard({
                 borderRadius: 10,
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(192,197,206,0.15)',
-                fontSize: 12,
+                fontSize: 'var(--aguila-fs-compact)',
                 whiteSpace: 'pre-wrap',
                 fontFamily: 'var(--font-geist-sans, inherit)',
                 color: 'var(--portal-text-secondary, rgba(232,234,237,0.78))',
@@ -270,7 +270,7 @@ export function WorkflowFindingCard({
           {isInternal && (
             <div
               style={{
-                fontSize: 11,
+                fontSize: 'var(--aguila-fs-meta)',
                 color: 'var(--portal-text-muted, rgba(255,255,255,0.55))',
               }}
             >
@@ -310,7 +310,7 @@ export function WorkflowFindingCard({
                   color: active ? b.accent : 'var(--portal-text-primary, #E8EAED)',
                   cursor: disabled ? 'not-allowed' : 'pointer',
                   opacity: disabled && !active ? 0.55 : 1,
-                  fontSize: 12,
+                  fontSize: 'var(--aguila-fs-compact)',
                   letterSpacing: '0.04em',
                   transition: 'all 150ms cubic-bezier(0.22, 1, 0.36, 1)',
                 }}
@@ -331,7 +331,7 @@ export function WorkflowFindingCard({
               background: 'transparent',
               color: 'var(--portal-text-secondary, rgba(232,234,237,0.72))',
               cursor: 'pointer',
-              fontSize: 12,
+              fontSize: 'var(--aguila-fs-compact)',
               letterSpacing: '0.04em',
             }}
             aria-expanded={commentOpen}
@@ -354,7 +354,7 @@ export function WorkflowFindingCard({
               background: 'rgba(0,0,0,0.2)',
               color: 'var(--portal-text-primary, #E8EAED)',
               padding: 10,
-              fontSize: 13,
+              fontSize: 'var(--aguila-fs-body)',
               fontFamily: 'inherit',
               resize: 'vertical',
             }}
@@ -365,7 +365,7 @@ export function WorkflowFindingCard({
         {thumbsSubmitted && (
           <span
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: 'var(--portal-green-2, #22C55E)',
               letterSpacing: '0.05em',
             }}
@@ -378,7 +378,7 @@ export function WorkflowFindingCard({
           <span
             role="alert"
             style={{
-              fontSize: 11,
+              fontSize: 'var(--aguila-fs-meta)',
               color: 'var(--portal-status-amber-fg, #FBBF24)',
             }}
           >

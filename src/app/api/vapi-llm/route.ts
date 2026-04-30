@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { sanitizeIlike } from '@/lib/sanitize'
 import { getErrorMessage } from '@/lib/errors'
+import { buildClaveMap, resolveCompanyIdSlug } from '@/lib/tenant/resolve-slug'
 
 /**
  * Vapi Custom LLM Adapter
@@ -219,12 +220,22 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
           details: { draft_id: draft.id, approved_by: 'tito', supplier: draft.draft_data?.supplier, valor_usd: draft.draft_data?.valor_total_usd, channel: 'voice', status: 'approved_pending' },
         }).then(() => {}, (e) => console.error('[audit-log] vapi draft approved:', e.message))
         if (draft.draft_data?.company_id) {
-          supabase.from('notifications').insert({
-            type: 'approval_complete', severity: 'celebration',
-            title: `🦀 Borrador aprobado: ${draft.draft_data?.supplier || 'Desconocido'}`,
-            description: 'Patente 3596 honrada. Gracias, Tito.',
-            company_id: draft.draft_data.company_id, read: false,
-          }).then(() => {}, (e) => console.error('[audit-log] vapi notification:', e.message))
+          // Same defense pattern as telegram-webhook: pedimento_drafts.draft_data
+          // company_id may carry a clave; normalize before stamping notification.
+          const claveMap = await buildClaveMap(supabase)
+          const resolved = resolveCompanyIdSlug(draft.draft_data.company_id, claveMap)
+          if (resolved.kind === 'unresolved') {
+            console.warn(
+              `[vapi-llm] skipping celebration notification: company_id=${String(draft.draft_data.company_id)} unresolvable (${resolved.reason})`,
+            )
+          } else {
+            supabase.from('notifications').insert({
+              type: 'approval_complete', severity: 'celebration',
+              title: `🦀 Borrador aprobado: ${draft.draft_data?.supplier || 'Desconocido'}`,
+              description: 'Patente 3596 honrada. Gracias, Tito.',
+              company_id: resolved.slug, read: false,
+            }).then(() => {}, (e) => console.error('[audit-log] vapi notification:', e.message))
+          }
         }
         return JSON.stringify({ success: true, draft_id: draft.id, supplier: draft.draft_data?.supplier, valor_usd: draft.draft_data?.valor_total_usd, status: 'approved_pending', cancellation_window: '5 seconds' })
       }

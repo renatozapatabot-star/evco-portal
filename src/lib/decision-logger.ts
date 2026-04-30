@@ -8,9 +8,16 @@
  *
  * Service-role client. Never import this from a client component.
  * Follow the project error convention: return { error }, never throw.
+ *
+ * Tenant-tagging guard (added 2026-04-29): every insert normalizes
+ * company_id through the slug allowlist. NULL is preserved (system-level
+ * decisions intentionally don't have a tenant scope). Clave-shape values
+ * are remapped or rejected — never silently passed through. See the
+ * 2026-04-29 audit + scripts/lib/tenant-tags.js for the cron twin.
  */
 
 import { createServerClient } from '@/lib/supabase-server'
+import { buildClaveMap, resolveCompanyIdSlug } from '@/lib/tenant/resolve-slug'
 
 export type DecisionAlternative = {
   option: string
@@ -39,9 +46,28 @@ export async function logDecision(input: LogDecisionInput): Promise<LogDecisionR
   }
 
   const supabase = createServerClient()
+
+  // NULL company_id is the documented "system-level decision" sentinel and
+  // is preserved as-is. Any non-null value goes through the normalizer so a
+  // clave-shape input (e.g. legacy '9254') gets remapped to its slug. If
+  // resolution fails, prefer NULL over a bad write — the audit trail is
+  // strict-append, downstream filters can recover.
+  let normalizedCompanyId: string | null = null
+  if (input.company_id !== undefined && input.company_id !== null) {
+    const claveMap = await buildClaveMap(supabase)
+    const resolved = resolveCompanyIdSlug(input.company_id, claveMap)
+    if (resolved.kind === 'resolved') {
+      normalizedCompanyId = resolved.slug
+    } else {
+      console.warn(
+        `[decision-logger] company_id ${String(input.company_id)} unresolvable (${resolved.reason}) — writing NULL`,
+      )
+    }
+  }
+
   const { error } = await supabase.from('operational_decisions').insert({
     trafico: input.trafico ?? null,
-    company_id: input.company_id ?? null,
+    company_id: normalizedCompanyId,
     decision_type: input.decision_type,
     decision: input.decision,
     reasoning: input.reasoning ?? null,

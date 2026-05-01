@@ -38,7 +38,7 @@ describe('PortalLoginCardChrome', () => {
         <div />
       </PortalLoginCardChrome>,
     )
-    expect(html).toMatch(/var\(--portal-line-3\)/)
+    expect(html).toMatch(/var\(--portal-green-3\)/)
   })
 })
 

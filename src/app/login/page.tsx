@@ -213,6 +213,62 @@ function LoginContent() {
         }}
       />
 
+      {/* SIGNATURE HORIZON — barely-visible 1px line with three geographic
+          ticks. Anchors you in space without being a map. */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: '62%',
+          zIndex: 3,
+          pointerEvents: 'none',
+          opacity: 0.55,
+          transition: 'opacity 1200ms var(--portal-ease-out)',
+        }}
+      >
+        <div
+          style={{
+            height: 1,
+            width: '100%',
+            background:
+              'linear-gradient(90deg, transparent 0%, var(--portal-line-2) 18%, var(--portal-line-2) 82%, transparent 100%)',
+          }}
+        />
+        {[
+          { x: '33%', label: 'RIO BRAVO' },
+          { x: '50%', label: 'PUENTE II' },
+          { x: '67%', label: 'RIO BRAVO' },
+        ].map((t) => (
+          <div
+            key={t.x}
+            style={{
+              position: 'absolute',
+              left: t.x,
+              top: -3,
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <span style={{ width: 1, height: 6, background: 'var(--portal-line-2)' }} />
+            <span
+              style={{
+                fontFamily: 'var(--portal-font-mono)',
+                fontSize: 8, // WHY: handoff verbatim (screen-login.jsx:404)
+                letterSpacing: '0.32em',
+                color: 'var(--portal-fg-5)',
+              }}
+            >
+              {t.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
       <main
         style={{
           flex: 1,
@@ -224,10 +280,10 @@ function LoginContent() {
           zIndex: 5,
         }}
       >
-        <div
+        <PortalLoginCardChrome
           style={{
             width: '100%',
-            maxWidth: 440,
+            maxWidth: 460,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'stretch',
@@ -297,9 +353,9 @@ function LoginContent() {
             </span>
             <span
               style={{
-                fontFamily: 'var(--portal-font-serif)',
+                fontFamily: 'var(--portal-font-display)',
                 fontSize: 'clamp(44px, 6.5vw, 68px)',
-                fontWeight: 400,
+                fontWeight: 300,
                 letterSpacing: '0.28em',
                 color: 'var(--portal-fg-1)',
                 textShadow: '0 0 32px color-mix(in oklch, var(--portal-green-2) 14%, transparent)',
@@ -398,19 +454,6 @@ function LoginContent() {
             </div>
           )}
 
-          {/* Boot-up handshake — VUCEM · OK · SAT · OK · CBP · OK
-              appears mid-boot, settles to dim. Hidden when an active
-              session is short-circuiting login. */}
-          {!session && (
-            <div style={{ marginBottom: 8, animation: 'portalFadeUp 900ms var(--portal-ease-out) 360ms both' }}>
-              <PortalLoginHandshakeRow />
-            </div>
-          )}
-
-          {/* Form wrapped in PortalLoginCardChrome — 4 hairline corner
-              ticks draw in sequence on first paint, framing the form
-              like a Swiss instrument coming online. */}
-          <PortalLoginCardChrome style={{ width: '100%' }}>
           <form
             onSubmit={handleLogin}
             style={{ width: '100%', animation: 'portalFadeUp 900ms var(--portal-ease-out) 320ms both' }}
@@ -481,6 +524,40 @@ function LoginContent() {
                   caretColor: 'var(--portal-green-2)',
                 }}
               />
+              {/* SVG focus tracer — emerald hairline draws around the
+                  input via stroke-dashoffset transition on focus.
+                  Verbatim from screen-login.jsx:560-577. */}
+              <svg
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: -1,
+                  pointerEvents: 'none',
+                  width: 'calc(100% + 2px)',
+                  height: 'calc(100% + 2px)',
+                  opacity: inputFocused ? 1 : 0,
+                  transition: 'opacity 200ms var(--portal-ease-out)',
+                }}
+              >
+                <rect
+                  x="0.5"
+                  y="0.5"
+                  width="100%"
+                  height="100%"
+                  rx="10"
+                  ry="10"
+                  fill="none"
+                  stroke="var(--portal-green-2)"
+                  strokeWidth="1"
+                  pathLength="100"
+                  style={{
+                    strokeDasharray: '100',
+                    strokeDashoffset: inputFocused ? 0 : 100,
+                    transition: 'stroke-dashoffset 600ms var(--portal-ease-out)',
+                    filter: 'drop-shadow(0 0 4px var(--portal-green-glow))',
+                  }}
+                />
+              </svg>
               {inputFocused && capsLockOn && (
                 <span
                   aria-live="polite"
@@ -562,6 +639,16 @@ function LoginContent() {
               {status === 'ok' && <>✓ Acceso concedido</>}
             </button>
 
+            {/* Handshake row — VUCEM · SAT · CBP appear during boot then
+                dim. Position matches design (screen-login.jsx:617): below
+                the button, centered. Hidden when an active session is
+                short-circuiting login. */}
+            {!session && (
+              <div style={{ marginTop: 14, display: 'flex', justifyContent: 'center' }}>
+                <PortalLoginHandshakeRow />
+              </div>
+            )}
+
             {error && (
               <div
                 style={{
@@ -580,6 +667,13 @@ function LoginContent() {
                 {error}
               </div>
             )}
+
+            {/* Trust line — "Último acceso · 27 abr 2026 · 14:32 ·
+                Nuevo Laredo · Chrome/macOS". Reads the HMAC-signed
+                last_seen cookie set on the prior successful login.
+                Renders nothing on first login. Position matches design
+                (screen-login.jsx:639): below handshake, above live wire. */}
+            <PortalLastSeenLine />
 
             <PortalLoginLiveWire />
 
@@ -630,15 +724,8 @@ function LoginContent() {
                 ¿Olvidó su código?
               </a>
             </div>
-
-            {/* Trust line — "Último acceso · 27 abr 2026 · 14:32 ·
-                Nuevo Laredo · Chrome/macOS". Reads the HMAC-signed
-                last_seen cookie set on the prior successful login.
-                Renders nothing on first login. */}
-            <PortalLastSeenLine />
           </form>
-          </PortalLoginCardChrome>
-        </div>
+        </PortalLoginCardChrome>
       </main>
     </div>
   )

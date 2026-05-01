@@ -25,6 +25,14 @@ export function PortalLoginCardChrome({
     <div
       style={{
         position: 'relative',
+        padding: '40px 38px 32px',
+        background: 'color-mix(in oklch, var(--portal-ink-1) 62%, transparent)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid var(--portal-line-2)',
+        borderRadius: 'var(--portal-r-5)',
+        boxShadow:
+          '0 30px 80px -30px rgba(0,0,0,0.7), 0 0 0 1px color-mix(in oklch, var(--portal-green-2) 6%, transparent)',
         ...style,
       }}
     >
@@ -43,10 +51,11 @@ function Tick({ corner, delay }: { corner: 'tl' | 'tr' | 'br' | 'bl'; delay: num
     position: 'absolute',
     width: SIZE,
     height: SIZE,
-    borderColor: 'var(--portal-line-3)',
+    borderColor: 'var(--portal-green-3)',
     borderStyle: 'solid',
     borderWidth: 0,
     pointerEvents: 'none',
+    boxShadow: '0 0 8px var(--portal-green-glow)',
     animation: `portalCornerTickIn 360ms var(--portal-ease-out) ${delay}ms both`,
   }
   const placement: Record<typeof corner, CSSProperties> = {

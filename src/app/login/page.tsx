@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   PortalLastSeenLine,
-  PortalLoginBackgroundLineMap,
+  PortalLoginBackgroundPuente,
   PortalLoginCardChrome,
   PortalLoginHandshakeRow,
   PortalLoginLiveWire,
@@ -169,7 +169,7 @@ function LoginContent() {
           pointerEvents: 'none',
         }}
       >
-        <PortalLoginBackgroundLineMap />
+        <PortalLoginBackgroundPuente />
       </div>
 
       {/* Subtle grid anchor (zIndex 1) */}
@@ -212,62 +212,6 @@ function LoginContent() {
             'radial-gradient(ellipse 38% 50% at 50% 52%, color-mix(in oklch, var(--portal-ink-0) 70%, transparent) 0%, color-mix(in oklch, var(--portal-ink-0) 30%, transparent) 45%, transparent 75%)',
         }}
       />
-
-      {/* SIGNATURE HORIZON — barely-visible 1px line with three geographic
-          ticks. Anchors you in space without being a map. */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: '62%',
-          zIndex: 3,
-          pointerEvents: 'none',
-          opacity: 0.55,
-          transition: 'opacity 1200ms var(--portal-ease-out)',
-        }}
-      >
-        <div
-          style={{
-            height: 1,
-            width: '100%',
-            background:
-              'linear-gradient(90deg, transparent 0%, var(--portal-line-2) 18%, var(--portal-line-2) 82%, transparent 100%)',
-          }}
-        />
-        {[
-          { x: '33%', label: 'RIO BRAVO' },
-          { x: '50%', label: 'PUENTE II' },
-          { x: '67%', label: 'RIO BRAVO' },
-        ].map((t) => (
-          <div
-            key={t.x}
-            style={{
-              position: 'absolute',
-              left: t.x,
-              top: -3,
-              transform: 'translateX(-50%)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            <span style={{ width: 1, height: 6, background: 'var(--portal-line-2)' }} />
-            <span
-              style={{
-                fontFamily: 'var(--portal-font-mono)',
-                fontSize: 8, // WHY: handoff verbatim (screen-login.jsx:404)
-                letterSpacing: '0.32em',
-                color: 'var(--portal-fg-5)',
-              }}
-            >
-              {t.label}
-            </span>
-          </div>
-        ))}
-      </div>
 
       <main
         style={{

@@ -93,6 +93,10 @@ export { PortalPedimentoTheater } from './PortalPedimentoTheater'
 
 // Phase A (reference-parity plan) — login living background + LiveWire strip
 export { PortalLoginBackgroundLineMap } from './login/PortalLoginBackgroundLineMap'
+// 2026-05-01 — Bg_PuenteII (cable-stayed bridge silhouette) is the
+// canonical login background per Tito's call. LineMap kept exported
+// for back-compat / `/admin/design`.
+export { PortalLoginBackgroundPuente } from './login/PortalLoginBackgroundPuente'
 export { PortalLoginLiveWire } from './login/PortalLoginLiveWire'
 export type { LiveWireItem } from './login/PortalLoginLiveWire'
 

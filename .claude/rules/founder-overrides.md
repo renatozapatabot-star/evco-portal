@@ -88,6 +88,63 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-05-01 · Renato IV · ship.sh Gate 1d bypassed for design-handoff-parity-login deploy
+  supersedes: .claude/rules/ship-process.md Gate 1d (gsd-verify ratchets) +
+              CLAUDE.md "Every deploy: use npm run ship"
+  updates:    (runtime bypass — no file change beyond this entry)
+              Direct `vercel --prod --yes` from
+              `chore/overnight-2026-04-29` HEAD `dfd3ddf`
+              Deploy: dpl_3hfuTr8jhQjJsAvkuMonK4zxCRKi
+              Aliased: https://evco-portal.vercel.app +
+                       https://portal.renatozapata.com
+  basis:      Four pre-existing gsd-verify ratchet failures predate this
+              commit. Verified via
+              `git diff HEAD~1 -- src/app/login src/components/portal | grep …`
+              that the login change introduces ZERO hits in any of the
+              four failure classes:
+                · Hardcoded client identifiers — 3 false-positive matches
+                  in `src/lib/tenant/resolve-slug.ts:8`,
+                  `src/lib/notifications.ts:15`,
+                  `src/lib/decision-logger.ts:52`. All three are JSDoc
+                  comments mentioning `'9254'` to explain what those
+                  files PREVENT (the resolver introduced in the prior
+                  overnight commits to stop clave bleed-through). Pre-
+                  existing on this branch.
+                · console.error/warn: 133 (baseline 129, +4) — earlier
+                  overnight commits.
+                · FALLBACK_TENANT_ID: 2 (baseline 1, +1) — earlier
+                  overnight commits.
+                · scripts/ silent .catch: 164 (baseline 153, +11) —
+                  parallel session's productos-reconcile work,
+                  explicitly documented in commit `a26d475` message:
+                  "parallel session's productos-reconcile work landed
+                  +11 silent .catch entries."
+              Other gates: typecheck 0 errors, vitest 2079/2079 passing
+              (7/7 PortalLoginCardChrome tests green), build clean.
+              Gate 5 live smoke: 307 on both prod aliases as expected
+              (login redirect). /api/health/data-integrity verdict
+              red driven by `anexo24_reconciler` + `patentes_watch`
+              sync types — neither can be affected by a CSS/JSX login
+              change (same physical-impossibility precedent as the
+              2026-04-24 entry below).
+              Net product impact: Login surface now matches the design
+              bundle (`screen-login.jsx`) verbatim — single glass card
+              wrapping eyebrow + wordmark + subtitle + form, emerald
+              corner ticks with green-glow shadow, signature horizon
+              line at top: 62%, PORTAL wordmark at Geist 300 (not
+              serif 400), inline SVG focus tracer with stroke-
+              dashoffset transition, handshake row repositioned
+              inside the form below the button. Auth POST flow,
+              role-based landing, error/session banners, Caps-Lock
+              pill, last-seen line, live-wire ticker, and
+              cartographic background unchanged.
+              Same pattern as 2026-04-29 + 2026-04-28 + 2026-04-24
+              founder-override entries. User directive "ship and
+              deploy" + "bypass directly deploy". HARD invariant #6
+              satisfied by Renato IV sign-off. Pre-existing ratchet
+              cleanup (4 classes) owed as separate follow-up; NOT
+              silently skipped.
+
 2026-04-29 · Renato IV · ship.sh Gate 1d bypassed for handoff-parity-login deploy
   supersedes: .claude/rules/ship-process.md Gate 1d (gsd-verify ratchets) +
               CLAUDE.md "Every deploy: use npm run ship"

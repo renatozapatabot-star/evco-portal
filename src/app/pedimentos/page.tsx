@@ -16,7 +16,7 @@ import { MonthSelector } from '@/components/admin/MonthSelector'
 import { FreshnessBanner } from '@/components/aguila'
 import { useFreshness } from '@/hooks/use-freshness'
 import { clearanceLabel } from '@/lib/pedimentos/clearance'
-import { linkForPedimento } from '@/lib/links/entity-links'
+import { linkForPedimento, linkForPedimentoByNumber } from '@/lib/links/entity-links'
 import Link from 'next/link'
 
 interface TraficoRow {
@@ -319,7 +319,7 @@ function PedimentosContent() {
                 key={g.pedimento}
                 type="button"
                 onClick={() => {
-                  const href = linkForPedimento(g.trafico)
+                  const href = linkForPedimentoByNumber(g.pedimento) ?? linkForPedimento(g.trafico)
                   if (href) window.location.assign(href)
                 }}
                 style={{
@@ -331,12 +331,15 @@ function PedimentosContent() {
                   width: '100%',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ fontSize: 'var(--aguila-fs-section)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{formatPedimento(g.pedimento, g.pedimento, { dd: g.fecha?.slice(2,4) ?? '26', ad: '24', pppp: '3596' })}</span>
                   {g.tmec && <span className="badge-tmec">T-MEC</span>}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{g.fecha ? fmtDate(g.fecha) : ''}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                  <span style={{ fontSize: 'var(--aguila-fs-body)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 'var(--aguila-fs-label)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>Fecha</span>
+                    {g.fecha ? fmtDate(g.fecha) : ''}
+                  </span>
                   {hasUSDValues && (
                     <span style={{ fontSize: 'var(--aguila-fs-body)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
                       {g.importe > 0 ? fmtUSD(g.importe) : ''}
@@ -375,7 +378,7 @@ function PedimentosContent() {
                     key={g.pedimento}
                     className={`clickable-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}`}
                     onClick={() => {
-                      const href = linkForPedimento(g.trafico)
+                      const href = linkForPedimentoByNumber(g.pedimento) ?? linkForPedimento(g.trafico)
                       if (href) window.location.assign(href)
                     }}
                     style={{ cursor: 'pointer' }}

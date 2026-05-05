@@ -82,6 +82,11 @@ export * from './viz'
 export { PortalDashboard } from './PortalDashboard'
 export type { PortalDashboardProps, PortalDashboardRole } from './PortalDashboard'
 
+// 2026-04-28 founder-overrides — PORTAL design-handoff verbatim restored.
+// Operator + owner cockpits only; client `/inicio` stays calm.
+export { PortalLiveBorder } from './PortalLiveBorder'
+export type { PortalLiveBorderProps, CruzCrossingEvent } from './PortalLiveBorder'
+
 // Phase 5 — Full-viewport 5-act pedimento theater. Mount once in app/layout.tsx
 // and invoke from anywhere via window.__portalOpenTheater(pedimentoId).
 export { PortalPedimentoTheater } from './PortalPedimentoTheater'
@@ -90,6 +95,21 @@ export { PortalPedimentoTheater } from './PortalPedimentoTheater'
 export { PortalLoginBackgroundLineMap } from './login/PortalLoginBackgroundLineMap'
 export { PortalLoginLiveWire } from './login/PortalLoginLiveWire'
 export type { LiveWireItem } from './login/PortalLoginLiveWire'
+
+// Handoff-parity login boot-up: corner ticks + handshake row
+export {
+  PortalLoginCardChrome,
+  PortalLoginHandshakeRow,
+} from './login/PortalLoginCardChrome'
+export { PortalLastSeenLine } from './login/PortalLastSeenLine'
+
+// Handoff-parity cockpit ambient signals: EN ESTE MOMENTO + activity ticker
+export {
+  PortalCockpitMomento,
+  PortalCockpitActivity,
+  auditRowToSignal,
+} from './PortalCockpitSignals'
+export type { PortalSignalItem } from './PortalCockpitSignals'
 
 // Phase B — Pedimento detail hero (2px accent line · sticky topbar · giant mono number · 5-stage spine · 2×2 grid)
 export { PortalDetailHero } from './PortalDetailHero'

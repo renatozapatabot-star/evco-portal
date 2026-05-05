@@ -202,7 +202,12 @@ export default async function PedimentoDetailPage({
         <div className={styles.eyebrow}>Pedimento</div>
         <div className={styles.titleRow}>
           <h1 className={styles.number}>{pedimentoDisplay}</h1>
-          <span className={`${styles.status} ${cleared ? styles.statusCleared : styles.statusPending}`}>
+          {/* portal-live-glow on cleared status — emerald halo
+              breathes around the pill per the design handoff
+              "live/healthy" rule. Pending state stays calm silver. */}
+          <span
+            className={`${styles.status} ${cleared ? styles.statusCleared : styles.statusPending}${cleared ? ' portal-live-glow' : ''}`}
+          >
             <span className={styles.statusDot} />
             {status}
           </span>

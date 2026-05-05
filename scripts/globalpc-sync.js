@@ -25,6 +25,24 @@ const CHECKPOINT_DIR = path.join(__dirname, '.sync-checkpoints')
 // ─── Helpers ───
 if (!fs.existsSync(CHECKPOINT_DIR)) fs.mkdirSync(CHECKPOINT_DIR, { recursive: true })
 
+// Normalize legacy MXP (peso pre-1993 redenomination) to MXN.
+//
+// GlobalPC's MySQL has stale MXP literals in cb_factura, factura_aa,
+// cl_cartera, ba_ingresos, ba_egresos, and ba_anticipos — all with
+// post-1993 fechas. Without normalization the sync writes 39,895
+// rows across 6 Supabase tables labeled with a deprecated ISO code.
+// MXP and MXN are the same currency unit since 1993; the ISO 4217
+// code rotation just made `MXP` retired. Every other code (USD/EUR/
+// CAD/JPY/etc.) passes through unchanged. NULL stays NULL — we don't
+// invent a label we can't justify.
+function normalizeMoneda(m) {
+  if (m == null) return m;
+  const upper = String(m).trim().toUpperCase();
+  if (upper === '') return null;
+  if (upper === 'MXP') return 'MXN';
+  return upper;
+}
+
 function loadCP(name) {
   const f = path.join(CHECKPOINT_DIR, name + '.json')
   if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8'))
@@ -239,7 +257,7 @@ async function run() {
       mapRow: r => ({
         folio: r.folio, cve_trafico: r.cve_trafico, cve_cliente: r.cve_cliente,
         cve_proveedor: r.cve_proveedor, numero: r.numero, incoterm: r.incoterm,
-        moneda: r.moneda, fecha_facturacion: r.fecha_facturacion,
+        moneda: normalizeMoneda(r.moneda), fecha_facturacion: r.fecha_facturacion,
         valor_comercial: r.valor, flete: r.flete, seguros: r.seguros,
         embalajes: r.embalajes, incrementables: r.incrementables,
         deducibles: r.deducibles, cove_vucem: r.cove,
@@ -441,7 +459,7 @@ async function run() {
       cve_cliente: r.cve_cliente, serie: r.serie, folio: r.folio,
       tipo_factura: r.tipo_factura, fecha: r.fecha,
       subtotal: r.subtotal, iva: r.iva, total: r.total,
-      moneda: r.moneda, tipo_cambio: r.tipo_cambio,
+      moneda: normalizeMoneda(r.moneda), tipo_cambio: r.tipo_cambio,
       observaciones: r.observaciones, tenant_id: FALLBACK_TENANT_ID,
     }),
   })
@@ -479,7 +497,7 @@ async function run() {
       consecutivo: r.consecutivo, cve_cliente: r.cve_cliente,
       tipo: r.tipo, referencia: r.referencia, fecha: r.fecha,
       importe: r.importe, saldo: r.saldo,
-      moneda: r.moneda, tipo_cambio: r.tipo_cambio,
+      moneda: normalizeMoneda(r.moneda), tipo_cambio: r.tipo_cambio,
       observaciones: r.observaciones, tenant_id: FALLBACK_TENANT_ID,
     }),
   })
@@ -519,7 +537,7 @@ async function run() {
       tipo_ingreso: r.tipo_ingreso, forma_ingreso: r.forma_ingreso,
       cve_cliente: r.cve_cliente, oficina: r.oficina, referencia: r.referencia,
       fecha: r.fecha, importe: r.importe, tipo_cambio: r.tipo_cambio,
-      moneda: r.moneda, concepto: r.concepto, tenant_id: FALLBACK_TENANT_ID,
+      moneda: normalizeMoneda(r.moneda), concepto: r.concepto, tenant_id: FALLBACK_TENANT_ID,
     }),
   })
 
@@ -541,7 +559,7 @@ async function run() {
       forma_egreso: r.forma_egreso, tipo_egreso: r.tipo_egreso,
       cve_cliente: r.cve_cliente, cve_proveedor: r.cve_proveedor,
       beneficiario: r.beneficiario, referencia: r.referencia,
-      fecha: r.fecha, importe: r.importe, moneda: r.moneda,
+      fecha: r.fecha, importe: r.importe, moneda: normalizeMoneda(r.moneda),
       tipo_cambio: r.tipo_cambio, concepto: r.concepto, tenant_id: FALLBACK_TENANT_ID,
     }),
   })
@@ -560,7 +578,7 @@ async function run() {
     mapRow: r => ({
       consecutivo: r.consecutivo, cve_cliente: r.cve_cliente,
       oficina: r.oficina, referencia: r.referencia,
-      fecha: r.fecha, importe: r.importe, moneda: r.moneda,
+      fecha: r.fecha, importe: r.importe, moneda: normalizeMoneda(r.moneda),
       tipo_cambio: r.tipo_cambio, tenant_id: FALLBACK_TENANT_ID,
     }),
   })
@@ -891,21 +909,28 @@ async function run() {
   console.log(`📄 Sync completo · ${totalMin} min · MySQL ✅ · eConta ✅ · WSDL ✅ · TIGIE ✅`)
 }
 
-withSyncLog(supabase, { sync_type: 'globalpc', company_id: null }, run).catch(async err => {
-  console.error('Fatal error:', err)
-  // Operational resilience rule #1 (.claude/rules/operational-resilience.md):
-  // sync failures MUST fire Telegram before the morning report. Block EE
-  // reference writer — silent death here is SEV-1. Non-blocking: best-effort
-  // alert, then exit non-zero so pm2/cron knows it failed.
-  try {
-    await sendTelegram(
-      `🔴 <b>globalpc-sync FAILED</b>\n\n` +
-      `<code>${String(err?.message ?? err).slice(0, 500)}</code>\n\n` +
-      `Host: ${require('os').hostname()}\n` +
-      `Run: ${new Date().toISOString()}`
-    )
-  } catch (tgErr) {
-    console.error('Telegram alert also failed:', tgErr.message)
-  }
-  process.exit(1)
-})
+// Top-level execution gated on `require.main === module` so this file
+// can be `require()`d for unit testing (test/normalize-moneda.test.js
+// imports `normalizeMoneda` without firing a real sync).
+if (require.main === module) {
+  withSyncLog(supabase, { sync_type: 'globalpc', company_id: null }, run).catch(async err => {
+    console.error('Fatal error:', err)
+    // Operational resilience rule #1 (.claude/rules/operational-resilience.md):
+    // sync failures MUST fire Telegram before the morning report. Block EE
+    // reference writer — silent death here is SEV-1. Non-blocking: best-effort
+    // alert, then exit non-zero so pm2/cron knows it failed.
+    try {
+      await sendTelegram(
+        `🔴 <b>globalpc-sync FAILED</b>\n\n` +
+        `<code>${String(err?.message ?? err).slice(0, 500)}</code>\n\n` +
+        `Host: ${require('os').hostname()}\n` +
+        `Run: ${new Date().toISOString()}`
+      )
+    } catch (tgErr) {
+      console.error('Telegram alert also failed:', tgErr.message)
+    }
+    process.exit(1)
+  })
+}
+
+module.exports = { normalizeMoneda }

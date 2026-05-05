@@ -11,6 +11,12 @@ import { fetchOperatorMensajeriaFeed, fetchEscalatedThreads } from '@/lib/mensaj
 import { parseMonthParam } from '@/lib/cockpit/month-window'
 import { CockpitSkeleton } from '@/components/aguila'
 import { AsistenteButton } from '@/components/aguila/AsistenteButton'
+import {
+  PortalWorldMesh,
+  PortalLiveBorder,
+  PortalCockpitMomento,
+  PortalCockpitActivity,
+} from '@/components/portal'
 import type { TraficoRow, DecisionRow, SystemStatus } from './types'
 import type { AuditRow } from '@/lib/cockpit/audit-format'
 
@@ -298,6 +304,23 @@ async function loadOperatorCockpit(opId: string, opName: string, month: string) 
 
   return (
     <>
+    {/* PORTAL design-handoff ambient + live-border (founder-overrides 2026-04-28).
+        WorldMesh sits behind everything (position:fixed, 6% opacity).
+        LiveBorder above the cockpit content — operator + owner only per
+        override scope (client /inicio stays calm). */}
+    <PortalWorldMesh />
+    {/* EN ESTE MOMENTO sticky pulse bar — sourced from auditRows.
+        Sits at the top so it scrolls with the page header until
+        position:sticky pins it. */}
+    <PortalCockpitMomento rows={auditRows} />
+    <div style={{ padding: '24px 24px 0', maxWidth: 'var(--portal-maxw, 1440px)', margin: '0 auto' }}>
+      <PortalLiveBorder />
+      {/* Rolling activity ticker — same auditRows, shifted off the
+          first element since the momento bar already showed it. */}
+      <div style={{ marginTop: 12 }}>
+        <PortalCockpitActivity rows={auditRows.slice(1)} limit={6} />
+      </div>
+    </div>
     <InicioClient
       operatorName={opName}
       operatorId={opId || ''}

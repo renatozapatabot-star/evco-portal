@@ -51,9 +51,6 @@ export async function GET(request: NextRequest) {
 
   // When admin overrides the target, look up the target company so the
   // header of the PDF shows the RIGHT client, not the admin's cookies.
-  let clientName: string
-  let clientClave: string
-  let clientRFC: string
   // Resolve client metadata from the verified companyId — never from
   // raw company_name / company_clave / company_rfc cookies. The
   // companies table is the single source of truth. P0-A7.
@@ -62,9 +59,9 @@ export async function GET(request: NextRequest) {
     .select('name, clave_cliente, rfc')
     .eq('company_id', companyId)
     .maybeSingle()
-  clientName = (target?.name as string | undefined) ?? companyId.toUpperCase()
-  clientClave = (target?.clave_cliente as string | undefined) ?? ''
-  clientRFC = (target?.rfc as string | undefined) ?? ''
+  const clientName = (target?.name as string | undefined) ?? companyId.toUpperCase()
+  const clientClave = (target?.clave_cliente as string | undefined) ?? ''
+  const clientRFC = (target?.rfc as string | undefined) ?? ''
 
   const from = request.nextUrl.searchParams.get('from')
   const to = request.nextUrl.searchParams.get('to')

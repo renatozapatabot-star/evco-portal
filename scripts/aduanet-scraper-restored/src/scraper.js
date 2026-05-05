@@ -21,7 +21,7 @@ if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: tr
 async function screenshot(page, label) {
   if (process.env.SCREENSHOT_ON_ERROR !== "true") return;
   const file = path.join(SCREENSHOT_DIR, `${label}-${Date.now()}.png`);
-  await page.screenshot({ path: file, fullPage: true }).catch(() => {});
+  await page.screenshot({ path: file, fullPage: true }).catch(e => { console.error('[scraper] non-fatal: screenshot', e?.message ?? e) /* best-effort */ });
   logger.info(`Screenshot: ${file}`);
 }
 
@@ -137,10 +137,10 @@ async function login(context) {
   // Use Promise.all to capture the navigation triggered by form submit
   await Promise.all([
     page.waitForURL(u => !u.includes("loginI") && !u.includes("login_auth"), { timeout: 45_000 })
-        .catch(() => {}),
+        .catch(e => { console.error('[scraper] non-fatal: post-login URL wait', e?.message ?? e) /* race in Promise.all */ }),
     page.click('input[type="submit"], button[type="submit"]').catch(() => page.keyboard.press("Enter")),
   ]);
-  await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => {});
+  await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(e => { console.error('[scraper] non-fatal: networkidle after login', e?.message ?? e) /* best-effort */ });
   await screenshot(page, "03-after-login");
 
   const finalUrl = page.url();
@@ -183,10 +183,10 @@ async function scrapeCoves(page, fromDate) {
   for (const patente of EVCO_QUERIES) {
     try {
       await page.goto(`${BASE_URL}/cove/consultaCove.php`, { waitUntil: "domcontentloaded", timeout: 30_000 });
-      await page.fill('input[name*="patente"], input[id*="patente"]', patente).catch(() => {});
-      await page.fill('input[name*="fechaIni"], input[id*="fechaInicio"], input[name*="fecha_ini"]', fromDate).catch(() => {});
-      await page.fill('input[name*="fechaFin"], input[id*="fechaFin"], input[name*="fecha_fin"]', dateString(0)).catch(() => {});
-      await page.click('input[type="submit"], button[type="submit"]').catch(() => {});
+      await page.fill('input[name*="patente"], input[id*="patente"]', patente).catch(e => { console.error('[scraper] non-fatal: fill COVE patente', e?.message ?? e) /* selector tolerance */ });
+      await page.fill('input[name*="fechaIni"], input[id*="fechaInicio"], input[name*="fecha_ini"]', fromDate).catch(e => { console.error('[scraper] non-fatal: fill COVE fechaIni', e?.message ?? e) /* selector tolerance */ });
+      await page.fill('input[name*="fechaFin"], input[id*="fechaFin"], input[name*="fecha_fin"]', dateString(0)).catch(e => { console.error('[scraper] non-fatal: fill COVE fechaFin', e?.message ?? e) /* selector tolerance */ });
+      await page.click('input[type="submit"], button[type="submit"]').catch(e => { console.error('[scraper] non-fatal: click COVE submit', e?.message ?? e) /* selector tolerance */ });
       await page.waitForLoadState("networkidle", { timeout: 30_000 });
       const rows = await paginateScrape(page,
         ['table.resultados', 'table[id*="tablaCove"]', 'table'],
@@ -205,10 +205,10 @@ async function scrapePedimentos(page, fromDate) {
   for (const patente of EVCO_QUERIES) {
     try {
       await page.goto(`${BASE_URL}/pedimentos/lista.php`, { waitUntil: "domcontentloaded", timeout: 30_000 });
-      await page.fill('input[name*="patente"], input[id*="patente"]', patente).catch(() => {});
-      await page.fill('input[name*="fechaIni"], input[id*="fechaInicio"]', fromDate).catch(() => {});
-      await page.fill('input[name*="fechaFin"], input[id*="fechaFin"]', dateString(0)).catch(() => {});
-      await page.click('input[type="submit"], button[type="submit"]').catch(() => {});
+      await page.fill('input[name*="patente"], input[id*="patente"]', patente).catch(e => { console.error('[scraper] non-fatal: fill pedimento patente', e?.message ?? e) /* selector tolerance */ });
+      await page.fill('input[name*="fechaIni"], input[id*="fechaInicio"]', fromDate).catch(e => { console.error('[scraper] non-fatal: fill pedimento fechaIni', e?.message ?? e) /* selector tolerance */ });
+      await page.fill('input[name*="fechaFin"], input[id*="fechaFin"]', dateString(0)).catch(e => { console.error('[scraper] non-fatal: fill pedimento fechaFin', e?.message ?? e) /* selector tolerance */ });
+      await page.click('input[type="submit"], button[type="submit"]').catch(e => { console.error('[scraper] non-fatal: click pedimento submit', e?.message ?? e) /* selector tolerance */ });
       await page.waitForLoadState("networkidle", { timeout: 30_000 });
       const rows = await paginateScrape(page,
         ['table.resultados', 'table[id*="tablaPedimento"]', 'table'],

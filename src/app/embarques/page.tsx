@@ -135,7 +135,7 @@ function TraficosContent() {
   const router = useRouter()
   const isMobile = useIsMobile()
   const { getCached, setCache } = useSessionCache()
-  const freshness = useFreshness()
+  const freshness = useFreshness(true, ['globalpc_delta'])
 
   // Lookup maps from aduanet_facturas, entradas, globalpc_partidas, globalpc_facturas, globalpc_proveedores
   const [facturasMap, setFacturasMap] = useState<Map<string, FacturaLookup>>(new Map())

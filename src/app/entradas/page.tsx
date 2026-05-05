@@ -61,7 +61,7 @@ function EntradasContent() {
   const [transportMap, setTransportMap] = useState<Map<string, string>>(new Map())
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const { getCached, setCache } = useSessionCache()
-  const freshness = useFreshness()
+  const freshness = useFreshness(true, ['globalpc_delta'])
   const supplierNames = useSupplierNames()
 
   useEffect(() => {

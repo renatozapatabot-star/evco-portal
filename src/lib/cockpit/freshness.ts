@@ -38,6 +38,15 @@ export type SyncHealth = 'green' | 'amber' | 'red' | 'unknown'
 export async function readFreshness(
   supabase: SupabaseClient,
   companyId: string | null | undefined,
+  /**
+   * Optional sync_type allowlist — when provided, freshness reflects only
+   * the most-recent successful run of one of these types. Lets a page
+   * surface the freshness of the sync that actually powers its data
+   * (audit Cluster B3 2026-05-05). Without this scope, a stale
+   * `wsdl_anexo24` could mask a fresh `globalpc_delta` (or vice-versa).
+   * Default (undefined) behavior unchanged: most-recent success of any type.
+   */
+  syncTypes?: readonly string[],
 ): Promise<FreshnessReading> {
   const base: FreshnessReading = {
     minutesAgo: null,
@@ -48,12 +57,16 @@ export async function readFreshness(
   if (!companyId) return base
 
   try {
-    const { data } = await supabase
+    let q = supabase
       .from('sync_log')
-      .select('completed_at, company_id, status')
+      .select('completed_at, company_id, status, sync_type')
       .eq('status', 'success')
       .or(`company_id.eq.${companyId},company_id.is.null`)
       .not('completed_at', 'is', null)
+    if (syncTypes && syncTypes.length > 0) {
+      q = q.in('sync_type', syncTypes as string[])
+    }
+    const { data } = await q
       .order('completed_at', { ascending: false })
       .limit(1)
 

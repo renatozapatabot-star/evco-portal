@@ -36,8 +36,37 @@ export async function GET(req: NextRequest) {
   const paramCompanyId = req.nextUrl.searchParams.get('company_id')
   const companyId = isInternal ? (paramCompanyId || session.companyId) : session.companyId
 
-  const reading = await readFreshness(supabase, companyId)
+  // Per-page sync_type scoping (audit Cluster B3 2026-05-05). Comma-list
+  // of sync_types; falls back to "any sync_type" when absent. Whitelist
+  // guards against arbitrary string injection.
+  const rawSyncTypes = req.nextUrl.searchParams.get('sync_types')
+  const syncTypes = rawSyncTypes
+    ? rawSyncTypes.split(',').map((s) => s.trim()).filter((s) => ALLOWED_SYNC_TYPES.has(s))
+    : undefined
+
+  const reading = await readFreshness(supabase, companyId, syncTypes)
   return NextResponse.json(reading, {
     headers: { 'Cache-Control': 'private, no-store, max-age=0' },
   })
 }
+
+// Allowlist matched against live sync_log on 2026-05-05 — only sync_types
+// that actually appear in production data are accepted. Adding a new
+// sync_type here without a corresponding script that writes to sync_log
+// will cause the freshness query to silently match zero rows.
+const ALLOWED_SYNC_TYPES = new Set([
+  'globalpc_delta',
+  'wsdl_anexo24_pull',
+  'email_intake',
+  'risk_feed',
+  'risk_scorer',
+  'content_intel',
+  'econta_full',
+  'semaforo_watch',
+  'mensajeria_email_fallback',
+  'post_sync_integrity',
+  'vencimientos_watch',
+  'patentes_watch',
+  'completeness_checker',
+  'anexo24_reconciler',
+])

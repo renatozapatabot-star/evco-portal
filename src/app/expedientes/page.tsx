@@ -60,7 +60,7 @@ function ExpedientesContent() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(0)
-  const freshness = useFreshness()
+  const freshness = useFreshness(true, ['wsdl_anexo24_pull', 'globalpc_delta'])
   const { sort } = useSort('expedientes', { column: 'fecha_llegada', direction: 'desc' })
 
   const [cookiesReady, setCookiesReady] = useState(false)

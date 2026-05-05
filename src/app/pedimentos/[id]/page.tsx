@@ -9,6 +9,7 @@ import { formatFraccion } from '@/lib/format/fraccion'
 import { fmtDesc } from '@/lib/format-utils'
 import { isCleared, clearanceLabelES } from '@/lib/pedimentos/clearance'
 import { translateEstatus } from '@/lib/estatus-translator'
+import { formatRegimen } from '@/lib/regimen-dict'
 import {
   linkForEntrada,
   linkForFraccion,
@@ -219,7 +220,7 @@ export default async function PedimentoDetailPage({
             <Link href={embarqueHref} className={styles.metaLink}>{trafico.trafico}</Link>
           </span>
           {trafico.regimen && (
-            <span className={styles.metaItem}><span className={styles.metaLabel}>Régimen</span>{trafico.regimen}</span>
+            <span className={styles.metaItem}><span className={styles.metaLabel}>Régimen</span>{formatRegimen(trafico.regimen)}</span>
           )}
           {trafico.aduana && (
             <span className={styles.metaItem}><span className={styles.metaLabel}>Aduana</span>{trafico.aduana}</span>
@@ -232,7 +233,7 @@ export default async function PedimentoDetailPage({
 
       <Section title="Datos del pedimento">
         <div className={styles.grid}>
-          <Cell label="Régimen" value={trafico.regimen ?? '—'} />
+          <Cell label="Régimen" value={formatRegimen(trafico.regimen)} />
           <Cell label="Aduana" value={trafico.aduana ?? '—'} />
           <Cell label="Patente" value={trafico.patente ?? '—'} mono />
           <Cell label="Estatus" value={translateEstatus(trafico.estatus).label} />

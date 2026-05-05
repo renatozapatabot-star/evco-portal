@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CreditCard, Download, Calendar, FileCheck, AlertCircle } from 'lucide-react'
 import { fmtDate, fmtUSDCompact } from '@/lib/format-utils'
 import { formatPedimento } from '@/lib/format/pedimento'
+import { formatRegimen } from '@/lib/regimen-dict'
 import type { TraficoRow } from '../types'
 
 interface Props {
@@ -124,7 +125,7 @@ export function PedimentoTab({
               {trafico.regimen && (
                 <span>
                   <strong style={{ color: 'var(--portal-fg-1)' }}>Régimen:</strong>{' '}
-                  <span className="font-mono">{trafico.regimen}</span>
+                  <span>{formatRegimen(trafico.regimen)}</span>
                 </span>
               )}
               {importeTotalUsd != null && importeTotalUsd > 0 && (

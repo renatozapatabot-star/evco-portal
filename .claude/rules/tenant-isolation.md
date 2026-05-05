@@ -128,6 +128,73 @@ Admin surfaces can override via `session.role in ['admin','broker']`
 but must never fetch without a tenant filter. Violating this is
 core-invariant #6 (RLS + defense-in-depth) breach.
 
+### `/api/data` cross-tenant escalation fence (2026-05-05)
+
+The `/api/data` route is the single most-trafficked tenant boundary
+— almost every cockpit read fans through it. Pre-2026-05-05 a client
+passing `?company_id=mafesa` got a 200 with EVCO data (silent ignore).
+The session.companyId always won the filter, so no leak — but the
+silence was bad telemetry: an attacker probing the surface, or a
+security auditor running curl, could not tell the bypass attempt
+failed.
+
+Post-fix, **any client-role request whose `?company_id=`,
+`?cve_cliente=`, or `?clave_cliente=` does not match the session's
+own tenant returns 403 + writes an `audit_log` row** with action
+`cross_tenant_attempt`. The fence:
+
+```ts
+// src/app/api/data/route.ts (excerpt)
+if (!isInternal) {
+  const escalations: Array<{ via: string; attempted: string }> = []
+  if (queryCompanyId && queryCompanyId !== sessionCompanyId) {
+    escalations.push({ via: 'company_id_param', attempted: queryCompanyId })
+  }
+  if (claveCliente || cveCliente) {
+    const { data: ownClave } = await supabase
+      .from('companies').select('clave_cliente')
+      .eq('company_id', sessionCompanyId).maybeSingle()
+    const sessionClave = ownClave?.clave_cliente ?? null
+    if (claveCliente && claveCliente !== sessionClave) escalations.push(...)
+    if (cveCliente && cveCliente !== sessionClave) escalations.push(...)
+  }
+  if (escalations.length > 0) {
+    supabase.from('audit_log').insert({
+      action: 'cross_tenant_attempt', resource: 'api/data',
+      company_id: sessionCompanyId, diff: { ...escalations, ip, ua },
+    })
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+}
+```
+
+**Internal roles (broker/admin) bypass this fence by design** — they
+pass `?company_id=` legitimately for oversight (see core-invariant
+#31). No audit row written for those requests.
+
+**Generic 'Forbidden' body** — the fence does not leak which tenant
+exists or which param tripped it.
+
+Run `bash scripts/test/cross-tenant-probe.sh` against any deployed
+environment after touching this route. The probe expects 403 on three
+attack shapes and 200 on the default-scoping path. Run after every
+prod deploy that touches `src/app/api/data/route.ts`:
+
+```bash
+BASE_URL=https://portal.renatozapata.com \
+CLIENT_SESSION='<portal_session cookie value>' \
+bash scripts/test/cross-tenant-probe.sh
+```
+
+Audit-log queryability lets us answer "did anyone try to cross
+tenants today?" in one SQL query:
+```sql
+select * from audit_log
+where action = 'cross_tenant_attempt'
+  and created_at > now() - interval '7 days'
+order by created_at desc;
+```
+
 ### Catalog surfaces
 
 The catalog-style queries (things that could show cross-tenant parts

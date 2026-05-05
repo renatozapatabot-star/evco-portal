@@ -12,6 +12,7 @@ import {
 } from '@/lib/design-system'
 import { useTrack } from '@/lib/telemetry/useTrack'
 import { fmtCurrency } from '@/lib/format-utils'
+import { formatNumber } from '@/lib/format'
 import type { PartidaRow } from '../types'
 
 interface PartidasTabProps {
@@ -175,7 +176,9 @@ export function PartidasTab({ traficoId, partidas }: PartidasTabProps) {
                     ) : '—'}
                   </td>
                   <td style={cell(true, 'right')}>
-                    {cantidad !== null ? `${cantidad}${p.umc ? ` ${p.umc}` : ''}` : '—'}
+                    {cantidad !== null
+                      ? `${formatNumber(cantidad) || cantidad}${p.umc ? ` ${p.umc}` : ''}`
+                      : '—'}
                   </td>
                   <td style={cell(false)}>{p.pais_origen ?? '—'}</td>
                   <td style={cell(false)}>

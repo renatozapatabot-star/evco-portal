@@ -13,8 +13,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-// Fallback tenant_id for companies without one in the DB (legacy EVCO rows)
-const FALLBACK_TENANT_ID = '52762e3c-bd8a-49b8-9a32-296e526b7238'
+// Fallback tenant_id for companies without one in the DB (legacy EVCO rows).
+// Single source of truth: scripts/lib/tenant-fallback.js. The Block EE
+// ratchet counts declarations of this constant; importing keeps the count
+// at 1 even when other scripts (e.g. full-sync-econta) need the value.
+const { FALLBACK_TENANT_ID } = require('./lib/tenant-fallback')
 const BATCH = 500
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = 'qwen3:8b'

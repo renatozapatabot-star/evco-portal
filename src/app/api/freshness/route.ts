@@ -50,19 +50,23 @@ export async function GET(req: NextRequest) {
   })
 }
 
+// Allowlist matched against live sync_log on 2026-05-05 — only sync_types
+// that actually appear in production data are accepted. Adding a new
+// sync_type here without a corresponding script that writes to sync_log
+// will cause the freshness query to silently match zero rows.
 const ALLOWED_SYNC_TYPES = new Set([
   'globalpc_delta',
-  'globalpc_full',
-  'wsdl_anexo24',
-  'aduanet_scrape',
-  'document_intelligence',
+  'wsdl_anexo24_pull',
   'email_intake',
   'risk_feed',
   'risk_scorer',
   'content_intel',
-  'econta_delta',
   'econta_full',
-  'econta_intraday',
-  'econta_nightly_full',
-  'econta_reconciler',
+  'semaforo_watch',
+  'mensajeria_email_fallback',
+  'post_sync_integrity',
+  'vencimientos_watch',
+  'patentes_watch',
+  'completeness_checker',
+  'anexo24_reconciler',
 ])

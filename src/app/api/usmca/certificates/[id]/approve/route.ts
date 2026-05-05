@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
+import { buildClaveMap, resolveCompanyIdSlug } from '@/lib/tenant/resolve-slug'
 import type { UsmcaCertRow } from '@/lib/usmca/types'
 
 export const dynamic = 'force-dynamic'
@@ -44,15 +45,26 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
   }
 
   if (data.trafico_id) {
-    await supabase.from('expediente_documentos').insert({
-      trafico_id: data.trafico_id,
-      company_id: data.company_id,
-      doc_type: 'usmca_certificate',
-      file_name: `${data.certificate_number}.pdf`,
-      nombre: `USMCA ${data.certificate_number} · ${data.hs_code}`,
-      source: 'usmca_generator',
-      uploaded_at: new Date().toISOString(),
-    }).select().single().then(() => undefined, () => undefined)
+    // Defense in depth: normalize company_id through the slug allowlist
+    // before propagating to expediente_documentos. Cheap one-call guard
+    // against any future drift on usmca_certificates.company_id.
+    const claveMap = await buildClaveMap(supabase)
+    const resolved = resolveCompanyIdSlug(data.company_id, claveMap)
+    if (resolved.kind === 'unresolved') {
+      console.warn(
+        `[usmca/approve] skipping expediente_documentos insert: cert id=${id} company_id=${String(data.company_id)} unresolvable (${resolved.reason})`,
+      )
+    } else {
+      await supabase.from('expediente_documentos').insert({
+        trafico_id: data.trafico_id,
+        company_id: resolved.slug,
+        doc_type: 'usmca_certificate',
+        file_name: `${data.certificate_number}.pdf`,
+        nombre: `USMCA ${data.certificate_number} · ${data.hs_code}`,
+        source: 'usmca_generator',
+        uploaded_at: new Date().toISOString(),
+      }).select().single().then(() => undefined, () => undefined)
+    }
   }
 
   return NextResponse.json({ data: { certificate: data }, error: null })

@@ -7,14 +7,19 @@ require('dotenv').config({ path: '.env.local' })
 const { fetchAll } = require('./lib/paginate')
 const { withSyncLog } = require('./lib/sync-log')
 const { sendTelegram } = require('./lib/telegram')
+const { translateEstatus } = require('./lib/translate-estatus')
+const { safeUpsert } = require('./lib/safe-write')
 
 // ─── Config ───
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-// Fallback tenant_id for companies without one in the DB (legacy EVCO rows)
-const FALLBACK_TENANT_ID = '52762e3c-bd8a-49b8-9a32-296e526b7238'
+// Fallback tenant_id for companies without one in the DB (legacy EVCO rows).
+// Single source of truth: scripts/lib/tenant-fallback.js. The Block EE
+// ratchet counts declarations of this constant; importing keeps the count
+// at 1 even when other scripts (e.g. full-sync-econta) need the value.
+const { FALLBACK_TENANT_ID } = require('./lib/tenant-fallback')
 const BATCH = 500
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = 'qwen3:8b'
@@ -95,25 +100,36 @@ async function syncTable({ name, db, query, table, mapRow, conflictCol, countQue
     if (rows.length === 0) break
 
     const mapped = rows.map(mapRow)
-    const { error } = await supabase.from(table).upsert(mapped, {
-      onConflict: conflictCol,
-      ignoreDuplicates: false,
-    })
 
-    if (error) {
-      console.error(`   ❌ ${name} error at ${offset}: ${error.message}`)
-      // If table doesn't exist, bail with instructions
-      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+    // FIX 3 (audit-sync-pipeline-2026-04-29): the raw `supabase.upsert()`
+    // pattern below was logging console.error then advancing the offset
+    // on failure — silent partial-write loss. The audit found 9/9 full
+    // syncs failed in 30 days with no actionable trail. Routing through
+    // safeUpsert means errors throw + Telegram-alert + bubble to
+    // withSyncLog so sync_log records the failed table_name + offset.
+    try {
+      await safeUpsert(supabase, table, mapped, {
+        onConflict: conflictCol,
+        ignoreDuplicates: false,
+        scriptName: 'globalpc-sync',
+      })
+      synced += rows.length
+      offset += rows.length
+    } catch (e) {
+      // Preserve the legacy "table missing" fast-bail path — it's a
+      // setup-time problem, not a data problem; printing the SQL file
+      // hint is more useful than re-throwing into withSyncLog.
+      if (/relation .* does not exist/i.test(e.message)) {
         console.error(`\n⚠️  Table "${table}" does not exist in Supabase.`)
         console.error(`   Run the SQL in: scripts/create-sync-tables.sql`)
         console.error(`   Paste it in the Supabase SQL Editor, then re-run this script.\n`)
         return false
       }
-    } else {
-      synced += rows.length
+      // Save the checkpoint so the next run resumes at the failed
+      // boundary instead of skipping past it; do NOT advance offset.
+      saveCP(name, { offset, synced })
+      throw new Error(`${name} failed at offset ${offset}: ${e.message}`)
     }
-
-    offset += rows.length
 
     if (synced % (BATCH * 2) < BATCH || offset >= total) {
       saveCP(name, { offset, synced })
@@ -194,7 +210,7 @@ async function run() {
       conflictCol: 'trafico',
       mapRow: r => ({
         trafico: r.trafico, company_id: companyId, tenant_id: tenantId, tenant_slug: companyId,
-        estatus: r.fecha_cruce ? 'Cruzado' : 'En Proceso',
+        estatus: translateEstatus({ fecha_cruce: r.fecha_cruce, fecha_pago: r.fecha_pago }),
         descripcion_mercancia: r.descripcion_mercancia, peso_bruto: r.peso_bruto,
         fecha_llegada: r.fecha_llegada, pedimento: r.pedimento,
         transportista_extranjero: r.transp_ext, transportista_mexicano: r.transp_mex,

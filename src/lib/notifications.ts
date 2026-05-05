@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { buildClaveMap, resolveCompanyIdSlug, type ClaveMap } from '@/lib/tenant/resolve-slug'
 
 /**
  * V1 Polish Pack · Block 6 — notifications server helper.
@@ -9,6 +10,13 @@ import { createClient } from '@supabase/supabase-js'
  * in `recipient_key` (added by Block 6 migration). For legacy rows
  * without recipient_key, company_id is the scoping key — and that's
  * how the existing bell already reads.
+ *
+ * Tenant-tagging guard (added 2026-04-29): every insert is normalized
+ * through `resolveCompanyIdSlug` so a stray clave value (a legacy
+ * 4-digit clave passed in from a draft / Telegram payload / Vapi call)
+ * gets remapped to the slug before write. The 2026-04-29 audit found
+ * 187 distinct claves had silently accumulated in the column; this guard plus the
+ * one-shot backfill prevent regrowth.
  */
 
 function getAdmin() {
@@ -64,10 +72,25 @@ export async function createNotification(input: CreateNotificationInput): Promis
   }
 
   const supabase = getAdmin()
+
+  // Defense in depth: normalize companyId through the slug allowlist
+  // before insert. Drops clave-shape values that escaped upstream.
+  const claveMap: ClaveMap = await buildClaveMap(supabase)
+  const resolved = resolveCompanyIdSlug(companyId, claveMap)
+  if (resolved.kind === 'unresolved') {
+    return {
+      id: null,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: `companyId did not resolve to a known slug (input=${String(companyId)}, reason=${resolved.reason})`,
+      },
+    }
+  }
+
   const { data, error } = await supabase
     .from('notifications')
     .insert({
-      company_id: companyId,
+      company_id: resolved.slug,
       recipient_key: recipientKey ?? null,
       title,
       description,

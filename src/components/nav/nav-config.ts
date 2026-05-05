@@ -285,8 +285,11 @@ export const ADMIN_ONLY_ROUTES = [
   '/rentabilidad',
   '/resultados',
   '/garantia',
-  // V1 Clean Visibility additions (2026-04-24) — client never sees these
-  '/cruz',
+  // V1 Clean Visibility additions (2026-04-24) — client never sees these.
+  // 2026-05-05: '/cruz' lifted from this list per founder-override —
+  // see .claude/rules/founder-overrides.md "2026-05-05 · Lift /cruz client
+  // gate". Cross-tenant fence (PR #34) + 23-tool session-scoped backend
+  // make it safe to expose. Other entries stay gated.
   '/asistente',
   '/anomalias',
   '/analytics',
@@ -301,7 +304,11 @@ export const ADMIN_ONLY_ROUTES = [
 /** Routes accessible by client role — V1 Clean Visibility (2026-04-24).
  *  Five core surfaces + shipment parent (cross-link reachable) +
  *  support/auth routes. Removed: /reportes, /kpis, /ahorro, /solicitar,
- *  /clasificar-producto (now operator-only per the reset). */
+ *  /clasificar-producto (now operator-only per the reset).
+ *
+ *  2026-05-05: /cruz added — see founder-override "Lift /cruz client gate"
+ *  in .claude/rules/founder-overrides.md. Backend pre-conditions met
+ *  (cross-tenant fence + tool-layer scoping + 20 req/hr rate limit). */
 export const CLIENT_ROUTES = [
   '/',
   '/inicio',
@@ -311,6 +318,7 @@ export const CLIENT_ROUTES = [
   '/catalogo',
   '/anexo-24',
   '/expedientes',
+  '/cruz',
   '/login',
   '/aduana',
   '/cambiar-contrasena',

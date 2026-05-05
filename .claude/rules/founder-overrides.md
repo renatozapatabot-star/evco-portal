@@ -88,6 +88,82 @@ Oldest at bottom. New entries appended at top.
 ### Active overrides
 
 ```
+2026-05-05 · Renato IV · Lift /cruz client gate (rescind 2026-04-24 V1 AI strip)
+  supersedes: .claude/rules/founder-overrides.md 2026-04-24 entry
+              "V1 Clean Visibility reset — strip AI surface from client UI"
+              (only the /cruz gate; the rest of V1 Clean Visibility — sparser
+              cockpit, Cleared/Not cleared semáforo language, calm-tone copy
+              — remains in force).
+  updates:    src/components/nav/nav-config.ts (drop '/cruz' from
+              ADMIN_ONLY_ROUTES; add to CLIENT_ROUTES),
+              src/middleware.ts (no per-path /cruz exception needed —
+              ADMIN_ONLY_ROUTES change is the gate),
+              src/middleware.test.ts +
+              src/__tests__/cruz-client-access.test.ts (new — assert
+              client role can reach /cruz).
+  basis:      Three pre-conditions for safely re-enabling client AI access
+              were met after V1 Clean Visibility shipped 2026-04-24:
+
+              1. Cross-tenant fence shipped (PR #34, 2026-05-05) — the
+                 canonical resolveTenantScope helper now hard-403s any
+                 client request that ?company_id=, ?cve_cliente=, or
+                 ?clave_cliente= probes a foreign tenant; cross_tenant_attempt
+                 audit-log row written. Production probe verified 4/4 attack
+                 shapes return 403, 1/1 default-scope returns 200.
+                 Reference: .claude/rules/tenant-isolation.md §
+                 "/api/data cross-tenant escalation fence (2026-05-05)".
+
+              2. AI backend pre-conditions met:
+                 · /api/cruz-chat uses the same resolveTenantScope helper
+                   that /api/data uses (cruz-chat/route.ts:1454-1458).
+                 · 23 tools in src/lib/aguila/tools.ts all session-scoped
+                   via .eq('company_id', companyId) — verified across
+                   ~20 supabase call sites.
+                 · System prompt contains explicit cross-tenant guard
+                   ("REGLA ABSOLUTA: Solo consultas y muestras datos de
+                   ${clientName}").
+                 · 20 req/hr per-company rate limit via rateLimitDB.
+                 · ADMIN_TOOLS allowlist (admin_fleet_summary,
+                   find_prospects, simulate_audit, integration_status,
+                   client_health, get_memory, check_risk_radar,
+                   search_knowledge) hidden from client role at line
+                   1552-1553. Clients see ~15 of 23 tools.
+                 · PORTAL_CHAT_FALLBACK calm-message on Anthropic outage
+                   — never leaks upstream error strings.
+
+              3. UX promise was already advertised but silently broken.
+                 PortalCommandPalette renders "Preguntarle al Agente IA
+                 sobre 'X' / El asistente responde con tus datos reales"
+                 (component lines 437-497) and Enter routes to /cruz?q=...
+                 — but middleware bounced clients to /?unavailable=1 with
+                 no UI surface acknowledging the bounce. Shipping the
+                 backend without lifting the gate created a contract
+                 violation: the UI offered AI; the route refused. Either
+                 honor the promise or remove it. This entry honors it.
+
+              What this rescinds (V1 Clean Visibility 2026-04-24):
+                · ONLY the "/cruz" gate. /asistente, /anomalias, /analytics,
+                  /monitor, /inteligencia, /contabilidad, /mi-cuenta,
+                  /reportes, /kpis remain in ADMIN_ONLY_ROUTES.
+                · Sparser /inicio, semáforo simplification, A/R calm tone
+                  on /mi-cuenta — NOT touched.
+                · DashboardShellClient ticker + chat bubble gating for
+                  client role — NOT touched (separate decision).
+
+              Trade-off accepted:
+                · AI hallucination risk capped to UX annoyance (model
+                  returns "no encontré ese embarque" or paraphrases a
+                  real row poorly), NOT data leakage — tool layer scopes
+                  the query before any LLM token sees a row.
+                · System prompt may surface MVE/T-MEC compliance language;
+                  V1 Clean Visibility scoped that out of cockpit chrome
+                  but the chat surface is conversational, not anxiety
+                  signal — different contract.
+                · Cost exposure capped by 20 req/hr/company; Anthropic
+                  invocations log to api_cost_log per cruz-api.md §4.
+
+              Owner: Renato Zapata IV (founder sign-off).
+
 2026-04-29 · Renato IV · ship.sh Gate 1d bypassed for handoff-parity-login deploy
   supersedes: .claude/rules/ship-process.md Gate 1d (gsd-verify ratchets) +
               CLAUDE.md "Every deploy: use npm run ship"

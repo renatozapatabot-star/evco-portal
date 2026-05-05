@@ -19,8 +19,16 @@ describe('translateEstatus', () => {
   })
 
   it('returns raw code with unknown tone when not mapped', () => {
-    expect(translateEstatus('E2')).toEqual({ label: 'E2', tone: 'unknown' })
+    // 2026-05-05: E2/E3 added to MAP defensively (drift fence with the
+    // script-side translator's RAW_DESPACHO_CODES). Use a genuinely
+    // unmapped code to assert fall-through behavior.
     expect(translateEstatus('SOMETHING_NEW')).toEqual({ label: 'SOMETHING_NEW', tone: 'unknown' })
+    expect(translateEstatus('Z9')).toEqual({ label: 'Z9', tone: 'unknown' })
+  })
+
+  it('maps E2/E3 defensively (RAW_DESPACHO_CODES safety net)', () => {
+    expect(translateEstatus('E2')).toEqual({ label: 'En proceso', tone: 'in_flight' })
+    expect(translateEstatus('E3')).toEqual({ label: 'En proceso', tone: 'in_flight' })
   })
 
   it('handles null and undefined safely', () => {

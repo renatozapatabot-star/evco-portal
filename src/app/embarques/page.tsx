@@ -467,10 +467,14 @@ function TraficosContent() {
           <div className="toolbar-search" style={{ minHeight: 60 }}>
             <Search size={12} style={{ color: 'var(--slate-400)', flexShrink: 0 }} />
             <input
-              placeholder="Tráfico, pedimento, proveedor, factura..."
+              // Audit Cluster F (2026-05-05): the longer hint
+              // "Tráfico, pedimento, proveedor, factura..." was cut at
+              // "proveed" on 640px. Short placeholder + aria-label keeps
+              // a11y intact without truncation.
+              placeholder="Buscar embarques…"
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              aria-label="Buscar embarques"
+              aria-label="Buscar embarques por tráfico, pedimento, proveedor o factura"
             />
           </div>
           <button className="btn btn-outline btn-sm" onClick={() => exportCSV(filtered, clientClave, companyId, facturasMap, entradaMap)}>

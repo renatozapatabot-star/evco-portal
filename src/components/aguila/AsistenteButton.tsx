@@ -83,7 +83,7 @@ export function AsistenteButton({
     >
       <Tags size={16} aria-hidden />
       <span>Clasificador</span>
-      <style>{`
+      <style precedence="default">{`
         .zapata-clasificador-btn:hover {
           transform: translateY(-1px);
           color: #E8EAED !important;
@@ -136,11 +136,21 @@ export function AsistenteButton({
       >
         {roleTag}
       </span>
-      <style>{`
+      <style precedence="default">{`
         .zapata-asistente-btn:hover {
           transform: translateY(-1px);
           border-color: rgba(244,212,122,0.45) !important;
           box-shadow: 0 14px 40px rgba(0,0,0,0.7), 0 0 32px rgba(244,212,122,0.32) !important;
+        }
+        /* Audit Cluster F (2026-05-05): pill overlapped cards on 640px.
+           Lift it higher and shrink the role-tag pad so it sits cleanly
+           above the bottom-stacked cards on phones. */
+        @media (max-width: 720px) {
+          .zapata-asistente-btn {
+            bottom: 16px !important;
+            right: 16px !important;
+            padding: 0 16px !important;
+          }
         }
       `}</style>
     </Link>

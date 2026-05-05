@@ -84,7 +84,10 @@ export function formatLastSeen(p: LastSeenPayload): string {
   const timeStr = timeFmt.format(d)
   const parts: string[] = ['Último acceso', dateStr, timeStr]
   if (p.city) parts.push(p.city)
-  if (p.ua_brief) parts.push(p.ua_brief)
+  // Audit Cluster M (2026-05-05): OS/browser fingerprint dropped from
+  // pre-auth display — leaking ua_brief before login lets a thief on
+  // the device confirm the prior session's environment. City stays
+  // (coarse enough) and date/time stay (date is the trust signal).
   return parts.join(' · ')
 }
 
@@ -103,6 +106,6 @@ export function formatLastSeenStable(p: LastSeenPayload): string {
   const mi = String(d.getUTCMinutes()).padStart(2, '0')
   const parts: string[] = ['Último acceso', `${dd} ${mon} ${yy}`, `${hh}:${mi}`]
   if (p.city) parts.push(p.city)
-  if (p.ua_brief) parts.push(p.ua_brief)
+  // ua_brief intentionally omitted — see formatLastSeen() above.
   return parts.join(' · ')
 }

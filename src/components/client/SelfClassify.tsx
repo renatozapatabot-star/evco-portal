@@ -96,7 +96,15 @@ export function SelfClassify() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!canSubmit) return
+    // Audit Cluster M (2026-05-05): empty submit used to silently no-op.
+    // Browser HTML5 validation on the textarea didn't fire because
+    // preventDefault runs first. Now we surface a visible error so the
+    // user knows why nothing happened.
+    if (!canSubmit) {
+      setErrorMsg('Describe el producto con al menos 6 caracteres antes de clasificar.')
+      setState('error')
+      return
+    }
 
     setState('loading')
     setResult(null)

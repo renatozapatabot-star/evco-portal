@@ -20,26 +20,31 @@ describe('PortalLastSeenLine SSR', () => {
   })
 })
 
+// Audit Cluster M (2026-05-05): ua_brief is now intentionally dropped
+// from the pre-auth display to avoid leaking the prior session's
+// browser/OS to anyone holding the device. Tests assert the new
+// no-fingerprint behavior.
 describe('formatLastSeen', () => {
-  it('produces the expected shape with date, time, city, and ua_brief', () => {
+  it('produces the expected shape with date, time, city — no fingerprint', () => {
     const out = formatLastSeen(SAMPLE)
     expect(out.startsWith('Último acceso · ')).toBe(true)
     expect(out).toMatch(/Nuevo Laredo/)
-    expect(out).toMatch(/Chrome\/macOS/)
     // 19:32 UTC → 14:32 in America/Chicago (CDT, UTC-5 during DST)
     expect(out).toMatch(/14:32/)
+    // ua_brief intentionally omitted — pre-auth privacy.
+    expect(out).not.toMatch(/Chrome/)
   })
 
-  it('drops the device tail when ua_brief is empty', () => {
-    const out = formatLastSeen({ ...SAMPLE, ua_brief: '' })
-    expect(out.endsWith('Nuevo Laredo')).toBe(true)
-    expect(out).not.toMatch(/Chrome/)
+  it('omits ua_brief regardless of value', () => {
+    const populated = formatLastSeen(SAMPLE)
+    const empty = formatLastSeen({ ...SAMPLE, ua_brief: '' })
+    expect(populated).toBe(empty)
   })
 
   it('drops the city when missing', () => {
     const out = formatLastSeen({ ...SAMPLE, city: '' })
     expect(out).not.toMatch(/Nuevo Laredo/)
-    expect(out).toMatch(/Chrome\/macOS/)
+    expect(out).not.toMatch(/Chrome/)
   })
 
   it('returns empty string on invalid iso_ts', () => {
@@ -48,11 +53,11 @@ describe('formatLastSeen', () => {
 })
 
 describe('formatLastSeenStable (fallback formatter)', () => {
-  it('produces a stable Spanish-month shape', () => {
+  it('produces a stable Spanish-month shape — no fingerprint', () => {
     const out = formatLastSeenStable(SAMPLE)
     expect(out).toMatch(/27 abr 2026/)
     expect(out).toMatch(/19:32/)
     expect(out).toMatch(/Nuevo Laredo/)
-    expect(out).toMatch(/Chrome\/macOS/)
+    expect(out).not.toMatch(/Chrome/)
   })
 })

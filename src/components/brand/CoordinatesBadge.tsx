@@ -20,7 +20,7 @@ export function CoordinatesBadge({
   tone = 'silver',
   className,
   style,
-  'aria-label': ariaLabel = 'Laredo, Texas — 32.5259°N 117.0595°W',
+  'aria-label': ariaLabel = 'Laredo, Texas — 27.5036°N 99.5076°W',
 }: CoordinatesBadgeProps) {
   const color = tone === 'silver' ? ACCENT_SILVER : ACCENT_SILVER_DIM
 
@@ -42,8 +42,8 @@ export function CoordinatesBadge({
         ...style,
       }}
     >
-      <span>32.5259° N</span>
-      <span>117.0595° W</span>
+      <span>27.5036° N</span>
+      <span>99.5076° W</span>
     </div>
   )
 }

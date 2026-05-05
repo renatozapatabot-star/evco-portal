@@ -6,7 +6,7 @@ import {
 } from '@/components/portal/login/PortalLoginCardChrome'
 
 describe('PortalLoginCardChrome', () => {
-  it('wraps children in a relative container', () => {
+  it('wraps children in a relative glass card', () => {
     const html = renderToStaticMarkup(
       <PortalLoginCardChrome>
         <div data-testid="form">x</div>
@@ -14,6 +14,10 @@ describe('PortalLoginCardChrome', () => {
     )
     expect(html).toMatch(/position:relative/)
     expect(html).toMatch(/data-testid="form"/)
+    // Glass chemistry — login-parity card chrome
+    expect(html).toMatch(/backdrop-filter:blur\(20px\)/)
+    expect(html).toMatch(/var\(--portal-r-5\)/)
+    expect(html).toMatch(/var\(--portal-line-2\)/)
   })
 
   it('renders four corner ticks with staggered delays', () => {
@@ -22,23 +26,45 @@ describe('PortalLoginCardChrome', () => {
         <div />
       </PortalLoginCardChrome>,
     )
-    // Each tick gets portalCornerTickIn animation
     const matches = html.match(/portalCornerTickIn/g) ?? []
     expect(matches.length).toBe(4)
-    // Delays are 0/200/400/600 ms
     expect(html).toMatch(/0ms both/)
-    expect(html).toMatch(/200ms both/)
-    expect(html).toMatch(/400ms both/)
-    expect(html).toMatch(/600ms both/)
+    expect(html).toMatch(/90ms both/)
+    expect(html).toMatch(/180ms both/)
+    expect(html).toMatch(/270ms both/)
   })
 
-  it('uses portal tokens for tick color', () => {
+  it('uses emerald token + green glow for tick color', () => {
     const html = renderToStaticMarkup(
       <PortalLoginCardChrome>
         <div />
       </PortalLoginCardChrome>,
     )
-    expect(html).toMatch(/var\(--portal-line-3\)/)
+    expect(html).toMatch(/var\(--portal-green-3\)/)
+    expect(html).toMatch(/var\(--portal-green-glow\)/)
+  })
+
+  it('breathes by default and intensifies on focus', () => {
+    const idle = renderToStaticMarkup(
+      <PortalLoginCardChrome>
+        <div />
+      </PortalLoginCardChrome>,
+    )
+    expect(idle).toMatch(/portalCardBreathe/)
+
+    const focused = renderToStaticMarkup(
+      <PortalLoginCardChrome focused>
+        <div />
+      </PortalLoginCardChrome>,
+    )
+    expect(focused).toMatch(/portalCardFocus/)
+
+    const shaking = renderToStaticMarkup(
+      <PortalLoginCardChrome shake>
+        <div />
+      </PortalLoginCardChrome>,
+    )
+    expect(shaking).toMatch(/portalShake/)
   })
 })
 

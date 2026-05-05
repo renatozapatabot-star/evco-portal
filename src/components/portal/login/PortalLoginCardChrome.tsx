@@ -3,35 +3,70 @@
 import type { CSSProperties, ReactNode } from 'react'
 
 /**
- * Corner-tick chrome that wraps the login form card. Four hairline
- * L-shaped ticks (top-left, top-right, bottom-right, bottom-left)
- * draw in sequence on first paint via portalCornerTickIn keyframes
- * (200ms stagger). Reads as "the panel is booting up" — Swiss
- * instrument coming online.
+ * Glass card chrome that wraps the entire login surface — the eyebrow,
+ * wordmark, subtitle, divider, form, handshake, last-seen and live wire
+ * all live inside a single panel with login-parity chemistry:
  *
- * Port of the boot-up sequence from
- * .planning/design-handoff/cruz-portal/chats/chat1.md ("the card runs
- * a 1.2s sequence: hairline corner ticks draw in"). Reduced-motion
- * neutralizes the entrance — the ticks render in their final state.
+ *   - background: color-mix(in oklch, var(--portal-ink-1) 62%, transparent)
+ *   - backdrop-filter: blur(20px)
+ *   - border: 1px solid var(--portal-line-2)
+ *   - radius: var(--portal-r-5) (24px)
+ *   - shadow: deep drop + 1px emerald halo
+ *
+ * Four hairline emerald L-ticks (top-left, top-right, bottom-right,
+ * bottom-left) draw in sequence on first paint via `portalCornerTickIn`
+ * (90ms stagger). They glow in emerald with a soft green halo —
+ * direct port of `screen-login.jsx:431-452` from the Claude Design
+ * bundle ("Swiss instrument coming online").
+ *
+ * The card breathes on idle (`portalCardBreathe` 6s), intensifies on
+ * focus (`portalCardFocus`), and shakes laterally on error
+ * (`portalShake`). Reduced-motion neutralizes all entrance + ambient
+ * animations.
  */
 export function PortalLoginCardChrome({
   children,
+  focused,
+  shake,
   style,
 }: {
   children: ReactNode
+  focused?: boolean
+  shake?: boolean
   style?: CSSProperties
 }) {
+  const animation = shake
+    ? 'portalShake 420ms cubic-bezier(.36,.07,.19,.97) both'
+    : focused
+      ? 'portalCardFocus 600ms var(--portal-ease-out) forwards'
+      : 'portalCardBreathe 6s ease-in-out infinite'
+
   return (
     <div
       style={{
         position: 'relative',
+        width: '100%',
+        maxWidth: 460,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        padding: '40px 38px 32px',
+        background: 'color-mix(in oklch, var(--portal-ink-1) 62%, transparent)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid var(--portal-line-2)',
+        borderRadius: 'var(--portal-r-5)',
+        boxShadow:
+          '0 30px 80px -30px rgba(0,0,0,0.7), 0 0 0 1px color-mix(in oklch, var(--portal-green-2) 6%, transparent)',
+        animation,
+        transformOrigin: 'center',
         ...style,
       }}
     >
       <Tick corner="tl" delay={0} />
-      <Tick corner="tr" delay={200} />
-      <Tick corner="br" delay={400} />
-      <Tick corner="bl" delay={600} />
+      <Tick corner="tr" delay={90} />
+      <Tick corner="br" delay={180} />
+      <Tick corner="bl" delay={270} />
       {children}
     </div>
   )
@@ -43,11 +78,12 @@ function Tick({ corner, delay }: { corner: 'tl' | 'tr' | 'br' | 'bl'; delay: num
     position: 'absolute',
     width: SIZE,
     height: SIZE,
-    borderColor: 'var(--portal-line-3)',
+    borderColor: 'var(--portal-green-3)',
     borderStyle: 'solid',
     borderWidth: 0,
     pointerEvents: 'none',
-    animation: `portalCornerTickIn 360ms var(--portal-ease-out) ${delay}ms both`,
+    boxShadow: '0 0 8px var(--portal-green-glow)',
+    animation: `portalCornerTickIn 500ms var(--portal-ease-out) ${delay}ms both`,
   }
   const placement: Record<typeof corner, CSSProperties> = {
     tl: { top: -1, left: -1, borderTopWidth: 1, borderLeftWidth: 1 },

@@ -19,6 +19,7 @@ import {
   PortalLoginCardChrome,
   PortalLoginHandshakeRow,
   PortalLoginLiveWire,
+  PortalLoginSignatureHorizon,
 } from '@/components/portal'
 import { getCookieValue } from '@/lib/client-config'
 
@@ -213,6 +214,11 @@ function LoginContent() {
         }}
       />
 
+      {/* Signature horizon — barely-visible 1px line at 62% with three
+          geographic ticks (RIO BRAVO · PUENTE II · RIO BRAVO). Anchors
+          the surface in space without being a map. (zIndex 3) */}
+      <PortalLoginSignatureHorizon />
+
       <main
         style={{
           flex: 1,
@@ -224,15 +230,7 @@ function LoginContent() {
           zIndex: 5,
         }}
       >
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 440,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'stretch',
-          }}
-        >
+        <PortalLoginCardChrome focused={inputFocused} shake={Boolean(error)}>
           {/* Quiet eyebrow */}
           <div
             style={{
@@ -407,10 +405,10 @@ function LoginContent() {
             </div>
           )}
 
-          {/* Form wrapped in PortalLoginCardChrome — 4 hairline corner
-              ticks draw in sequence on first paint, framing the form
-              like a Swiss instrument coming online. */}
-          <PortalLoginCardChrome style={{ width: '100%' }}>
+          {/* Form lives inside the outer PortalLoginCardChrome — the
+              card chrome owns the corner ticks, glass chemistry, and
+              breath/focus/shake animations. Form keeps its own fade-up
+              entrance to stagger after the card materializes. */}
           <form
             onSubmit={handleLogin}
             style={{ width: '100%', animation: 'portalFadeUp 900ms var(--portal-ease-out) 320ms both' }}
@@ -640,8 +638,7 @@ function LoginContent() {
                 Renders nothing on first login. */}
             <PortalLastSeenLine />
           </form>
-          </PortalLoginCardChrome>
-        </div>
+        </PortalLoginCardChrome>
       </main>
     </div>
   )

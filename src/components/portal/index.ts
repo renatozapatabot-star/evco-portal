@@ -102,6 +102,7 @@ export {
   PortalLoginHandshakeRow,
 } from './login/PortalLoginCardChrome'
 export { PortalLastSeenLine } from './login/PortalLastSeenLine'
+export { PortalLoginSignatureHorizon } from './login/PortalLoginSignatureHorizon'
 
 // Handoff-parity cockpit ambient signals: EN ESTE MOMENTO + activity ticker
 export {

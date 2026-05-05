@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   linkForTrafico,
   linkForPedimento,
+  linkForPedimentoByNumber,
   linkForEntrada,
   linkForProducto,
   linkForFraccion,
@@ -28,6 +29,21 @@ describe('entity-links helpers', () => {
 
   it('builds pedimento link under /pedimentos (new V1 detail page)', () => {
     expect(linkForPedimento('TRF-1234')).toBe('/pedimentos/TRF-1234')
+  })
+
+  it('linkForPedimentoByNumber returns null on empty', () => {
+    expect(linkForPedimentoByNumber(null)).toBeNull()
+    expect(linkForPedimentoByNumber(undefined)).toBeNull()
+    expect(linkForPedimentoByNumber('')).toBeNull()
+  })
+
+  it('linkForPedimentoByNumber extracts sequential from full SAT format', () => {
+    expect(linkForPedimentoByNumber('26 24 3596 6500313')).toBe('/pedimentos/6500313')
+  })
+
+  it('linkForPedimentoByNumber falls back to compact form when not full SAT', () => {
+    expect(linkForPedimentoByNumber('6500313')).toBe('/pedimentos/6500313')
+    expect(linkForPedimentoByNumber('  6500313  ')).toBe('/pedimentos/6500313')
   })
 
   it('builds entrada link under /entradas/[cve]', () => {

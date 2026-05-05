@@ -45,8 +45,10 @@ export default async function PedimentoDetailPage({
   // Pedimento-number resolver (the explicit query exception per audit
   // plan 2026-04-25 Phase 3). Trafico slugs always contain non-digit
   // characters; a purely-numeric segment is the user pasting a pedimento
-  // number from elsewhere. Resolve via tenant-scoped suffix match,
-  // redirect, or 404.
+  // number from elsewhere. Resolve via tenant-scoped suffix match.
+  // 2026-05-05: resolve in-place (no redirect) so the URL stays
+  // /pedimentos/{pedimento_num} per audit Cluster D Bug 2.
+  let traficoId = decoded
   if (/^\d{6,15}$/.test(decoded)) {
     const padded = decoded.padStart(7, '0')
     let resolveQ = supabase
@@ -56,11 +58,9 @@ export default async function PedimentoDetailPage({
       .limit(1)
     if (!isInternal) resolveQ = resolveQ.eq('company_id', session.companyId)
     const { data: hit } = await resolveQ.maybeSingle<{ trafico: string | null }>()
-    if (hit?.trafico) redirect(`/pedimentos/${encodeURIComponent(hit.trafico)}`)
-    notFound()
+    if (!hit?.trafico) notFound()
+    traficoId = hit.trafico
   }
-
-  const traficoId = decoded
 
   const TRAFICO_COLS =
     'trafico, estatus, pedimento, fecha_llegada, fecha_cruce, fecha_pago, importe_total, regimen, company_id, patente, aduana, tipo_cambio, peso_bruto, descripcion_mercancia'

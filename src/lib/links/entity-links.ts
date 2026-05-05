@@ -20,10 +20,30 @@ export function linkForTrafico(traficoId: string | null | undefined): string | n
   return `/embarques/${encodeURIComponent(traficoId)}`
 }
 
-/** Customs filing — new V1 detail page at /pedimentos/[id]. */
+/** Customs filing — new V1 detail page at /pedimentos/[id].
+ *  Routed by trafico slug for back-compat; prefer
+ *  `linkForPedimentoByNumber` when the SAT pedimento number is available. */
 export function linkForPedimento(traficoId: string | null | undefined): string | null {
   if (!traficoId) return null
   return `/pedimentos/${encodeURIComponent(traficoId)}`
+}
+
+/** Pedimento detail keyed by SAT pedimento number — preferred when the
+ *  caller has the pedimento string. The /pedimentos/[id] route resolves
+ *  the trafico in-place and renders without changing the URL. */
+export function linkForPedimentoByNumber(
+  pedimentoNumber: string | null | undefined,
+): string | null {
+  if (!pedimentoNumber) return null
+  // Pedimento numbers are always stored with spaces (`DD AD PPPP SSSSSSS`).
+  // The route accepts either spaced or compact-numeric forms; we send the
+  // sequential portion (last block) for cleanest URLs and let the route's
+  // numeric-resolver match by `pedimento.ilike`. Falls back to the raw
+  // string when we can't extract a sequential.
+  const trimmed = String(pedimentoNumber).trim()
+  const m = /^\d{2}\s\d{2}\s\d{4}\s(\d{7})$/.exec(trimmed)
+  const slug = m?.[1] ?? trimmed.replace(/\s+/g, '')
+  return `/pedimentos/${encodeURIComponent(slug)}`
 }
 
 /** Warehouse entrada detail page. */

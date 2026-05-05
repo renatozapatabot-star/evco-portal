@@ -36,8 +36,33 @@ export async function GET(req: NextRequest) {
   const paramCompanyId = req.nextUrl.searchParams.get('company_id')
   const companyId = isInternal ? (paramCompanyId || session.companyId) : session.companyId
 
-  const reading = await readFreshness(supabase, companyId)
+  // Per-page sync_type scoping (audit Cluster B3 2026-05-05). Comma-list
+  // of sync_types; falls back to "any sync_type" when absent. Whitelist
+  // guards against arbitrary string injection.
+  const rawSyncTypes = req.nextUrl.searchParams.get('sync_types')
+  const syncTypes = rawSyncTypes
+    ? rawSyncTypes.split(',').map((s) => s.trim()).filter((s) => ALLOWED_SYNC_TYPES.has(s))
+    : undefined
+
+  const reading = await readFreshness(supabase, companyId, syncTypes)
   return NextResponse.json(reading, {
     headers: { 'Cache-Control': 'private, no-store, max-age=0' },
   })
 }
+
+const ALLOWED_SYNC_TYPES = new Set([
+  'globalpc_delta',
+  'globalpc_full',
+  'wsdl_anexo24',
+  'aduanet_scrape',
+  'document_intelligence',
+  'email_intake',
+  'risk_feed',
+  'risk_scorer',
+  'content_intel',
+  'econta_delta',
+  'econta_full',
+  'econta_intraday',
+  'econta_nightly_full',
+  'econta_reconciler',
+])

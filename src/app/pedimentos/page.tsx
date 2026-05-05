@@ -78,7 +78,7 @@ function PedimentosContent() {
   // avoid interfering with back-button navigation.
   const [search, setSearch] = useState(qParam ?? '')
   const [page, setPage] = useState(0)
-  const freshness = useFreshness()
+  const freshness = useFreshness(true, ['globalpc_delta', 'globalpc_full'])
   const { sort, toggleSort } = useSort('pedimentos', { column: 'fecha', direction: 'desc' })
   const [partidaDescMap, setPartidaDescMap] = useState<Map<string, string>>(new Map())
   const [aduanetValorMap, setAduanetValorMap] = useState<Map<string, number>>(new Map())

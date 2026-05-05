@@ -49,8 +49,8 @@ export async function logDecision(input: LogDecisionInput): Promise<LogDecisionR
 
   // NULL company_id is the documented "system-level decision" sentinel and
   // is preserved as-is. Any non-null value goes through the normalizer so a
-  // clave-shape input (e.g. legacy '9254') gets remapped to its slug. If
-  // resolution fails, prefer NULL over a bad write — the audit trail is
+  // clave-shape input (e.g. legacy 4-digit clave) gets remapped to its slug.
+  // If resolution fails, prefer NULL over a bad write — the audit trail is
   // strict-append, downstream filters can recover.
   let normalizedCompanyId: string | null = null
   if (input.company_id !== undefined && input.company_id !== null) {

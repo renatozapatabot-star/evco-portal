@@ -4,10 +4,10 @@
  * Why:
  *   The 2026-04-29 data-quality audit found that `notifications`,
  *   `expediente_documentos`, and `operational_decisions` had silently
- *   accumulated rows whose `company_id` column held a 4-digit clave
- *   (e.g. "9254") instead of the slug (e.g. "evco"). Any client query
- *   shaped `.eq('company_id', session.companyId)` then misses ~99% of
- *   the rows because `session.companyId` is always the slug.
+ *   accumulated rows whose `company_id` column held a 4-digit numeric
+ *   clave instead of the canonical slug. Any client query shaped
+ *   `.eq('company_id', session.companyId)` then misses ~99% of the
+ *   rows because `session.companyId` is always the slug.
  *
  *   Block EE codified the rule
  *   (`.claude/rules/tenant-isolation.md`): the slug is authoritative on

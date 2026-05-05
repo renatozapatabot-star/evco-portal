@@ -12,10 +12,10 @@ import { buildClaveMap, resolveCompanyIdSlug, type ClaveMap } from '@/lib/tenant
  * how the existing bell already reads.
  *
  * Tenant-tagging guard (added 2026-04-29): every insert is normalized
- * through `resolveCompanyIdSlug` so a stray clave value (e.g. `'9254'`
- * passed in from a draft / Telegram payload / Vapi call) gets remapped
- * to the slug before write. The 2026-04-29 audit found 187 distinct
- * claves had silently accumulated in the column; this guard plus the
+ * through `resolveCompanyIdSlug` so a stray clave value (a legacy
+ * 4-digit clave passed in from a draft / Telegram payload / Vapi call)
+ * gets remapped to the slug before write. The 2026-04-29 audit found
+ * 187 distinct claves had silently accumulated in the column; this guard plus the
  * one-shot backfill prevent regrowth.
  */
 

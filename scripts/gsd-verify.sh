@@ -476,7 +476,15 @@ fi
 #   linked-docs fallback + /api/anexo-24/csv error path. Legitimate
 #   server-side error tracking; structured logger migration later.)
 # --------------------------------------------------------------------------
-CONSOLE_ERR_BASELINE=129
+# Baseline raised 129 → 133 on 2026-05-05 by the tenant-tagging cleanup
+# (PART 1 — defensive normalizer at writers in src/app/api/oca,
+# src/app/api/telegram-webhook, src/app/api/usmca/certificates,
+# src/app/api/vapi-llm). The new console.error/warn calls fire only on
+# the resolver-fail path (clave-shape company_id that doesn't map to a
+# slug) — surfacing previously-silent failures, not adding noise. Per
+# Renato IV 2026-05-05: "Yes, bump 129→133. Legitimate ratchet update
+# for surfacing previously-silent failures."
+CONSOLE_ERR_BASELINE=133
 header "Console.error/warn ratchet"
 CONSOLE_COUNT=$(set +eo pipefail;{ grep -rn "console\.error\|console\.warn" src/app --include="*.tsx" --include="*.ts" 2>/dev/null || true; } | grep -v ".test." | grep -v "// debug-ok" | grep -v "/error\.tsx:" | wc -l | tr -d ' ')
 if [ "$CONSOLE_COUNT" -gt "$CONSOLE_ERR_BASELINE" ]; then

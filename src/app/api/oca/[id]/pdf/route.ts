@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { loadPdfRenderer } from '@/lib/pdf/lazy'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { OcaPDF } from './pdf-document'
 import type { OcaRow } from '@/lib/oca/types'
 
@@ -29,9 +30,15 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
   if (session.role === 'client') {
     if (opinion.status !== 'approved') return NextResponse.json({ error: 'OCA no disponible' }, { status: 404 })
-    const companyId = request.cookies.get('company_id')?.value ?? ''
+    // resolveTenantScope returns session.companyId for client role —
+    // raw cookie cannot widen the scope. Pre-fix, attacker with any
+    // login could flip the company_id cookie to download another
+    // tenant's approved OCAs.
+    const companyId = resolveTenantScope(session, request)
     if (opinion.company_id && opinion.company_id !== companyId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      // Return 404 (not 403) to avoid existence leak — match the
+      // tenant-isolation.md catalog rule.
+      return NextResponse.json({ error: 'OCA no encontrada' }, { status: 404 })
     }
   }
 

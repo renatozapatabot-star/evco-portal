@@ -387,8 +387,15 @@ async function buildFormato53(request: NextRequest, overrides?: { dateFrom?: str
   // Zero-row guard — stream still works but surface the reality.
   // The PDF renders the empty-rows table cleanly; the caller sees
   // row_count: 0 and can decide whether to abort (client button does).
-  const rawClientName = decodeURIComponent(request.cookies.get('company_name')?.value ?? '')
-  const clientName = cleanCompanyDisplayName(rawClientName) || companyId
+  // P0-A7: rebuild client name from the verified companyId, not from
+  // forgeable company_name cookie. Pre-fix the rendered Anexo-24 PDF
+  // attribution could be flipped to a different tenant via cookie tamper.
+  const { data: clientRow } = await supabase
+    .from('companies')
+    .select('name')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  const clientName = cleanCompanyDisplayName((clientRow?.name as string | undefined) ?? '') || companyId
 
   const actor = `${session.companyId}:${session.role}`
   const generado_en = new Date().toISOString()

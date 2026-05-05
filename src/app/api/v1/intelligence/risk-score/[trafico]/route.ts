@@ -9,7 +9,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!auth) return unauthorized()
 
   const { trafico } = await params
-  const { data } = await supabase.from('pedimento_risk_scores').select('*').eq('trafico_id', trafico).single()
+  // P0-A3: tenant fence on the API-key partner endpoint. Pre-fix this
+  // returned the row as long as `trafico_id` matched, regardless of
+  // which tenant the API key belongs to. Cross-tenant 404 (not 403)
+  // to avoid existence leak (matches tenant-isolation.md catalog rule).
+  const { data } = await supabase
+    .from('pedimento_risk_scores')
+    .select('*')
+    .eq('trafico_id', trafico)
+    .eq('company_id', auth.company_id)
+    .maybeSingle()
   if (!data) return NextResponse.json({ error: 'No risk score found' }, { status: 404 })
   return NextResponse.json(data)
 }

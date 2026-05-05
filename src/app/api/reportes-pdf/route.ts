@@ -5,6 +5,7 @@ import { PATENTE, ADUANA } from '@/lib/client-config'
 import { PORTAL_DATE_FROM } from '@/lib/data'
 import { ReportesPDF } from './pdf-document'
 import { verifySession } from '@/lib/session'
+import { resolveTenantScope } from '@/lib/api/tenant-scope'
 import { computeReportesKpis } from '@/lib/reportes/kpis'
 
 const supabase = createClient(
@@ -26,10 +27,19 @@ export async function GET(request: NextRequest) {
   const session = await verifySession(request.cookies.get('portal_session')?.value || '')
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const companyId = request.cookies.get('company_id')?.value ?? ''
-  const clientClave = request.cookies.get('company_clave')?.value ?? ''
-  const rawName = request.cookies.get('company_name')?.value
-  const clientName = rawName ? decodeURIComponent(rawName) : ''
+  const companyId = resolveTenantScope(session, request)
+  if (!companyId) return NextResponse.json({ error: 'Tenant scope required' }, { status: 400 })
+
+  // Rebuild client metadata from the verified companyId — never from
+  // raw cookies. Pre-fix, the rendered KPI/supplier PDF could mix
+  // another tenant's data with the cookie-supplied name/clave.
+  const { data: companyRow } = await supabase
+    .from('companies')
+    .select('clave_cliente, name')
+    .eq('company_id', companyId)
+    .maybeSingle()
+  const clientClave = (companyRow?.clave_cliente as string | undefined) ?? ''
+  const clientName = (companyRow?.name as string | undefined) ?? ''
 
   try {
     const kpis = await computeReportesKpis(supabase, clientClave, companyId)

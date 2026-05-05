@@ -3,9 +3,16 @@ import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 import { verifySession } from '@/lib/session'
 
+// P0-A4: explicit service-role requirement. Outbound webhook
+// management endpoint; tenant scope still enforced via session.
+const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for /api/webhooks')
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  SERVICE_ROLE
 )
 
 // GET — list subscriptions

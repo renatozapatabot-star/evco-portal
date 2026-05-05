@@ -57,7 +57,8 @@ const COOKIE_FENCED_ROUTES = [
   'src/app/api/status-sentence/route.ts',
   'src/app/api/carriers/route.ts',
   // P0-A7 (this commit) — 18 additional routes the audit missed
-  'src/app/api/anexo24-pdf/route.ts',
+  // (anexo24-pdf/route.ts removed: legacy 10-col stub deleted in PR #12 —
+  //  canonical surface is /api/reports/anexo-24/generate, fenced below)
   'src/app/api/auditoria-pdf/route.ts',
   'src/app/api/executive-summary/route.ts',
   'src/app/api/oca/generate/route.ts',

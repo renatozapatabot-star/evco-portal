@@ -19,6 +19,8 @@ import {
 } from '@/lib/links/entity-links'
 import { formatDateDMY, formatNumber, formatCurrencyUSD } from '@/lib/format'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SyncChip } from '@/components/ui/sync-chip'
+import { readFreshness } from '@/lib/cockpit/freshness'
 import styles from './page.module.css'
 
 /**
@@ -156,6 +158,8 @@ export default async function PedimentoDetailPage({
     descripcion_mercancia: string | null
   }
 
+  const freshness = await readFreshness(supabase, ownerCompanyId)
+
   const partidas = partidasRows.map((p) => {
     const prod = p.cve_producto ? productosByCve.get(p.cve_producto) : null
     const valorTotal =
@@ -213,6 +217,7 @@ export default async function PedimentoDetailPage({
             <span className={styles.statusDot} />
             {status}
           </span>
+          <SyncChip lastSyncIso={freshness.lastSyncedAt} />
         </div>
         <div className={styles.meta}>
           <span className={styles.metaItem}>
@@ -242,7 +247,7 @@ export default async function PedimentoDetailPage({
           <Cell label="Fecha de pago" value={formatDateDMY(trafico.fecha_pago) || '—'} mono />
           <Cell label="Importe total" value={trafico.importe_total != null ? formatCurrencyUSD(trafico.importe_total) : '—'} mono align="right" />
           <Cell label="Peso bruto" value={trafico.peso_bruto != null ? `${formatNumber(trafico.peso_bruto, { decimals: 2 })} kg` : '—'} mono align="right" />
-          <Cell label="Tipo de cambio (a fecha de llegada)" value={trafico.tipo_cambio != null ? `${trafico.tipo_cambio.toFixed(4)} MXN/USD` : '—'} mono align="right" />
+          <Cell label="Tipo de cambio (a fecha de llegada)" value={trafico.tipo_cambio != null ? `${formatNumber(trafico.tipo_cambio, { decimals: 4 })} MXN/USD` : '—'} mono align="right" />
         </div>
       </Section>
 

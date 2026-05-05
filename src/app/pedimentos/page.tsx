@@ -133,10 +133,7 @@ function PedimentosContent() {
       : null
 
     Promise.all([
-      fetch(`/api/data?${params}`).then(r => r.json()).catch((err: Error) => {
-        console.error('[pedimentos] traficos fetch:', err.message)
-        return { data: [] }
-      }),
+      fetch(`/api/data?${params}`).then(r => r.json()).catch(() => ({ data: [] })),
       fetch(`/api/data?${pedimentoParams}`).then(r => r.json()).catch(() => ({ data: [] })),
       inFlightParams
         ? fetch(`/api/data?${inFlightParams}`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] }))
@@ -189,7 +186,7 @@ function PedimentosContent() {
           if (p.cve_trafico && p.descripcion && !map.has(p.cve_trafico)) map.set(p.cve_trafico, p.descripcion)
         })
         setPartidaDescMap(map)
-      }).catch((err) => console.error('[pedimentos] partidas fetch:', err.message))
+      }).catch(() => {})
 
     // Aduanet facturas for valor fallback
     const aduanetParams = new URLSearchParams({ table: 'aduanet_facturas', select: 'pedimento,valor_usd', limit: '5000' })
@@ -202,7 +199,7 @@ function PedimentosContent() {
           if (f.pedimento && f.valor_usd && !map.has(f.pedimento)) map.set(f.pedimento, f.valor_usd)
         })
         setAduanetValorMap(map)
-      }).catch((err) => console.error('[pedimentos] aduanet fetch:', err.message))
+      }).catch(() => {})
   }, [monthWindow.monthStart, monthWindow.monthEnd])
 
   const groups: PedGroup[] = useMemo(() => {

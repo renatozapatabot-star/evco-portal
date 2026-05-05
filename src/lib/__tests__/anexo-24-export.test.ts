@@ -1,62 +1,34 @@
 /**
- * CRUZ · Anexo 24 / Formato 53 export tests.
+ * CRUZ · Anexo 24 export tests — 13-column GlobalPC parity.
  *
- * Verifies the 41-column SAT-canonical shape: Excel header matches the
- * reference file order, PDF renders, storage path stays tenant-scoped.
+ * Verifies the shared `ANEXO24_COLUMNS` contract: Excel header matches
+ * the canonical order, no `(placeholder)` / `pendiente verificación`
+ * branding, no `CRUZ` user-visible text, storage path stays tenant-scoped.
  */
 import { describe, it, expect } from 'vitest'
 import * as XLSX from 'xlsx'
 import {
   generateAnexo24,
   buildAnexo24StoragePath,
-  ANEXO_24_COLUMNS,
+  ANEXO24_COLUMNS,
   type Anexo24Data,
   type Anexo24Row,
 } from '@/lib/anexo-24-export'
 
 function makeRow(over: Partial<Anexo24Row> = {}): Anexo24Row {
   return {
-    annio_fecha_pago: '2026',
-    aduana: '240',
-    clave_pedimento: 'IMD',
-    fecha_pago: '15/03/2026',
-    proveedor: 'ACME Plastics Co',
-    tax_id: '34-1151140',
-    factura: '5010657',
-    fecha_factura: '28/02/2026',
+    consecutivo: 1,
+    pedimento: '26 24 3596 6500441',
+    fecha: '2026-03-15',
+    embarque: '9254-Y4333',
     fraccion: '3901.20.01',
-    numero_parte: 'HN6',
-    clave_insumo: 'HN6',
-    origen: 'USA',
-    tratado: 'SI',
-    cantidad_umc: 1500,
+    descripcion: 'RESINA DE POLIETILENO',
+    cantidad: 1500,
     umc: 'KGM',
-    valor_aduana: 205432.50,
-    valor_comercial: 205432.50,
-    tigi: null,
-    fp_igi: null,
-    fp_iva: null,
-    fp_ieps: null,
-    tipo_cambio: 17.2,
-    iva: null,
-    secuencia: 1,
-    remesa: null,
-    marca: null,
-    modelo: null,
-    serie: null,
-    numero_pedimento: '26 24 3596 6500441',
-    cantidad_umt: 1500,
-    unidad_umt: 'KGM',
-    valor_dolar: 12345.67,
-    incoterm: 'EXW',
-    factor_conversion: 1,
-    fecha_presentacion: '13/03/2026',
-    consignatario: null,
-    destinatario: null,
-    vinculacion: null,
-    metodo_valoracion: null,
-    peso_bruto: 1520.5,
-    pais_origen: 'USA',
+    valor_usd: 12345.67,
+    proveedor: 'ACME Plastics Co',
+    pais: 'USA',
+    regimen: 'IMD',
     tmec: true,
     ...over,
   }
@@ -69,7 +41,7 @@ function makeData(rows: Anexo24Row[] = [makeRow()]): Anexo24Data {
       cliente_nombre: 'Cliente de Prueba',
       date_from: '2026-01-01',
       date_to: '2026-03-31',
-      generado_en: '2026-04-17T12:00:00Z',
+      generado_en: '2026-04-28T12:00:00Z',
       generado_por: 'TEST:admin',
       patente: '3596',
       aduana: '240',
@@ -78,9 +50,9 @@ function makeData(rows: Anexo24Row[] = [makeRow()]): Anexo24Data {
   }
 }
 
-describe('generateAnexo24 (41-column Formato 53)', () => {
-  it('Excel header matches the SAT-canonical column order and labels', async () => {
-    const { excel } = await generateAnexo24(makeData([makeRow(), makeRow({ numero_parte: 'N2' })]))
+describe('generateAnexo24 (13-column GlobalPC parity)', () => {
+  it('Excel header matches the 13-column canonical order verbatim', async () => {
+    const { excel } = await generateAnexo24(makeData([makeRow(), makeRow({ consecutivo: 2, embarque: '9254-Y4334' })]))
     expect(Buffer.isBuffer(excel)).toBe(true)
 
     const wb = XLSX.read(excel, { type: 'buffer' })
@@ -88,24 +60,34 @@ describe('generateAnexo24 (41-column Formato 53)', () => {
     const ws = wb.Sheets['Anexo 24']!
     const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 }) as unknown[][]
 
-    // Sheet starts with two identity rows + spacer + header row.
-    expect(String(aoa[0]?.[0] ?? '')).toBe('Anexo 24')
-    expect(String(aoa[1]?.[0] ?? '')).toBe('Cliente de Prueba')
+    // Identity block: line 1 = "Anexo 24 — <client>"; line 2 = patente/aduana/periodo.
+    expect(String(aoa[0]?.[0] ?? '')).toBe('Anexo 24 — Cliente de Prueba')
+    expect(String(aoa[1]?.[0] ?? '')).toContain('Patente 3596')
+    expect(String(aoa[1]?.[0] ?? '')).toContain('Aduana 240')
 
-    // Header row matches all 41 column labels verbatim.
-    const expectedLabels = ANEXO_24_COLUMNS.map(c => c.label)
-    const headerRowIdx = aoa.findIndex(r =>
-      r.length >= expectedLabels.length && expectedLabels.every((lbl, i) => String(r[i] ?? '') === lbl),
+    const expectedHeaders = ANEXO24_COLUMNS.map((c) => c.header)
+    const headerRowIdx = aoa.findIndex((r) =>
+      r.length >= expectedHeaders.length && expectedHeaders.every((h, i) => String(r[i] ?? '') === h),
     )
     expect(headerRowIdx).toBeGreaterThanOrEqual(0)
+  })
 
-    // Two data rows follow.
-    expect(String(aoa[headerRowIdx + 1]?.[0] ?? '')).toBe('2026')
-    expect(String(aoa[headerRowIdx + 2]?.[0] ?? '')).toBe('2026')
+  it('ships exactly 13 columns in GlobalPC-parity order', () => {
+    expect(ANEXO24_COLUMNS.length).toBe(13)
+    expect(ANEXO24_COLUMNS[0].header).toBe('No.')
+    expect(ANEXO24_COLUMNS[1].header).toBe('Pedimento')
+    expect(ANEXO24_COLUMNS[ANEXO24_COLUMNS.length - 1].header).toBe('T-MEC')
+  })
 
-    // Spot-check: Tratado column reports "SI"
-    const tratadoIdx = ANEXO_24_COLUMNS.findIndex(c => c.key === 'tratado')
-    expect(String(aoa[headerRowIdx + 1]?.[tratadoIdx] ?? '')).toBe('SI')
+  it('XLSX contains no "(placeholder)" or "pendiente verificación" branding', async () => {
+    const { excel } = await generateAnexo24(makeData())
+    const wb = XLSX.read(excel, { type: 'buffer' })
+    const ws = wb.Sheets['Anexo 24']!
+    const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 }) as unknown[][]
+    const flatText = aoa.flat().map((v) => String(v ?? '')).join(' ')
+    expect(flatText.toLowerCase()).not.toContain('placeholder')
+    expect(flatText.toLowerCase()).not.toContain('pendiente verificación')
+    expect(flatText).not.toMatch(/\bCRUZ\b/)
   })
 
   it('PDF buffer starts with %PDF- signature and weighs at least 2KB', async () => {
@@ -114,13 +96,21 @@ describe('generateAnexo24 (41-column Formato 53)', () => {
     expect(pdf.length).toBeGreaterThan(2000)
   })
 
-  it('ships exactly 41 columns in the Formato 53 canonical order', () => {
-    expect(ANEXO_24_COLUMNS.length).toBe(41)
-    expect(ANEXO_24_COLUMNS[0].label).toBe('AnnioFechaPago')
-    expect(ANEXO_24_COLUMNS[ANEXO_24_COLUMNS.length - 1].label).toBe('País de Origen')
+  it('renders T-MEC as Sí / No based on the boolean field', async () => {
+    const { excel } = await generateAnexo24(makeData([
+      makeRow({ tmec: true, consecutivo: 1 }),
+      makeRow({ tmec: false, consecutivo: 2, regimen: 'A1' }),
+    ]))
+    const wb = XLSX.read(excel, { type: 'buffer' })
+    const ws = wb.Sheets['Anexo 24']!
+    const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 }) as unknown[][]
+    const tmecIdx = ANEXO24_COLUMNS.findIndex((c) => c.key === 'tmec')
+    const headerRowIdx = aoa.findIndex((r) => String(r[0] ?? '') === 'No.')
+    expect(String(aoa[headerRowIdx + 1]?.[tmecIdx] ?? '')).toBe('Sí')
+    expect(String(aoa[headerRowIdx + 2]?.[tmecIdx] ?? '')).toBe('No')
   })
 
-  it('storage path stays tenant-scoped (no cross-tenant bleed)', async () => {
+  it('storage path stays tenant-scoped (no cross-tenant bleed)', () => {
     const data = makeData()
     const pathPdf = buildAnexo24StoragePath({ companyId: data.meta.company_id, timestamp: 1700000000000, kind: 'pdf' })
     const pathXlsx = buildAnexo24StoragePath({ companyId: data.meta.company_id, timestamp: 1700000000000, kind: 'xlsx' })

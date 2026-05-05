@@ -310,7 +310,6 @@ export const CLIENT_ROUTES = [
   '/pedimentos',
   '/catalogo',
   '/anexo-24',
-  '/anexo24',
   '/expedientes',
   '/login',
   '/aduana',

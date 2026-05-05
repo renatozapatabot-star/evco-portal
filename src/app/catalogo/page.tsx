@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation'
 import { verifySession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase-server'
 import { getCatalogo } from '@/lib/catalogo/products'
+import { readFreshness } from '@/lib/cockpit/freshness'
 import { CatalogoTable } from './_components/CatalogoTable'
 import { PageShell } from '@/components/aguila'
+import { SyncChip } from '@/components/ui/sync-chip'
 
 // 60 s revalidate smooths the 500-row slice across rapid refreshes;
 // page is force-dynamic so the slice itself stays per-request.
@@ -30,18 +32,24 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
 
   const sp = await searchParams
   const supabase = createServerClient()
-  const rows = await getCatalogo(supabase, session.companyId, {
-    q: sp.q,
-    limit: 500,
-    proveedor_id: sp.proveedor,
-    fraccion_prefix: sp.fraccion,
-    classified: sp.estado,
-    source_filter: sp.fuente,
-    sort: sp.orden,
-  })
+  const [rows, freshness] = await Promise.all([
+    getCatalogo(supabase, session.companyId, {
+      q: sp.q,
+      limit: 500,
+      proveedor_id: sp.proveedor,
+      fraccion_prefix: sp.fraccion,
+      classified: sp.estado,
+      source_filter: sp.fuente,
+      sort: sp.orden,
+    }),
+    readFreshness(supabase, session.companyId),
+  ])
 
   return (
     <PageShell title="Catálogo" maxWidth={1100}>
+      <div style={{ marginBottom: 16 }}>
+        <SyncChip lastSyncIso={freshness.lastSyncedAt} />
+      </div>
       <CatalogoTable rows={rows} query={sp.q ?? ''} />
     </PageShell>
   )

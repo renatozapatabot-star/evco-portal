@@ -1,29 +1,34 @@
 /**
- * GET /api/anexo-24/csv — CSV export of a client's Anexo 24 snapshot.
+ * GET /api/anexo-24/csv — CSV export, 13-column GlobalPC parity.
  *
- * Complement to the existing PDF + XLSX exports at
- * /api/reports/anexo-24/generate. CSV is the format Anabel (and any
- * client's accounting team) can open with zero tooling. Columns mirror
- * Formato 53 so a CSV → Excel paste lands on the same structure.
+ * Mirrors the /anexo-24 screen and the PDF + XLSX exports byte-for-byte:
+ * one shared `fetchAnexo24Rows` helper, one shared `ANEXO24_COLUMNS`
+ * contract, one shared tenant gate. CSV format with UTF-8 BOM so Excel
+ * opens it without mojibake on accented characters (Fracción, País).
  *
- * Session-scoped: client role exports their own company_id; broker +
- * admin can pass ?company_id=XXX for cross-tenant exports.
+ * Query params: ?company_id=XXX (broker/admin only), ?date_from / ?date_to
+ * default to YTD just like the screen.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifySession } from '@/lib/session'
-import { formatFraccion } from '@/lib/format/fraccion'
-import { resolveProveedorName } from '@/lib/proveedor-names'
-import { getActiveCveProductos, activeCvesArray } from '@/lib/anexo24/active-parts'
+import { fetchAnexo24Rows, type Anexo24Row } from '@/lib/anexo24/fetchRows'
+import { ANEXO24_COLUMNS, type Anexo24ColumnKey } from '@/lib/anexo24/columns'
+import { formatDateDMY } from '@/lib/format'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
-/** RFC-4180 CSV escape — wraps in quotes if value contains comma,
- *  quote, or newline; doubles any inner quotes. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
+/** RFC-4180 escape — wrap in quotes if value contains comma, quote, or
+ *  newline; double any inner quotes. */
 function csvEscape(v: unknown): string {
   if (v === null || v === undefined) return ''
   const s = String(v)
@@ -31,6 +36,16 @@ function csvEscape(v: unknown): string {
     return `"${s.replace(/"/g, '""')}"`
   }
   return s
+}
+
+function csvCell(row: Anexo24Row, key: Anexo24ColumnKey): string {
+  const v = row[key]
+  if (v === null || v === undefined) return ''
+  if (typeof v === 'boolean') return v ? 'Sí' : 'No'
+  if (key === 'fecha') return formatDateDMY(String(v)) || ''
+  if (key === 'valor_usd' && typeof v === 'number') return v.toFixed(2)
+  if (typeof v === 'number') return String(v)
+  return String(v)
 }
 
 export async function GET(req: NextRequest) {
@@ -53,73 +68,57 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // CSV mirrors the /anexo-24 surface contract: only parts this
-  // company has actually imported (has at least one partida for).
-  // Exports SAT-truth inventory, not the sync mirror's long tail.
-  const active = await getActiveCveProductos(supabase, companyId)
-  const activeList = activeCvesArray(active)
-
-  let productosQuery = supabase
-    .from('globalpc_productos')
-    .select('cve_producto, descripcion, fraccion, pais_origen, umt, cve_proveedor')
-    .eq('company_id', companyId)
-    .order('cve_producto', { ascending: true })
-    .limit(10_000)
-  if (activeList.length > 0) productosQuery = productosQuery.in('cve_producto', activeList)
-
-  const { data: productos, error: prodErr } = await productosQuery
-
-  if (prodErr) {
-    console.error('[anexo-24/csv] productos fetch:', prodErr.message)
+  const today = new Date().toISOString().slice(0, 10)
+  const yearStart = `${new Date().getUTCFullYear()}-01-01`
+  const dateFrom = req.nextUrl.searchParams.get('date_from') ?? yearStart
+  const dateTo = req.nextUrl.searchParams.get('date_to') ?? today
+  if (!ISO_DATE.test(dateFrom) || !ISO_DATE.test(dateTo)) {
     return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'No pudimos generar el CSV' } },
+      { error: { code: 'VALIDATION_ERROR', message: 'date_from y date_to deben tener formato YYYY-MM-DD' } },
+      { status: 400 },
+    )
+  }
+  if (dateFrom > dateTo) {
+    return NextResponse.json(
+      { error: { code: 'VALIDATION_ERROR', message: 'date_from no puede ser posterior a date_to' } },
+      { status: 400 },
+    )
+  }
+
+  let result
+  try {
+    result = await fetchAnexo24Rows({ supabase, companyId, dateFrom, dateTo })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: `No pudimos generar el CSV: ${msg}` } },
       { status: 500 },
     )
   }
 
-  // Resolve proveedor names in one batch.
-  const cveProveedores = Array.from(new Set((productos ?? []).map((p) => p.cve_proveedor).filter(Boolean) as string[]))
-  const proveedorMap = new Map<string, string>()
-  if (cveProveedores.length > 0) {
-    const { data: provRows } = await supabase
-      .from('globalpc_proveedores')
-      .select('cve_proveedor, nombre')
-      .in('cve_proveedor', cveProveedores)
-    for (const p of (provRows ?? [])) {
-      if (p.cve_proveedor && p.nombre) proveedorMap.set(p.cve_proveedor, p.nombre)
-    }
+  if (result.truncated) {
+    return NextResponse.json(
+      { error: { code: 'RANGE_TRUNCATED', message: 'El periodo solicitado excede el límite de partidas. Reduce el rango antes de exportar.' } },
+      { status: 422 },
+    )
   }
 
-  const header = [
-    'Numero de parte',
-    'Descripcion',
-    'Fraccion arancelaria',
-    'Unidad de medida',
-    'Pais de origen',
-    'Proveedor',
-  ]
-  const rows: string[] = [header.join(',')]
-
-  for (const p of (productos ?? [])) {
-    const proveedor = resolveProveedorName(p.cve_proveedor, proveedorMap.get(p.cve_proveedor ?? '') ?? null)
-    rows.push([
-      csvEscape(p.cve_producto),
-      csvEscape(p.descripcion),
-      csvEscape(p.fraccion ? (formatFraccion(p.fraccion) ?? p.fraccion) : ''),
-      csvEscape(p.umt),
-      csvEscape(p.pais_origen),
-      csvEscape(proveedor === 'Proveedor pendiente de identificar' ? '' : proveedor),
-    ].join(','))
+  const lines: string[] = []
+  lines.push(ANEXO24_COLUMNS.map((c) => csvEscape(c.header)).join(','))
+  for (const row of result.rows) {
+    lines.push(ANEXO24_COLUMNS.map((c) => csvEscape(csvCell(row, c.key))).join(','))
   }
 
-  const body = rows.join('\n') + '\n'
-  const filename = `anexo-24-${companyId}-${new Date().toISOString().slice(0, 10)}.csv`
+  // UTF-8 BOM so Excel opens the file with correct encoding.
+  const body = '﻿' + lines.join('\n') + '\n'
+  const filename = `anexo24_${companyId}_${dateFrom}_${dateTo}.csv`
 
   return new NextResponse(body, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="${filename}"`,
-      'Cache-Control': 'no-store',
+      'Cache-Control': 'no-store, private',
+      'X-Anexo24-Rows': String(result.rows.length),
     },
   })
 }

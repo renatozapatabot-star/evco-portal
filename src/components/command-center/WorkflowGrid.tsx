@@ -176,10 +176,10 @@ const REFERENCE_CARDS: CardDef[] = [
     getActions: () => [{ label: 'Ver catálogo', href: '/catalogo', primary: true }],
   },
   {
-    key: 'anexo24' as CardKey, href: '/anexo24', label: 'Anexo 24', Icon: FileSpreadsheet, tier: 'reference',
+    key: 'anexo24' as CardKey, href: '/anexo-24', label: 'Anexo 24', Icon: FileSpreadsheet, tier: 'reference',
     getKpi: () => null,
     getSubtitle: () => 'Control IMMEX — al corriente',
-    getActions: () => [{ label: 'Ver anexo', href: '/anexo24', primary: true }],
+    getActions: () => [{ label: 'Ver anexo', href: '/anexo-24', primary: true }],
   },
   {
     key: 'documentos' as CardKey, href: '/documentos', label: 'Documentos', Icon: Archive, tier: 'reference',

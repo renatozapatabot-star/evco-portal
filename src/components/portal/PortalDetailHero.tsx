@@ -160,11 +160,17 @@ export function PortalDetailHero({
             style={{
               fontFamily: 'var(--portal-font-mono)',
               fontWeight: 400,
-              fontSize: 64,
-              lineHeight: 1,
+              // Audit Cluster F (2026-05-05): hero pedimento was 64px fixed
+              // and overflowed the viewport at 640px (horizontal scroll).
+              // clamp lets it shrink to ~32px on phones; wrap settings let
+              // long pedimentos break instead of pushing the page sideways.
+              fontSize: 'clamp(32px, 8vw, 64px)', // WHY: hero pedimento responsive scale
+              lineHeight: 1.05,
               letterSpacing: '-0.02em',
               color: 'var(--portal-fg-1)',
               margin: 0,
+              overflowWrap: 'anywhere',
+              wordBreak: 'break-word',
             }}
           >
             {numberPrefix}

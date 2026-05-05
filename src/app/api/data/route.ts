@@ -154,25 +154,78 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // For client role: company_id comes from the SIGNED session, not from cookies or query params.
-  // This prevents cross-client data leaks via cookie/param manipulation.
-  // For broker/admin: internal company_id values ('admin','internal') are not real
-  // client identifiers — they use query params to select which client to view.
   const sessionCompanyId = session.companyId
-  const cookieClave = req.cookies.get('company_clave')?.value
-
-  const effectiveCookieCompanyId = isInternal ? undefined : sessionCompanyId
-  const effectiveCookieClave = isInternal ? undefined : cookieClave
-
-  // Only apply clave_cliente when explicitly passed — not every table has this column.
-  // Client isolation for tables without clave_cliente is handled by company_id filter.
   const claveCliente = params.get('clave_cliente') || undefined
   const cveCliente = params.get('cve_cliente') || undefined
-  // Client: always use session company_id (ignore query param company_id)
-  // Broker/admin: use query param company_id (they can view any client)
+  const queryCompanyId = params.get('company_id') || undefined
+
+  // Cross-tenant escalation fence (client role only).
+  //
+  // Pre-2026-05-05 the route silently ignored a client's ?company_id=
+  // override and used session.companyId instead. That's safe — but it's
+  // also opaque: an attacker probing the surface gets a 200 with the
+  // "wrong" data and no signal we noticed; a security auditor watching
+  // the URL can't tell the bypass attempt failed. Switch to explicit
+  // refusal + audit_log so every attempt becomes a queryable event.
+  //
+  // Internal roles (broker/admin) bypass this fence by design — they
+  // pass ?company_id= legitimately for oversight (see line below this
+  // block).
+  if (!isInternal) {
+    const escalations: Array<{ via: string; attempted: string }> = []
+    if (queryCompanyId && queryCompanyId !== sessionCompanyId) {
+      escalations.push({ via: 'company_id_param', attempted: queryCompanyId })
+    }
+    if (claveCliente || cveCliente) {
+      // Resolve session's canonical clave once, then compare. Defense-
+      // in-depth: the company_id .eq() filter still applies below, so
+      // a bypass via these params would already empty-intersect — but
+      // explicit refusal + audit beats silent intersect.
+      const { data: ownClave } = await supabase
+        .from('companies')
+        .select('clave_cliente')
+        .eq('company_id', sessionCompanyId)
+        .maybeSingle()
+      const sessionClave = (ownClave?.clave_cliente as string | undefined) ?? null
+      if (claveCliente && claveCliente !== sessionClave) {
+        escalations.push({ via: 'clave_cliente_param', attempted: claveCliente })
+      }
+      if (cveCliente && cveCliente !== sessionClave) {
+        escalations.push({ via: 'cve_cliente_param', attempted: cveCliente })
+      }
+    }
+    if (escalations.length > 0) {
+      const ua = req.headers.get('user-agent')?.slice(0, 200) ?? null
+      // Fire-and-forget — audit must never delay the 403 response.
+      // Generic 'Forbidden' body: don't tell the attacker which tenant
+      // exists or which param tripped the fence.
+      supabase.from('audit_log').insert({
+        action: 'cross_tenant_attempt',
+        resource: 'api/data',
+        resource_id: table,
+        company_id: sessionCompanyId,
+        diff: {
+          session_role: session.role,
+          session_company_id: sessionCompanyId,
+          attempted: escalations,
+          table,
+          ip,
+          ua,
+        },
+        created_at: new Date().toISOString(),
+      }).then(() => {}, (e) => console.error('[audit-log] cross_tenant_attempt:', e?.message ?? e))
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
+  }
+
+  // Client: always use session company_id (escalation cases were 403'd above).
+  // Broker/admin: use query param company_id (they can view any client).
   const companyId = isInternal
-    ? (params.get('company_id') || undefined)
-    : (effectiveCookieCompanyId || undefined)
+    ? queryCompanyId
+    : sessionCompanyId
   const traficoPrefix = params.get('trafico_prefix')
   const hasClientFilter = !!(claveCliente || cveCliente || companyId || traficoPrefix)
 

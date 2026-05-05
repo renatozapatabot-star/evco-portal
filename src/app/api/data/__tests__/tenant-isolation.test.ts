@@ -12,10 +12,16 @@
  *   · 400 on malformed query or unknown table
  *   · 403 on client requesting a FORBIDDEN table (no tenant column)
  *   · 400 on client requesting a SCOPED table without any filter
- *   · SCOPING: client role ALWAYS uses session.companyId, ignoring
- *     any ?company_id= query param (escalation attempt)
+ *   · 403 on client cross-tenant escalation attempt via ?company_id=,
+ *     ?cve_cliente=, or ?clave_cliente= mismatching the session.
+ *     Audit_log row is written for every refused attempt.
  *   · SCOPING: broker/admin can pass ?company_id= to select a tenant
  *   · rate-limited at 100 req/min per IP (tested indirectly)
+ *
+ * 2026-05-05 hardening: pre-fix, a client passing ?company_id=mafesa
+ * received a 200 with EVCO data (silent ignore). Post-fix, the same
+ * request receives 403 + audit_log row. The change makes the bypass
+ * attempt observable while preserving tenant isolation.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -24,19 +30,43 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
    other tenant-isolation tests; Supabase chain faithful-typing adds no
    signal here. */
 
-// Observable sink: every .eq() call shape recorded in order.
+// Observable sinks
 const eqCalls: Array<{ column: string; value: unknown }> = []
+const auditInserts: Array<Record<string, unknown>> = []
 let selectOrderSignal: string | null = null
 let mockQueryResult: { data: any[]; error: any } = { data: [], error: null }
+// companies.clave_cliente lookup mock — keyed by company_id
+const companyClaveMap: Record<string, string> = {
+  evco: '9254',
+  mafesa: '4598',
+}
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
-    from: () => {
+    from: (table: string) => {
+      // audit_log.insert() — fire-and-forget side effect channel
+      if (table === 'audit_log') {
+        return {
+          insert: (row: Record<string, unknown>) => {
+            auditInserts.push(row)
+            return { then: (onF: any) => Promise.resolve({ data: null }).then(onF) }
+          },
+        }
+      }
+
+      // companies.select(...).eq('company_id', X).maybeSingle()
+      // — used by escalation fence to resolve session.companyId → clave
+      const isCompaniesLookup = table === 'companies'
+
       const chain: any = {
         select: () => chain,
         limit: () => chain,
         eq: (col: string, val: unknown) => {
           eqCalls.push({ column: col, value: val })
+          // For companies clave-resolver branch, remember the looked-up id
+          if (isCompaniesLookup && col === 'company_id') {
+            chain.__lookupId = val
+          }
           return chain
         },
         order: (col: string, opts: any) => {
@@ -51,6 +81,13 @@ vi.mock('@supabase/supabase-js', () => ({
         not: () => chain,
         is: () => chain,
         or: () => chain,
+        maybeSingle: () => {
+          if (isCompaniesLookup) {
+            const clave = companyClaveMap[chain.__lookupId as string] ?? null
+            return Promise.resolve({ data: clave ? { clave_cliente: clave } : null, error: null })
+          }
+          return Promise.resolve({ data: null, error: null })
+        },
         then: (onF: any) => Promise.resolve(mockQueryResult).then(onF),
       }
       return chain
@@ -76,7 +113,7 @@ function makeRequest(sessionCookie: string | null, qs: Record<string, string> = 
   if (sessionCookie) cookies.set('portal_session', { value: sessionCookie })
   for (const [k, v] of Object.entries(extraCookies)) cookies.set(k, { value: v })
   return {
-    headers: { get: (_k: string) => null }, // rate-limit-key source
+    headers: { get: (k: string) => k === 'user-agent' ? 'vitest/1.0' : null },
     cookies: { get: (k: string) => cookies.get(k) },
     nextUrl: { searchParams: params },
   } as any
@@ -84,6 +121,7 @@ function makeRequest(sessionCookie: string | null, qs: Record<string, string> = 
 
 beforeEach(() => {
   eqCalls.length = 0
+  auditInserts.length = 0
   selectOrderSignal = null
   mockQueryResult = { data: [], error: null }
   mockSession = null
@@ -119,10 +157,10 @@ describe('GET /api/data · auth + shape', () => {
   })
 })
 
-// ─── Client-role isolation tests ────────────────────────────────────────
+// ─── Cross-tenant escalation fence (post-2026-05-05 hardening) ─────────
 
-describe('GET /api/data · client-role isolation (SEV-2 fence)', () => {
-  it('INVARIANT: client session with ?company_id=mafesa is IGNORED — filter uses session.companyId', async () => {
+describe('GET /api/data · cross-tenant escalation fence', () => {
+  it('FENCE: client session with ?company_id=mafesa → 403 + audit_log row', async () => {
     const { GET } = await import('../route')
     mockSession = { role: 'client', companyId: 'evco' }
     const req = makeRequest('token', {
@@ -131,16 +169,89 @@ describe('GET /api/data · client-role isolation (SEV-2 fence)', () => {
       limit: '10',
     })
     const res = await GET(req)
-    expect(res.status).toBe(200)
-    // Observable: the company_id .eq() filter used 'evco', not 'mafesa'
-    const companyIdFilter = eqCalls.find(c => c.column === 'company_id')
-    expect(companyIdFilter).toBeDefined()
-    expect(companyIdFilter?.value).toBe('evco')
-    // And crucially: no 'mafesa' filter anywhere
-    expect(eqCalls.find(c => c.value === 'mafesa')).toBeUndefined()
+    expect(res.status).toBe(403)
+    // Body is generic — never leak which tenant exists
+    const body = await res.json()
+    expect(body).toEqual({ error: 'Forbidden' })
+    // No data was queried — escalation refused before the read
+    expect(eqCalls.find(c => c.column === 'company_id' && c.value === 'mafesa')).toBeUndefined()
+    // Audit row written
+    expect(auditInserts.length).toBe(1)
+    expect(auditInserts[0]).toMatchObject({
+      action: 'cross_tenant_attempt',
+      resource: 'api/data',
+      company_id: 'evco',
+    })
+    const diff = auditInserts[0].diff as { attempted: Array<{ via: string; attempted: string }>; session_company_id: string }
+    expect(diff.session_company_id).toBe('evco')
+    expect(diff.attempted).toContainEqual({ via: 'company_id_param', attempted: 'mafesa' })
   })
 
-  it('client role with no explicit filter + no session cookie override → uses session.companyId', async () => {
+  it('FENCE: client session with ?cve_cliente=mafesa-clave → 403 + audit_log row', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    const req = makeRequest('token', {
+      table: 'traficos',
+      cve_cliente: '4598',  // MAFESA's clave
+      limit: '10',
+    })
+    const res = await GET(req)
+    expect(res.status).toBe(403)
+    expect(auditInserts.length).toBe(1)
+    const diff = auditInserts[0].diff as { attempted: Array<{ via: string; attempted: string }> }
+    expect(diff.attempted).toContainEqual({ via: 'cve_cliente_param', attempted: '4598' })
+  })
+
+  it('FENCE: client session with ?clave_cliente=mafesa-clave → 403 + audit_log row', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    const req = makeRequest('token', {
+      table: 'aduanet_facturas',
+      clave_cliente: '4598',
+      limit: '10',
+    })
+    const res = await GET(req)
+    expect(res.status).toBe(403)
+    expect(auditInserts.length).toBe(1)
+    const diff = auditInserts[0].diff as { attempted: Array<{ via: string; attempted: string }> }
+    expect(diff.attempted).toContainEqual({ via: 'clave_cliente_param', attempted: '4598' })
+  })
+
+  it('ALLOWED: client session with ?company_id=evco (own tenant) → 200, no audit', async () => {
+    // Self-reference is not an escalation. The route uses session.companyId
+    // either way; the param is redundant but harmless.
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    const req = makeRequest('token', {
+      table: 'traficos',
+      company_id: 'evco',
+      limit: '10',
+    })
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(auditInserts.length).toBe(0)
+    const companyIdFilter = eqCalls.find(c => c.column === 'company_id')
+    expect(companyIdFilter?.value).toBe('evco')
+  })
+
+  it('ALLOWED: client session with ?cve_cliente=own-clave (own tenant) → 200, no audit', async () => {
+    const { GET } = await import('../route')
+    mockSession = { role: 'client', companyId: 'evco' }
+    const req = makeRequest('token', {
+      table: 'traficos',
+      cve_cliente: '9254',  // EVCO's own clave
+      limit: '10',
+    })
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(auditInserts.length).toBe(0)
+  })
+})
+
+// ─── Default scoping (no escalation attempt) ───────────────────────────
+
+describe('GET /api/data · default tenant scoping', () => {
+  it('client role with no explicit filter → uses session.companyId', async () => {
     const { GET } = await import('../route')
     mockSession = { role: 'client', companyId: 'evco' }
     const req = makeRequest('token', { table: 'traficos', limit: '10' })
@@ -148,22 +259,14 @@ describe('GET /api/data · client-role isolation (SEV-2 fence)', () => {
     expect(res.status).toBe(200)
     const companyIdFilter = eqCalls.find(c => c.column === 'company_id')
     expect(companyIdFilter?.value).toBe('evco')
+    expect(auditInserts.length).toBe(0)
   })
 
   it('client role requesting CLIENT_FORBIDDEN table → 403', async () => {
     const { GET } = await import('../route')
     mockSession = { role: 'client', companyId: 'evco' }
-    // 'calendar_events' is in ALLOWED_TABLES but not in CLIENT_SCOPED_TABLES
-    // AND should be in CLIENT_FORBIDDEN if it has no tenant column.
-    // Using 'soia_cruces' which is ALLOWED but not SCOPED — this exercises
-    // the non-forbidden branch. Let's use a forbidden one if possible.
-    // Looking at route: CLIENT_FORBIDDEN_TABLES is a set — any table in
-    // ALLOWED but not SCOPED and marked forbidden. Candidates include
-    // bridge_intelligence / regulatory_alerts / trade_prospects.
     const req = makeRequest('token', { table: 'trade_prospects', limit: '10' })
     const res = await GET(req)
-    // Either 403 (forbidden for client) or 400 (client-scope required) —
-    // both block cross-tenant exposure. Assert not 200.
     expect([400, 403]).toContain(res.status)
   })
 })
@@ -183,6 +286,8 @@ describe('GET /api/data · internal-role oversight', () => {
     expect(res.status).toBe(200)
     const companyIdFilter = eqCalls.find(c => c.column === 'company_id')
     expect(companyIdFilter?.value).toBe('mafesa')
+    // No audit row — oversight is legitimate, not an escalation
+    expect(auditInserts.length).toBe(0)
   })
 
   it('broker session CAN pass ?company_id=evco (oversight path)', async () => {
@@ -197,26 +302,24 @@ describe('GET /api/data · internal-role oversight', () => {
     expect(res.status).toBe(200)
     const companyIdFilter = eqCalls.find(c => c.column === 'company_id')
     expect(companyIdFilter?.value).toBe('evco')
+    expect(auditInserts.length).toBe(0)
   })
 
   it('admin session with NO param → passes through (no filter), returns 200', async () => {
-    // Broker/admin reading CLIENT_SCOPED_TABLES without a filter is allowed
-    // (they aggregate). The SEV-1 fence is: client role CANNOT do this.
     const { GET } = await import('../route')
     mockSession = { role: 'admin', companyId: 'admin' }
     const req = makeRequest('token', { table: 'traficos', limit: '10' })
     const res = await GET(req)
     expect(res.status).toBe(200)
-    // No company_id filter applied (aggregate read)
     expect(eqCalls.find(c => c.column === 'company_id')).toBeUndefined()
+    expect(auditInserts.length).toBe(0)
   })
 
   it('client session with NO filter on CLIENT_SCOPED table + no auto-fill → 400', async () => {
-    // If effective companyId ends up undefined somehow (e.g., client
-    // session.companyId is empty), the handler must reject — never
-    // fall through to an unfiltered query.
+    // Malformed session: companyId='' is falsy, so no auto-fill, no
+    // explicit filter, and the 400 fence catches it.
     const { GET } = await import('../route')
-    mockSession = { role: 'client', companyId: '' } // malformed
+    mockSession = { role: 'client', companyId: '' }
     const req = makeRequest('token', { table: 'traficos', limit: '10' })
     const res = await GET(req)
     expect(res.status).toBe(400)

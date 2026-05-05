@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
+import { buildClaveMap, resolveCompanyIdSlug } from '@/lib/tenant/resolve-slug'
 
 // Telegram bot token — verified against incoming requests
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -160,18 +161,29 @@ async function handleApproval(draftId: string, chatId: number, userId: number, u
   }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
 
   const supplier = draft.draft_data?.supplier || 'Desconocido'
-  const companyId = draft.draft_data?.company_id || ''
+  const rawCompanyId = draft.draft_data?.company_id || ''
 
-  // Insert celebration notification for portal users
-  if (companyId) {
-    await supabase.from('notifications').insert({
-      type: 'approval_complete',
-      severity: 'celebration',
-      title: `🦀 Borrador aprobado: ${supplier}`,
-      description: 'Patente 3596 honrada. Gracias, Tito.',
-      company_id: companyId,
-      read: false,
-    }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
+  // pedimento_drafts.draft_data is constructed upstream (Tito-side workflow)
+  // and may carry either a slug or a clave. Normalize through the allowlist
+  // before stamping the notification — the audit found 187 distinct claves
+  // had landed in notifications.company_id by skipping this guard.
+  if (rawCompanyId) {
+    const claveMap = await buildClaveMap(supabase)
+    const resolved = resolveCompanyIdSlug(rawCompanyId, claveMap)
+    if (resolved.kind === 'unresolved') {
+      console.warn(
+        `[telegram-webhook] skipping celebration notification: company_id=${String(rawCompanyId)} unresolvable (${resolved.reason})`,
+      )
+    } else {
+      await supabase.from('notifications').insert({
+        type: 'approval_complete',
+        severity: 'celebration',
+        title: `🦀 Borrador aprobado: ${supplier}`,
+        description: 'Patente 3596 honrada. Gracias, Tito.',
+        company_id: resolved.slug,
+        read: false,
+      }).then(() => {}, (e) => console.error('[audit-log] telegram-webhook:', e.message))
+    }
   }
 
   // Send approval message with cancel button — the telegram-bot.js PM2 process

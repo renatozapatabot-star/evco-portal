@@ -216,6 +216,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
         fechaPago={fechaPago}
         pedimentoPaid={pedimentoPaid}
         missingDocsCount={props.missingDocs.length}
+        requiredDocsCount={props.requiredDocsCount}
         importeTotalUsd={importeTotalUsd}
       />
     ),
@@ -315,12 +316,22 @@ export function TraficoDetail(props: TraficoDetailProps) {
             sub: valor > 0 ? 'USD declarado' : 'Pendiente',
           },
           {
+            // Audit Cluster C (2026-05-05): when requiredDocsCount === 0
+            // we used to show value="0" + sub="al corriente" — reading as
+            // "expediente at zero, all good" which contradicted the rest
+            // of the page. Distinguish "no requirements defined" from
+            // "all required uploaded" explicitly.
             label: 'DOCUMENTOS',
             value:
               props.requiredDocsCount > 0
                 ? `${props.uploadedRequiredCount} / ${props.requiredDocsCount}`
                 : String(props.docs.length),
-            sub: props.missingDocs.length > 0 ? `${props.missingDocs.length} por subir` : 'al corriente',
+            sub:
+              props.requiredDocsCount === 0
+                ? 'sin requisitos'
+                : props.missingDocs.length > 0
+                  ? `${props.missingDocs.length} por subir`
+                  : 'al corriente',
           },
           {
             label: 'PARTIDAS',

@@ -18,6 +18,11 @@ interface Props {
   /** Required + uploaded counts — drive the next-action CTA when the
    *  pedimento isn't paid yet. */
   missingDocsCount: number
+  /** Total required docs for this régimen — distinguishes "no requirements
+   *  defined" (0) from "requirements all met" (missingDocsCount === 0 with
+   *  requiredDocsCount > 0). Without this, "Expediente listo" was showing
+   *  on traficos whose régimen had zero required docs (audit Cluster C). */
+  requiredDocsCount: number
   /** Raw importe from trafico (may be null when aduanet hasn't synced). */
   importeTotalUsd: number | null
 }
@@ -45,8 +50,18 @@ export function PedimentoTab({
   fechaPago,
   pedimentoPaid,
   missingDocsCount,
+  requiredDocsCount,
   importeTotalUsd,
 }: Props) {
+  // Audit Cluster C (2026-05-05): "Expediente listo" used to show whenever
+  // missingDocsCount === 0 — including the trivial case of "no docs required
+  // for this régimen." That read as a green-check lie because no completion
+  // signal exists when the régimen defines zero requirements. Three states:
+  //   - hasRequirements && missingDocsCount === 0 → all met, success
+  //   - hasRequirements && missingDocsCount > 0   → some pending, warning
+  //   - !hasRequirements                          → nothing to track, neutral
+  const hasRequirements = requiredDocsCount > 0
+  const allDocsMet = hasRequirements && missingDocsCount === 0
   const pedimentoPretty = trafico.pedimento ? formatPedimento(trafico.pedimento) : null
   const crossed = !!trafico.fecha_cruce
 
@@ -193,9 +208,27 @@ export function PedimentoTab({
         <StatusCard
           icon={<AlertCircle size={16} strokeWidth={1.8} />}
           label="Documentos"
-          value={missingDocsCount === 0 ? 'Completos' : `${missingDocsCount} pendientes`}
-          sub={missingDocsCount === 0 ? 'Expediente listo' : 'Ver en la pestaña Documentos'}
-          tone={missingDocsCount === 0 ? 'success' : 'warning'}
+          value={
+            !hasRequirements
+              ? 'Sin requisitos'
+              : allDocsMet
+                ? 'Completos'
+                : `${missingDocsCount} pendientes`
+          }
+          sub={
+            !hasRequirements
+              ? 'Régimen sin documentos requeridos'
+              : allDocsMet
+                ? 'Expediente listo'
+                : 'Ver en la pestaña Documentos'
+          }
+          tone={
+            !hasRequirements
+              ? 'neutral'
+              : allDocsMet
+                ? 'success'
+                : 'warning'
+          }
         />
       </section>
 

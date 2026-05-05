@@ -467,7 +467,7 @@ export function TraficoDetail(props: TraficoDetailProps) {
         Renato Zapata &amp; Company · Patente 3596 · Aduana 240
       </div>
 
-      <style>{`
+      <style precedence="default">{`
         @media (max-width: 1024px) {
           .trafico-main-grid { grid-template-columns: 1fr !important; }
         }

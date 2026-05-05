@@ -125,7 +125,7 @@ export function DetailPageShell({
           targets its first child header when mono is expected. Non-mono
           kinds ('plain') inherit PageShell's default. */}
       {isMono ? (
-        <style>{`
+        <style precedence="default">{`
           .aguila-detail-mono-title h1 {
             font-family: var(--portal-font-mono, 'Geist Mono', monospace);
             font-variant-numeric: tabular-nums;
@@ -181,7 +181,7 @@ export function DetailPageShell({
         >
           <div style={{ minWidth: 0 }}>{children}</div>
           <aside style={{ minWidth: 0 }}>{sidebar}</aside>
-          <style>{`
+          <style precedence="default">{`
             @media (max-width: 1023px) {
               .aguila-detail-grid {
                 grid-template-columns: minmax(0, 1fr) !important;

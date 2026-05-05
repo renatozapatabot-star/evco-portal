@@ -139,7 +139,7 @@ export function HeroStrip({ tiles, onEventosClick, traficoId }: HeroStripProps) 
 
         return <div key={t.id}>{tileContent}</div>
       })}
-      <style>{`
+      <style precedence="default">{`
         @media (max-width: 1200px) {
           .trafico-hero-strip { grid-template-columns: repeat(3, 1fr) !important; }
         }

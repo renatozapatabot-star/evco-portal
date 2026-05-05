@@ -80,7 +80,7 @@ export function TopbarStatus() {
           </span>
         </span>
       )}
-      <style>{`
+      <style precedence="default">{`
         @media (max-width: 768px) {
           .topbar-status { display: none !important; }
         }

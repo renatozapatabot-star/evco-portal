@@ -89,13 +89,23 @@ function PedimentosContent() {
     const isInternal = userRole === 'broker' || userRole === 'admin'
     const companyId = getCompanyIdCookie()
 
+    // Audit Cluster B2 (2026-05-05): the month filter previously excluded
+    // in-flight items from prior months. Now:
+    //   · No ?month= → fetch most-recent items (no fecha_llegada bound)
+    //   · ?month=YYYY-MM → fetch month window AND in-flight items, merge.
+    const monthExplicit = !!monthParam
+
     const params = new URLSearchParams({
       table: 'traficos', limit: '5000',
       order_by: 'fecha_pago', order_dir: 'desc',
       not_null: 'pedimento',
-      gte_field: 'fecha_llegada', gte_value: monthWindow.monthStart,
-      lte_field: 'fecha_llegada', lte_value: monthWindow.monthEnd,
     })
+    if (monthExplicit) {
+      params.set('gte_field', 'fecha_llegada')
+      params.set('gte_value', monthWindow.monthStart)
+      params.set('lte_field', 'fecha_llegada')
+      params.set('lte_value', monthWindow.monthEnd)
+    }
     if (!isInternal && companyId) params.set('company_id', companyId)
 
     // Retrofit B6a: prefer new `pedimentos` table; traficos query is fallback
@@ -106,15 +116,37 @@ function PedimentosContent() {
     })
     if (!isInternal && companyId) pedimentoParams.set('company_id', companyId)
 
+    // In-flight items (fecha_cruce IS NULL) — only when month is explicit,
+    // so an item with pedimento that arrived before the selected month but
+    // hasn't crossed yet still appears in the list.
+    const inFlightParams = monthExplicit
+      ? (() => {
+          const p = new URLSearchParams({
+            table: 'traficos', limit: '500',
+            order_by: 'fecha_pago', order_dir: 'desc',
+            not_null: 'pedimento',
+            is_null: 'fecha_cruce',
+          })
+          if (!isInternal && companyId) p.set('company_id', companyId)
+          return p
+        })()
+      : null
+
     Promise.all([
       fetch(`/api/data?${params}`).then(r => r.json()).catch((err: Error) => {
         console.error('[pedimentos] traficos fetch:', err.message)
         return { data: [] }
       }),
       fetch(`/api/data?${pedimentoParams}`).then(r => r.json()).catch(() => ({ data: [] })),
+      inFlightParams
+        ? fetch(`/api/data?${inFlightParams}`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] }),
     ])
-      .then(([traficoRes, pedimentoRes]) => {
-        const traficoRows = (traficoRes.data ?? traficoRes ?? []) as TraficoRow[]
+      .then(([traficoRes, pedimentoRes, inFlightRes]) => {
+        const monthRows = (traficoRes.data ?? traficoRes ?? []) as TraficoRow[]
+        const inFlightRows = (inFlightRes.data ?? []) as TraficoRow[]
+        const seen = new Set<string>(monthRows.map(r => r.trafico))
+        const traficoRows: TraficoRow[] = [...monthRows, ...inFlightRows.filter(r => r.trafico && !seen.has(r.trafico))]
         const pedimentoRows = (pedimentoRes.data ?? []) as Array<{
           pedimento_number: string | null
           trafico_id: string

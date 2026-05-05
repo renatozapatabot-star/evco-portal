@@ -236,6 +236,14 @@ export async function GET(req: NextRequest) {
     q = q.not(notNullField, 'is', null)
   }
 
+  // Is-null filter — e.g. is_null=fecha_cruce (used by /embarques and
+  // /pedimentos to merge in-flight items into a month-filtered view per
+  // audit Cluster B2 — month filter must not exclude items still in tránsito).
+  const isNullField = params.get('is_null')
+  if (isNullField && ALLOWED_COLUMNS.includes(isNullField as typeof ALLOWED_COLUMNS[number])) {
+    q = q.is(isNullField, null)
+  }
+
   if (orderBy && ALLOWED_COLUMNS.includes(orderBy as typeof ALLOWED_COLUMNS[number])) {
     q = q.order(orderBy, { ascending: orderDir })
   }

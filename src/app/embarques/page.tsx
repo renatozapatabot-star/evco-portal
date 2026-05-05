@@ -166,25 +166,59 @@ function TraficosContent() {
     setLoading(true)
     setFetchError(null)
 
-    const cacheKey = `traficos:${monthWindow.ym}`
+    // Audit Cluster B2 (2026-05-05): the month filter previously excluded
+    // in-flight items from prior months. Now:
+    //   · No ?month= → fetch most-recent items (no fecha_llegada bound)
+    //   · ?month=YYYY-MM → fetch month window AND in-flight items (fecha_cruce
+    //     IS NULL), merge by trafico ID. An item that arrived in April but
+    //     hasn't crossed yet still appears when the user views May.
+    const monthExplicit = !!monthParam
+    const cacheKey = `traficos:${monthExplicit ? monthWindow.ym : 'recent'}`
     const cached = getCached<TraficoRow[]>(cacheKey)
     if (cached) setRows(cached)
 
     const traficosParams = new URLSearchParams({
       table: 'traficos', limit: '5000',
       order_by: 'fecha_llegada', order_dir: 'desc',
-      gte_field: 'fecha_llegada', gte_value: monthWindow.monthStart,
-      lte_field: 'fecha_llegada', lte_value: monthWindow.monthEnd,
     })
+    if (monthExplicit) {
+      traficosParams.set('gte_field', 'fecha_llegada')
+      traficosParams.set('gte_value', monthWindow.monthStart)
+      traficosParams.set('lte_field', 'fecha_llegada')
+      traficosParams.set('lte_value', monthWindow.monthEnd)
+    }
     if (!isInternal) traficosParams.set('company_id', companyId)
 
-    fetch(`/api/data?${traficosParams}`)
-      .then(r => {
+    const inFlightParams = monthExplicit
+      ? (() => {
+          const p = new URLSearchParams({
+            table: 'traficos', limit: '500',
+            order_by: 'fecha_llegada', order_dir: 'desc',
+            is_null: 'fecha_cruce',
+          })
+          if (!isInternal) p.set('company_id', companyId)
+          return p
+        })()
+      : null
+
+    Promise.all([
+      fetch(`/api/data?${traficosParams}`).then(r => {
         if (!r.ok) throw new Error(r.status === 401 ? 'session_expired' : 'fetch_error')
         return r.json()
+      }),
+      inFlightParams
+        ? fetch(`/api/data?${inFlightParams}`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] }),
+    ])
+      .then(([primary, inFlight]) => {
+        const monthRows = Array.isArray(primary.data ?? primary) ? (primary.data ?? primary) as TraficoRow[] : []
+        const inFlightRows = Array.isArray(inFlight.data ?? inFlight) ? (inFlight.data ?? inFlight) as TraficoRow[] : []
+        const seen = new Set<string>(monthRows.map(r => r.trafico))
+        const arr: TraficoRow[] = [...monthRows, ...inFlightRows.filter(r => r.trafico && !seen.has(r.trafico))]
+        return { data: arr }
       })
       .then(d => {
-        const arr = Array.isArray(d.data ?? d) ? (d.data ?? d) : []
+        const arr = d.data
         setRows(arr)
         setCache(cacheKey, arr)
 

@@ -47,6 +47,16 @@
   --portal-amber:   oklch(0.82 0.15 78);
   --portal-red:     oklch(0.70 0.19 22);
 
+  /* —— Accent: terracotta · HUMAN moments only ——————————
+     Reserved for Renato (your name, your signature, the assistant) and
+     the login Puente coordinates ticker. Single warm jewel in the cool
+     steel case — use sparingly. Direct port of --cruz-warm-* from the
+     Claude Design bundle (`tokens.css:42-46`). */
+  --portal-warm-1:  oklch(0.78 0.08 50);
+  --portal-warm-2:  oklch(0.62 0.13 50);     /* PRIMARY · human */
+  --portal-warm-3:  oklch(0.46 0.10 50);
+  --portal-warm-glow: oklch(0.62 0.13 50 / 0.22);
+
   /* —— Brand gold (identity only: mark, wordmark, primary CTAs, active nav) ——
      Data/chrome surfaces stay silver (--portal-fg-*). Published here so every
      consumer (design-system.ts, tailwind.config.ts, globals.css) resolves the

@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   PortalLastSeenLine,
-  PortalLoginBackgroundLineMap,
+  PortalLoginBackgroundPuente,
   PortalLoginCardChrome,
   PortalLoginHandshakeRow,
   PortalLoginLiveWire,
@@ -170,7 +170,7 @@ function LoginContent() {
           pointerEvents: 'none',
         }}
       >
-        <PortalLoginBackgroundLineMap />
+        <PortalLoginBackgroundPuente />
       </div>
 
       {/* Subtle grid anchor (zIndex 1) */}

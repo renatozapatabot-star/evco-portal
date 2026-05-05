@@ -93,6 +93,7 @@ export { PortalPedimentoTheater } from './PortalPedimentoTheater'
 
 // Phase A (reference-parity plan) — login living background + LiveWire strip
 export { PortalLoginBackgroundLineMap } from './login/PortalLoginBackgroundLineMap'
+export { PortalLoginBackgroundPuente } from './login/PortalLoginBackgroundPuente'
 export { PortalLoginLiveWire } from './login/PortalLoginLiveWire'
 export type { LiveWireItem } from './login/PortalLoginLiveWire'
 

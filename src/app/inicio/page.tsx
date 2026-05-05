@@ -675,10 +675,19 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
 
   // PORTAL ticker (Block DD · 2026-04-17) — three live signals above the hero.
   // Each reads from data already fetched server-side; no extra query cost.
+  // Audit Cluster B1 (2026-05-05): the "MES" labels read as a contradiction
+  // when the month-to-date count is 0 but the user can see active embarques
+  // from prior months. Append the actual month so "CRUCES · MAY 26" tells
+  // the user which window the count covers.
+  const monthLabel = (() => {
+    const d = new Date(`${month}-15T00:00:00`)
+    if (Number.isNaN(d.getTime())) return 'MES'
+    return d.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }).toUpperCase().replace(/\./g, '')
+  })()
   const tickerItems = [
     { label: 'ACTIVOS', value: String(activeTraficosCount), tone: (activeTraficosCount > 0 ? 'live' : 'neutral') as 'live' | 'neutral' },
-    { label: 'CRUCES · MES', value: String(cruzadosMesCount ?? 0), tone: 'neutral' as const },
-    { label: 'PEDIMENTOS · MES', value: String(pedimentosMesCount ?? 0), tone: 'neutral' as const },
+    { label: `CRUCES · ${monthLabel}`, value: String(cruzadosMesCount ?? 0), tone: 'neutral' as const },
+    { label: `PEDIMENTOS · ${monthLabel}`, value: String(pedimentosMesCount ?? 0), tone: 'neutral' as const },
     ...(daysSinceLastCruce != null
       ? [{ label: 'ÚLT. CRUCE', value: daysSinceLastCruce === 0 ? 'hoy' : `${daysSinceLastCruce}d`, tone: 'neutral' as const }]
       : []),

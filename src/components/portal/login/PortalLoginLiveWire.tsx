@@ -8,12 +8,18 @@ export interface LiveWireItem {
   tone?: 'neutral' | 'live' | 'warn'
 }
 
+// Pre-auth status strip — descriptive states only, never specific numbers.
+// Specific marketing values (e.g. "PEDIMENTOS MES · 1,248") read as
+// claims about the user's account before they sign in and pair with
+// other rotating values into apparent contradictions (audit Cluster B1
+// 2026-05-05). Status descriptors keep the live-wire feel without
+// promising data the user hasn't verified.
 const DEFAULT_ITEMS: LiveWireItem[] = [
-  { label: 'CRUCES HOY',         value: '214',       tone: 'live' },
-  { label: 'PEDIMENTOS MES',     value: '1,248',     tone: 'neutral' },
-  { label: 'ANEXO 24 ACTIVOS',   value: '48,912',    tone: 'neutral' },
+  { label: 'CRUCES',             value: 'EN CURSO',  tone: 'live' },
+  { label: 'PEDIMENTOS',         value: 'EN PROCESO', tone: 'neutral' },
+  { label: 'ANEXO 24',           value: 'ACTIVO',    tone: 'live' },
   { label: 'PUENTES',            value: 'FLUIDOS',   tone: 'live' },
-  { label: 'CBP · LATENCIA',     value: '142ms',     tone: 'neutral' },
+  { label: 'CBP',                value: 'CONECTADO', tone: 'neutral' },
   { label: 'SAT · SESIÓN',       value: 'ACTIVA',    tone: 'live' },
 ]
 

@@ -610,7 +610,10 @@ function LoginContent() {
                 >
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
-                TLS 1.3 · 2FA
+                {/* Audit Cluster M (2026-05-05): "· 2FA" suffix removed —
+                    the auth flow is single-factor (password); the badge
+                    was misleading. TLS 1.3 is true and stays. */}
+                TLS 1.3
               </span>
               <a
                 href="mailto:contacto@renatozapata.com?subject=Recuperar%20acceso%20PORTAL"

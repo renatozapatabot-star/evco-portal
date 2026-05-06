@@ -38,6 +38,87 @@ isolation — the project ref is in 1Password under "CRUZ Supabase").
 
 ## Currently pending
 
+### `20260505180000_pedimento_facturas_schema.sql`
+
+**Rationale:** Block 8 Invoice Bank base table — referenced by 14
+codebase sites + 5 routes (`/api/invoice-bank`, `/api/invoice-bank/[id]`,
+`/api/invoice-bank/upload`, `/api/inbox`, `/api/inbox/accept`) but the
+CREATE TABLE migration was never authored. Production has been
+returning PGRST205 "Could not find the table 'public.pedimento_facturas'
+in the schema cache" since the feature shipped — observed and
+documented in PR #36 (`fcbcb29`, 2026-05-05).
+
+PR #36 hardened the listing route to return 200 with
+`{ rows: [], meta: { schema_pending: true } }` when the table is
+missing. THIS migration ships the actual table so the feature works
+end-to-end.
+
+**Expected effect:** Creates `public.pedimento_facturas` with 16
+columns + status/currency CHECKs + 7 indexes (4 from this migration,
+3 carried-over from `20260422190000_invoice_dedup.sql` definitions —
+declared idempotently in both migrations so order doesn't matter).
+RLS enabled with `pedimento_facturas_deny_all FOR ALL USING (false)`
+— same pattern as `agent_actions`, `workflow_findings`,
+`lead_activities`. Service-role bypasses; app-layer
+`session.companyId` filter is the primary tenant gate.
+
+**Apply order:** must run BEFORE
+`20260422190000_invoice_dedup.sql` in a fresh environment, but the
+dedup migration is itself idempotent (`ADD COLUMN IF NOT EXISTS`,
+`CREATE INDEX IF NOT EXISTS`) so the order is forgiving. In
+production where the dedup migration is "applied" against a missing
+table, this migration ships the table; re-running the dedup migration
+afterwards is a safe no-op.
+
+**Verification post-apply:**
+```sql
+-- Expect 16 columns:
+SELECT column_name, data_type, is_nullable
+  FROM information_schema.columns
+  WHERE table_name = 'pedimento_facturas'
+  ORDER BY ordinal_position;
+
+-- Expect 1 RLS policy: pedimento_facturas_deny_all · FOR ALL · USING (false):
+SELECT pol.polname, pol.polcmd
+  FROM pg_policy pol
+  JOIN pg_class c ON c.oid = pol.polrelid
+  WHERE c.relname = 'pedimento_facturas';
+
+-- Expect 7 indexes (1 PK + 3 from this migration + 3 from dedup):
+SELECT indexname FROM pg_indexes WHERE tablename = 'pedimento_facturas';
+```
+
+**Live smoke (after apply):**
+```bash
+# Authenticate as evco2026 + hit the listing endpoint:
+curl -b portal_session=… https://portal.renatozapata.com/api/invoice-bank
+# Pre-apply : { rows: [], meta: { schema_pending: true } }
+# Post-apply: { rows: [], meta: { total: 0, hasMore: false } }
+#             — schema_pending flag absent, table queried successfully.
+```
+
+**Cross-tenant probe** (mirrors PR #34 pattern): with the listing
+endpoint working, run `BASE_URL=https://portal.renatozapata.com
+CLIENT_SESSION=… bash scripts/test/cross-tenant-probe.sh` — except the
+probe doesn't yet target this route. Add `/api/invoice-bank` as a
+target in a follow-up PR if the cross-tenant fence pattern is desired
+on this surface (the route is already client-locked via
+`resolveTenantScope`, so the fence is an observability upgrade,
+not a security upgrade).
+
+**Rollback:** `DROP TABLE IF EXISTS pedimento_facturas CASCADE`. Data
+loss is limited to whatever invoice rows exist — none expected at
+apply time since the feature has been returning empty since launch.
+Re-applying the dedup migration after the rollback would `ADD COLUMN`
+to a missing table and 40000-class error; sequence rollbacks correctly.
+
+**Follow-up after green:** once the table exists in production, the
+schema-cache-miss branch in `src/app/api/invoice-bank/route.ts`
+(commit `f05d61c`, lines ~118-135) becomes dead code. Remove in a
+separate sweep PR — the empty-rows behavior is still a valid default,
+the `schema_pending: true` metadata flag is the part that becomes
+stale.
+
 ### `20260422190000_invoice_dedup.sql`
 
 **Rationale:** Phase 1 of V2 Doc Intelligence — duplicate-invoice

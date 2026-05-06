@@ -176,13 +176,33 @@ export default async function PedimentoDetailPage({
       valor_total: valorTotal,
     }
   })
-  const docs = (docsRes.data ?? []) as Array<{
+  type DocRow = {
     id: string
     doc_type: string | null
     file_name: string | null
     file_url: string | null
     uploaded_at: string | null
-  }>
+  }
+  let docs = (docsRes.data ?? []) as DocRow[]
+  // Dual-keyed pedimento_id fallback: 0.024% of EVCO expediente_documentos
+  // rows store the numeric pedimento string instead of the trafico slug.
+  // The primary query above matches by trafico slug — when it returns
+  // zero rows but the trafico has a pedimento number assigned, fall
+  // back to the numeric shape.
+  // See ~/Desktop/data-integrity-investigation-2026-05-06.md A4.
+  if (docs.length === 0) {
+    const pedKey = trafico.pedimento ? String(trafico.pedimento).trim() : ''
+    if (pedKey && pedKey !== traficoId) {
+      const fallbackDocsRes = await supabase
+        .from('expediente_documentos')
+        .select('id, doc_type, file_name, file_url, uploaded_at')
+        .eq('pedimento_id', pedKey)
+        .eq('company_id', ownerCompanyId)
+        .order('uploaded_at', { ascending: false })
+        .limit(200)
+      docs = (fallbackDocsRes.data ?? []) as DocRow[]
+    }
+  }
   const entradas = (entradasRes.data ?? []) as Array<{
     cve_entrada: string
     fecha_llegada_mercancia: string | null

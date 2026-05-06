@@ -10,6 +10,7 @@ import { useSort } from '@/hooks/use-sort'
 import { CalmEmptyState } from '@/components/cockpit/client/CalmEmptyState'
 import { ErrorCard } from '@/components/ui/ErrorCard'
 import type { DocFile } from '@/components/expedientes/DocChecklist'
+import { lookupDocsForTrafico } from '@/lib/expedientes/lookup-docs'
 import { parseMonthParam, recentMonths } from '@/lib/cockpit/month-window'
 import { MonthSelector } from '@/components/admin/MonthSelector'
 import { useFreshness } from '@/hooks/use-freshness'
@@ -126,7 +127,17 @@ function ExpedientesContent() {
 
       const enriched: TraficoRow[] = traficos.map(t => {
         const trafico = String(t.trafico ?? '')
-        const docs = docMap.get(trafico) ?? []
+        // Why dual-key lookup: expediente_documentos.pedimento_id is
+        // populated as either the trafico slug ('9254-Y4568') or the
+        // numeric pedimento ('6500313') depending on which sync path
+        // wrote the row. Looking up only by trafico slug missed the
+        // numeric-shape rows and rendered "0/6 docs" even though the
+        // docs existed. lookupDocsForTrafico unions both keys and
+        // dedupes by id. See ~/Desktop/data-integrity-investigation-2026-05-06.md A4.
+        const docs = lookupDocsForTrafico(docMap, {
+          trafico,
+          pedimento: t.pedimento as string | null,
+        })
         const presentTypes = new Set(docs.map(d => d.doc_type).filter(Boolean))
         const docCount = REQUIRED_DOCS.filter(r => presentTypes.has(r)).length
         const missing = REQUIRED_DOCS.filter(r => !presentTypes.has(r))

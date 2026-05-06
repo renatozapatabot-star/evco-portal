@@ -10,9 +10,13 @@
  *
  * Signal hierarchy (first match wins):
  *   1. `traficos.fecha_cruce` is non-null  → Cleared (physically crossed)
- *   2. `traficos.estatus` in the cleared set (Cruzado / Pedimento Pagado
- *      / Completo / Cerrado) → Cleared
+ *   2. `traficos.estatus` in the cleared set (Cruzado / Entregado /
+ *      Pedimento Pagado / Completo) → Cleared
  *   3. else → Not cleared
+ *
+ *   Note: `E1` is NOT in the cleared set on its own. See the
+ *   CLEARED_STATUSES block below for the full reasoning. An E1 trafico
+ *   is only marked cleared when it ALSO has a fecha_cruce set.
  *
  * Expanding the cleared set requires a code review + test. Today
  * (2026-04-24) these four values are the ones GlobalPC + our sync
@@ -21,14 +25,27 @@
  */
 
 /**
- * Cleared-state status values. Mirrored from src/lib/cockpit/success-rate.ts
- * SUCCESS_ESTATUSES (the canonical set used everywhere else) so the
- * pedimento UI agrees with the cockpit success-rate KPI.
+ * Cleared-state status values. Intentionally divergent from
+ * `src/lib/cockpit/success-rate.ts` SUCCESS_ESTATUSES — that set
+ * answers the broker-performance question ("did our work complete?"),
+ * which counts `E1` (pedimento paid). This set answers the
+ * client-display question ("has the cargo physically crossed?"),
+ * which does NOT count `E1` alone.
  *
- * `E1` is GlobalPC's terminal SAT-accepted code (691 rows / ~2% of
- * traficos in current data). estatus-translator.ts maps E1 → 'Cruzado'.
- * Omitting it would render 691 cleared shipments as "Not cleared",
- * collapsing client trust on day one.
+ * Why E1 is NOT cleared here (2026-05-06 fix · SEV-2):
+ *   E1 is the SAT-accepted code that fires when the pedimento is
+ *   paid. Many of those traficos have not yet physically crossed
+ *   (fecha_cruce IS NULL). Treating E1 alone as "Liberado" lied to
+ *   the client — the badge said cleared, the body said pago pendiente,
+ *   the timeline said pendiente de cruzar. This file is the binary
+ *   visual source-of-truth; we now only mark Liberado when fecha_cruce
+ *   is set OR when estatus carries an unambiguous post-crossing signal.
+ *
+ *   When fecha_cruce IS set on an E1 trafico, isCleared() returns
+ *   true via the fecha_cruce branch — that's the correct path and
+ *   covers the 14 of 691 EVCO E1 rows that have actually crossed.
+ *
+ *   See ~/Desktop/data-integrity-investigation-2026-05-06.md finding A1.
  *
  * `Cerrado` is intentionally EXCLUDED — in some GlobalPC configurations
  * it means "administratively closed (cancelled/abandoned)", not
@@ -37,7 +54,6 @@
  */
 const CLEARED_STATUSES = new Set([
   'Cruzado',
-  'E1',
   'Entregado',
   'Pedimento Pagado',
   'Completo',

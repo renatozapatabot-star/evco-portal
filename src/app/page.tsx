@@ -16,7 +16,11 @@ import { logOperatorAction } from '@/lib/operator-actions'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function RootRedirect() {
+export default async function RootRedirect({
+  searchParams,
+}: {
+  searchParams: Promise<{ unavailable?: string }>
+}) {
   const cookieStore = await cookies()
   const sessionToken = cookieStore.get('portal_session')?.value
   if (!sessionToken) redirect('/login')
@@ -33,8 +37,16 @@ export default async function RootRedirect() {
     })
   }
 
-  if (session.role === 'admin' || session.role === 'broker') redirect('/admin/eagle')
-  if (session.role === 'operator') redirect('/operador/inicio')
+  // Preserve ?unavailable=1 through the role redirect so the destination
+  // cockpit can surface a toast explaining why the user landed there
+  // (i.e. they tried to reach an admin-only route per middleware:106).
+  // Without this preservation the param drops at this hop and the client
+  // sees a silent redirect — the audit caught this gap on 2026-05-05.
+  const sp = await searchParams
+  const tail = sp.unavailable === '1' ? '?unavailable=1' : ''
+
+  if (session.role === 'admin' || session.role === 'broker') redirect(`/admin/eagle${tail}`)
+  if (session.role === 'operator') redirect(`/operador/inicio${tail}`)
   // Default: client
-  redirect('/inicio')
+  redirect(`/inicio${tail}`)
 }

@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { CockpitHeroKPI, ActividadStripItem } from '@/components/aguila'
 import { TimelineModal } from '@/components/cockpit/client/TimelineModal'
 import { MorningBriefing, type MorningBriefingData } from '@/components/cockpit/client/MorningBriefing'
 import { PortalDashboard, type PortalTickerItem } from '@/components/portal'
+import { useToast } from '@/components/Toast'
 import type { ActiveShipment } from '@/components/cockpit/client/ActiveShipmentTimeline'
 import type { NavCounts } from '@/lib/cockpit/nav-tiles'
 import type { CapabilityCounts } from '@/lib/cockpit/capabilities'
@@ -70,6 +72,27 @@ export function InicioClientShell({
 }: InicioClientShellProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const kpiButtonRef = useRef<HTMLButtonElement | null>(null)
+
+  // Surface the redirect that brought the user here. middleware.ts:106
+  // bounces clients hitting admin-only routes with /?unavailable=1; the
+  // root redirect at src/app/page.tsx forwards that param through to
+  // /inicio. Without this toast the user landed silently with no idea
+  // what happened — the audit caught this gap on 2026-05-05.
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+  useEffect(() => {
+    if (searchParams.get('unavailable') === '1') {
+      toast(
+        'Esa función no está disponible para tu cuenta. Contacta a Anabel si necesitas acceso.',
+        'info',
+      )
+      // Strip the param so a refresh doesn't re-fire the toast.
+      router.replace('/inicio')
+    }
+    // searchParams is a stable reference per Next.js; we only re-run
+    // if its identity changes (e.g. after the router.replace above).
+  }, [searchParams, router, toast])
 
   const displayName = cleanCompanyDisplayName(companyName) || companyName
   const firstToken = displayName.split(/[\s,·]/).find((t) => t.length > 0) || name || 'Bienvenida'

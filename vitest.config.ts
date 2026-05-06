@@ -6,7 +6,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: [],
-    include: ['src/**/*.test.{ts,tsx}'],
+    // The qa-suite probes live under scripts/test/qa-suite/ but their
+    // smoke tests need to be discovered by vitest. Listing both roots
+    // keeps the standard src/ pattern + picks up the qa-suite tests.
+    // See ~/Desktop/qa-suite-plan-2026-05-06.md B4.
+    include: ['src/**/*.test.{ts,tsx}', 'scripts/test/qa-suite/__tests__/**/*.test.ts'],
   },
   resolve: {
     alias: {

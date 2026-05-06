@@ -30,6 +30,7 @@ import { CronologiaTab } from './tabs/CronologiaTab'
 import { NotasTab, type NotasTabHandle } from './tabs/NotasTab'
 import { ComunicacionTab } from './tabs/ComunicacionTab'
 import { PedimentoTab } from './tabs/PedimentoTab'
+import { composeDetailEyebrow, composeTipoOpBadgeLabel } from './detail-hero-compose'
 import type { DocType } from '@/lib/doc-requirements'
 import type {
   AvailableUserLite,
@@ -261,7 +262,10 @@ export function TraficoDetail(props: TraficoDetailProps) {
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       <PortalDetailHero
-        eyebrow={`PEDIMENTO · ${(props.trafico.tipo_operacion ?? 'A1').toUpperCase()} · ${props.clientName.toUpperCase()}`}
+        eyebrow={composeDetailEyebrow({
+          tipo_operacion: props.trafico.tipo_operacion,
+          clientName: props.clientName,
+        })}
         numberPrefix={(() => {
           const ped = props.trafico.pedimento
           if (!ped) return `${props.trafico.patente ?? '3596'}-`
@@ -305,7 +309,13 @@ export function TraficoDetail(props: TraficoDetailProps) {
             out.push({ tone: 'info', label: estadoActualValue.toUpperCase() })
           }
           out.push({ tone: 'info', label: 'IMMEX VIGENTE' })
-          out.push({ tone: 'neutral', label: `${(props.trafico.tipo_operacion ?? 'A1').toUpperCase()} · DEFINITIVO` })
+          const tipoOpLabel = composeTipoOpBadgeLabel({
+            tipo_operacion: props.trafico.tipo_operacion,
+            clientName: props.clientName,
+          })
+          if (tipoOpLabel) {
+            out.push({ tone: 'neutral', label: tipoOpLabel })
+          }
           out.push({ tone: 'neutral', label: 'T-MEC' })
           return out
         })()}

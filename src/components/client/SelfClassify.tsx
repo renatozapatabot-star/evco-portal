@@ -168,7 +168,19 @@ export function SelfClassify() {
               value={form.description}
               onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
               style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
+              aria-describedby="self-classify-desc-hint"
             />
+            <p
+              id="self-classify-desc-hint"
+              className="portal-meta"
+              style={{
+                margin: '6px 2px 0',
+                fontSize: 'var(--aguila-fs-meta)',
+                color: 'var(--portal-fg-5)',
+              }}
+            >
+              Describe el producto con al menos 6 caracteres antes de clasificar.
+            </p>
           </div>
 
           {/* Two-column grid for smaller fields */}
@@ -247,6 +259,14 @@ export function SelfClassify() {
           <button
             type="submit"
             disabled={!canSubmit || state === 'loading'}
+            title={
+              !canSubmit
+                ? 'Ingresa una descripción del producto (mínimo 6 caracteres)'
+                : state === 'loading'
+                  ? 'Clasificando…'
+                  : undefined
+            }
+            aria-disabled={!canSubmit || state === 'loading'}
             style={{
               minHeight: 60,
               padding: '16px 32px',

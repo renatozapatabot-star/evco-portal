@@ -57,6 +57,41 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow-x: auto;
+  /* Right-edge gradient mask — visual cue that the table scrolls
+     horizontally. Mac/iOS hide scrollbars by default; without this
+     fade users have no signal that columns 8–13 exist beyond the
+     viewport. The `--scroll-shadow-width` controls the fade depth.
+     `mask` keeps content fully opaque inside the wrap and tapers it
+     into transparent at the right edge — matching the design system
+     "ambient cue" pattern (no chevron, no toolbar, just a gentle
+     visual indication of more). Found in 60-min audit 2026-05-05. */
+  --scroll-shadow-width: 28px;
+  position: relative;
+}
+.tableWrap::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  right: 1px;
+  width: var(--scroll-shadow-width);
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  border-top-right-radius: 9px;
+  border-bottom-right-radius: 9px;
+  /* Animation-friendly: fades when scrolled to end via JS-set
+     data-scrolled-end attribute. Safe to ship without JS — the
+     fade is always visible, costing only 28px of last-column
+     visibility, but the cue is unambiguous. */
+  opacity: 1;
+  transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tableWrap[data-scrolled-end='true']::after {
+  opacity: 0;
 }
 .table {
   width: 100%;

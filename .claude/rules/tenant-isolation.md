@@ -22,6 +22,7 @@ globalpc_proveedores · anexo24_partidas · pedimento_drafts
 traficos · entradas · expediente_documentos
 pedimento_ocas · mensajeria_* · proveedor_rfc_cache
 operator_actions · agent_decisions · notifications
+pedimento_facturas
 ```
 
 **Mixed-scope tables (company_id MAY be NULL for infrastructure-level rows):**

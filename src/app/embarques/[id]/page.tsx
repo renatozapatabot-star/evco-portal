@@ -219,7 +219,25 @@ export default async function TraficoDetailPage({
     }
   })
 
-  const docs = ((docsRes.data as DocRow[] | null) ?? [])
+  let docs = ((docsRes.data as DocRow[] | null) ?? [])
+  // Dual-keyed pedimento_id fallback: 0.024% of EVCO expediente_documentos
+  // rows store the numeric pedimento string (e.g. "6500313") in
+  // `pedimento_id` instead of the trafico slug. The primary query above
+  // matches by trafico slug — when it returns zero rows but the trafico
+  // has a pedimento number assigned, fall back to the numeric shape.
+  // See ~/Desktop/data-integrity-investigation-2026-05-06.md A4.
+  if (docs.length === 0) {
+    const pedKey = trafico.pedimento ? String(trafico.pedimento).trim() : ''
+    if (pedKey && pedKey !== traficoId) {
+      const fallbackDocs = await supabase
+        .from('expediente_documentos')
+        .select('id, doc_type, file_name, uploaded_at')
+        .eq('pedimento_id', pedKey)
+        .order('uploaded_at', { ascending: false })
+        .limit(200)
+      docs = ((fallbackDocs.data as DocRow[] | null) ?? [])
+    }
+  }
   const notes = ((notesRes.data as NoteRow[] | null) ?? [])
 
   // Step 2 of partidas chain: facturas → folios → partidas → product enrichment.

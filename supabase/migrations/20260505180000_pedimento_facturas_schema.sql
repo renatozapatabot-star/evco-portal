@@ -66,7 +66,12 @@
 --     FROM information_schema.columns
 --     WHERE table_name = 'pedimento_facturas'
 --     ORDER BY ordinal_position;
---   -- Expect 16 columns.
+--   -- Expect 17 columns.
+--
+--   SELECT tgname FROM pg_trigger
+--     WHERE tgrelid = 'public.pedimento_facturas'::regclass
+--     AND NOT tgisinternal;
+--   -- Expect 1 trigger: pedimento_facturas_set_updated_at.
 --
 --   SELECT pol.polname, pol.polcmd
 --     FROM pg_policy pol
@@ -89,6 +94,11 @@
 CREATE TABLE IF NOT EXISTS public.pedimento_facturas (
   id                          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at                  timestamptz NOT NULL DEFAULT now(),
+  -- updated_at: maintained by the BEFORE-UPDATE trigger below
+  -- (tg_pedimento_facturas_set_updated_at). Authored at table-creation
+  -- time so we never need a backfill migration when audit-trail
+  -- debugging becomes necessary.
+  updated_at                  timestamptz NOT NULL DEFAULT now(),
 
   -- Ownership (tenant-isolation.md HARD contract: company_id NOT NULL).
   company_id                  text NOT NULL,
@@ -150,6 +160,36 @@ COMMENT ON COLUMN public.pedimento_facturas.normalized_invoice_number IS
 
 COMMENT ON COLUMN public.pedimento_facturas.supplier_rfc IS
   'Supplier tax ID when known. Combined with normalized_invoice_number gives a near-authoritative dedup key.';
+
+-- ─────────────────────────────────────────────────────────────────────
+-- updated_at maintenance trigger.
+-- Pattern per leads_touch_updated_at_trg in
+-- supabase/migrations/20260421150251_leads_table.sql — per-table
+-- function (not a shared helper) so each table's update semantics can
+-- diverge later (e.g. bumping a stage_changed_at companion column)
+-- without touching unrelated tables.
+--
+-- Idempotent: CREATE OR REPLACE FUNCTION + DROP TRIGGER IF EXISTS
+-- before CREATE TRIGGER, so re-running this migration is safe.
+-- ─────────────────────────────────────────────────────────────────────
+
+CREATE OR REPLACE FUNCTION public.tg_pedimento_facturas_set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at := now();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS pedimento_facturas_set_updated_at
+  ON public.pedimento_facturas;
+
+CREATE TRIGGER pedimento_facturas_set_updated_at
+  BEFORE UPDATE ON public.pedimento_facturas
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_pedimento_facturas_set_updated_at();
 
 -- Hot path: list endpoint at /api/invoice-bank filters by
 -- (company_id, status) and orders by received_at DESC.

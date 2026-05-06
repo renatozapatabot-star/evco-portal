@@ -402,11 +402,20 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
   // actual estatus values (Cruzado/E1 are terminal; Pedimento Pagado +
   // En Proceso are in-flight). Sorted by fecha_llegada ascending → earliest
   // upcoming arrival first.
+  //
+  // Date floor (2026-05-05 audit fix): only surface non-terminal traficos
+  // whose fecha_llegada is today or later. Without this floor, a stale row
+  // with fecha_llegada='2025-11-21' that never got marked Cruzado surfaces
+  // as "Próximo cruce · 21-nov" — misleading because the date is in the past.
+  // The floor uses America/Chicago for "today" so the UTC offset doesn't
+  // cause edge-of-day flapping.
+  const todayLaredo = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
   const { data: imminentRow } = await supabase
     .from('traficos')
     .select('trafico, estatus, fecha_llegada, pedimento')
     .eq('company_id', companyId)
     .not('estatus', 'in', '("Cruzado","E1","Entregado","Cancelado")')
+    .gte('fecha_llegada', todayLaredo)
     .order('fecha_llegada', { ascending: true, nullsFirst: false })
     .limit(1)
     .maybeSingle()
@@ -422,15 +431,22 @@ async function renderClientCockpit(session: SessionLike, cookieStore: CookieJar,
 
   // Format helper for the Próximo/Último cruce date — es-MX short form,
   // Laredo timezone. JetBrains Mono is applied by KPITile's number slot.
+  // Audit fix 2026-05-05: appends year when the date is not in the current
+  // calendar year — turns ambiguous "21-nov" into "21-nov 2025" so a stale
+  // row reads as obviously stale rather than misleadingly imminent.
   function formatCruceDate(iso: string | null): string {
     if (!iso) return '—'
     const d = new Date(iso)
     if (isNaN(d.getTime())) return '—'
-    return d.toLocaleDateString('es-MX', {
+    const dateY = d.toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }).slice(0, 4)
+    const todayY = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }).slice(0, 4)
+    const opts: Intl.DateTimeFormatOptions = {
       timeZone: 'America/Chicago',
       day: '2-digit',
       month: 'short',
-    })
+    }
+    if (dateY !== todayY) opts.year = 'numeric'
+    return d.toLocaleDateString('es-MX', opts)
   }
 
   // heroKPIs[0] is dynamic: "Próximo cruce · [fecha]" when there is an
